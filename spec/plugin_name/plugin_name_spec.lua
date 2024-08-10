@@ -6,6 +6,10 @@ describe("setup", function()
   end)
 
   it("works with custom var", function()
+    -- Quick test
+    local buffer = vim.fn.bufnr()
+    vim.cmd("buffer " .. tostring(buffer))
+
     plugin.setup({ opt = "custom" })
     assert(plugin.hello() == "custom", "my first function with param = custom")
   end)

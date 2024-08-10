@@ -1,3 +1,4 @@
+# TODO: FINISH
 TESTS_INIT=tests/minimal_init.lua
 TESTS_DIR=tests/
 

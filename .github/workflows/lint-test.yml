@@ -3,6 +3,7 @@ on: [push, pull_request]
 name: lint-test
 
 jobs:
+  # TODO: Move this to its own job
   stylua:
     name: stylua
     runs-on: ubuntu-latest
@@ -15,19 +16,16 @@ jobs:
           args: --color always --check lua
 
   test:
+    # TODO: Add multi-OS support + multi-version support
+    name: test
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        nvim-versions: ['stable', 'nightly']
-    name: test
+        neovim_version: ['nightly', 'stable']
+
     steps:
-      - name: checkout
-        uses: actions/checkout@v3
-
-      - uses: rhysd/action-setup-vim@v1
+      - uses: actions/checkout@v4
+      - name: Run tests
+        uses: nvim-neorocks/nvim-busted-action@v1
         with:
-          neovim: true
-          version: ${{ matrix.nvim-versions }}
-
-      - name: run tests
-        run: make test
+          nvim_version: ${{ matrix.neovim_version }}
