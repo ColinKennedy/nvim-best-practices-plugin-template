@@ -183,6 +183,7 @@ local function _parse_args(whole_text)
         --
         local current_argument_ = current_argument
         current_argument = true
+
         for index_ = 1, #current_argument_ do
           local character_ = current_argument_:sub(index_, index_)
           current_name = character_
