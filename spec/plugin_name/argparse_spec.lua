@@ -2,7 +2,6 @@ local argparse = require("plugin_name._cli.argparse")
 
 describe("default", function()
   it("works even if #empty #simple", function()
-    print('DEBUGPRINT[2]: argparse_spec.lua:5: argparse.parse_args("")=' .. vim.inspect(argparse.parse_args("")))
     assert.same({{}, {}}, argparse.parse_args(""))
   end)
 end)
@@ -27,10 +26,13 @@ end)
 
 describe("quotes", function()
   it("quoted positional arguments", function()
-    -- TODO: Finish this
-    -- assert.same(argparse.parse_args('foo "bar fizz buzz"'), {{"foo", "bar fizz buzz"'}, {}})
-    -- assert.same(argparse.parse_args('"bar fizz buzz" foo'), {{"bar fizz buzz", "foo"}, {}})
-    -- assert.same(argparse.parse_args('foo "bar fizz" buzz'), {{"foo", "bar fizz", "buzz"}, {}})
+    assert.same({{"foo", "bar fizz buzz"}, {}}, argparse.parse_args('foo "bar fizz buzz"'))
+    assert.same({{"bar fizz buzz", "foo"}, {}}, argparse.parse_args('"bar fizz buzz" foo'))
+    assert.same({{"foo", "bar fizz", "buzz"}, {}}, argparse.parse_args('foo "bar fizz" buzz'))
+  end)
+
+  it("flags within the quotes", function()
+    assert.same({{"foo", "bar -f --fizz"}, {}}, argparse.parse_args("foo 'bar -f --fizz'"))
   end)
 
   it("#multiple arguments", function()
@@ -85,5 +87,19 @@ describe("double-dash equal-flags", function()
       {{}, {foo="text", bar="some thing", fizz=true, buzz="blah"}},
       argparse.parse_args("--foo='text' --bar=\"some thing\" --fizz --buzz='blah'")
     )
+  end)
+end)
+
+describe("single-dash flags", function()
+  it("single", function()
+    assert.same({{}, {f = true}}, argparse.parse_args("-f"))
+  end)
+
+  it("multiple, combined", function()
+    assert.same({{}, {fbz = true}}, argparse.parse_args("-fbz"))
+  end)
+
+  it("multiple, separate #asdf", function()
+    assert.same({{}, {f = true, b = true, z = true}}, argparse.parse_args("-f -b -z"))
   end)
 end)

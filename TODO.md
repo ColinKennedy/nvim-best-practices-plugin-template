@@ -9,6 +9,7 @@
 - Blow away all of the commits. Clean it up
 - Health check implementation
 
+- argparse - allow repeated flags, maybe?
 - Make sure named auto-complete works not just for keys but also for values
 
 

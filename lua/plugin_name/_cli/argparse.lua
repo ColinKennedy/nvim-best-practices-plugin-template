@@ -12,7 +12,8 @@ local M = {}
 local _State = {
   argument_start = "argument_start",
   normal = "normal",
-  in_flag = "in_flag",
+  in_double_flag = "in_double_flag",
+  in_single_flag = "in_single_flag",
   in_quote = "in_quote",
   in_value = "in_value",
 }
@@ -109,12 +110,19 @@ local function _parse_args(whole_text)
 
     if state == _State.argument_start then
       if is_alpha_numeric(character) then
-        if character == '-' and peek(index) == '-' then
-          state = _State.in_flag
-          _reset_argument()
-          index = index + 1
-          needs_name = true
-          needs_value = true
+        if character == '-' then
+          if peek(index) == '-' then
+            state = _State.in_double_flag
+            _reset_argument()
+            index = index + 1
+            needs_name = true
+            needs_value = true
+          else
+            state = _State.in_single_flag
+            _reset_argument()
+            needs_name = false
+            needs_value = true
+          end
         elseif _is_quote(character) then
           state = _State.in_quote
           needs_value = false
@@ -131,7 +139,7 @@ local function _parse_args(whole_text)
       else
         _append_to_wip_argument()
       end
-    elseif state == _State.in_flag then
+    elseif state == _State.in_double_flag then
       if character == "=" then
         needs_name = false
         current_name = current_argument
@@ -153,6 +161,23 @@ local function _parse_args(whole_text)
       elseif needs_name then
         _append_to_wip_argument()
       end
+    elseif state == _State.in_single_flag then
+      if _is_whitespace(character) then
+        -- We've reached the end of 1+ single flag(s).
+        -- Add every found character as flags
+        --
+        local current_argument_ = current_argument
+        current_argument = true
+        for index_ = 1, #current_argument_ do
+          local character_ = current_argument_:sub(index_, index_)
+          current_name = character_
+          _add_to_output()
+        end
+
+        _reset_all()
+      else
+        _append_to_wip_argument()
+      end
     elseif state == _State.normal then
       if is_escaping then
         local next = peek(index)
@@ -170,7 +195,7 @@ local function _parse_args(whole_text)
 
   if state == _State.normal and current_argument ~= "" then
     _add_to_output()
-  elseif state == _State.in_flag and current_argument ~= "" then
+  elseif (state == _State.in_double_flag or state == _State.in_single_flag) and current_argument ~= "" then
     current_name = current_argument
     current_argument = true
     needs_value = true
