@@ -110,20 +110,26 @@ local function _parse_args(whole_text)
 
     if state == _State.argument_start then
       if is_alpha_numeric(character) then
+        -- We know we've encounted some -f` or `--foo` or `--foo=bar` but we
+        -- aren't sure which it is yet.
+        --
         if character == '-' then
           if peek(index) == '-' then
+            -- NOTE: It's definitely a `--foo` flag or `--foo=bar` argument.
             state = _State.in_double_flag
             _reset_argument()
             index = index + 1
             needs_name = true
             needs_value = true
           else
+            -- NOTE: It's definitely a `-f` flag.
             state = _State.in_single_flag
             _reset_argument()
             needs_name = false
             needs_value = true
           end
         elseif _is_quote(character) then
+          -- NOTE: Actually we're inside of some thing. e.g. `"foo -b thing"!
           state = _State.in_quote
           needs_value = false
         else
@@ -133,7 +139,9 @@ local function _parse_args(whole_text)
         end
       end
     elseif state == _State.in_quote then
+      -- NOTE: We're inside of some thing. e.g. `"foo -b thing"!
       if not is_escaping and _is_quote(character) then
+        -- NOTE: We've reached the end of the quote
         _add_to_output()
         _reset_all()
       else
@@ -141,17 +149,24 @@ local function _parse_args(whole_text)
       end
     elseif state == _State.in_double_flag then
       if character == "=" then
+        -- NOTE: We've discovered a `--foo=bar` argument and we're just about
+        -- to find the `bar` part
+        --
         needs_name = false
         current_name = current_argument
         _reset_argument()
 
         if _is_quote(peek(index)) then
+          -- NOTE: We've discovered a `--foo="bar thing"` argument and we're just about
+          -- to find the `"bar thing"` part
+          --
           state = _State.in_quote
           index = index + 1
         else
           state = _State.normal
         end
       elseif _is_whitespace(character) then
+        -- NOTE: Ignore whitespace in some situations.
         if not is_escaping then
           current_name = current_argument
           current_argument = true
