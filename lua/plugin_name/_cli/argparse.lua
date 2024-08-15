@@ -6,6 +6,8 @@
 -- TODO: Docstrings. Add
 -- https://github.com/lewis6991/gitsigns.nvim/blob/562dc47189ad3c8696dbf460d38603a74d544849/lua/gitsigns/cli/argparse.lua#L10
 
+-- TODO: Add NOTE where needed
+
 
 local M = {}
 
@@ -137,6 +139,8 @@ local function _parse_args(whole_text)
           _append_to_wip_argument()
           needs_value = false
         end
+      elseif _is_quote(character) then
+        state = _State.in_quote
       end
     elseif state == _State.in_quote then
       -- NOTE: We're inside of some thing. e.g. `"foo -b thing"!
