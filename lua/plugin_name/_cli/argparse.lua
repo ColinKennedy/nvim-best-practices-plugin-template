@@ -123,10 +123,12 @@ local function _parse_args(whole_text)
           state = _State.normal
         end
       elseif _is_whitespace(character) then
-        current_name = current_argument
-        current_argument = true
-        _add_to_output()
-        _reset_all()
+        if not is_escaping then
+          current_name = current_argument
+          current_argument = true
+          _add_to_output()
+          _reset_all()
+        end
       elseif needs_name then
         _append_to_wip_argument()
       end
@@ -146,6 +148,11 @@ local function _parse_args(whole_text)
   end
 
   if state == _State.normal and current_argument ~= "" then
+    _add_to_output()
+  elseif state == _State.in_flag and current_argument ~= "" then
+    current_name = current_argument
+    current_argument = true
+    needs_value = true
     _add_to_output()
   end
 
