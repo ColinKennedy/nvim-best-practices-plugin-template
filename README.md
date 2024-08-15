@@ -25,7 +25,7 @@ Via github web page:
 
 Click on `Use this template`
 
-![](https://docs.github.com/assets/cb-36544/images/help/repository/use-this-template-button.png)
+![template](https://docs.github.com/assets/cb-36544/images/help/repository/use-this-template-button.png)
 
 
 ## Features and structure

@@ -9,19 +9,22 @@
 
 local M = {}
 
+local _ArgumentType = {
+  named = "positional",
+  positional = "positional",
+}
+
 local function is_char(character)
   return character:match('[^=\'"%s]') ~= nil
 end
 
 -- TODO: Change the variable names. They're awful
 
--- Return positional arguments and named arguments
---- @param x string
---- @return string[], table<string,string|boolean>
-function M.parse_args(x)
+local function _parse_args(x)
   --- @type string[], table<string,string|boolean>
   local pos_args, named_args = {}, {}
 
+  local last_argument = nil
   local state = 'in_arg'
   local cur_arg = ''
   local cur_val = ''
@@ -45,7 +48,12 @@ function M.parse_args(x)
           cur_arg = cur_arg .. ch
         end
       elseif ch:match('%s') then
-        pos_args[#pos_args + 1] = cur_arg
+        local position = #pos_args + 1
+        last_argument = {
+          argument_type = _ArgumentType.positional .. "b",
+          data = position,
+        }
+        pos_args[position] = cur_arg
         state = 'in_ws'
       elseif ch == '=' then
         cur_val = ''
@@ -60,6 +68,10 @@ function M.parse_args(x)
       end
     elseif state == 'in_flag' then
       if ch:match('%s') then
+        last_argument = {
+          argument_type = _ArgumentType.named,
+          data = cur_arg,
+        }
         named_args[cur_arg] = true
         state = 'in_ws'
       else
@@ -80,6 +92,10 @@ function M.parse_args(x)
       if is_char(ch) then
         cur_val = cur_val .. ch
       elseif ch:match('%s') then
+        last_argument = {
+          argument_type = _ArgumentType.named,
+          data = cur_arg,
+        }
         named_args[cur_arg] = cur_val
         cur_arg = ''
         state = 'in_ws'
@@ -90,6 +106,10 @@ function M.parse_args(x)
         cur_val = cur_val .. next_ch
         i = i + 1
       elseif ch == cur_quote then
+        last_argument = {
+          argument_type = _ArgumentType.named,
+          data = cur_arg,
+        }
         named_args[cur_arg] = cur_val
         state = 'in_ws'
         if next_ch ~= '' and not next_ch:match('%s') then
@@ -102,19 +122,43 @@ function M.parse_args(x)
     i = i + 1
   end
 
-  print('DEBUGPRINT[7]: argparse.lua:66: cur_arg=' .. vim.inspect(cur_arg))
-
   if #cur_arg > 0 then
     if state == 'in_arg' then
-      pos_args[#pos_args + 1] = cur_arg
+      local position = #pos_args + 1
+      last_argument = {
+        argument_type = _ArgumentType.positional .. "z",
+        data = position,
+      }
+      pos_args[position] = cur_arg
     elseif state == 'in_flag' then
+      last_argument = {
+        argument_type = _ArgumentType.named,
+        data = cur_arg,
+      }
       named_args[cur_arg] = true
     elseif state == 'in_value' then
+      last_argument = {
+        argument_type = _ArgumentType.named,
+        data = cur_arg,
+      }
       named_args[cur_arg] = cur_val
     end
   end
 
-  return pos_args, named_args
+  -- TODO: Remove
+  -- print('DEBUGPRINT[1]: argparse.lua:148: last_argument=' .. vim.inspect(last_argument))
+  return pos_args, named_args, last_argument
+end
+
+--- Get all positional arguments and named arguments.
+---
+--- @param x string
+--- @return string[], table<string,string|boolean>
+---
+function M.parse_args(x)
+  local positional_arguments, named_arguments, _ = _parse_args(x)
+
+  return {positional_arguments, named_arguments}
 end
 
 return M
