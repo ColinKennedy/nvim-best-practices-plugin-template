@@ -9,11 +9,6 @@
 
 local M = {}
 
-local _ArgumentType = {
-  named = "positional",
-  positional = "positional",
-}
-
 local _State = {
   argument_start = "argument_start",
   normal = "normal",
@@ -22,20 +17,46 @@ local _State = {
   in_value = "in_value",
 }
 
+--- Check if `character` is a typical a-zA-Z0-9 character.
+---
+--- @param character string Basically any non-special character.
+--- @return boolean # If a-zA-Z0-9, return `true`.
+---
 local function is_alpha_numeric(character)
   return character:match('[^=\'"%s]') ~= nil
 end
 
-local function _is_whitespace(next)
-  return next:match("%s")
+--- Check if `text` is a space, tab, or newline.
+---
+--- @param character string Basically `" "`, `\n`, `\t`.
+--- @return boolean # If it's any whitespace, return `true`.
+---
+local function _is_whitespace(character)
+  return character:match("%s")
 end
 
+--- Check if `character` starts a multi-word quote.
+---
+--- @param character string Basically ' or ".
+--- @return boolean # If ' or ", return `true`.
+---
 local function _is_quote(character)
   return character == '"' or character == "'"
 end
 
--- TODO: Change the variable names. They're awful
-
+--- Parse for positional arguments, named arguments, and flag arguments.
+---
+--- In a command like `bar -f --buzz --some="thing else"`...
+---     - `bar` is positional
+---     - `-f` is a single-letter flag
+---     - `--buzz` is a multi-letter flag
+---     - `--some="thing else" is a named argument whose value is "thing else"
+---
+--- @param whole_text string
+---     Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
+--- @return string[], table<string,string|boolean>
+---     All found for positional arguments, named arguments, and flag arguments.
+---
 local function _parse_args(whole_text)
   --- @type string[], table<string,string|boolean>
   local position_arguments, named_arguments = {}, {}
@@ -162,7 +183,9 @@ end
 --- Get all positional arguments and named arguments.
 ---
 --- @param whole_text string
+---     Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
 --- @return string[], table<string,string|boolean>
+---     All found for positional arguments, named arguments, and flag arguments.
 ---
 function M.parse_args(whole_text)
   return _parse_args(whole_text)
