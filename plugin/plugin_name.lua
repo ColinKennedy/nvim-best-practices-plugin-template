@@ -42,7 +42,11 @@ local _SUBCOMMANDS = {
                 style = { "undercase", "uppercase" },
             }
 
-            return cli_helper.get_complete_options(data, positional_choices, named_choices)
+            return cli_helper.get_complete_options(
+                data,
+                positional_choices,
+                named_choices
+            )
         end,
         run = function(_, options)
             local runner = require("plugin_name._cli.runner")

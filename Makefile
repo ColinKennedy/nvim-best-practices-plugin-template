@@ -1,12 +1,8 @@
-# TODO: FINISH
-TESTS_INIT=tests/minimal_init.lua
-TESTS_DIR=tests/
+.PHONY: luacheck stylua test
 
-.PHONY: test
+luacheck:
+	luacheck lua plugin spec
 
 test:
-	@nvim \
-		--headless \
-		--noplugin \
-		-u ${TESTS_INIT} \
-		-c "PlenaryBustedDirectory ${TESTS_DIR} { minimal_init = '${TESTS_INIT}' }"
+	eval $(luarocks path --lua-version 5.1 --bin)
+	busted .

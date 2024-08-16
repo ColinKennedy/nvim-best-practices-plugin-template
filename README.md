@@ -1,4 +1,4 @@
-- Add more CI checks (type-hinting and the like)
+TODO: Add this
 - Change the configuration stuff
 - Update the README.md
 - Update Makefile with more options
@@ -91,4 +91,8 @@ Run all tests
 busted .
 ```
 
-TODO: Include more commands for the other types of tests
+Run a suite of tests
+TODO: Write it
+
+Run an individual test
+TODO: Write it

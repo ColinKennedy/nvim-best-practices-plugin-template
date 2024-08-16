@@ -1,0 +1,27 @@
+---
+on: [push, pull_request]
+name: lint-test
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        neovim: [v0.9.0, v0.10.0, nightly, stable]
+    runs-on: ${{ matrix.os }}
+    name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
+    steps:
+    - name: Checkout spellbound.nvim
+      uses: actions/checkout@v4
+      with:
+        repository: ColinKennedy/spellbound.nvim
+        path: spellbound.nvim
+    - uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: ${{ matrix.neovim }}
+    - name: Run tests
+      working-directory: ./spellbound.nvim
+      run: |
+        nvim --version
+        make test
