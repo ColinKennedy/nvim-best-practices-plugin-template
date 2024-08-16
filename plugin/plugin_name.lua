@@ -13,49 +13,49 @@ local _PREFIX = "PluginName"
 
 --- @type table<string, PluginNameSubcommand>
 local _SUBCOMMANDS = {
-  -- TODO: Add a second sub-command, for fun
-  ["goodnight-moon"] = {
-    complete = function(data)
-      local argparse = require("plugin_name._cli.argparse")
+    -- TODO: Add a second sub-command, for fun
+    ["goodnight-moon"] = {
+        complete = function(data)
+            local argparse = require("plugin_name._cli.argparse")
 
-      local positional_choices = {
-        [1] = {"read", "sleep"},
-      }
+            local positional_choices = {
+                [1] = { "read", "sleep" },
+            }
 
-      return cli_helper.get_complete_options(data, positional_choices)
-    end,
-    run = function(data)
-      local runner = require("plugin_name._cli.runner")
+            return cli_helper.get_complete_options(data, positional_choices)
+        end,
+        run = function(data)
+            local runner = require("plugin_name._cli.runner")
 
-      runner.run_goodnight_moon(data)
-    end,
-  },
-  ["hello-world"] = {
-    complete = function(data)
-      local positional_choices = {
-        [1] = {"say"},
-        [2] = {"phrase", "word"},
-      }
+            runner.run_goodnight_moon(data)
+        end,
+    },
+    ["hello-world"] = {
+        complete = function(data)
+            local positional_choices = {
+                [1] = { "say" },
+                [2] = { "phrase", "word" },
+            }
 
-      local named_choices = {
-        ["repeat"] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-        style = {"undercase", "uppercase"},
-      }
+            local named_choices = {
+                ["repeat"] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
+                style = { "undercase", "uppercase" },
+            }
 
-      return cli_helper.get_complete_options(data, positional_choices, named_choices)
-    end,
-    run = function(_, options)
-      local runner = require("plugin_name._cli.runner")
+            return cli_helper.get_complete_options(data, positional_choices, named_choices)
+        end,
+        run = function(_, options)
+            local runner = require("plugin_name._cli.runner")
 
-      runner.run_hello_world(options.args)
-    end,
-  }
+            runner.run_hello_world(options.args)
+        end,
+    },
 }
 
 vim.api.nvim_create_user_command(_PREFIX, cli_helper.make_triager(_SUBCOMMANDS), {
-  nargs = "+",
-  desc = "PluginName's command API.",
-  complete = cli_helper.make_command_completer(_PREFIX, _SUBCOMMANDS)
+    nargs = "+",
+    desc = "PluginName's command API.",
+    complete = cli_helper.make_command_completer(_PREFIX, _SUBCOMMANDS),
 })
 
 -- TODO: Finish these
