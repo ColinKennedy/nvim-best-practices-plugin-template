@@ -1,4 +1,7 @@
--- TODO: Docstring / Finish
+--- Connect Neovim's COMMAND mode to our Lua functions.
+---
+--- @module 'plugin_name._cli.cli_helper'
+---
 
 local M = {}
 
@@ -18,7 +21,7 @@ end
 ---
 --- @param text string Some full text like `"PluginName blah"`.
 --- @param prefix string The expected starting text. e.g. `"PluginName"`.
---- @param subcommands TODO
+--- @param subcommands PluginNameSubcommands All allowed commands.
 ---
 local function _get_subcommand_completion(text, prefix, subcommands)
     local expression = "^" .. prefix .. "*%s(%S+)%s(.*)$"
@@ -35,6 +38,15 @@ local function _get_subcommand_completion(text, prefix, subcommands)
     return nil
 end
 
+--- Create a function that implements "Vim COMMAND mode auto-complete".
+---
+--- Basically it's a function that returns a function that makes `:PluginName
+--- hello` auto-complete to makes `:PluginName hello-world`.
+---
+--- @param prefix string The command to exclude from auto-complete. e.g. `"PluginName"`.
+--- @param subcommands PluginNameSubcommands All allowed commands.
+--- @return function # The generated auto-complete function.
+---
 function M.make_command_completer(prefix, subcommands)
     local function runner(args, text, _)
         local completion = _get_subcommand_completion(text, prefix, subcommands)
@@ -66,6 +78,18 @@ function M.get_complete_options(data, positional_choices, named_choices)
     return { "aa", "bbb", "ccccc" }
 end
 
+--- Wrap the `plugin_name` CLI / API in a way Neovim understands.
+---
+--- Since `:PluginName` supports multiple sub-commands like `:PluginName
+--- hello-world` and `:PluginName goodnight-moon`, something has to make sure
+--- that the right Lua function gets called depending on what the user asks for.
+---
+--- This function handles that process, which we call "triage".
+---
+--- @param subcommands PluginNameSubcommands
+---     All registered commands for `plugin_name` which we will let users run.
+---     If the user gives an incorrect subcommand name, an error is displayed instead.
+---
 function M.make_triager(subcommands)
     --- Check for a subcommand and, if found, call its `run` caller field.
     ---

@@ -4,28 +4,16 @@ TODO: Add this
 - Update Makefile with more options
 
 
+TODO: vim.g.plugin_name_configuration or {}
+TODO: Add unittests for the configuration
+
+
 # A Neovim Plugin Template
 
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ellisonleao/nvim-plugin-template/lint-test.yml?branch=main&style=for-the-badge)
 ![Lua](https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua)
 
 A template repository for Neovim plugins.
-
-
-## Using it
-TODO: Is this still real? Maybe remove?
-
-Via `gh`:
-
-```
-$ gh repo create my-plugin -p ellisonleao/nvim-plugin-template
-```
-
-Via github web page:
-
-Click on `Use this template`
-
-![template](https://docs.github.com/assets/cb-36544/images/help/repository/use-this-template-button.png)
 
 
 ## Features and structure
@@ -47,33 +35,44 @@ Here are some example commands:
 TODO: Finish these
 
 ```vim
+" A typical subcommand
+:PluginName hello-world say phrase "Hello, World!"
 :PluginName hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase
-:PluginName goodnight-moon read
-:PluginName goodnight-moon sleep
+
+" An example of a flag this repeatable and 3 flags, -a, -b, -c, as one dash
+:PluginName hello-world arbitrary-thing -vvv -abc -f
+
+" Separate commands with completely separate, flexible APIs
+:PluginName goodnight-moon read "a book"
+:PluginName goodnight-moon count-sheep 42
+:PluginName goodnight-moon sleep -zzz
+```
+
+
+## Using it
+TODO: Is this still real? Maybe remove?
+
+Via `gh`:
+
+```
+$ gh repo create my-plugin -p ellisonleao/nvim-plugin-template
+```
+
+Via github web page:
+
+Click on `Use this template`
+
+![template](https://docs.github.com/assets/cb-36544/images/help/repository/use-this-template-button.png)
+
+TODO: Explain how to immediately make this template your own
+
+```sh
+find -name "*.lua" -type f | xargs sed -i 's/plugin_name/your_plugin/g ; s/PluginName/YourPlugin/g'
 ```
 
 
 ## Install
 TODO Fill this out
-
-
-## Plugin structure
-TODO: Check this part
-
-```
-.
-├── lua
-│   ├── plugin_name
-│   │   └── module.lua
-│   └── plugin_name.lua
-├── Makefile
-├── plugin
-│   └── plugin_name.lua
-├── README.md
-├── spec
-│   └── plugin_name
-│       └── plugin_name_spec.lua
-```
 
 
 ## Tests

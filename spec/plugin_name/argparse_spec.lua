@@ -1,3 +1,4 @@
+-- TODO: Consider moving this to a different branch
 local argparse = require("plugin_name._cli.argparse")
 
 describe("default", function()
@@ -93,7 +94,7 @@ describe("single-dash flags", function()
         assert.same({ {}, { fbz = true } }, argparse.parse_args("-fbz"))
     end)
 
-    it("multiple, separate #asdf", function()
+    it("multiple, separate", function()
         assert.same({ {}, { f = true, b = true, z = true } }, argparse.parse_args("-f -b -z"))
     end)
 end)

@@ -1,12 +1,23 @@
+- Add config
+ - default repeat + style
+
+- Validate configurations
+ - Use their code
+
+ - Vim health
+
 - Add argparse solution
+ - Move to a luarocks module and include it here
+  - Vendor the argparse in case the user doesn't have it installed
 - Add auto-completion function
 - replace all plugin-template with plugin-name instead
 - replace all plugin_template with plugin_name instead
 - replace all PluginTemplate with PluginName instead
-- Health check implementation
 
 - argparse - allow repeated flags, maybe?
 - Make sure named auto-complete works not just for keys but also for values
+
+- Add luarocks auto-release integration
 
 - https://github.com/marketplace/actions/lua-typecheck-action
 - https://github.com/marketplace/actions/lua-typecheck-action
@@ -15,19 +26,18 @@
 
 - Add unittests for the auto-complete
 
+
+- Add doc/ or a GitHub Wiki
+    - Explain the folder structure
+
+
 - Add `<Plug>` options
 - Add Lua API functions
-- Don't provide a setup(), instead "smartly" implement it
-- Lazy load everything
 
 - https://github.com/lua-fmt/lua-fmt
 - https://github.com/Koihik/LuaFormatter
 
-- Validate configurations
- - Use their code
-
 - Integrations
- - Vim health
  - Telescope
  - Lualine
 
@@ -106,3 +116,6 @@
 --- ...use busted for testing, which is a lot more powerful.
 
 - For example, it might be useful to add a telescope.nvim extension or a lualine component.
+
+- Add unittests for failed stuff (bad commands)
+- Lazy load everything. Make sure Lazy shows it loading really fast

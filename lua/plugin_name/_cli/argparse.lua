@@ -56,11 +56,11 @@ end
 ---
 --- @param whole_text string
 ---     Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
---- @return string[], table<string,string|boolean>
+--- @return string[], table<string, string | boolean>
 ---     All found for positional arguments, named arguments, and flag arguments.
 ---
 local function _parse_args(whole_text)
-    --- @type string[], table<string,string|boolean>
+    --- @type string[], table<string, string | boolean>
     local position_arguments, named_arguments = {}, {}
 
     local state = _State.argument_start
@@ -228,7 +228,7 @@ end
 ---
 --- @param whole_text string
 ---     Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
---- @return string[], table<string,string|boolean>
+--- @return string[], table<string, string | boolean>
 ---     All found for positional arguments, named arguments, and flag arguments.
 ---
 function M.parse_args(whole_text)

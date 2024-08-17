@@ -11,9 +11,10 @@ local cli_helper = require("plugin_name._cli.cli_helper")
 
 local _PREFIX = "PluginName"
 
---- @type table<string, PluginNameSubcommand>
+--- @alias PluginNameSubcommands table<string, PluginNameSubcommand>
+
+--- @type PluginNameSubcommands
 local _SUBCOMMANDS = {
-    -- TODO: Add a second sub-command, for fun
     ["goodnight-moon"] = {
         complete = function(data)
             local argparse = require("plugin_name._cli.argparse")
@@ -62,14 +63,11 @@ vim.api.nvim_create_user_command(_PREFIX, cli_helper.make_triager(_SUBCOMMANDS),
     complete = cli_helper.make_command_completer(_PREFIX, _SUBCOMMANDS),
 })
 
--- TODO: Finish these
--- vim.keymap.set("n", "<Plug>(SpellboundGoToPreviousRecommendation)", function()
---   require("plugin_name").go_to_previous_recommendation()
--- end, { desc = "Go to the previous recommendation." })
---
--- vim.keymap.set("n", "<Plug>(SpellboundGoToNextRecommendation)", function()
---   require("spellbound").go_to_next_recommendation()
--- end, { desc = "Go to the next recommendation." })
---
---
--- vim.api.nvim_create_user_command("MyFirstFunction", require("plugin_name").hello, {})
+
+
+-- TODO: Document this option
+
+vim.keymap.set("n", "<Plug>(PluginNameSayHi)", function()
+    -- TODO: Replace with API call
+    runner.run_hello_world(options.args)
+end, { desc = "Say hi to the user." })
