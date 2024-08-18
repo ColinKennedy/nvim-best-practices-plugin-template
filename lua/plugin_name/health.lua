@@ -10,8 +10,6 @@ local configuration_ = require("plugin_name._core.configuration")
 
 local M = {}
 
--- TODO: Make sure this works when we call `:checkhealth`
-
 --- Access the attribute(s) within `data` from `items`.
 ---
 --- @param data table<...> Some nested data to query. e.g. `{a={b={c=true}}}`.
@@ -93,7 +91,15 @@ end
 --- @param data PluginNameConfiguration? All extra customizations for this plugin.
 ---
 function M.check(data)
-    for _, issue in ipairs(M.get_issues(data)) do
+    vim.health.start("Configuration")
+
+    local issues = M.get_issues(data)
+
+    if vim.tbl_isempty(issues) then
+        vim.health.ok("Your vim.g.plugin_name_configuration variable is great!")
+    end
+
+    for _, issue in ipairs(issues) do
         vim.health.error(issue)
     end
 end

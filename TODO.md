@@ -1,10 +1,7 @@
-- Add config
- - default repeat + style
+- Make sure repeat + style does something
 
-- Validate configurations
- - Use their code
+- Fix the configuration typehints
 
- - Vim health
 
 - Add auto-complete unittests
 
@@ -13,6 +10,8 @@
  - Move to a luarocks module and include it here
   - Vendor the argparse in case the user doesn't have it installed
 - Add auto-completion function
+
+
 - replace all plugin-template with plugin-name instead
 - replace all plugin_template with plugin_name instead
 - replace all PluginTemplate with PluginName instead

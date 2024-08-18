@@ -6,7 +6,7 @@
 local configuration_ = require("plugin_name._core.configuration")
 local health = require("plugin_name.health")
 
-local mock_vim = require("mock_vim")
+local mock_vim = require("test_utilities.mock_vim")
 
 --- Make sure `data`, whether undefined, defined, or partially defined, is broken.
 ---

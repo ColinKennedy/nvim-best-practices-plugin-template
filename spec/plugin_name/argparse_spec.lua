@@ -1,3 +1,8 @@
+--- Make sure the argument parser works as expected.
+---
+--- @module 'plugin_name.argparse_spec'
+---
+
 -- TODO: Consider moving this to a different branch
 local argparse = require("plugin_name._cli.argparse")
 
