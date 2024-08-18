@@ -6,6 +6,9 @@
 
  - Vim health
 
+- Add auto-complete unittests
+
+
 - Add argparse solution
  - Move to a luarocks module and include it here
   - Vendor the argparse in case the user doesn't have it installed

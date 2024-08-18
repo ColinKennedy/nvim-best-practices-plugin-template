@@ -5,13 +5,51 @@
 
 local M = {}
 
--- TODO: Finish this later
+-- TODO: Make sure that function type-hints behave as expected even when
+-- a partial configuration definition is given
+
 --- @class PluginNameConfiguration
 ---     The user's customizations for this plugin.
----
+--- @field commands PluginNameConfigurationCommands
+---     Customize the fallback behavior of all `:PluginName` commands.
+
+--- @class PluginNameConfigurationCommands
+---     Customize the fallback behavior of all `:PluginName` commands.
+--- @field goodnight_moon PluginNameConfigurationGoodnightMoon
+---     The default values when a user calls `:PluginName goodnight-moon`.
+--- @class hello_world PluginNameConfigurationHelloWorld
+---     The default values when a user calls `:PluginName hello-world`.
+
+--- @class PluginNameConfigurationGoodnightMoon
+---     The default values when a user calls `:PluginName goodnight-moon`.
+--- @field read PluginNameConfigurationGoodnightMoonRead
+---     The default values when a user calls `:PluginName goodnight-moon read`.
+
+--- @class PluginNameConfigurationGoodnightMoonRead
+---     The default values when a user calls `:PluginName goodnight-moon read`.
+--- @field phrase string
+---     The book to read if no book is given by the user.
+
+--- @class PluginNameConfigurationHelloWorld
+---     The default values when a user calls `:PluginName hello-world`.
+--- @field read PluginNameConfigurationHelloWorldSay
+---     The default values when a user calls `:PluginName hello-world say`.
+
+--- @class PluginNameConfigurationHelloWorldSay
+---     The default values when a user calls `:PluginName hello-world say`.
+--- @field repeat number
+---     A 1-or-more value. When 1, the phrase is said once. When 2+, the phrase
+---     is repeated that many times.
+--- @field style "lowercase" | "uppercase"
+---     Control how the text is displayed. e.g. "uppercase" changes "hello" to "HELLO".
 
 local _DATA = {}
-local _DEFAULTS = {}
+local _DEFAULTS = {
+  commands = {
+    goodnight_moon = { read = {phrase = "A good book" }},
+    hello_world = { say = {["repeat"] = 1, style = "lowercase"} },
+  }
+}
 
 
 --- Setup `plugin_name` for the first time, if needed.
