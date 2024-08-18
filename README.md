@@ -1,10 +1,6 @@
-TODO: vim.g.plugin_name_configuration or {}
-TODO: Add unittests for the configuration
-
 TODO: Add this
 - Update the README.md
 - Update Makefile with more options
-
 
 
 # A Neovim Plugin Template

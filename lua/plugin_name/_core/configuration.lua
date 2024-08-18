@@ -10,19 +10,19 @@ local M = {}
 
 --- @class PluginNameConfiguration
 ---     The user's customizations for this plugin.
---- @field commands PluginNameConfigurationCommands
+--- @field commands PluginNameConfigurationCommands?
 ---     Customize the fallback behavior of all `:PluginName` commands.
 
 --- @class PluginNameConfigurationCommands
 ---     Customize the fallback behavior of all `:PluginName` commands.
---- @field goodnight_moon PluginNameConfigurationGoodnightMoon
+--- @field goodnight_moon PluginNameConfigurationGoodnightMoon?
 ---     The default values when a user calls `:PluginName goodnight-moon`.
---- @class hello_world PluginNameConfigurationHelloWorld
+--- @field hello_world PluginNameConfigurationHelloWorld?
 ---     The default values when a user calls `:PluginName hello-world`.
 
 --- @class PluginNameConfigurationGoodnightMoon
 ---     The default values when a user calls `:PluginName goodnight-moon`.
---- @field read PluginNameConfigurationGoodnightMoonRead
+--- @field read PluginNameConfigurationGoodnightMoonRead?
 ---     The default values when a user calls `:PluginName goodnight-moon read`.
 
 --- @class PluginNameConfigurationGoodnightMoonRead
@@ -32,7 +32,7 @@ local M = {}
 
 --- @class PluginNameConfigurationHelloWorld
 ---     The default values when a user calls `:PluginName hello-world`.
---- @field read PluginNameConfigurationHelloWorldSay
+--- @field say PluginNameConfigurationHelloWorldSay?
 ---     The default values when a user calls `:PluginName hello-world say`.
 
 --- @class PluginNameConfigurationHelloWorldSay
@@ -42,6 +42,9 @@ local M = {}
 ---     is repeated that many times.
 --- @field style "lowercase" | "uppercase"
 ---     Control how the text is displayed. e.g. "uppercase" changes "hello" to "HELLO".
+
+-- NOTE: Don't remove this line. It makes the Lua module much easier to reload
+vim.g.loaded_plugin_name = false
 
 local _DATA = {}
 local _DEFAULTS = {

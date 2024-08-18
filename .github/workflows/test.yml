@@ -11,17 +11,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
     steps:
-    - name: Checkout spellbound.nvim
+    - name: Checkout plugin-name
       uses: actions/checkout@v4
       with:
-        repository: ColinKennedy/spellbound.nvim
-        path: spellbound.nvim
+        repository: ColinKennedy/nvim-best-practices-plugin-template
+        path: neovim_plugin
     - uses: rhysd/action-setup-vim@v1
       with:
         neovim: true
         version: ${{ matrix.neovim }}
     - name: Run tests
-      working-directory: ./spellbound.nvim
+      working-directory: ./neovim_plugin.nvim
       run: |
         nvim --version
         make test

@@ -1,16 +1,27 @@
-- Make sure repeat + style does something
+- Do existing TODO notes
+- Get all tests to pass again
+- Add unittests for failed stuff (bad commands)
 
-- Fix the configuration typehints
+- Clean up the API files
+ - Make sure repeat + style does something
+ - Add unittests for it
 
+- Auto-complete
+ - Get it working
+ - Move the argparse + autocomplete stuff to its own lua package
+ - Include the lua package + vendorize it here
+ - Add auto-complete unittests
 
-- Add auto-complete unittests
-
+- Change lua types to be dotted. Maybe.
 
 - Add argparse solution
  - Move to a luarocks module and include it here
   - Vendor the argparse in case the user doesn't have it installed
 - Add auto-completion function
 
+- Add missing lua-busted test tags
+
+- Rename from plugin-name to plugin-template
 
 - replace all plugin-template with plugin-name instead
 - replace all plugin_template with plugin_name instead
@@ -42,8 +53,7 @@
 - Integrations
  - Telescope
  - Lualine
-
-- Add internal unittests
+ - For example, it might be useful to add a telescope.nvim extension or a lualine component.
 
 - Write instructions on what people should do when they use the template
 - Make sure the issue templates are good
@@ -63,8 +73,48 @@
    - repeatable
 
 
+```lua
+    {
+        hello_world = {
+            ["arbitrary-thing"] = {
+                {
+                    {
+                        {type=completion.Flag, name="-a"},
+                        {type=completion.Flag, name="-b"},
+                        {type=completion.Flag, name="-c"},
+                        {type=completion.Flag, name={"-f", "--force"}},
+                        {type=completion.Flag, name={"-v", "--verbose"}, count="*"},
+                    },
+                }
+            }
+            say = {
+                {"phrase", "word"},
+                {
+                    completion.PositionalArgument.one,
+                    {
+                        {
+                            choices=function() end, count=1
+                            name="repeat",
+                            type=completion.NamedArgument,
+                        },
+                        {type=completion.NamedArgument, name="style", choices={"lowercase", "uppercase"}},
+                    },
+                }
+            }
+        },
+    }
+```
+
+
 {
-  argument_order = {
+argument_order = {
+    overall_order = {
+        positional,
+        {named, single_flag, double_flag},
+    },
+}
+
+{ argument_order = {
     overall_order = {
       positional,
       {named, single_flag, double_flag},
@@ -94,30 +144,15 @@
 
 ## Checklist
 
---- ...leverage LuaCATS annotations, along with lua-language-server to catch potential bugs in your CI before your plugin's users do.
---- ...gather subcommands under scoped commands and implement completions for each subcommand.
-
 - ...provide :h <Plug> mappings to allow users to define their own keymaps.
-
-
-- Cleanly separate configuration and initialization.
-- Automatically initialize your plugin (smartly), with minimal impact on startup time (see the next section).
-
-- ...think carefully about when which parts of your plugin need to be loaded.
- - Make sure plugin logic initializes once, lazy-loaded
-- ...validate configs.
-
-- ...provide health checks in lua/{plugin}/health.lua.
 
 - ...use SemVer to properly communicate bug fixes, new features, and breaking changes.
 
 - ...provide vimdoc, so that users can read your plugin's documentation in Neovim, by entering :h {plugin}.
  - https://github.com/kdheepak/panvimdoc
 
---- ...automate testing as much as you can.
---- ...use busted for testing, which is a lot more powerful.
-
-- For example, it might be useful to add a telescope.nvim extension or a lualine component.
-
-- Add unittests for failed stuff (bad commands)
 - Lazy load everything. Make sure Lazy shows it loading really fast
+
+- A form to describe what you want to use?
+
+- Fix the configuration typehints

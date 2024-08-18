@@ -18,7 +18,7 @@ local _SUBCOMMANDS = {
     ["goodnight-moon"] = {
         complete = function(data)
             local positional_choices = {
-                [1] = { "read", "sleep" },
+                [1] = { "count-sheep", "read", "sleep" },
             }
 
             return cli_helper.get_complete_options(data, positional_choices)
