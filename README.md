@@ -31,7 +31,7 @@ TODO: Finish these
 
 ```vim
 " A typical subcommand
-:PluginName hello-world say phrase "Hello, World!"
+:PluginName hello-world say phrase "Hello, World!" " How are you?"
 :PluginName hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase
 
 " An example of a flag this repeatable and 3 flags, -a, -b, -c, as one dash

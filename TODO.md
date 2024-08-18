@@ -14,6 +14,8 @@
 
 - Change lua types to be dotted. Maybe.
 
+- Re-enable the other unittests
+
 - Add argparse solution
  - Move to a luarocks module and include it here
   - Vendor the argparse in case the user doesn't have it installed
@@ -142,6 +144,11 @@ argument_order = {
   repetition_behavior = {named_arguments = {repeat = 1, style = 1}},
 }
 
+command-line parser needs to handle this case
+
+foo bar --thing --thing --thing blah
+ - Where blah is after --thing, which is count="*"
+
 ## Checklist
 
 - ...provide :h <Plug> mappings to allow users to define their own keymaps.
@@ -154,5 +161,7 @@ argument_order = {
 - Lazy load everything. Make sure Lazy shows it loading really fast
 
 - A form to describe what you want to use?
+
+- Move the CLI stuff into the API, maybe
 
 - Fix the configuration typehints
