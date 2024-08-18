@@ -17,8 +17,6 @@ local _PREFIX = "PluginName"
 local _SUBCOMMANDS = {
     ["goodnight-moon"] = {
         complete = function(data)
-            local argparse = require("plugin_name._cli.argparse")
-
             local positional_choices = {
                 [1] = { "read", "sleep" },
             }
@@ -43,11 +41,7 @@ local _SUBCOMMANDS = {
                 style = { "undercase", "uppercase" },
             }
 
-            return cli_helper.get_complete_options(
-                data,
-                positional_choices,
-                named_choices
-            )
+            return cli_helper.get_complete_options(data, positional_choices, named_choices)
         end,
         run = function(_, options)
             local runner = require("plugin_name._cli.runner")
@@ -62,8 +56,6 @@ vim.api.nvim_create_user_command(_PREFIX, cli_helper.make_triager(_SUBCOMMANDS),
     desc = "PluginName's command API.",
     complete = cli_helper.make_command_completer(_PREFIX, _SUBCOMMANDS),
 })
-
-
 
 -- TODO: Document this option
 

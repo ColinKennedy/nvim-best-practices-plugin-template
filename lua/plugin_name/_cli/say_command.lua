@@ -16,7 +16,7 @@ function M.run_say(data)
     local runner = _SAY_COMMANDS[data.positions[2]]
 
     local positions = tabler.get_slice(data.positions, 2)
-    data = vim.tbl_deep_extend("force", data, {positions=positions})
+    data = vim.tbl_deep_extend("force", data, { positions = positions })
 
     runner(data)
 end

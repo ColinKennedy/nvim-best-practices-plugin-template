@@ -27,7 +27,7 @@ function M.run_hello_world(data)
 
     local runner = _STARTING_COMMANDS[positions[1]]
 
-    runner({positions=positions, named=named})
+    runner({ positions = positions, named = named })
 end
 
 return M

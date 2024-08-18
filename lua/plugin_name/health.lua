@@ -44,9 +44,10 @@ function M.get_issues(data)
 
     local output = {}
 
-    local success, message = pcall(vim.validate,
+    local success, message = pcall(
+        vim.validate,
         "commands.goodnight_moon.read.phrase",
-        _get_value(data, {"commands", "goodnight_moon", "read", "phrase"}),
+        _get_value(data, { "commands", "goodnight_moon", "read", "phrase" }),
         "string"
     )
 
@@ -54,33 +55,31 @@ function M.get_issues(data)
         table.insert(output, message)
     end
 
-    success, message = pcall(vim.validate,
-        {
-            ["commands.hello_world.say.repeat"]={
-                _get_value(data, {"commands", "hello_world", "say", "repeat"}),
-                function(value)
-                    return type(value) == "number" and value > 0
-                end,
-                "a number (value must be 1-or-more)"
-            }
-        }
-    )
+    success, message = pcall(vim.validate, {
+        ["commands.hello_world.say.repeat"] = {
+            _get_value(data, { "commands", "hello_world", "say", "repeat" }),
+            function(value)
+                return type(value) == "number" and value > 0
+            end,
+            "a number (value must be 1-or-more)",
+        },
+    })
 
     if not success then
         table.insert(output, message)
     end
 
-    success, message = pcall(vim.validate,
-        {
-            -- TODO: Make sure that if get_value is nil, it still works
-            -- Do the same for the other functions
-            ["commands.hello_world.say.style"]={
-                _get_value(data, {"commands", "hello_world", "say", "style"}),
-                function(value) return vim.tbl_contains({"lowercase", "uppercase"}, value) end,
-                '"lowercase" or "uppercase"',
-            }
-        }
-    )
+    success, message = pcall(vim.validate, {
+        -- TODO: Make sure that if get_value is nil, it still works
+        -- Do the same for the other functions
+        ["commands.hello_world.say.style"] = {
+            _get_value(data, { "commands", "hello_world", "say", "style" }),
+            function(value)
+                return vim.tbl_contains({ "lowercase", "uppercase" }, value)
+            end,
+            '"lowercase" or "uppercase"',
+        },
+    })
 
     if not success then
         table.insert(output, message)
@@ -94,8 +93,7 @@ end
 --- @param data PluginNameConfiguration? All extra customizations for this plugin.
 ---
 function M.check(data)
-    for _, issue in ipairs(M.get_issues(data))
-    do
+    for _, issue in ipairs(M.get_issues(data)) do
         vim.health.error(issue)
     end
 end

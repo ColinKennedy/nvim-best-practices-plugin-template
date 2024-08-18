@@ -19,13 +19,13 @@ local M = {}
 ---     The step size between elements in the slice. Defaults to 1 if not provided.
 ---
 function M.get_slice(table_, first, last, step)
-  local sliced = {}
+    local sliced = {}
 
-  for i = first or 1, last or #table_, step or 1 do
-    sliced[#sliced+1] = table_[i]
-  end
+    for i = first or 1, last or #table_, step or 1 do
+        sliced[#sliced + 1] = table_[i]
+    end
 
-  return sliced
+    return sliced
 end
 
 return M
