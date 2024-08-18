@@ -243,17 +243,19 @@ describe("single-dash flags", function()
         )
     end)
 
-    -- TODO: Fix
-    -- it("multiple, combined", function()
-    --     assert.same(
-    --         {
-    --             {argument_type=argparse.ArgumentType.flag, name="f"},
-    --             {argument_type=argparse.ArgumentType.flag, name="b"},
-    --             {argument_type=argparse.ArgumentType.flag, name="z"},
-    --         },
-    --         argparse.parse_args("-fbz")
-    --     )
-    -- end)
+    it("multiple, combined", function()
+        assert.same(
+            {
+                arguments = {
+                    {argument_type=argparse.ArgumentType.flag, name="f"},
+                    {argument_type=argparse.ArgumentType.flag, name="b"},
+                    {argument_type=argparse.ArgumentType.flag, name="z"},
+                },
+                remainder = {value=""},
+            },
+            argparse.parse_args("-fbz")
+        )
+    end)
 
     it("multiple, separate", function()
         assert.same(

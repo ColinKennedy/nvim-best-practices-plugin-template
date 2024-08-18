@@ -68,8 +68,6 @@ function M.get_issues(data)
     end
 
     success, message = pcall(vim.validate, {
-        -- TODO: Make sure that if get_value is nil, it still works
-        -- Do the same for the other functions
         ["commands.hello_world.say.style"] = {
             _get_value(data, { "commands", "hello_world", "say", "style" }),
             function(value)

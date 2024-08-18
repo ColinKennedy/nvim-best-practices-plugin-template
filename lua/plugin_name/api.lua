@@ -11,6 +11,6 @@ local say_command = require("plugin_name._commands.say_command")
 local M = {}
 
 -- TODO: Make sure type-hinting works with this
-M.run_hello_world = say_command.run_hello_world
+M.run_hello_world_say = say_command.run_say
 
 return M

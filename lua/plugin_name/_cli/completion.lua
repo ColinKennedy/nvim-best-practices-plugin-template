@@ -2,9 +2,7 @@
 
 local argparse = require("plugin_name._cli.argparse")
 
--- TODO: Clean up this file
-
-local _Count = {zero_or_more = "*"}
+-- TODO: Get this code working + add docstrings
 
 local M = {}
 
@@ -119,14 +117,6 @@ local function _get_matches(data, options)
     end
 
     return output
-end
-
-local function _compute_counts(options)
-    for _, option in ipairs(options) do
-        if option.count == nil then
-            option.count = 1
-        end
-    end
 end
 
 local function _has_positional_argument(options)
@@ -249,7 +239,6 @@ function M.get_options(tree, input)
 
     local function _handle_exact_matches(data, arguments_index)
         local options = _get_exact_matches(data, current_options)
-        print('DEBUGPRINT[84]: completion.lua:227: options=' .. vim.inspect(options))
 
         if vim.tbl_isempty(options) then
             return false
@@ -269,43 +258,11 @@ function M.get_options(tree, input)
     end
 
     local function _handle_partial_matches(data)
-        -- _compute_remaining_counts(current_options, options)
-        -- _replace_options(output, options)
-        --
-        -- if _is_exhausted(current_options)
-        -- then
-        --     tree_index = tree_index + 1
-        --     current_options = _get_current_options(tree, tree_index)
-        -- end
-
-        print('DEBUGPRINT[88]: completion.lua:257: data=' .. vim.inspect(data))
-        print('DEBUGPRINT[89]: completion.lua:258: current_options=' .. vim.inspect(current_options))
         local options = _get_matches(data, current_options)
-        print('DEBUGPRINT[90]: completion.lua:259: options=' .. vim.inspect(options))
 
         if vim.tbl_isempty(options) then
             return false
         end
-
-        --     -- TODO: Make into a method later or something
-        --     -- print('DEBUGPRINT[57]: completion.lua:210: input=' .. vim.inspect(input))
-        --     if _is_user_getting_the_next_input_argument(input) then
-        --         -- TODO: Make this code cleaner. (Remove the replace_options call)
-        --         _replace_options(output, _get_current_options(tree, tree_index + 1))
-        --
-        --         return output
-        --     end
-        --
-        --     -- NOTE: The user passed invalid input. We can't continue parsing
-        --     -- because we don't know where we are in the command anymore.
-        --     --
-        --     return {}
-        -- else
-        --
-        --     print('DEBUGPRINT[51]: completion.lua:203: data=' .. vim.inspect(data))
-        --     print('DEBUGPRINT[53]: completion.lua:204: current_options=' .. vim.inspect(current_options))
-        --     print('DEBUGPRINT[52]: completion.lua:204: options=' .. vim.inspect(options))
-        -- end
 
         _compute_remaining_counts(current_options, options)
         _replace_options(output, options)
@@ -367,24 +324,7 @@ function M.get_options(tree, input)
 
     for arguments_index, data in ipairs(input.arguments)
     do
-        -- if arguments_index == arguments_count then
-        --     -- TODO: Consider renaming to "user chose an option (get the next option)"
-        --     local option = _get_exact_matches(data, current_options)
-        --
-        --     if option then
-        --         tree_index = tree_index + 1
-        --         current_options = _get_current_options(tree, tree_index)
-        --         _compute_counts(current_options)
-        --         _replace_options(output, current_options)
-        --
-        --         return output
-        --     end
-        -- else
-        --     arguments_index = arguments_index + 1
-        -- end
-
         for _, operation in ipairs({_handle_exact_matches, _handle_partial_matches}) do
-            print('DEBUGPRINT[87]: completion.lua:357: data=' .. vim.inspect(data))
             if operation(data, arguments_index) then
                 break
             end

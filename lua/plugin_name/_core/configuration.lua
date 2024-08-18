@@ -68,6 +68,7 @@ end
 --- Merge `data` with the user's current configuration.
 ---
 --- @param data PluginNameConfiguration? All extra customizations for this plugin.
+--- @return PluginNameConfiguration # The configuration with 100% filled out values.
 ---
 function M.resolve_data(data)
     _initialize_data_if_needed()

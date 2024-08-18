@@ -1,6 +1,6 @@
 --- Connect Neovim's COMMAND mode to our Lua functions.
 ---
---- @module 'plugin_name._cli.cli_helper'
+--- @module 'plugin_name._cli.cli_subcommand'
 ---
 
 local M = {}
@@ -72,9 +72,9 @@ end
 
 -- TODO: Finish this
 function M.get_complete_options(data, positional_choices, named_choices)
-    -- print('DEBUGPRINT[3]: cli_helper.lua:63: data=' .. vim.inspect(data))
-    -- print('DEBUGPRINT[4]: cli_helper.lua:63: positional_choices=' .. vim.inspect(positional_choices))
-    -- print('DEBUGPRINT[5]: cli_helper.lua:63: named_choices=' .. vim.inspect(named_choices))
+    -- print('DEBUGPRINT[3]: cli_subcommand.lua:63: data=' .. vim.inspect(data))
+    -- print('DEBUGPRINT[4]: cli_subcommand.lua:63: positional_choices=' .. vim.inspect(positional_choices))
+    -- print('DEBUGPRINT[5]: cli_subcommand.lua:63: named_choices=' .. vim.inspect(named_choices))
     return { "aa", "bbb", "ccccc" }
 end
 

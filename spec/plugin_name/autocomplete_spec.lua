@@ -1,103 +1,103 @@
--- TODO: Docstring
--- TODO: Move this to a standalone lua module
-
-local argparse = require("plugin_name._cli.argparse")
-local completion = require("plugin_name._cli.completion")
-
-local _parse = argparse.parse_args
-
-describe("default", function()
-    -- it("works even if #empty #simple", function()
-    --     -- TODO: Finish
-    --     completion.get_options(tree, input)
-    --     assert.same({ {}, {} }, _parse(""))
-    -- end)
-
-    it("works with a basic multi-position example #asdf", function()
-        local tree = {
-            "say",
-            {"phrase", "word"},
-            {
-                {
-                    choices=function(value)
-                        local output = {}
-                        value = value or 0
-
-                        for index=1,5 do
-                            table.insert(output, value + index)
-                        end
-
-                        return output
-                    end,
-                    name="repeat",
-                    argument_type=argparse.ArgumentType.named,
-                },
-                {
-                    argument_type=argparse.ArgumentType.named,
-                    name="style",
-                    choices={"lowercase", "uppercase"},
-                },
-            }
-        }
-
-        -- -- NOTE: Simple examples
-        -- assert.same({"say"}, completion.get_options(tree, _parse("sa")))
-        -- assert.same({}, completion.get_options(tree, _parse("say")))
-        -- assert.same({"phrase", "word"}, completion.get_options(tree, _parse("say ")))
-        -- assert.same({"phrase"}, completion.get_options(tree, _parse("say p")))
-        -- assert.same({}, completion.get_options(tree, _parse("say phrase")))
-        -- assert.same({"--repeat=", "--style="}, completion.get_options(tree, _parse("say phrase ")))
-
-        -- -- NOTE: Beginning a --double-dash named argument, maybe (we don't know yet)
-        -- assert.same({"--repeat=", "--style="}, completion.get_options(tree, _parse("say phrase --")))
-        -- -- NOTE: Completing the name to a --double-dash named argument
-        -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --r")))
-        -- NOTE: Completing the =, so people know that this is requires an argument
-        assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat")))
-        -- -- NOTE: Completing the value of the named argument
-        -- assert.same(
-        --     {"1", "2", "3", "4", "5"},
-        --     completion.get_options(tree, "say phrase --repeat=")
-        -- )
-        -- -- NOTE: Completion finished
-        -- assert.same(
-        --     {},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5"))
-        -- )
-
-        -- assert.same(
-        --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 "))
-        -- )
-        --
-        -- assert.same(
-        --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --"))
-        -- )
-        --
-        -- assert.same(
-        --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --s"))
-        -- )
-        --
-        -- assert.same(
-        --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style"))
-        -- )
-        --
-        -- assert.same(
-        --     {"lowercase", "uppercase"},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style="))
-        -- )
-        --
-        -- assert.same(
-        --     {"lowercase"},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style=l"))
-        -- )
-        --
-        -- assert.same(
-        --     {},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style=lowercase"))
-        -- )
-    end)
-end)
+-- -- TODO: Docstring
+-- -- TODO: Move this to a standalone lua module
+--
+-- local argparse = require("plugin_name._cli.argparse")
+-- local completion = require("plugin_name._cli.completion")
+--
+-- local _parse = argparse.parse_args
+--
+-- describe("default", function()
+--     -- it("works even if #empty #simple", function()
+--     --     -- TODO: Finish
+--     --     completion.get_options(tree, input)
+--     --     assert.same({ {}, {} }, _parse(""))
+--     -- end)
+--
+--     it("works with a basic multi-position example #asdf", function()
+--         local tree = {
+--             "say",
+--             {"phrase", "word"},
+--             {
+--                 {
+--                     choices=function(value)
+--                         local output = {}
+--                         value = value or 0
+--
+--                         for index=1,5 do
+--                             table.insert(output, value + index)
+--                         end
+--
+--                         return output
+--                     end,
+--                     name="repeat",
+--                     argument_type=argparse.ArgumentType.named,
+--                 },
+--                 {
+--                     argument_type=argparse.ArgumentType.named,
+--                     name="style",
+--                     choices={"lowercase", "uppercase"},
+--                 },
+--             }
+--         }
+--
+--         -- -- NOTE: Simple examples
+--         -- assert.same({"say"}, completion.get_options(tree, _parse("sa")))
+--         -- assert.same({}, completion.get_options(tree, _parse("say")))
+--         -- assert.same({"phrase", "word"}, completion.get_options(tree, _parse("say ")))
+--         -- assert.same({"phrase"}, completion.get_options(tree, _parse("say p")))
+--         -- assert.same({}, completion.get_options(tree, _parse("say phrase")))
+--         -- assert.same({"--repeat=", "--style="}, completion.get_options(tree, _parse("say phrase ")))
+--
+--         -- -- NOTE: Beginning a --double-dash named argument, maybe (we don't know yet)
+--         -- assert.same({"--repeat=", "--style="}, completion.get_options(tree, _parse("say phrase --")))
+--         -- -- NOTE: Completing the name to a --double-dash named argument
+--         -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --r")))
+--         -- NOTE: Completing the =, so people know that this is requires an argument
+--         assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat")))
+--         -- -- NOTE: Completing the value of the named argument
+--         -- assert.same(
+--         --     {"1", "2", "3", "4", "5"},
+--         --     completion.get_options(tree, "say phrase --repeat=")
+--         -- )
+--         -- -- NOTE: Completion finished
+--         -- assert.same(
+--         --     {},
+--         --     completion.get_options(tree, _parse("say phrase --repeat=5"))
+--         -- )
+--
+--         -- assert.same(
+--         --     {"--style="},
+--         --     completion.get_options(tree, _parse("say phrase --repeat=5 "))
+--         -- )
+--         --
+--         -- assert.same(
+--         --     {"--style="},
+--         --     completion.get_options(tree, _parse("say phrase --repeat=5 --"))
+--         -- )
+--         --
+--         -- assert.same(
+--         --     {"--style="},
+--         --     completion.get_options(tree, _parse("say phrase --repeat=5 --s"))
+--         -- )
+--         --
+--         -- assert.same(
+--         --     {"--style="},
+--         --     completion.get_options(tree, _parse("say phrase --repeat=5 --style"))
+--         -- )
+--         --
+--         -- assert.same(
+--         --     {"lowercase", "uppercase"},
+--         --     completion.get_options(tree, _parse("say phrase --repeat=5 --style="))
+--         -- )
+--         --
+--         -- assert.same(
+--         --     {"lowercase"},
+--         --     completion.get_options(tree, _parse("say phrase --repeat=5 --style=l"))
+--         -- )
+--         --
+--         -- assert.same(
+--         --     {},
+--         --     completion.get_options(tree, _parse("say phrase --repeat=5 --style=lowercase"))
+--         -- )
+--     end)
+-- end)

@@ -5,9 +5,6 @@
 
 local M = {}
 
--- TODO: Make sure this docstring is correct
--- TODO: Add examples
-
 --- Get a sub-section copy of `table_` as a new table.
 ---
 --- @param table_ table<...>

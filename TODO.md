@@ -6,12 +6,6 @@
  - Make sure repeat + style does something
  - Add unittests for it
 
-- Auto-complete
- - Get it working
- - Move the argparse + autocomplete stuff to its own lua package
- - Include the lua package + vendorize it here
- - Add auto-complete unittests
-
 - Change lua types to be dotted. Maybe.
 
 - Re-enable the other unittests
@@ -165,3 +159,10 @@ foo bar --thing --thing --thing blah
 - Move the CLI stuff into the API, maybe
 
 - Fix the configuration typehints
+
+- Auto-complete
+ - Get it working
+ - Move the argparse + autocomplete stuff to its own lua package
+ - Include the lua package + vendorize it here
+ - Add auto-complete unittests
+

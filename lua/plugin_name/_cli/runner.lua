@@ -4,30 +4,35 @@
 ---
 
 local argparse = require("plugin_name._cli.argparse")
-local say_command = require("plugin_name._cli.say_command")
-local tabler = require("plugin_name._core.tabler")
+local argparse_helper = require("plugin_name._cli.argparse_helper")
+local say_cli = require("plugin_name._commands.say.cli")
 
-local _STARTING_COMMANDS = {
-    say = say_command.run_say,
-}
+local _STARTING_COMMANDS = {say = say_cli.run_say}
 
 local M = {}
 
--- TODO: Docstrings
-
--- TODO: Add better code here
-
+--- Run one of the `goodnight-moon {read,sleep,...}` commands using `data`.
+---
+--- @param data string Raw user input. e.g. `'goodnight-moon read "a book"'`.
+---
 function M.run_goodnight_moon(data)
-    local positions, named = argparse.parse_args(data)
+    local results = argparse.parse_args(data)
+    results = argparse_helper.lstrip_arguments(results, 2)
+    -- TODO: Finish this
 end
 
+--- Run one of the `hello-world {say} {phrase,word}` commands using `data`.
+---
+--- @param data string Raw user input. e.g. `'hello-world say phrase "Hello, World!"'`.
+---
 function M.run_hello_world(data)
-    local positions, named = unpack(argparse.parse_args(data))
-    positions = tabler.get_slice(positions, 2)
+    local results = argparse.parse_args(data)
+    local runner = _STARTING_COMMANDS[results.arguments[2].value]
+    results = argparse_helper.lstrip_arguments(results, 3)
 
-    local runner = _STARTING_COMMANDS[positions[1]]
+    runner(results)
 
-    runner({ positions = positions, named = named })
+    -- TODO: Add unittest code here
 end
 
 return M

@@ -1,36 +1,55 @@
 --- Parse text into positional / named arguments.
 ---
+--- @source https://github.com/lewis6991/gitsigns.nvim/blob/562dc47189ad3c8696dbf460d38603a74d544849/lua/gitsigns/cli/argparse.lua#L10
+---
 --- @module 'plugin_name._cli.argparse'
 ---
 
--- TODO: Docstrings. Add
--- https://github.com/lewis6991/gitsigns.nvim/blob/562dc47189ad3c8696dbf460d38603a74d544849/lua/gitsigns/cli/argparse.lua#L10
-
---- @class FlagArgument
---- @field argument_type "flag"
---- @field name string
-
---- @class PositionArgument
---- @field argument_type "position"
---- @field value string
-
---- @class NamedArgument
---- @field argument_type "named"
---- @field name ...
---- @field value string
-
-
--- TODO: Clean up this file
--- TODO: Add NOTE where needed
-
 local M = {}
 
+--- @enum ArgumentType
 M.ArgumentType = {
     flag = "__flag",
     named = "__named",
     position = "__position",
 }
 
+--- @class BaseArgument
+---     A base class to inherit from.
+--- @field argument_type ArgumentType
+---     An type indicator for this argument.
+
+--- @class FlagArgument : BaseArgument
+---     An argument that has a name but no value. It starts with either - or --
+---     Examples: `-f` or `--foo` or `--foo-bar`
+--- @field name string
+---     The text of the flag. e.g. The `"foo"` part of `"--foo"`.
+
+--- @class PositionArgument : BaseArgument
+---     An argument that is just text. e.g. `"foo bar"` is two positions, foo and bar.
+--- @field value string
+---     The position's label.
+
+--- @class NamedArgument : Argument
+---     A --key=value pair. Basically it's a FlagArgument that has an extra value.
+--- @field name ...
+---     The text of the argument. e.g. The `"foo"` part of `"--foo=bar"`.
+--- @field value string
+---     The second-hand side of the argument. e.g. The `"bar"` part of `"--foo=bar"`.
+
+--- @class ArgparseResults
+---     All information that was found from parsing some user's input.
+--- @field arguments (FlagArgument | PositionArgument | NamedArgument)[]
+---     The arguments that were able to be parsed
+--- @field remainder ArgparseRemainder
+---     Any leftover text during parsing that didn't match an argument.
+
+--- @class ArgparseRemainder
+---     Any leftover text during parsing that didn't match an argument.
+--- @field value string
+---     The raw, unparsed text.
+
+--- An internal tracker for the arguments.
 local _State = {
     argument_start = "argument_start",
     normal = "normal",
@@ -69,6 +88,9 @@ end
 
 -- TODO: Consider replacing portions with vim.api.nvim_parse_cmd()
 
+-- TODO: Consider moving this code to M.parse_args later.
+-- TODO: Rename parse_args to parse_arguments
+
 --- Parse for positional arguments, named arguments, and flag arguments.
 ---
 --- In a command like `bar -f --buzz --some="thing else"`...
@@ -79,24 +101,35 @@ end
 ---
 --- @param text string
 ---     Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
---- @return (FlagArgument | PositionArgument | NamedArgument)[]
+--- @return ArgparseResults
 ---     All found for positional arguments, named arguments, and flag arguments.
 ---
 local function _parse_args(text)
     local output = {}
 
     local state = _State.argument_start
+    --- @type string | boolean
     local current_argument = ""
+    --- @type string | boolean
     local current_name = ""
     local is_escaping = false
     local needs_name = false
     local needs_value = false
     local remainder = {value=""}
 
+    --- Look ahead to the next character in `text`.
+    ---
+    --- @param index number A 1-or-more value to check.
+    --- @return string # The found character, if any.
+    ---
     local function peek(index)
         return text:sub(index + 1, index + 1)
     end
 
+    --- Adds any accumulated argument data to the final output.
+    ---
+    --- Any buffered / remainder text is cleared.
+    ---
     local function _add_to_output()
         remainder.value = ""
 
@@ -147,10 +180,7 @@ local function _parse_args(text)
 
     local index = 1
 
-    -- TODO: Possible remove this + 1 code
-    local total = (#text + 1)
-
-    while index <= total do
+    while index <= #text do
         local character = text:sub(index, index)
         remainder.value = remainder.value .. character
 
@@ -164,8 +194,8 @@ local function _parse_args(text)
 
         if state == _State.argument_start then
             if is_alpha_numeric(character) then
-                -- We know we've encounted some -f` or `--foo` or `--foo=bar` but we
-                -- aren't sure which it is yet.
+                -- NOTE: We know we've encounted some -f` or `--foo` or
+                -- `--foo=bar` but we aren't sure which it is yet.
                 --
                 if character == "-" then
                     local next_character = peek(index)
@@ -198,7 +228,10 @@ local function _parse_args(text)
                 state = _State.in_quote
             end
         elseif state == _State.in_quote then
-            -- NOTE: We're inside of some thing. e.g. `"foo -b thing"!
+            -- NOTE: We're inside of some grouped text. e.g. `"foo -b thing"`
+            -- is not treated as position text + a flag + position but just as
+            -- "some text within quotes".
+            --
             if not is_escaping and _is_quote(character) then
                 -- NOTE: We've reached the end of the quote
                 _add_to_output()
@@ -236,10 +269,13 @@ local function _parse_args(text)
                 _append_to_wip_argument()
             end
         elseif state == _State.in_single_flag then
+            -- NOTE: Since single-flags can be appended together like `"-abc"`
+            -- or "-zzz", we need some special logic to keep track of every flag.
+            --
             local next_character = peek(index)
 
             if _is_whitespace(next_character) or next_character == "" then
-                -- We've reached the end of 1+ single flag(s).
+                -- NOTE: We've reached the end of 1+ single flag(s).
                 -- Add every found character as flags
                 --
                 local current_argument_ = current_argument .. character
@@ -255,10 +291,6 @@ local function _parse_args(text)
             else
                 _append_to_wip_argument()
             end
-            --
-            -- if _is_whitespace(peek(index)) then
-            --     remainder.value = remainder.value .. peek(index)
-            -- end
         elseif state == _State.normal then
             if is_escaping then
                 local next = peek(index)
@@ -277,7 +309,10 @@ local function _parse_args(text)
 
     if state == _State.normal and current_argument ~= "" then
         _add_to_output()
-    elseif (state == _State.in_double_flag or state == _State.in_single_flag) and current_argument ~= "" then
+    elseif (
+        (state == _State.in_double_flag or state == _State.in_single_flag)
+        and current_argument ~= "")
+    then
         current_name = current_argument
         current_argument = true
         needs_value = true
@@ -291,7 +326,7 @@ end
 ---
 --- @param text string
 ---     Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
---- @return (FlagArgument | PositionArgument | NamedArgument)[]
+--- @return ArgparseResults
 ---     All found for positional arguments, named arguments, and flag arguments.
 ---
 function M.parse_args(text)
