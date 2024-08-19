@@ -7,7 +7,6 @@ local tabler = require("plugin_template._core.tabler")
 
 local M = {}
 
-
 local function _get_current_options(tree, index)
     local current = tree[index]
     local type_ = type(current)
@@ -48,8 +47,7 @@ local function _get_current_options(tree, index)
 end
 
 local function _is_exhausted(options)
-    for _, option in ipairs(options)
-    do
+    for _, option in ipairs(options) do
         if type(option.count) == "number" then
             return option.count < 1
         elseif option.count == nil then
@@ -64,22 +62,22 @@ local function _is_exhausted(options)
 end
 
 local function _is_partial_match_named_argument(data, option)
-    if (
+    if
         data.argument_type == argparse.ArgumentType.named
         and data.argument_type == option.argument_type
-        and not _is_exhausted({option})
-        and option.name ~= data.name and vim.startswith(option.name, data.name)
-    )
+        and not _is_exhausted({ option })
+        and option.name ~= data.name
+        and vim.startswith(option.name, data.name)
     then
         return true
     end
 
-    if (
+    if
         data.argument_type == argparse.ArgumentType.flag
         and option.argument_type == argparse.ArgumentType.named
-        and not _is_exhausted({option})
-        and option.name ~= data.name and vim.startswith(option.name, data.name)
-    )
+        and not _is_exhausted({ option })
+        and option.name ~= data.name
+        and vim.startswith(option.name, data.name)
     then
         -- NOTE: When we're in the middle of typing `--foo`, we don't know if
         -- it will end as just `--foo` or if it will become `--foo=bar` so we
@@ -92,11 +90,10 @@ local function _is_partial_match_named_argument(data, option)
 end
 
 local function _is_partial_match(data, option)
-    if (
+    if
         data.argument_type == argparse.ArgumentType.position
         and data.argument_type == option.argument_type
-        and not _is_exhausted({option})
-    )
+        and not _is_exhausted({ option })
     then
         return option.value ~= data.value and vim.startswith(option.value, data.value)
     end
@@ -122,8 +119,7 @@ end
 
 local function _has_positional_argument(options)
     for _, option in ipairs(options) do
-        if option.argument_type == argparse.ArgumentType.position
-        then
+        if option.argument_type == argparse.ArgumentType.position then
             return true
         end
     end
@@ -133,8 +129,7 @@ end
 
 local function _clear_position_argument_counts(options)
     for _, option in ipairs(options) do
-        if option.argument_type == argparse.ArgumentType.position
-        then
+        if option.argument_type == argparse.ArgumentType.position then
             option.count = 0
         end
     end
@@ -164,10 +159,8 @@ end
 local function _replace_options(data, options)
     local replacements = {}
 
-    for _, option in ipairs(options)
-    do
-        if option.argument_type == argparse.ArgumentType.position
-        then
+    for _, option in ipairs(options) do
+        if option.argument_type == argparse.ArgumentType.position then
             table.insert(replacements, option.value)
         elseif option.argument_type == argparse.ArgumentType.flag then
             table.insert(replacements, "-" .. option.name)
@@ -178,8 +171,7 @@ local function _replace_options(data, options)
 
     tabler.clear(data)
 
-    for key, value in pairs(replacements)
-    do
+    for key, value in pairs(replacements) do
         data[key] = value
     end
 end
@@ -190,21 +182,19 @@ end
 
 local function _get_exact_matches(data, options)
     local function _is_exact_match(data, option)
-        if (
+        if
             data.argument_type == argparse.ArgumentType.position
             and data.argument_type == option.argument_type
-            and not _is_exhausted({option})
-        )
+            and not _is_exhausted({ option })
         then
             return option.value == data.value
         end
 
-        if (
+        if
             data.argument_type == argparse.ArgumentType.named
             and data.argument_type == option.argument_type
-            and not _is_exhausted({option})
+            and not _is_exhausted({ option })
             and data.value
-        )
         then
             return option.name == data.name
         end
@@ -221,7 +211,6 @@ local function _get_exact_matches(data, options)
     end
 
     return output
-
 end
 
 local function _get_double_dash_name(text)
@@ -233,8 +222,7 @@ local function _get_named_argument_choices(argument)
         return {}
     end
 
-    if type(argument.choices) == "function"
-    then
+    if type(argument.choices) == "function" then
         return argument.choices()
     end
 
@@ -243,12 +231,11 @@ end
 
 local function _get_exact_named_argument_option(data, options)
     for _, option in ipairs(options) do
-        if (
+        if
             data.argument_type == argparse.ArgumentType.named
             and option.argument_type == argparse.ArgumentType.named
-            and not _is_exhausted({option})
+            and not _is_exhausted({ option })
             and option.name == data.name
-        )
         then
             return option
         end
@@ -294,8 +281,7 @@ function M.get_options(tree, input)
         _compute_remaining_counts(current_options, options)
         _replace_options(output, options)
 
-        if _is_exhausted(current_options)
-        then
+        if _is_exhausted(current_options) then
             tree_index = tree_index + 1
             current_options = _get_current_options(tree, tree_index)
         end
@@ -314,7 +300,7 @@ function M.get_options(tree, input)
 
         local option = _get_exact_named_argument_option(data, current_options)
 
-        _compute_remaining_counts(current_options, {option})
+        _compute_remaining_counts(current_options, { option })
 
         tabler.clear(output)
         tabler.extend(output, _get_named_argument_choices(option))
@@ -353,24 +339,18 @@ function M.get_options(tree, input)
             local name = _get_double_dash_name(input.remainder.value)
 
             for _, option in ipairs(current_options) do
-                if (
-                    option.argument_type == argparse.ArgumentType.named
-                    and vim.startswith(option.name, name)
-                )
-                then
+                if option.argument_type == argparse.ArgumentType.named and vim.startswith(option.name, name) then
                     table.insert(options, option)
                 end
             end
-
         end
 
         _replace_options(output, options)
         _compute_remaining_counts(current_options, options)
     end
 
-    for arguments_index, data in ipairs(input.arguments)
-    do
-        for _, operation in ipairs({_handle_exact_matches, _handle_partial_matches, _handle_partial_named_arguments}) do
+    for arguments_index, data in ipairs(input.arguments) do
+        for _, operation in ipairs({ _handle_exact_matches, _handle_partial_matches, _handle_partial_named_arguments }) do
             if operation(data, arguments_index) then
                 break
             end

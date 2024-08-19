@@ -30,7 +30,7 @@ describe("hello world commands - say phrase/word", function()
     --
     before_each(function()
         say_command._print = _save_prints
-        print = function(...) end  -- Silence all prints
+        print = function(...) end -- Silence all prints
     end)
     after_each(function()
         print = _ORIGINAL_PRINTER
@@ -38,21 +38,21 @@ describe("hello world commands - say phrase/word", function()
     end)
 
     it("runs hello-world with default arguments", function()
-        vim.cmd[[PluginTemplate hello-world say phrase]]
+        vim.cmd([[PluginTemplate hello-world say phrase]])
 
-        assert.same({""}, _DATA)
+        assert.same({ "" }, _DATA)
     end)
 
     it("runs hello-world say phrase - with all of its arguments", function()
-        vim.cmd[[PluginTemplate hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase]]
+        vim.cmd([[PluginTemplate hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase]])
 
-        assert.same({"hello, world!", "hello, world!"}, _DATA)
+        assert.same({ "hello, world!", "hello, world!" }, _DATA)
     end)
 
     it("runs hello-world say word - with all of its arguments", function()
-        vim.cmd[[PluginTemplate hello-world say word "Hi" --repeat=2 --style=uppercase]]
+        vim.cmd([[PluginTemplate hello-world say word "Hi" --repeat=2 --style=uppercase]])
 
-        assert.same({"HI", "HI"}, _DATA)
+        assert.same({ "HI", "HI" }, _DATA)
     end)
 end)
 

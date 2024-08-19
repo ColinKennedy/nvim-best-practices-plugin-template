@@ -39,28 +39,28 @@ local _SUBCOMMANDS = {
 
             local tree = {
                 "say",
-                {"phrase", "word"},
+                { "phrase", "word" },
                 {
                     {
-                        choices=function(value)
+                        choices = function(value)
                             local output = {}
                             value = value or 0
 
-                            for index=1,5 do
+                            for index = 1, 5 do
                                 table.insert(output, tostring(value + index))
                             end
 
                             return output
                         end,
-                        name="repeat",
-                        argument_type=argparse.ArgumentType.named,
+                        name = "repeat",
+                        argument_type = argparse.ArgumentType.named,
                     },
                     {
-                        argument_type=argparse.ArgumentType.named,
-                        name="style",
-                        choices={"lowercase", "uppercase"},
+                        argument_type = argparse.ArgumentType.named,
+                        name = "style",
+                        choices = { "lowercase", "uppercase" },
                     },
-                }
+                },
             }
 
             local arguments = argparse.parse_arguments(data)

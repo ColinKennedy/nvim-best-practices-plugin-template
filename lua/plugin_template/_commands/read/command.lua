@@ -14,4 +14,3 @@ function M.run(book)
 end
 
 return M
-

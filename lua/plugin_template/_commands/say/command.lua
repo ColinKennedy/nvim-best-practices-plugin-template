@@ -29,7 +29,7 @@ local function _say(phrase, repeat_, style)
         text = string.upper(text)
     end
 
-    for _=1,repeat_ do
+    for _ = 1, repeat_ do
         M._print(text)
     end
 end
@@ -61,8 +61,8 @@ end
 function M.run_say_word(word, repeat_, style)
     print("Saying word")
 
-    word = vim.fn.split(word, " ")[1]  -- Make sure it's only one word
-    _say({word}, repeat_, style)
+    word = vim.fn.split(word, " ")[1] -- Make sure it's only one word
+    _say({ word }, repeat_, style)
 end
 
 return M

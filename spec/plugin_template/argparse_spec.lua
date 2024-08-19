@@ -9,388 +9,331 @@ local argparse = require("plugin_template._cli.argparse")
 
 describe("default", function()
     it("works even if #empty #simple", function()
-        assert.same({arguments={}, remainder={value=""}}, argparse.parse_arguments(""))
+        assert.same({ arguments = {}, remainder = { value = "" } }, argparse.parse_arguments(""))
     end)
 end)
 
 describe("positional arguments", function()
     it("#simple #single argument", function()
-        assert.same(
-            {
-                arguments={
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="1,3",
-                        value="foo",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "1,3",
+                    value = "foo",
                 },
-                remainder={value=""},
             },
-            argparse.parse_arguments("foo")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("foo"))
     end)
 
     it("#simple #multiple arguments", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="1,3",
-                        value="foo",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="5,7",
-                        value="bar",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "1,3",
+                    value = "foo",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "5,7",
+                    value = "bar",
+                },
             },
-            argparse.parse_arguments("foo bar")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("foo bar"))
     end)
 
     it("#escaped #positional arguments 001", function()
-        assert.same(
-            {
-                arguments={
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="1,4",
-                        value="foo ",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "1,4",
+                    value = "foo ",
                 },
-                remainder={value=""},
             },
-            argparse.parse_arguments("foo\\ ")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("foo\\ "))
     end)
 
     it("#escaped #positional arguments 002", function()
-        assert.same(
-            {
-                arguments={
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="1,7",
-                        value="foo bar",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "1,7",
+                    value = "foo bar",
                 },
-                remainder={value=""},
             },
-            argparse.parse_arguments("foo\\ bar")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("foo\\ bar"))
     end)
 end)
 
 describe("quotes", function()
     it("#quoted #position arguments", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="1,3",
-                        value="foo",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="5,19",
-                        value="bar fizz buzz",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "1,3",
+                    value = "foo",
                 },
-                remainder={value=""},
-            },
-            argparse.parse_arguments('foo "bar fizz buzz"')
-        )
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="1,15",
-                        value="bar fizz buzz",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="17,19",
-                        value="foo",
-                    },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "5,19",
+                    value = "bar fizz buzz",
                 },
-                remainder = {value=""},
             },
-            argparse.parse_arguments('"bar fizz buzz" foo')
-        )
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="1,3",
-                        value="foo",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="5,14",
-                        value="bar fizz",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="16,19",
-                        value="buzz",
-                    },
+            remainder = { value = "" },
+        }, argparse.parse_arguments('foo "bar fizz buzz"'))
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "1,15",
+                    value = "bar fizz buzz",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "17,19",
+                    value = "foo",
+                },
             },
-            argparse.parse_arguments('foo "bar fizz" buzz')
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments('"bar fizz buzz" foo'))
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "1,3",
+                    value = "foo",
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "5,14",
+                    value = "bar fizz",
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "16,19",
+                    value = "buzz",
+                },
+            },
+            remainder = { value = "" },
+        }, argparse.parse_arguments('foo "bar fizz" buzz'))
     end)
 
     it("flags within the quotes", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="1,3",
-                        value="foo",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="5,19",
-                        value="bar -f --fizz",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "1,3",
+                    value = "foo",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "5,19",
+                    value = "bar -f --fizz",
+                },
             },
-            argparse.parse_arguments("foo 'bar -f --fizz'")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("foo 'bar -f --fizz'"))
     end)
 
     it("#multiple arguments", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="1,3",
-                        value="foo",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="5,7",
-                        value="bar",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "1,3",
+                    value = "foo",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "5,7",
+                    value = "bar",
+                },
             },
-            argparse.parse_arguments("foo bar")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("foo bar"))
     end)
 
     it("#escaped spaces 001", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        value="foo ",
-                        range="1,4",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "foo ",
+                    range = "1,4",
                 },
-                remainder = {value=""},
             },
-            argparse.parse_arguments("foo\\ ")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("foo\\ "))
     end)
 
     it("#escaped spaces 002", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        value="foo bar",
-                        range="1,7",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "foo bar",
+                    range = "1,7",
                 },
-                remainder = {value=""},
             },
-            argparse.parse_arguments("foo\\ bar")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("foo\\ bar"))
     end)
 
     it("#escaped #multiple backslashes - 001", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        value="foo\\",
-                        range="1,4",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        value="bar",
-                        range="6,8",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "foo\\",
+                    range = "1,4",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "bar",
+                    range = "6,8",
+                },
             },
-            argparse.parse_arguments("foo\\\\ bar")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("foo\\\\ bar"))
     end)
 
     it("#escaped #multiple backslashes - 002", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        value="foo\\",
-                        range="1,4",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        value="b\\ar",
-                        range="6,9",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "foo\\",
+                    range = "1,4",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "b\\ar",
+                    range = "6,9",
+                },
             },
-            argparse.parse_arguments("foo\\\\ b\\\\ar")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("foo\\\\ b\\\\ar"))
     end)
 
     it("#escaped #multiple backslashes - 003", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        value="foo\\ bar",
-                        range="1,8",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "foo\\ bar",
+                    range = "1,8",
                 },
-                remainder = {value=""},
             },
-            argparse.parse_arguments("foo\\\\\\ bar")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("foo\\\\\\ bar"))
     end)
 
     it("#escaped #multiple backslashes - 004", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        value="foo\\",
-                        range="1,4",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="z",
-                        range="6,9",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="z",
-                        range="7,9",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="z",
-                        range="8,9",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "foo\\",
+                    range = "1,4",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "z",
+                    range = "6,9",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "z",
+                    range = "7,9",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "z",
+                    range = "8,9",
+                },
             },
-            argparse.parse_arguments("foo\\\\ -zzz")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("foo\\\\ -zzz"))
     end)
 end)
 
 describe("double-dash flags", function()
     it("mixed --flag", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="foo-bar",
-                        range="1,9",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="fizz",
-                        range="11,16",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "foo-bar",
+                    range = "1,9",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "fizz",
+                    range = "11,16",
+                },
             },
-            argparse.parse_arguments("--foo-bar --fizz")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("--foo-bar --fizz"))
     end)
 
     it("#single --flag", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="foo-bar",
-                        range="1,9",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "foo-bar",
+                    range = "1,9",
                 },
-                remainder = {value=""},
             },
-            argparse.parse_arguments("--foo-bar")
-        )
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="foo",
-                        range="1,5",
-                    },
+            remainder = { value = "" },
+        }, argparse.parse_arguments("--foo-bar"))
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "foo",
+                    range = "1,5",
                 },
-                remainder = {value=""},
             },
-            argparse.parse_arguments("--foo")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("--foo"))
     end)
 
     it("multiple", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="foo",
-                        range="1,5",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="bar",
-                        range="7,11",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="fizz",
-                        range="13,18",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="buzz",
-                        range="20,25",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "foo",
+                    range = "1,5",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "bar",
+                    range = "7,11",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "fizz",
+                    range = "13,18",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "buzz",
+                    range = "20,25",
+                },
             },
-            argparse.parse_arguments("--foo --bar --fizz --buzz")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("--foo --bar --fizz --buzz"))
     end)
 
     -- TODO: Currently broken. Fix!
@@ -448,375 +391,327 @@ end)
 
 describe("double-dash equal-flags", function()
     it("mixed --flag", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="foo-bar",
-                        range="1,9",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="fizz",
-                        range="11,16",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "foo-bar",
+                    range = "1,9",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "fizz",
+                    range = "11,16",
+                },
             },
-            argparse.parse_arguments("--foo-bar --fizz")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("--foo-bar --fizz"))
     end)
 
     it("#single --flag", function()
-        assert.same(
-            {
-                arguments={
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="foo-bar",
-                        range="1,9",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "foo-bar",
+                    range = "1,9",
                 },
-                remainder = {value=""},
             },
-            argparse.parse_arguments("--foo-bar")
-        )
-        assert.same(
-            {
-                arguments={
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="foo",
-                        range="1,5",
-                    },
+            remainder = { value = "" },
+        }, argparse.parse_arguments("--foo-bar"))
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "foo",
+                    range = "1,5",
                 },
-                remainder={value=""},
             },
-            argparse.parse_arguments("--foo")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("--foo"))
     end)
 
     it("multiple", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.named,
-                        name="foo",
-                        range="1,12",
-                        value="text",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.named,
-                        name="bar",
-                        range="14,31",
-                        value="some thing",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="fizz",
-                        range="33,38",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.named,
-                        name="buzz",
-                        range="40,52",
-                        value="blah",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "foo",
+                    range = "1,12",
+                    value = "text",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "bar",
+                    range = "14,31",
+                    value = "some thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "fizz",
+                    range = "33,38",
+                },
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "buzz",
+                    range = "40,52",
+                    value = "blah",
+                },
             },
-            argparse.parse_arguments("--foo='text' --bar=\"some thing\" --fizz --buzz='blah'")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("--foo='text' --bar=\"some thing\" --fizz --buzz='blah'"))
     end)
 end)
 
 describe("single-dash flags", function()
     it("#single", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="f",
-                        range="1,2",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "f",
+                    range = "1,2",
                 },
-                remainder = {value=""},
             },
-            argparse.parse_arguments("-f")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("-f"))
     end)
 
     it("#multiple, combined", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="f",
-                        range="1,4",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="b",
-                        range="2,4",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="z",
-                        range="3,4",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "f",
+                    range = "1,4",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "b",
+                    range = "2,4",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "z",
+                    range = "3,4",
+                },
             },
-            argparse.parse_arguments("-fbz")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("-fbz"))
     end)
 
     it("#multiple, separate", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="f",
-                        range="1,2",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="b",
-                        range="4,5",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="z",
-                        range="7,8",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "f",
+                    range = "1,2",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "b",
+                    range = "4,5",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "z",
+                    range = "7,8",
+                },
             },
-            argparse.parse_arguments("-f -b -z")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("-f -b -z"))
     end)
 end)
 
 describe("remainder - positions", function()
     it("keeps track of single position text", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="1,3",
-                        value="foo",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "1,3",
+                    value = "foo",
                 },
-                remainder = {value=" "},
             },
-            argparse.parse_arguments("foo ")
-        )
+            remainder = { value = " " },
+        }, argparse.parse_arguments("foo "))
     end)
 
     it("keeps track of multiple position text", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="1,3",
-                        value="foo",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range="5,7",
-                        value="bar",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "1,3",
+                    value = "foo",
                 },
-                remainder = {value="  "},
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = "5,7",
+                    value = "bar",
+                },
             },
-            argparse.parse_arguments("foo bar  ")
-        )
+            remainder = { value = "  " },
+        }, argparse.parse_arguments("foo bar  "))
     end)
 end)
 
 describe("remainder - flags", function()
     it("keeps track of flag text - 001", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="f",
-                        range="1,2",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="b",
-                        range="4,5",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="z",
-                        range="7,8",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "f",
+                    range = "1,2",
                 },
-                remainder = {value=" -"},
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "b",
+                    range = "4,5",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "z",
+                    range = "7,8",
+                },
             },
-            argparse.parse_arguments("-f -b -z -")
-        )
+            remainder = { value = " -" },
+        }, argparse.parse_arguments("-f -b -z -"))
     end)
 
     it("keeps track of flag text - 002", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="f",
-                        range="1,2",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="b",
-                        range="4,5",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="z",
-                        range="7,8",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "f",
+                    range = "1,2",
                 },
-                remainder = {value=" --"},
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "b",
+                    range = "4,5",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "z",
+                    range = "7,8",
+                },
             },
-            argparse.parse_arguments("-f -b -z --")
-        )
+            remainder = { value = " --" },
+        }, argparse.parse_arguments("-f -b -z --"))
     end)
 
     it("keeps track of flag text - 003", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="f",
-                        range="1,2",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="b",
-                        range="4,5",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="z",
-                        range="7,8",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="r",
-                        range="10,12",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "f",
+                    range = "1,2",
                 },
-                remainder = {value=""},
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "b",
+                    range = "4,5",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "z",
+                    range = "7,8",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "r",
+                    range = "10,12",
+                },
             },
-            argparse.parse_arguments("-f -b -z --r")
-        )
+            remainder = { value = "" },
+        }, argparse.parse_arguments("-f -b -z --r"))
     end)
 
     it("sees spaces when no arguments are given", function()
-        assert.same(
-            { arguments = {}, remainder = {value="    "} },
-            argparse.parse_arguments("    ")
-        )
+        assert.same({ arguments = {}, remainder = { value = "    " } }, argparse.parse_arguments("    "))
     end)
 
     it("stores the last space(s) - #multiple", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="f",
-                        range="1,2",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="b",
-                        range="4,5",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="z",
-                        range="7,8",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "f",
+                    range = "1,2",
                 },
-                remainder = {value="  "},
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "b",
+                    range = "4,5",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "z",
+                    range = "7,8",
+                },
             },
-            argparse.parse_arguments("-f -b -z  ")
-        )
+            remainder = { value = "  " },
+        }, argparse.parse_arguments("-f -b -z  "))
     end)
 
     it("stores the last space(s) - #single", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="f",
-                        range="1,2",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="b",
-                        range="4,5",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="z",
-                        range="7,8",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "f",
+                    range = "1,2",
                 },
-                remainder = {value=" "},
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "b",
+                    range = "4,5",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "z",
+                    range = "7,8",
+                },
             },
-            argparse.parse_arguments("-f -b -z ")
-        )
+            remainder = { value = " " },
+        }, argparse.parse_arguments("-f -b -z "))
     end)
 
     it("stores the last space(s) - combined", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="f",
-                        range="1,2",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="b",
-                        range="4,5",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="x",
-                        range="7,10",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="y",
-                        range="8,10",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.flag,
-                        name="z",
-                        range="9,10",
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "f",
+                    range = "1,2",
                 },
-                remainder = {value=" "},
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "b",
+                    range = "4,5",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "x",
+                    range = "7,10",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "y",
+                    range = "8,10",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "z",
+                    range = "9,10",
+                },
             },
-            argparse.parse_arguments("-f -b -xyz ")
-        )
+            remainder = { value = " " },
+        }, argparse.parse_arguments("-f -b -xyz "))
     end)
 end)

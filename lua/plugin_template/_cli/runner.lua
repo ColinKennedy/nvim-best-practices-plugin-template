@@ -15,7 +15,7 @@ local _STARTING_GOODNIGHT_MOON_COMMANDS = {
     read = read_cli.run,
     sleep = sleep_cli.run,
 }
-local _STARTING_HELLO_WORLD_COMMANDS = {say = say_cli.run_say}
+local _STARTING_HELLO_WORLD_COMMANDS = { say = say_cli.run_say }
 
 local M = {}
 

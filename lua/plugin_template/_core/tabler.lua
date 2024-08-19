@@ -41,8 +41,7 @@ end
 --- @param items ... The values to add.
 ---
 function M.extend(table_, items)
-    for _, item in ipairs(items)
-    do
+    for _, item in ipairs(items) do
         table.insert(table_, item)
     end
 end

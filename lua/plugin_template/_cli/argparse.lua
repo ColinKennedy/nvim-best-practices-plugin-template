@@ -90,7 +90,6 @@ end
 
 -- TODO: Consider replacing portions with vim.api.nvim_parse_cmd()
 
-
 --- Parse for positional arguments, named arguments, and flag arguments.
 ---
 --- In a command like `bar -f --buzz --some="thing else"`...
@@ -116,7 +115,7 @@ function M.parse_arguments(text)
     local needs_name = false
     local needs_value = false
     --- @type ArgparseRemainder
-    local remainder = {value=""}
+    local remainder = { value = "" }
     local start_index = 1
     local escaped_character_count = 0
 
@@ -145,14 +144,11 @@ function M.parse_arguments(text)
         local range = string.format("%s,%s", start_index, end_index)
 
         if not needs_value then
-            table.insert(
-                output,
-                {
-                    argument_type=M.ArgumentType.position,
-                    range=range,
-                    value=current_argument,
-                }
-            )
+            table.insert(output, {
+                argument_type = M.ArgumentType.position,
+                range = range,
+                value = current_argument,
+            })
 
             return
         end
@@ -162,27 +158,21 @@ function M.parse_arguments(text)
             -- There is only -f or --foo=bar. We should probably allow --foo to
             -- exist in the future.
             --
-            table.insert(
-                output,
-                {
-                    argument_type = M.ArgumentType.flag,
-                    name=current_name,
-                    range=range,
-                }
-            )
+            table.insert(output, {
+                argument_type = M.ArgumentType.flag,
+                name = current_name,
+                range = range,
+            })
 
             return
         end
 
-        table.insert(
-            output,
-            {
-                argument_type = M.ArgumentType.named,
-                range=range,
-                name = current_name,
-                value = current_argument,
-            }
-        )
+        table.insert(output, {
+            argument_type = M.ArgumentType.named,
+            range = range,
+            name = current_name,
+            value = current_argument,
+        })
     end
 
     local function _reset_argument()
@@ -288,9 +278,9 @@ function M.parse_arguments(text)
                     current_argument = true
                     _add_to_output()
                     _reset_all()
-                -- TODO: We might need this. Not sure. Probably remove this
-                -- else
-                --     is_escaping = false -- NOTE: The escaped character was consumed
+                    -- TODO: We might need this. Not sure. Probably remove this
+                    -- else
+                    --     is_escaping = false -- NOTE: The escaped character was consumed
                 end
             elseif needs_name then
                 _append_to_wip_argument()
@@ -346,17 +336,14 @@ function M.parse_arguments(text)
 
     if state == _State.normal and current_argument ~= "" then
         _add_to_output()
-    elseif (
-        (state == _State.in_double_flag or state == _State.in_single_flag)
-        and current_argument ~= "")
-    then
+    elseif (state == _State.in_double_flag or state == _State.in_single_flag) and current_argument ~= "" then
         current_name = current_argument
         current_argument = true
         needs_value = true
         _add_to_output()
     end
 
-    return {arguments=output, remainder=remainder}
+    return { arguments = output, remainder = remainder }
 end
 
 return M

@@ -24,4 +24,3 @@ function M.lstrip_arguments(results, index)
 end
 
 return M
-

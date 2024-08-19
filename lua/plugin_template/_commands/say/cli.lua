@@ -29,8 +29,7 @@ local function _get_data_details(arguments, configuration)
     local found_repeat = false
     local repeat_ = nil
 
-    for _, argument in ipairs(arguments)
-    do
+    for _, argument in ipairs(arguments) do
         if argument.argument_type == argparse.ArgumentType.position then
             tabler.extend(phrases, vim.fn.split(argument.value, " "))
         end
@@ -53,7 +52,7 @@ local function _get_data_details(arguments, configuration)
 
     repeat_ = repeat_ or default_repeat
 
-    return {phrases, repeat_, style}
+    return { phrases, repeat_, style }
 end
 
 --- Parse `"hello-world say"` from COMMAND mode and run it.
@@ -84,7 +83,7 @@ function M.run_say(data)
         string.format(
             'say command failed. Got "%s", expected "%s" subcommand.',
             subcommand,
-            vim.inspect({constant.Subcommand.phrase, constant.Subcommand.word})
+            vim.inspect({ constant.Subcommand.phrase, constant.Subcommand.word })
         ),
         vim.log.levels.ERROR
     )

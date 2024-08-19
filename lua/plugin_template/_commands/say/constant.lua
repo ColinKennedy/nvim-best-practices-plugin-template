@@ -4,6 +4,6 @@
 ---
 
 return {
-    Subcommand = {phrase = "phrase", word = "word"},
-    Keyword = {style={lowercase="lowercase", uppercase="uppercase"}}
+    Subcommand = { phrase = "phrase", word = "word" },
+    Keyword = { style = { lowercase = "lowercase", uppercase = "uppercase" } },
 }
