@@ -88,8 +88,6 @@ end
 
 -- TODO: Consider replacing portions with vim.api.nvim_parse_cmd()
 
--- TODO: Consider moving this code to M.parse_args later.
--- TODO: Rename parse_args to parse_arguments
 
 --- Parse for positional arguments, named arguments, and flag arguments.
 ---
@@ -104,7 +102,7 @@ end
 --- @return ArgparseResults
 ---     All found for positional arguments, named arguments, and flag arguments.
 ---
-local function _parse_args(text)
+function M.parse_arguments(text)
     local output = {}
 
     local state = _State.argument_start
@@ -249,8 +247,8 @@ local function _parse_args(text)
                 _reset_argument()
 
                 if _is_quote(peek(index)) then
-                    -- NOTE: We've discovered a `--foo="bar thing"` argument and we're just about
-                    -- to find the `"bar thing"` part
+                    -- NOTE: We've discovered a `--foo="bar thing"` argument
+                    -- and we're just about to find the `"bar thing"` part
                     --
                     state = _State.in_quote
                     index = index + 1
@@ -320,17 +318,6 @@ local function _parse_args(text)
     end
 
     return {arguments=output, remainder=remainder}
-end
-
---- Get all positional arguments and named arguments.
----
---- @param text string
----     Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
---- @return ArgparseResults
----     All found for positional arguments, named arguments, and flag arguments.
----
-function M.parse_args(text)
-    return _parse_args(text)
 end
 
 return M

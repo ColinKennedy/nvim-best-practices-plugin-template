@@ -12,7 +12,7 @@ local function _get_current_options(tree, index)
     local type_ = type(current)
 
     if type_ == "string" then
-        return argparse.parse_args(current).arguments
+        return argparse.parse_arguments(current).arguments
     end
 
     if vim.isarray(current) then
@@ -27,7 +27,7 @@ local function _get_current_options(tree, index)
             local item_type = type(item)
 
             if item_type == "string" then
-                for _, parsed_item in ipairs(argparse.parse_args(item).arguments) do
+                for _, parsed_item in ipairs(argparse.parse_arguments(item).arguments) do
                     table.insert(output, parsed_item)
                 end
             elseif item_type == "table" then

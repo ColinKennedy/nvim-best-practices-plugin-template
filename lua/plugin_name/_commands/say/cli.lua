@@ -23,7 +23,7 @@ local M = {}
 local function _get_data_details(arguments, configuration)
     local phrases = {}
 
-    local style = configuration.commands.hello_world.say.style or "undercase"
+    local style = configuration.commands.hello_world.say.style or "lowercase"
 
     local default_repeat = configuration.commands.hello_world.say["repeat"] or 1
     local found_repeat = false

@@ -4,7 +4,7 @@
 -- local argparse = require("plugin_name._cli.argparse")
 -- local completion = require("plugin_name._cli.completion")
 --
--- local _parse = argparse.parse_args
+-- local _parse = argparse.parse_arguments
 --
 -- describe("default", function()
 --     -- it("works even if #empty #simple", function()

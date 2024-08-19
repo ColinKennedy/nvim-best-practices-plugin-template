@@ -61,7 +61,7 @@ local _SUBCOMMANDS = {
             --     }
             -- }
             --
-            -- local arguments = argparse.parse_args(data)
+            -- local arguments = argparse.parse_arguments(data)
             --
             -- return completion.get_options(tree, arguments)
         end,

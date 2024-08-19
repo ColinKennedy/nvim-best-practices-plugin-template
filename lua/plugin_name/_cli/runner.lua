@@ -16,7 +16,7 @@ local M = {}
 --- @param data string Raw user input. e.g. `'goodnight-moon read "a book"'`.
 ---
 function M.run_goodnight_moon(data)
-    local results = argparse.parse_args(data)
+    local results = argparse.parse_arguments(data)
     results = argparse_helper.lstrip_arguments(results, 2)
     -- TODO: Finish this
 end
@@ -26,7 +26,7 @@ end
 --- @param data string Raw user input. e.g. `'hello-world say phrase "Hello, World!"'`.
 ---
 function M.run_hello_world(data)
-    local results = argparse.parse_args(data)
+    local results = argparse.parse_arguments(data)
     local runner = _STARTING_COMMANDS[results.arguments[2].value]
     results = argparse_helper.lstrip_arguments(results, 3)
 

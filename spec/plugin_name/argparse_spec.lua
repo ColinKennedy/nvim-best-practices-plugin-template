@@ -9,7 +9,7 @@ local argparse = require("plugin_name._cli.argparse")
 
 describe("default", function()
     it("works even if #empty #simple", function()
-        assert.same({arguments={}, remainder={value=""}}, argparse.parse_args(""))
+        assert.same({arguments={}, remainder={value=""}}, argparse.parse_arguments(""))
     end)
 end)
 
@@ -17,7 +17,7 @@ describe("positional arguments", function()
     it("#simple single argument", function()
         assert.same(
             {arguments={{argument_type=argparse.ArgumentType.position, value="foo"}}, remainder={value=""}},
-            argparse.parse_args("foo")
+            argparse.parse_arguments("foo")
         )
     end)
 
@@ -30,21 +30,21 @@ describe("positional arguments", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("foo bar")
+            argparse.parse_arguments("foo bar")
         )
     end)
 
     it("#escaped positional arguments 001", function()
         assert.same(
             {arguments={{argument_type=argparse.ArgumentType.position, value="foo "}}, remainder={value=""}},
-            argparse.parse_args("foo\\ ")
+            argparse.parse_arguments("foo\\ ")
         )
     end)
 
     it("#escaped positional arguments 002", function()
         assert.same(
             {arguments={{argument_type=argparse.ArgumentType.position, value="foo bar"}}, remainder={value=""}},
-            argparse.parse_args("foo\\ bar")
+            argparse.parse_arguments("foo\\ bar")
         )
     end)
 end)
@@ -59,7 +59,7 @@ describe("quotes", function()
                 },
                 remainder={value=""},
             },
-            argparse.parse_args('foo "bar fizz buzz"')
+            argparse.parse_arguments('foo "bar fizz buzz"')
         )
         assert.same(
             {
@@ -69,7 +69,7 @@ describe("quotes", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args('"bar fizz buzz" foo')
+            argparse.parse_arguments('"bar fizz buzz" foo')
         )
         assert.same(
             {
@@ -80,7 +80,7 @@ describe("quotes", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args('foo "bar fizz" buzz')
+            argparse.parse_arguments('foo "bar fizz" buzz')
         )
     end)
 
@@ -93,7 +93,7 @@ describe("quotes", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("foo 'bar -f --fizz'")
+            argparse.parse_arguments("foo 'bar -f --fizz'")
         )
     end)
 
@@ -106,7 +106,7 @@ describe("quotes", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("foo bar")
+            argparse.parse_arguments("foo bar")
         )
     end)
 
@@ -118,7 +118,7 @@ describe("quotes", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("foo\\ ")
+            argparse.parse_arguments("foo\\ ")
         )
     end)
 
@@ -130,7 +130,7 @@ describe("quotes", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("foo\\ bar")
+            argparse.parse_arguments("foo\\ bar")
         )
     end)
 end)
@@ -145,7 +145,7 @@ describe("double-dash flags", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("--foo-bar --fizz")
+            argparse.parse_arguments("--foo-bar --fizz")
         )
     end)
 
@@ -157,7 +157,7 @@ describe("double-dash flags", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("--foo-bar")
+            argparse.parse_arguments("--foo-bar")
         )
         assert.same(
             {
@@ -166,7 +166,7 @@ describe("double-dash flags", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("--foo")
+            argparse.parse_arguments("--foo")
         )
     end)
 
@@ -181,7 +181,7 @@ describe("double-dash flags", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("--foo --bar --fizz --buzz")
+            argparse.parse_arguments("--foo --bar --fizz --buzz")
         )
     end)
 end)
@@ -196,7 +196,7 @@ describe("double-dash equal-flags", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("--foo-bar --fizz")
+            argparse.parse_arguments("--foo-bar --fizz")
         )
     end)
 
@@ -206,11 +206,11 @@ describe("double-dash equal-flags", function()
                 arguments={{argument_type=argparse.ArgumentType.flag, name="foo-bar"}},
                 remainder = {value=""},
             },
-            argparse.parse_args("--foo-bar")
+            argparse.parse_arguments("--foo-bar")
         )
         assert.same(
             {arguments={{argument_type=argparse.ArgumentType.flag, name="foo"}}, remainder={value=""}},
-            argparse.parse_args("--foo")
+            argparse.parse_arguments("--foo")
         )
     end)
 
@@ -225,7 +225,7 @@ describe("double-dash equal-flags", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("--foo='text' --bar=\"some thing\" --fizz --buzz='blah'")
+            argparse.parse_arguments("--foo='text' --bar=\"some thing\" --fizz --buzz='blah'")
         )
     end)
 end)
@@ -239,7 +239,7 @@ describe("single-dash flags", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("-f")
+            argparse.parse_arguments("-f")
         )
     end)
 
@@ -253,7 +253,7 @@ describe("single-dash flags", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("-fbz")
+            argparse.parse_arguments("-fbz")
         )
     end)
 
@@ -267,7 +267,7 @@ describe("single-dash flags", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("-f -b -z")
+            argparse.parse_arguments("-f -b -z")
         )
     end)
 end)
@@ -281,7 +281,7 @@ describe("remainder - positions", function()
                 },
                 remainder = {value=" "},
             },
-            argparse.parse_args("foo ")
+            argparse.parse_arguments("foo ")
         )
     end)
 
@@ -294,7 +294,7 @@ describe("remainder - positions", function()
                 },
                 remainder = {value="  "},
             },
-            argparse.parse_args("foo bar  ")
+            argparse.parse_arguments("foo bar  ")
         )
     end)
 end)
@@ -310,7 +310,7 @@ describe("remainder - flags", function()
                 },
                 remainder = {value=" -"},
             },
-            argparse.parse_args("-f -b -z -")
+            argparse.parse_arguments("-f -b -z -")
         )
     end)
 
@@ -324,7 +324,7 @@ describe("remainder - flags", function()
                 },
                 remainder = {value=" --"},
             },
-            argparse.parse_args("-f -b -z --")
+            argparse.parse_arguments("-f -b -z --")
         )
     end)
 
@@ -339,14 +339,14 @@ describe("remainder - flags", function()
                 },
                 remainder = {value=""},
             },
-            argparse.parse_args("-f -b -z --r")
+            argparse.parse_arguments("-f -b -z --r")
         )
     end)
 
     it("sees spaces when no arguments are given", function()
         assert.same(
             { arguments = {}, remainder = {value="    "} },
-            argparse.parse_args("    ")
+            argparse.parse_arguments("    ")
         )
     end)
 
@@ -360,7 +360,7 @@ describe("remainder - flags", function()
                 },
                 remainder = {value="  "},
             },
-            argparse.parse_args("-f -b -z  ")
+            argparse.parse_arguments("-f -b -z  ")
         )
     end)
 
@@ -374,7 +374,7 @@ describe("remainder - flags", function()
                 },
                 remainder = {value=" "},
             },
-            argparse.parse_args("-f -b -z ")
+            argparse.parse_arguments("-f -b -z ")
         )
     end)
 
@@ -390,7 +390,7 @@ describe("remainder - flags", function()
                 },
                 remainder = {value=" "},
             },
-            argparse.parse_args("-f -b -xyz ")
+            argparse.parse_arguments("-f -b -xyz ")
         )
     end)
 end)

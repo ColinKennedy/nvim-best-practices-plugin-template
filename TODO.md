@@ -1,6 +1,9 @@
+- Finish goodnight-moon
 - Do existing TODO notes
 - Get all tests to pass again
-- Add unittests for failed stuff (bad commands)
+- Add unittests for failed stuff (bad commands with incorrect arguments)
+ - command running
+ - auto-complete
 
 - Clean up the API files
  - Make sure repeat + style does something
