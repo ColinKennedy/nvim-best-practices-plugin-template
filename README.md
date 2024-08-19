@@ -10,6 +10,16 @@ TODO: Add this
 
 A template repository for Neovim plugins.
 
+TODO
+```lua
+{
+    'ColinKennedy/nvim-best-practices-plugin-template',
+    -- cmd = "PluginTemplate",
+    config = false,
+    directory = "/home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template",
+}
+```
+
 
 ## Features and structure
 - 100% Lua
