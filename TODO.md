@@ -1,4 +1,6 @@
+- Try one more time to get completion working
 - Do existing TODO notes
+- /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/plugin_template/_cli/completion.lua
 
 - Add unittests for failed stuff (bad commands with incorrect arguments)
  - command running
