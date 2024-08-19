@@ -28,4 +28,16 @@ function M.get_slice(table_, first, last, step)
     return sliced
 end
 
+--- Append all of `items` to `table_`.
+---
+--- @param table_ ...[] Any values to add.
+--- @param items ... The values to add.
+---
+function M.extend(table_, items)
+    for _, item in ipairs(items)
+    do
+        table.insert(table_, item)
+    end
+end
+
 return M

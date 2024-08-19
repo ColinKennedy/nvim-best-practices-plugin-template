@@ -3,47 +3,65 @@
 --- @module 'plugin_name._commands.say.command'
 ---
 
-local configuration_ = require("plugin_name._core.configuration")
+local constant = require("plugin_name._commands.say.constant")
 
 local M = {}
+
+M._print = print
 
 --- Print `phrase` according to `configuration`.
 ---
 --- @param phrase string[]
 ---     The text to say.
---- @param configuration PluginNameConfiguration?
----     Control how many times the phrase is said and the text's display.
+--- @param repeat_ number
+---     A 1-or-more value. The number of times to print `word`.
+--- @param style number
+---     Control how the text should be shown.
 ---
-local function _say(phrase, configuration)
-    configuration = configuration_.resolve_data(configuration)
+local function _say(phrase, repeat_, style)
+    local text = vim.fn.join(phrase, " ")
 
-    for _=1,configuration.commands.hello_world.say["repeat"] do
+    if style == constant.Keyword.style.lowercase then
+        text = string.lower(text)
+    elseif style == constant.Keyword.style.uppercase then
+        text = string.upper(text)
+    end
+
+    for _=1,repeat_ do
         -- TODO: Add style here (uppercase / lowercase) + unittests
-        print(vim.fn.join(phrase, " "))
+        M._print(text)
     end
 end
 
 --- Print `phrase` according to `configuration`.
 ---
---- @param phrase string[] The text to say.
---- @param configuration PluginNameConfiguration?
+--- @param phrase string[]
+---     The text to say.
+--- @param repeat_ number
+---     A 1-or-more value. The number of times to print `word`.
+--- @param style number
+---     Control how the text should be shown.
 ---
-function M.run_say_phrase(phrase, configuration)
+function M.run_say_phrase(phrase, repeat_, style)
     print("Saying phrase")
 
-    _say(phrase, configuration)
+    _say(phrase, repeat_, style)
 end
 
 --- Print `word` according to `configuration`.
 ---
---- @param word string The text to say.
---- @param configuration PluginNameConfiguration?
+--- @param word string
+---     The text to say.
+--- @param repeat_ number
+---     A 1-or-more value. The number of times to print `word`.
+--- @param style number
+---     Control how the text should be shown.
 ---
-function M.run_say_word(word, configuration)
+function M.run_say_word(word, repeat_, style)
     print("Saying word")
 
     word = vim.fn.split(word, " ")[1]  -- Make sure it's only one word
-    _say({word}, configuration)
+    _say({word}, repeat_, style)
 end
 
 return M

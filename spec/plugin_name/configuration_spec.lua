@@ -128,7 +128,7 @@
 --         health.check({})
 --         health.check()
 --
---         assert.same({}, mock_vim.get_vim_health())
+--         assert.same({}, mock_vim.get_vim_health_errors())
 --     end)
 --
 --     it("shows all issues at once", function()
@@ -138,7 +138,7 @@
 --                 hello_world = { say = { ["repeat"] = "asdf", style = 123 } },
 --             },
 --         })
---         local found = mock_vim.get_vim_health()
+--         local found = mock_vim.get_vim_health_errors()
 --
 --         assert.same({
 --             "commands.goodnight_moon.read.phrase: expected string, got number (123)",

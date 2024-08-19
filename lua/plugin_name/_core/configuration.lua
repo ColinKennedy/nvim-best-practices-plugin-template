@@ -3,6 +3,8 @@
 --- @module 'plugin_name._core.configuration'
 ---
 
+local say_constant = require("plugin_name._commands.say.constant")
+
 local M = {}
 
 -- TODO: Make sure that function type-hints behave as expected even when
@@ -50,7 +52,9 @@ local _DATA = {}
 local _DEFAULTS = {
     commands = {
         goodnight_moon = { read = { phrase = "A good book" } },
-        hello_world = { say = { ["repeat"] = 1, style = "lowercase" } },
+        hello_world = {
+            say = { ["repeat"] = 1, style = say_constant.Keyword.style.lowercase },
+        },
     },
 }
 

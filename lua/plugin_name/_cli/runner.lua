@@ -31,8 +31,6 @@ function M.run_hello_world(data)
     results = argparse_helper.lstrip_arguments(results, 3)
 
     runner(results)
-
-    -- TODO: Add unittest code here
 end
 
 return M

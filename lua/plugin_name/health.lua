@@ -7,6 +7,7 @@
 ---
 
 local configuration_ = require("plugin_name._core.configuration")
+local say_constant = require("plugin_name._commands.say.constant")
 
 local M = {}
 
@@ -71,7 +72,8 @@ function M.get_issues(data)
         ["commands.hello_world.say.style"] = {
             _get_value(data, { "commands", "hello_world", "say", "style" }),
             function(value)
-                return vim.tbl_contains({ "lowercase", "uppercase" }, value)
+                local choices = vim.tbl_keys(say_constant.Keyword.style)
+                return vim.tbl_contains(choices, value)
             end,
             '"lowercase" or "uppercase"',
         },
