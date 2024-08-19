@@ -115,6 +115,7 @@ function M.parse_arguments(text)
     local is_escaping = false
     local needs_name = false
     local needs_value = false
+    --- @type ArgparseRemainder
     local remainder = {value=""}
     local start_index = 1
     local escaped_character_count = 0
@@ -254,17 +255,11 @@ function M.parse_arguments(text)
             --
             if not is_escaping and _is_quote(character) then
                 -- NOTE: We've reached the end of the quote
-                -- TODO: I have no idea why this physical_index = physical_index + 1 works. Remove it?
                 physical_index = physical_index + 1
                 logical_index = logical_index + 1
                 _add_to_output()
                 _reset_all()
             else
-                if is_escaping then
-                    escaped_character_count = escaped_character_count + 1
-                    logical_index = logical_index - 1
-                    is_escaping = false -- NOTE: The escaped character was consumed
-                end
                 _append_to_wip_argument()
             end
         elseif state == _State.in_double_flag then
@@ -314,15 +309,14 @@ function M.parse_arguments(text)
                 current_argument = true
 
                 start_index = start_index - 1
+
                 for index_ = 1, #current_argument_ do
                     local character_ = current_argument_:sub(index_, index_)
                     start_index = start_index + 1
                     current_name = character_
                     -- TODO: Gross. Need to make this cleaner
                     physical_index = physical_index + 1
-                    logical_index = logical_index + 1
                     _add_to_output()
-                    logical_index = logical_index - 1
                     physical_index = physical_index - 1
                 end
 
@@ -334,10 +328,8 @@ function M.parse_arguments(text)
             if is_escaping then
                 local next = peek(physical_index)
                 _append_to_wip_argument(next)
-                logical_index = logical_index + 1
                 physical_index = physical_index + 1
                 escaped_character_count = escaped_character_count + 1
-                logical_index = logical_index - 1
                 is_escaping = false -- NOTE: The escaped character was consumed
             elseif _is_whitespace(character) then
                 _add_to_output()

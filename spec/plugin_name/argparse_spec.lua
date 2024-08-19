@@ -278,6 +278,37 @@ describe("quotes", function()
             argparse.parse_arguments("foo\\\\\\ bar")
         )
     end)
+
+    it("#escaped multiple backslashes - 004", function()
+        assert.same(
+            {
+                arguments = {
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        value="foo\\",
+                        range="1,4",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="z",
+                        range="6,9",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="z",
+                        range="7,9",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="z",
+                        range="8,9",
+                    },
+                },
+                remainder = {value=""},
+            },
+            argparse.parse_arguments("foo\\\\ -zzz")
+        )
+    end)
 end)
 
 describe("double-dash flags", function()
