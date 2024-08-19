@@ -14,7 +14,7 @@ describe("default", function()
 end)
 
 describe("positional arguments", function()
-    it("#simple single argument #asdf", function()
+    it("#simple single argument", function()
         assert.same(
             {
                 arguments={
@@ -89,8 +89,16 @@ describe("quotes", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.position, value="foo"},
-                    {argument_type=argparse.ArgumentType.position, value="bar fizz buzz"},
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="1,3",
+                        value="foo",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="5,19",
+                        value="bar fizz buzz",
+                    },
                 },
                 remainder={value=""},
             },
@@ -99,8 +107,16 @@ describe("quotes", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.position, value="bar fizz buzz"},
-                    {argument_type=argparse.ArgumentType.position, value="foo"},
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="1,15",
+                        value="bar fizz buzz",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="17,19",
+                        value="foo",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -109,9 +125,21 @@ describe("quotes", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.position, value="foo"},
-                    {argument_type=argparse.ArgumentType.position, value="bar fizz"},
-                    {argument_type=argparse.ArgumentType.position, value="buzz"},
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="1,3",
+                        value="foo",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="5,14",
+                        value="bar fizz",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="16,19",
+                        value="buzz",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -119,12 +147,20 @@ describe("quotes", function()
         )
     end)
 
-    it("flags within the quotes", function()
+    it("flags within the quotes #asdf", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.position, value="foo"},
-                    {argument_type=argparse.ArgumentType.position, value="bar -f --fizz"},
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="1,3",
+                        value="foo",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="5,19",
+                        value="bar -f --fizz",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -136,8 +172,16 @@ describe("quotes", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.position, value="foo"},
-                    {argument_type=argparse.ArgumentType.position, value="bar"},
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="1,3",
+                        value="foo",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="5,7",
+                        value="bar",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -149,7 +193,11 @@ describe("quotes", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.position, value="foo "},
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        value="foo ",
+                        range="1,4",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -161,7 +209,11 @@ describe("quotes", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.position, value="foo bar"},
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        value="foo bar",
+                        range="1,7",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -238,12 +290,12 @@ describe("double-dash flags", function()
                     {
                         argument_type=argparse.ArgumentType.flag,
                         name="fizz",
-                        range="13,19",
+                        range="13,18",
                     },
                     {
                         argument_type=argparse.ArgumentType.flag,
                         name="buzz",
-                        range="21,27",
+                        range="20,25",
                     },
                 },
                 remainder = {value=""},
@@ -328,13 +380,13 @@ describe("double-dash equal-flags", function()
                     {
                         argument_type=argparse.ArgumentType.named,
                         name="foo",
-                        range="1,11",
+                        range="1,12",
                         value="text",
                     },
                     {
                         argument_type=argparse.ArgumentType.named,
                         name="bar",
-                        range="13,31",
+                        range="14,31",
                         value="some thing",
                     },
                     {

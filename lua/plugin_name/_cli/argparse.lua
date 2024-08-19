@@ -134,7 +134,7 @@ function M.parse_arguments(text)
     ---
     local function _add_to_output()
         remainder.value = ""
-        local end_index = index - escaped_character_count
+        local end_index = index - escaped_character_count - 1
         -- TODO: Replace with numbers later
         -- local range = {start_index, end_index}
         local range = string.format("%s,%s", start_index, end_index)
@@ -249,11 +249,15 @@ function M.parse_arguments(text)
             --
             if not is_escaping and _is_quote(character) then
                 -- NOTE: We've reached the end of the quote
+                -- TODO: I have no idea why this index = index + 1 works. Remove it?
+                index = index + 1
                 _add_to_output()
                 _reset_all()
             else
-                escaped_character_count = escaped_character_count + 1
-                is_escaping = false -- NOTE: The escaped character was consumed
+                if is_escaping then
+                    escaped_character_count = escaped_character_count + 1
+                    is_escaping = false -- NOTE: The escaped character was consumed
+                end
                 _append_to_wip_argument()
             end
         elseif state == _State.in_double_flag then
@@ -306,7 +310,10 @@ function M.parse_arguments(text)
                     local character_ = current_argument_:sub(index_, index_)
                     start_index = start_index + 1
                     current_name = character_
+                    -- TODO: Gross. Need to make this cleaner
+                    index = index + 1
                     _add_to_output()
+                    index = index - 1
                 end
 
                 _reset_all()
