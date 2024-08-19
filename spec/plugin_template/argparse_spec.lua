@@ -14,7 +14,7 @@ describe("default", function()
 end)
 
 describe("positional arguments", function()
-    it("#simple single argument", function()
+    it("#simple #single argument", function()
         assert.same(
             {
                 arguments={
@@ -30,7 +30,7 @@ describe("positional arguments", function()
         )
     end)
 
-    it("#simple multiple arguments", function()
+    it("#simple #multiple arguments", function()
         assert.same(
             {
                 arguments = {
@@ -51,7 +51,7 @@ describe("positional arguments", function()
         )
     end)
 
-    it("#escaped positional arguments 001", function()
+    it("#escaped #positional arguments 001", function()
         assert.same(
             {
                 arguments={
@@ -67,7 +67,7 @@ describe("positional arguments", function()
         )
     end)
 
-    it("#escaped positional arguments 002", function()
+    it("#escaped #positional arguments 002", function()
         assert.same(
             {
                 arguments={
@@ -85,7 +85,7 @@ describe("positional arguments", function()
 end)
 
 describe("quotes", function()
-    it("quoted positional arguments", function()
+    it("#quoted #position arguments", function()
         assert.same(
             {
                 arguments = {
@@ -221,7 +221,7 @@ describe("quotes", function()
         )
     end)
 
-    it("#escaped multiple backslashes - 001", function()
+    it("#escaped #multiple backslashes - 001", function()
         assert.same(
             {
                 arguments = {
@@ -242,7 +242,7 @@ describe("quotes", function()
         )
     end)
 
-    it("#escaped multiple backslashes - 002", function()
+    it("#escaped #multiple backslashes - 002", function()
         assert.same(
             {
                 arguments = {
@@ -263,7 +263,7 @@ describe("quotes", function()
         )
     end)
 
-    it("#escaped multiple backslashes - 003", function()
+    it("#escaped #multiple backslashes - 003", function()
         assert.same(
             {
                 arguments = {
@@ -279,7 +279,7 @@ describe("quotes", function()
         )
     end)
 
-    it("#escaped multiple backslashes - 004", function()
+    it("#escaped #multiple backslashes - 004", function()
         assert.same(
             {
                 arguments = {
@@ -333,7 +333,7 @@ describe("double-dash flags", function()
         )
     end)
 
-    it("single --flag", function()
+    it("#single --flag", function()
         assert.same(
             {
                 arguments = {
@@ -468,7 +468,7 @@ describe("double-dash equal-flags", function()
         )
     end)
 
-    it("single --flag", function()
+    it("#single --flag", function()
         assert.same(
             {
                 arguments={
@@ -533,7 +533,7 @@ describe("double-dash equal-flags", function()
 end)
 
 describe("single-dash flags", function()
-    it("single", function()
+    it("#single", function()
         assert.same(
             {
                 arguments = {
@@ -549,7 +549,7 @@ describe("single-dash flags", function()
         )
     end)
 
-    it("multiple, combined", function()
+    it("#multiple, combined", function()
         assert.same(
             {
                 arguments = {
@@ -575,7 +575,7 @@ describe("single-dash flags", function()
         )
     end)
 
-    it("multiple, separate", function()
+    it("#multiple, separate", function()
         assert.same(
             {
                 arguments = {
@@ -732,7 +732,7 @@ describe("remainder - flags", function()
         )
     end)
 
-    it("stores the last space(s) - multiple", function()
+    it("stores the last space(s) - #multiple", function()
         assert.same(
             {
                 arguments = {
@@ -758,7 +758,7 @@ describe("remainder - flags", function()
         )
     end)
 
-    it("stores the last space(s) - single", function()
+    it("stores the last space(s) - #single", function()
         assert.same(
             {
                 arguments = {

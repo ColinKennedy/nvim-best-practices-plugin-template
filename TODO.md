@@ -18,15 +18,6 @@
   - Vendor the argparse in case the user doesn't have it installed
 - Add auto-completion function
 
-- Add missing lua-busted test tags
-
-- Rename from plugin-name to plugin-template
-
-- replace all plugin-template with plugin-name instead
-- replace all plugin_template with plugin_template instead
-- replace all PluginTemplate with PluginTemplate instead
-
-- argparse - allow repeated flags, maybe?
 - Make sure named auto-complete works not just for keys but also for values
 
 - Add luarocks auto-release integration
