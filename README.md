@@ -38,10 +38,12 @@ TODO: Finish these
 :PluginTemplate hello-world arbitrary-thing -vvv -abc -f
 
 " Separate commands with completely separate, flexible APIs
-:PluginTemplate goodnight-moon read "a book"
 :PluginTemplate goodnight-moon count-sheep 42
+:PluginTemplate goodnight-moon read "a book"
 :PluginTemplate goodnight-moon sleep -zzz
 ```
+
+TODO: Make sure people know that api.lua is anything they'd like it to be
 
 
 ## Using it
