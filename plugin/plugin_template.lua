@@ -25,10 +25,10 @@ local _SUBCOMMANDS = {
             --
             -- return cli_subcommand.get_complete_options(data, positional_choices)
         end,
-        run = function(_, options)
+        run = function(arguments)
             local runner = require("plugin_template._cli.runner")
 
-            runner.run_goodnight_moon(options.args)
+            runner.run_goodnight_moon(arguments)
         end,
     },
     ["hello-world"] = {
@@ -67,10 +67,10 @@ local _SUBCOMMANDS = {
 
             return completion.get_options(tree, arguments)
         end,
-        run = function(_, options)
+        run = function(arguments)
             local runner = require("plugin_template._cli.runner")
 
-            runner.run_hello_world(options.args)
+            runner.run_hello_world(arguments)
         end,
     },
 }

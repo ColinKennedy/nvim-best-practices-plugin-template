@@ -5,7 +5,23 @@ local tabler = require("plugin_template._core.tabler")
 
 -- TODO: Get this code working + add docstrings
 
+--- @class ArgumentTree
+---     A basic CLI description that answers. 1. What arguments are next 2.
+---     What should we return for auto-complete, if anything.
+
 local M = {}
+
+local function _is_empty(text)
+    return text:match("^%s*$") ~= nil
+end
+
+local function _is_double_dash_prefix(text)
+    return text:match("^%s*--%s*$") ~= nil
+end
+
+local function _is_single_dash_prefix(text)
+    return text:match("^%s*-%s*$") ~= nil
+end
 
 local function _get_current_options(tree, index)
     local current = tree[index]
@@ -244,6 +260,14 @@ local function _get_exact_named_argument_option(data, options)
     return nil
 end
 
+--- Get the auto-complete options for the user's `input`.
+---
+--- @param tree ArgumentTree
+---     A basic CLI description that answers. 1. What arguments are next 2.
+---     What should we return for auto-complete, if anything.
+--- @param input ArgparseResults
+---     The user's parsed text.
+---
 function M.get_options(tree, input)
     tree = vim.deepcopy(tree) -- NOTE: We may edit `tree` so we make a copy first
     local tree_index = 1
@@ -309,18 +333,6 @@ function M.get_options(tree, input)
     end
 
     local function _handle_remainder_matches(input)
-        local function _is_empty(text)
-            return text:match("^%s*$") ~= nil
-        end
-
-        local function _is_double_dash_prefix(text)
-            return text:match("^%s*--%s*$") ~= nil
-        end
-
-        local function _is_single_dash_prefix(text)
-            return text:match("^%s*-%s*$") ~= nil
-        end
-
         if _is_empty(input.remainder.value) then
             return
         end

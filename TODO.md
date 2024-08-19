@@ -1,4 +1,3 @@
-- Finish goodnight-moon
 - Do existing TODO notes
 
 - Add unittests for failed stuff (bad commands with incorrect arguments)

@@ -95,19 +95,22 @@ function M.make_triager(subcommands)
     --- @param opts table
     ---
     local function runner(opts)
-        -- TODO: Simplify this text manipulation. It is unnecessarily complex
-        local fargs = opts.fargs
-        local subcommand_key = fargs[1]
-        local args = #fargs > 1 and vim.list_slice(fargs, 2, #fargs) or {}
+        local argparse = require("plugin_template._cli.argparse")
+
+        local subcommand_key = opts.fargs[1]
         local subcommand = subcommands[subcommand_key]
 
         if not subcommand then
-            vim.notify("PluginTemplate: Unknown command: " .. subcommand_key, vim.log.levels.ERROR)
+            vim.notify(
+                "PluginTemplate: Unknown command: " .. subcommand_key,
+                vim.log.levels.ERROR
+            )
 
             return
         end
 
-        subcommand.run(args, opts)
+        local results = argparse.parse_arguments(opts.args)
+        subcommand.run(results)
     end
 
     return runner
