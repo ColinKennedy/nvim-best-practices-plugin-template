@@ -26,7 +26,7 @@ local M = {}
 function M.run_goodnight_moon(data)
     local results = argparse.parse_arguments(data)
     local runner = _STARTING_GOODNIGHT_MOON_COMMANDS[results.arguments[2].value]
-    results = argparse_helper.lstrip_arguments(results, 2)
+    results = argparse_helper.lstrip_arguments(results, 3)
 
     runner(results)
 end

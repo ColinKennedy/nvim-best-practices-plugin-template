@@ -41,7 +41,7 @@
 --         assert.same({}, completion.get_options(tree, _parse("")))
 --     end)
 --
---     it("works with a basic multi-position example #asdf", function()
+--     it("works with a basic multi-position example", function()
 --         local tree = {
 --             "say",
 --             {"phrase", "word"},

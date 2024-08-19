@@ -5,6 +5,8 @@
 
 local M = {}
 
+M._print = print
+
 --- Print zzz each `count`.
 ---
 --- @param count number Prints 1 zzz per `count`. A value that is 1-or-greater.
@@ -15,7 +17,9 @@ function M.run(count)
         count = 1
     end
 
-    -- TODO: Finish
+    for _=1,count do
+        M._print("zzz")
+    end
 end
 
 return M

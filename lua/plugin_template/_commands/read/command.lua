@@ -5,12 +5,14 @@
 
 local M = {}
 
+M._print = print
+
 --- Print the name of the book.
 ---
 --- @param book string The name of the book.
 ---
 function M.run(book)
-    -- TODO: Finish
+    M._print(string.format("%s: it is a book", book))
 end
 
 return M

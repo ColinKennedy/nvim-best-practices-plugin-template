@@ -5,6 +5,8 @@
 
 local M = {}
 
+M._print = print
+
 --- Count a sheep for each `count`.
 ---
 --- @param count number Prints 1 sheep per `count`. A value that is 1-or-greater.
@@ -15,7 +17,9 @@ function M.run(count)
         count = 1
     end
 
-    -- TODO: Finish
+    for index=1,count do
+        M._print(string.format("%s Sheep", index))
+    end
 end
 
 return M

@@ -15,12 +15,12 @@ M._print = print
 ---     The text to say.
 --- @param repeat_? number
 ---     A 1-or-more value. The number of times to print `word`.
---- @param style? number
+--- @param style? string
 ---     Control how the text should be shown.
 ---
 local function _say(phrase, repeat_, style)
     repeat_ = repeat_ or 1
-    style = constant.Keyword.style.lowercase
+    style = style or constant.Keyword.style.lowercase
     local text = vim.fn.join(phrase, " ")
 
     if style == constant.Keyword.style.lowercase then
@@ -40,7 +40,7 @@ end
 ---     The text to say.
 --- @param repeat_? number
 ---     A 1-or-more value. The number of times to print `word`.
---- @param style? number
+--- @param style? string
 ---     Control how the text should be shown.
 ---
 function M.run_say_phrase(phrase, repeat_, style)
@@ -55,7 +55,7 @@ end
 ---     The text to say.
 --- @param repeat_? number
 ---     A 1-or-more value. The number of times to print `word`.
---- @param style? number
+--- @param style? string
 ---     Control how the text should be shown.
 ---
 function M.run_say_word(word, repeat_, style)

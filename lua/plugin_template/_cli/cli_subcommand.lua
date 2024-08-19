@@ -95,6 +95,7 @@ function M.make_triager(subcommands)
     --- @param opts table
     ---
     local function runner(opts)
+        -- TODO: Simplify this text manipulation. It is unnecessarily complex
         local fargs = opts.fargs
         local subcommand_key = fargs[1]
         local args = #fargs > 1 and vim.list_slice(fargs, 2, #fargs) or {}

@@ -25,10 +25,10 @@ local _SUBCOMMANDS = {
             --
             -- return cli_subcommand.get_complete_options(data, positional_choices)
         end,
-        run = function(data)
+        run = function(_, options)
             local runner = require("plugin_template._cli.runner")
 
-            runner.run_goodnight_moon(data)
+            runner.run_goodnight_moon(options.args)
         end,
     },
     ["hello-world"] = {
@@ -81,6 +81,7 @@ vim.api.nvim_create_user_command(_PREFIX, cli_subcommand.make_triager(_SUBCOMMAN
     complete = cli_subcommand.make_command_completer(_PREFIX, _SUBCOMMANDS),
 })
 
+-- TODO: Make sure <Plug> works
 vim.keymap.set("n", "<Plug>(PluginTemplateSayHi)", function()
     local plugin_template = require("plugin_template.api")
 
