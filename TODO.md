@@ -11,6 +11,10 @@
 
 - Change lua types to be dotted. Maybe.
 
+- Add unittes for multiple escaped \ characters
+- autocomplete notes
+ - when nothing is written, show the auto-complete
+
 - Re-enable the other unittests
 
 - Add argparse solution

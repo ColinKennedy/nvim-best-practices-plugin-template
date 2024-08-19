@@ -114,6 +114,10 @@ function M.parse_arguments(text)
     local needs_name = false
     local needs_value = false
     local remainder = {value=""}
+    local start_index = 1
+    local escaped_character_count = 0
+
+    local index = 1
 
     --- Look ahead to the next character in `text`.
     ---
@@ -130,9 +134,20 @@ function M.parse_arguments(text)
     ---
     local function _add_to_output()
         remainder.value = ""
+        local end_index = index - escaped_character_count
+        -- TODO: Replace with numbers later
+        -- local range = {start_index, end_index}
+        local range = string.format("%s,%s", start_index, end_index)
 
         if not needs_value then
-            table.insert(output, {argument_type=M.ArgumentType.position, value=current_argument})
+            table.insert(
+                output,
+                {
+                    argument_type=M.ArgumentType.position,
+                    range=range,
+                    value=current_argument,
+                }
+            )
 
             return
         end
@@ -147,6 +162,7 @@ function M.parse_arguments(text)
                 {
                     argument_type = M.ArgumentType.flag,
                     name=current_name,
+                    range=range,
                 }
             )
 
@@ -157,8 +173,9 @@ function M.parse_arguments(text)
             output,
             {
                 argument_type = M.ArgumentType.named,
-                value = current_argument,
+                range=range,
                 name = current_name,
+                value = current_argument,
             }
         )
     end
@@ -176,8 +193,6 @@ function M.parse_arguments(text)
         state = _State.argument_start
     end
 
-    local index = 1
-
     while index <= #text do
         local character = text:sub(index, index)
         remainder.value = remainder.value .. character
@@ -187,10 +202,12 @@ function M.parse_arguments(text)
         end
 
         if character == "\\" then
-            is_escaping = not is_escaping
+            is_escaping = true
         end
 
         if state == _State.argument_start then
+            start_index = index
+
             if is_alpha_numeric(character) then
                 -- NOTE: We know we've encounted some -f` or `--foo` or
                 -- `--foo=bar` but we aren't sure which it is yet.
@@ -235,6 +252,8 @@ function M.parse_arguments(text)
                 _add_to_output()
                 _reset_all()
             else
+                escaped_character_count = escaped_character_count + 1
+                is_escaping = false -- NOTE: The escaped character was consumed
                 _append_to_wip_argument()
             end
         elseif state == _State.in_double_flag then
@@ -262,6 +281,9 @@ function M.parse_arguments(text)
                     current_argument = true
                     _add_to_output()
                     _reset_all()
+                -- TODO: We might need this. Not sure
+                -- else
+                --     is_escaping = false -- NOTE: The escaped character was consumed
                 end
             elseif needs_name then
                 _append_to_wip_argument()
@@ -279,8 +301,10 @@ function M.parse_arguments(text)
                 local current_argument_ = current_argument .. character
                 current_argument = true
 
+                start_index = start_index - 1
                 for index_ = 1, #current_argument_ do
                     local character_ = current_argument_:sub(index_, index_)
+                    start_index = start_index + 1
                     current_name = character_
                     _add_to_output()
                 end
@@ -293,6 +317,9 @@ function M.parse_arguments(text)
             if is_escaping then
                 local next = peek(index)
                 _append_to_wip_argument(next)
+                index = index + 1
+                escaped_character_count = escaped_character_count + 1
+                is_escaping = false -- NOTE: The escaped character was consumed
             elseif _is_whitespace(character) then
                 _add_to_output()
                 _reset_all()

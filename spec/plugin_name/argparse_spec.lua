@@ -14,9 +14,18 @@ describe("default", function()
 end)
 
 describe("positional arguments", function()
-    it("#simple single argument", function()
+    it("#simple single argument #asdf", function()
         assert.same(
-            {arguments={{argument_type=argparse.ArgumentType.position, value="foo"}}, remainder={value=""}},
+            {
+                arguments={
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="1,3",
+                        value="foo",
+                    },
+                },
+                remainder={value=""},
+            },
             argparse.parse_arguments("foo")
         )
     end)
@@ -25,8 +34,16 @@ describe("positional arguments", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.position, value="foo"},
-                    {argument_type=argparse.ArgumentType.position, value="bar"},
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="1,3",
+                        value="foo",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="5,7",
+                        value="bar",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -36,14 +53,32 @@ describe("positional arguments", function()
 
     it("#escaped positional arguments 001", function()
         assert.same(
-            {arguments={{argument_type=argparse.ArgumentType.position, value="foo "}}, remainder={value=""}},
+            {
+                arguments={
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="1,4",
+                        value="foo ",
+                    },
+                },
+                remainder={value=""},
+            },
             argparse.parse_arguments("foo\\ ")
         )
     end)
 
     it("#escaped positional arguments 002", function()
         assert.same(
-            {arguments={{argument_type=argparse.ArgumentType.position, value="foo bar"}}, remainder={value=""}},
+            {
+                arguments={
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="1,7",
+                        value="foo bar",
+                    },
+                },
+                remainder={value=""},
+            },
             argparse.parse_arguments("foo\\ bar")
         )
     end)
@@ -140,8 +175,16 @@ describe("double-dash flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="foo-bar"},
-                    {argument_type=argparse.ArgumentType.flag, name="fizz"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="foo-bar",
+                        range="1,9",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="fizz",
+                        range="11,16",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -153,7 +196,11 @@ describe("double-dash flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="foo-bar"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="foo-bar",
+                        range="1,9",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -162,7 +209,11 @@ describe("double-dash flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="foo"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="foo",
+                        range="1,5",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -174,14 +225,47 @@ describe("double-dash flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="foo"},
-                    {argument_type=argparse.ArgumentType.flag, name="bar"},
-                    {argument_type=argparse.ArgumentType.flag, name="fizz"},
-                    {argument_type=argparse.ArgumentType.flag, name="buzz"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="foo",
+                        range="1,5",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="bar",
+                        range="7,11",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="fizz",
+                        range="13,19",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="buzz",
+                        range="21,27",
+                    },
                 },
                 remainder = {value=""},
             },
             argparse.parse_arguments("--foo --bar --fizz --buzz")
+        )
+    end)
+
+    it("partial --flag=", function()
+        assert.same(
+            {
+                arguments = {
+                    {
+                        argument_type=argparse.ArgumentType.named,
+                        name="foo-bar",
+                        value = false,
+                        range="1,10",
+                    },
+                },
+                remainder = {value=""},
+            },
+            argparse.parse_arguments("--foo-bar=")
         )
     end)
 end)
@@ -191,8 +275,16 @@ describe("double-dash equal-flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="foo-bar"},
-                    {argument_type=argparse.ArgumentType.flag, name="fizz"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="foo-bar",
+                        range="1,9",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="fizz",
+                        range="11,16",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -203,13 +295,28 @@ describe("double-dash equal-flags", function()
     it("single --flag", function()
         assert.same(
             {
-                arguments={{argument_type=argparse.ArgumentType.flag, name="foo-bar"}},
+                arguments={
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="foo-bar",
+                        range="1,9",
+                    },
+                },
                 remainder = {value=""},
             },
             argparse.parse_arguments("--foo-bar")
         )
         assert.same(
-            {arguments={{argument_type=argparse.ArgumentType.flag, name="foo"}}, remainder={value=""}},
+            {
+                arguments={
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="foo",
+                        range="1,5",
+                    },
+                },
+                remainder={value=""},
+            },
             argparse.parse_arguments("--foo")
         )
     end)
@@ -218,10 +325,29 @@ describe("double-dash equal-flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.named, name="foo", value="text"},
-                    {argument_type=argparse.ArgumentType.named, name="bar", value="some thing"},
-                    {argument_type=argparse.ArgumentType.flag, name="fizz"},
-                    {argument_type=argparse.ArgumentType.named, name="buzz", value="blah"},
+                    {
+                        argument_type=argparse.ArgumentType.named,
+                        name="foo",
+                        range="1,11",
+                        value="text",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.named,
+                        name="bar",
+                        range="13,31",
+                        value="some thing",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="fizz",
+                        range="33,38",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.named,
+                        name="buzz",
+                        range="40,52",
+                        value="blah",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -235,7 +361,11 @@ describe("single-dash flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="f"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="f",
+                        range="1,2",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -247,9 +377,21 @@ describe("single-dash flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="f"},
-                    {argument_type=argparse.ArgumentType.flag, name="b"},
-                    {argument_type=argparse.ArgumentType.flag, name="z"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="f",
+                        range="1,4",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="b",
+                        range="2,4",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="z",
+                        range="3,4",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -261,9 +403,21 @@ describe("single-dash flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="f"},
-                    {argument_type=argparse.ArgumentType.flag, name="b"},
-                    {argument_type=argparse.ArgumentType.flag, name="z"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="f",
+                        range="1,2",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="b",
+                        range="4,5",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="z",
+                        range="7,8",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -277,7 +431,11 @@ describe("remainder - positions", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.position, value="foo"},
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="1,3",
+                        value="foo",
+                    },
                 },
                 remainder = {value=" "},
             },
@@ -289,8 +447,16 @@ describe("remainder - positions", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.position, value="foo"},
-                    {argument_type=argparse.ArgumentType.position, value="bar"},
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="1,3",
+                        value="foo",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range="5,7",
+                        value="bar",
+                    },
                 },
                 remainder = {value="  "},
             },
@@ -304,9 +470,21 @@ describe("remainder - flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="f"},
-                    {argument_type=argparse.ArgumentType.flag, name="b"},
-                    {argument_type=argparse.ArgumentType.flag, name="z"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="f",
+                        range="1,2",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="b",
+                        range="4,5",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="z",
+                        range="7,8",
+                    },
                 },
                 remainder = {value=" -"},
             },
@@ -318,9 +496,21 @@ describe("remainder - flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="f"},
-                    {argument_type=argparse.ArgumentType.flag, name="b"},
-                    {argument_type=argparse.ArgumentType.flag, name="z"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="f",
+                        range="1,2",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="b",
+                        range="4,5",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="z",
+                        range="7,8",
+                    },
                 },
                 remainder = {value=" --"},
             },
@@ -332,10 +522,26 @@ describe("remainder - flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="f"},
-                    {argument_type=argparse.ArgumentType.flag, name="b"},
-                    {argument_type=argparse.ArgumentType.flag, name="z"},
-                    {argument_type=argparse.ArgumentType.flag, name="r"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="f",
+                        range="1,2",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="b",
+                        range="4,5",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="z",
+                        range="7,8",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="r",
+                        range="10,12",
+                    },
                 },
                 remainder = {value=""},
             },
@@ -354,9 +560,21 @@ describe("remainder - flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="f"},
-                    {argument_type=argparse.ArgumentType.flag, name="b"},
-                    {argument_type=argparse.ArgumentType.flag, name="z"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="f",
+                        range="1,2",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="b",
+                        range="4,5",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="z",
+                        range="7,8",
+                    },
                 },
                 remainder = {value="  "},
             },
@@ -368,9 +586,21 @@ describe("remainder - flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="f"},
-                    {argument_type=argparse.ArgumentType.flag, name="b"},
-                    {argument_type=argparse.ArgumentType.flag, name="z"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="f",
+                        range="1,2",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="b",
+                        range="4,5",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="z",
+                        range="7,8",
+                    },
                 },
                 remainder = {value=" "},
             },
@@ -382,11 +612,31 @@ describe("remainder - flags", function()
         assert.same(
             {
                 arguments = {
-                    {argument_type=argparse.ArgumentType.flag, name="f"},
-                    {argument_type=argparse.ArgumentType.flag, name="b"},
-                    {argument_type=argparse.ArgumentType.flag, name="x"},
-                    {argument_type=argparse.ArgumentType.flag, name="y"},
-                    {argument_type=argparse.ArgumentType.flag, name="z"},
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="f",
+                        range="1,2",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="b",
+                        range="4,5",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="x",
+                        range="7,10",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="y",
+                        range="8,10",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.flag,
+                        name="z",
+                        range="9,10",
+                    },
                 },
                 remainder = {value=" "},
             },

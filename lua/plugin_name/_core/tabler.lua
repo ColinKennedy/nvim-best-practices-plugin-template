@@ -28,6 +28,13 @@ function M.get_slice(table_, first, last, step)
     return sliced
 end
 
+function M.clear(data)
+    -- Clear the table
+    for index = #data, 1, -1 do
+        table.remove(data, index)
+    end
+end
+
 --- Append all of `items` to `table_`.
 ---
 --- @param table_ ...[] Any values to add.

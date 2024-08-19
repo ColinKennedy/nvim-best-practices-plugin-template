@@ -33,37 +33,39 @@ local _SUBCOMMANDS = {
     },
     ["hello-world"] = {
         complete = function(data)
-            -- TODO: Add support later
-            return nil
-            -- local argparse = require("plugin_name._cli.argparse")
-            -- local completion = require("plugin_name._cli.completion")
+            local argparse = require("plugin_name._cli.argparse")
+            local completion = require("plugin_name._cli.completion")
             -- TODO: include say/constant.lua later
-            --
-            -- local tree = {
-            --     "say",
-            --     {"phrase", "word"},
-            --     {
-            --         {
-            --             choices=function(value)
-            --                 local output = {}
-            --                 value = value or 0
-            --
-            --                 for index=1,10 do
-            --                     table.insert(output, value + index)
-            --                 end
-            --
-            --                 return output
-            --             end,
-            --             name="repeat",
-            --             type=completion.NamedArgument,
-            --         },
-            --         {type=completion.NamedArgument, name="style", choices={"lowercase", "uppercase"}},
-            --     }
-            -- }
-            --
-            -- local arguments = argparse.parse_arguments(data)
-            --
-            -- return completion.get_options(tree, arguments)
+
+            local tree = {
+                "say",
+                {"phrase", "word"},
+                {
+                    {
+                        choices=function(value)
+                            local output = {}
+                            value = value or 0
+
+                            for index=1,5 do
+                                table.insert(output, tostring(value + index))
+                            end
+
+                            return output
+                        end,
+                        name="repeat",
+                        argument_type=argparse.ArgumentType.named,
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.named,
+                        name="style",
+                        choices={"lowercase", "uppercase"},
+                    },
+                }
+            }
+
+            local arguments = argparse.parse_arguments(data)
+
+            return completion.get_options(tree, arguments)
         end,
         run = function(_, options)
             local runner = require("plugin_name._cli.runner")

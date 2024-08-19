@@ -1,4 +1,8 @@
--- -- TODO: Docstring
+--- Make sure auto-complete works as expected.
+---
+--- @module 'plugin_name.autocomplete_spec'
+---
+
 -- -- TODO: Move this to a standalone lua module
 --
 -- local argparse = require("plugin_name._cli.argparse")
@@ -7,11 +11,35 @@
 -- local _parse = argparse.parse_arguments
 --
 -- describe("default", function()
---     -- it("works even if #empty #simple", function()
---     --     -- TODO: Finish
---     --     completion.get_options(tree, input)
---     --     assert.same({ {}, {} }, _parse(""))
---     -- end)
+--     it("works even if #empty #simple", function()
+--         local tree = {
+--             "say",
+--             {"phrase", "word"},
+--             {
+--                 {
+--                     choices=function(value)
+--                         local output = {}
+--                         value = value or 0
+--
+--                         for index=1,5 do
+--                             table.insert(output, value + index)
+--                         end
+--
+--                         return output
+--                     end,
+--                     name="repeat",
+--                     argument_type=argparse.ArgumentType.named,
+--                 },
+--                 {
+--                     argument_type=argparse.ArgumentType.named,
+--                     name="style",
+--                     choices={"lowercase", "uppercase"},
+--                 },
+--             }
+--         }
+--
+--         assert.same({}, completion.get_options(tree, _parse("")))
+--     end)
 --
 --     it("works with a basic multi-position example #asdf", function()
 --         local tree = {
@@ -24,7 +52,7 @@
 --                         value = value or 0
 --
 --                         for index=1,5 do
---                             table.insert(output, value + index)
+--                             table.insert(output, tostring(value + index))
 --                         end
 --
 --                         return output
@@ -52,18 +80,24 @@
 --         -- assert.same({"--repeat=", "--style="}, completion.get_options(tree, _parse("say phrase --")))
 --         -- -- NOTE: Completing the name to a --double-dash named argument
 --         -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --r")))
---         -- NOTE: Completing the =, so people know that this is requires an argument
---         assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat")))
+--         -- -- -- TODO: Figure out how to handle this case later
+--         -- -- -- NOTE: Completing the =, so people know that this is requires an argument
+--         -- -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat")))
 --         -- -- NOTE: Completing the value of the named argument
 --         -- assert.same(
 --         --     {"1", "2", "3", "4", "5"},
---         --     completion.get_options(tree, "say phrase --repeat=")
+--         --     completion.get_options(tree, _parse("say phrase --repeat="))
 --         -- )
 --         -- -- NOTE: Completion finished
 --         -- assert.same(
 --         --     {},
 --         --     completion.get_options(tree, _parse("say phrase --repeat=5"))
 --         -- )
+--         -- NOTE: Asking for repeat again will not show the value (because count == 0)
+--         assert.same(
+--             {},
+--             completion.get_options(tree, _parse("say phrase --repeat=5 --repe"))
+--         )
 --
 --         -- assert.same(
 --         --     {"--style="},

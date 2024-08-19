@@ -1,6 +1,7 @@
 -- TODO: Move this somewhere more core / to its own Lua package
 
 local argparse = require("plugin_name._cli.argparse")
+local tabler = require("plugin_name._core.tabler")
 
 -- TODO: Get this code working + add docstrings
 
@@ -175,10 +176,7 @@ local function _replace_options(data, options)
         end
     end
 
-    -- Clear the table
-    for index = #data, 1, -1 do
-        table.remove(data, index)
-    end
+    tabler.clear(data)
 
     for key, value in pairs(replacements)
     do
@@ -205,6 +203,7 @@ local function _get_exact_matches(data, options)
             data.argument_type == argparse.ArgumentType.named
             and data.argument_type == option.argument_type
             and not _is_exhausted({option})
+            and data.value
         )
         then
             return option.name == data.name
@@ -229,6 +228,34 @@ local function _get_double_dash_name(text)
     return text:match("^%s*--(%w*)%s*$")
 end
 
+local function _get_named_argument_choices(argument)
+    if not argument.choices then
+        return {}
+    end
+
+    if type(argument.choices) == "function"
+    then
+        return argument.choices()
+    end
+
+    return argument.choices
+end
+
+local function _get_exact_named_argument_option(data, options)
+    for _, option in ipairs(options) do
+        if (
+            data.argument_type == argparse.ArgumentType.named
+            and option.argument_type == argparse.ArgumentType.named
+            and not _is_exhausted({option})
+            and option.name == data.name
+        )
+        then
+            return option
+        end
+    end
+
+    return nil
+end
 
 function M.get_options(tree, input)
     tree = vim.deepcopy(tree) -- NOTE: We may edit `tree` so we make a copy first
@@ -272,6 +299,25 @@ function M.get_options(tree, input)
             tree_index = tree_index + 1
             current_options = _get_current_options(tree, tree_index)
         end
+
+        return true
+    end
+
+    local function _handle_partial_named_arguments(data, arguments_index)
+        if arguments_index < #input.arguments or _is_user_getting_the_next_input_argument(input) then
+            return false
+        end
+
+        if data.argument_type ~= argparse.ArgumentType.named or data.value ~= false then
+            return false
+        end
+
+        local option = _get_exact_named_argument_option(data, current_options)
+
+        _compute_remaining_counts(current_options, {option})
+
+        tabler.clear(output)
+        tabler.extend(output, _get_named_argument_choices(option))
 
         return true
     end
@@ -324,7 +370,7 @@ function M.get_options(tree, input)
 
     for arguments_index, data in ipairs(input.arguments)
     do
-        for _, operation in ipairs({_handle_exact_matches, _handle_partial_matches}) do
+        for _, operation in ipairs({_handle_exact_matches, _handle_partial_matches, _handle_partial_named_arguments}) do
             if operation(data, arguments_index) then
                 break
             end
