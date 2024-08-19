@@ -1,19 +1,19 @@
---- All `plugin_name` command definitions.
+--- All `plugin_template` command definitions.
 
---- @class PluginNameSubcommand
+--- @class PluginTemplateSubcommand
 ---     A Python subparser's definition.
 --- @field run fun(data: string[], options: table?): nil
 ---     The function to run when the subcommand is called.
 --- @field complete? fun(data: string): string[]
 ---     Command completions callback, the `data` are  the lead of the subcommand's arguments
 
-local cli_subcommand = require("plugin_name._cli.cli_subcommand")
+local cli_subcommand = require("plugin_template._cli.cli_subcommand")
 
-local _PREFIX = "PluginName"
+local _PREFIX = "PluginTemplate"
 
---- @alias PluginNameSubcommands table<string, PluginNameSubcommand>
+--- @alias PluginTemplateSubcommands table<string, PluginTemplateSubcommand>
 
---- @type PluginNameSubcommands
+--- @type PluginTemplateSubcommands
 local _SUBCOMMANDS = {
     ["goodnight-moon"] = {
         complete = function(data)
@@ -26,15 +26,15 @@ local _SUBCOMMANDS = {
             -- return cli_subcommand.get_complete_options(data, positional_choices)
         end,
         run = function(data)
-            local runner = require("plugin_name._cli.runner")
+            local runner = require("plugin_template._cli.runner")
 
             runner.run_goodnight_moon(data)
         end,
     },
     ["hello-world"] = {
         complete = function(data)
-            local argparse = require("plugin_name._cli.argparse")
-            local completion = require("plugin_name._cli.completion")
+            local argparse = require("plugin_template._cli.argparse")
+            local completion = require("plugin_template._cli.completion")
             -- TODO: include say/constant.lua later
 
             local tree = {
@@ -68,7 +68,7 @@ local _SUBCOMMANDS = {
             return completion.get_options(tree, arguments)
         end,
         run = function(_, options)
-            local runner = require("plugin_name._cli.runner")
+            local runner = require("plugin_template._cli.runner")
 
             runner.run_hello_world(options.args)
         end,
@@ -77,12 +77,12 @@ local _SUBCOMMANDS = {
 
 vim.api.nvim_create_user_command(_PREFIX, cli_subcommand.make_triager(_SUBCOMMANDS), {
     nargs = "+",
-    desc = "PluginName's command API.",
+    desc = "PluginTemplate's command API.",
     complete = cli_subcommand.make_command_completer(_PREFIX, _SUBCOMMANDS),
 })
 
-vim.keymap.set("n", "<Plug>(PluginNameSayHi)", function()
-    local plugin_name = require("plugin_name.api")
+vim.keymap.set("n", "<Plug>(PluginTemplateSayHi)", function()
+    local plugin_template = require("plugin_template.api")
 
-    plugin_name.run_hello_world("Hi!")
+    plugin_template.run_hello_world("Hi!")
 end, { desc = "Say hi to the user." })

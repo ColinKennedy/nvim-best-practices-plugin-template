@@ -1,11 +1,11 @@
---- Run Vim commands like `:PluginName` in Lua.
+--- Run Vim commands like `:PluginTemplate` in Lua.
 ---
---- @module 'plugin_name._cli.runner'
+--- @module 'plugin_template._cli.runner'
 ---
 
-local argparse = require("plugin_name._cli.argparse")
-local argparse_helper = require("plugin_name._cli.argparse_helper")
-local say_cli = require("plugin_name._commands.say.cli")
+local argparse = require("plugin_template._cli.argparse")
+local argparse_helper = require("plugin_template._cli.argparse_helper")
+local say_cli = require("plugin_template._commands.say.cli")
 
 local _STARTING_COMMANDS = {say = say_cli.run_say}
 

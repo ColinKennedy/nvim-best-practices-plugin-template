@@ -4,11 +4,11 @@
 --- likely want to delete or heavily modify this file. But it does give a quick
 --- look how to mock a test and some things you can do with Neovim/busted.
 ---
---- @module 'plugin_name.plugin_name_spec'
+--- @module 'plugin_template.plugin_template_spec'
 ---
 
 local mock_test = require("test_utilities.mock_test")
-local say_command = require("plugin_name._commands.say.command")
+local say_command = require("plugin_template._commands.say.command")
 
 _DATA = {}
 _ORIGINAL_PRINTER = print
@@ -38,19 +38,19 @@ describe("hello world commands - say phrase/word", function()
     end)
 
     it("runs hello-world with default arguments", function()
-        vim.cmd[[PluginName hello-world say phrase]]
+        vim.cmd[[PluginTemplate hello-world say phrase]]
 
         assert.same({""}, _DATA)
     end)
 
     it("runs hello-world say phrase - with all of its arguments", function()
-        vim.cmd[[PluginName hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase]]
+        vim.cmd[[PluginTemplate hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase]]
 
         assert.same({"hello, world!", "hello, world!"}, _DATA)
     end)
 
     it("runs hello-world say word - with all of its arguments", function()
-        vim.cmd[[PluginName hello-world say word "Hi" --repeat=2 --style=uppercase]]
+        vim.cmd[[PluginTemplate hello-world say word "Hi" --repeat=2 --style=uppercase]]
 
         assert.same({"HI", "HI"}, _DATA)
     end)
@@ -59,12 +59,12 @@ end)
 -- TODO: Implement Goodnight moon
 -- describe("goodnight-moon commands", function()
 --     it("runs goodnight-moon read with all of its arguments", function()
---         vim.cmd[[PluginName goodnight-moon read]]
+--         vim.cmd[[PluginTemplate goodnight-moon read]]
 --         -- TODO: Finish this
 --     end)
 --
 --     it("runs goodnight-moon sleep with all of its arguments", function()
---         vim.cmd[[PluginName goodnight-moon sleep]]
+--         vim.cmd[[PluginTemplate goodnight-moon sleep]]
 --         -- TODO: Finish this
 --     end)
 -- end)

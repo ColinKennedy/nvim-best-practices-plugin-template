@@ -1,7 +1,7 @@
 -- TODO: Move this somewhere more core / to its own Lua package
 
-local argparse = require("plugin_name._cli.argparse")
-local tabler = require("plugin_name._core.tabler")
+local argparse = require("plugin_template._cli.argparse")
+local tabler = require("plugin_template._core.tabler")
 
 -- TODO: Get this code working + add docstrings
 

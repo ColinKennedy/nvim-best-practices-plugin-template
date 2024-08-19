@@ -1,14 +1,14 @@
 --- Parse `"hello-world say"` from COMMAND mode and run it.
 ---
---- @module 'plugin_name._commands.say.cli'
+--- @module 'plugin_template._commands.say.cli'
 ---
 
-local argparse = require("plugin_name._cli.argparse")
-local argparse_helper = require("plugin_name._cli.argparse_helper")
-local configuration_ = require("plugin_name._core.configuration")
-local constant = require("plugin_name._commands.say.constant")
-local say_command = require("plugin_name._commands.say.command")
-local tabler = require("plugin_name._core.tabler")
+local argparse = require("plugin_template._cli.argparse")
+local argparse_helper = require("plugin_template._cli.argparse_helper")
+local configuration_ = require("plugin_template._core.configuration")
+local constant = require("plugin_template._commands.say.constant")
+local say_command = require("plugin_template._commands.say.command")
+local tabler = require("plugin_template._core.tabler")
 
 local M = {}
 
@@ -16,7 +16,7 @@ local M = {}
 ---
 --- @param arguments (FlagArgument | PositionArgument | NamedArgument)[]
 ---     All of the user's arguments.
---- @param configuration PluginNameConfiguration?
+--- @param configuration PluginTemplateConfiguration?
 ---     Control how many times the phrase is said and the text's display.
 --- @return string[] # All text that the user wrote.
 ---

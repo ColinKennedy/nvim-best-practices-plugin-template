@@ -1,12 +1,12 @@
 --- Make sure auto-complete works as expected.
 ---
---- @module 'plugin_name.autocomplete_spec'
+--- @module 'plugin_template.autocomplete_spec'
 ---
 
 -- -- TODO: Move this to a standalone lua module
 --
--- local argparse = require("plugin_name._cli.argparse")
--- local completion = require("plugin_name._cli.completion")
+-- local argparse = require("plugin_template._cli.argparse")
+-- local completion = require("plugin_template._cli.completion")
 --
 -- local _parse = argparse.parse_arguments
 --

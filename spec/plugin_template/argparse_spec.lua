@@ -1,11 +1,11 @@
 --- Make sure the argument parser works as expected.
 ---
---- @module 'plugin_name.argparse_spec'
+--- @module 'plugin_template.argparse_spec'
 ---
 
 -- TODO: Consider moving this to a different branch in the repo or move the
 -- whole argparse into a different Lua project
-local argparse = require("plugin_name._cli.argparse")
+local argparse = require("plugin_template._cli.argparse")
 
 describe("default", function()
     it("works even if #empty #simple", function()

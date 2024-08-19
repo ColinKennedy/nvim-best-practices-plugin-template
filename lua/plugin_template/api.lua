@@ -3,10 +3,10 @@
 --- If a function's signature here changes in some incompatible way, this
 --- package must get a new *major* version.
 ---
---- @module 'plugin_name.api'
+--- @module 'plugin_template.api'
 ---
 
-local say_command = require("plugin_name._commands.say_command")
+local say_command = require("plugin_template._commands.say_command")
 
 local M = {}
 

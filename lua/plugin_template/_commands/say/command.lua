@@ -1,9 +1,9 @@
 --- The main file that implements `hello-world say` outside of COMMAND mode.
 ---
---- @module 'plugin_name._commands.say.command'
+--- @module 'plugin_template._commands.say.command'
 ---
 
-local constant = require("plugin_name._commands.say.constant")
+local constant = require("plugin_template._commands.say.constant")
 
 local M = {}
 

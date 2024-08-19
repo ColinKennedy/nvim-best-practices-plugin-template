@@ -1,9 +1,9 @@
 --- Make dealing with COMMAND mode parsed arguments a bit easier.
 ---
---- @module 'plugin_name._cli.argparse_helper'
+--- @module 'plugin_template._cli.argparse_helper'
 ---
 
-local tabler = require("plugin_name._core.tabler")
+local tabler = require("plugin_template._core.tabler")
 
 local M = {}
 

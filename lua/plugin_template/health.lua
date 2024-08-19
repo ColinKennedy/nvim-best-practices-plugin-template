@@ -1,13 +1,13 @@
---- Make sure `plugin_name` will work as expected.
+--- Make sure `plugin_template` will work as expected.
 ---
 --- At minimum, we validate that the user's configuration is correct. But other
 --- checks can happen here if needed.
 ---
---- @module 'plugin_name.health'
+--- @module 'plugin_template.health'
 ---
 
-local configuration_ = require("plugin_name._core.configuration")
-local say_constant = require("plugin_name._commands.say.constant")
+local configuration_ = require("plugin_template._core.configuration")
+local say_constant = require("plugin_template._commands.say.constant")
 
 local M = {}
 
@@ -33,12 +33,12 @@ end
 
 --- Check `data` for problems and return each of them.
 ---
---- @param data PluginNameConfiguration? All extra customizations for this plugin.
+--- @param data PluginTemplateConfiguration? All extra customizations for this plugin.
 --- @return string[] # All found issues, if any.
 ---
 function M.get_issues(data)
     if not data or vim.tbl_isempty(data) then
-        data = configuration_.resolve_data(vim.g.plugin_name_configuration)
+        data = configuration_.resolve_data(vim.g.plugin_template_configuration)
     end
 
     local output = {}
@@ -86,9 +86,9 @@ function M.get_issues(data)
     return output
 end
 
---- Make sure `data` will work for `plugin_name`.
+--- Make sure `data` will work for `plugin_template`.
 ---
---- @param data PluginNameConfiguration? All extra customizations for this plugin.
+--- @param data PluginTemplateConfiguration? All extra customizations for this plugin.
 ---
 function M.check(data)
     vim.health.start("Configuration")
@@ -96,7 +96,7 @@ function M.check(data)
     local issues = M.get_issues(data)
 
     if vim.tbl_isempty(issues) then
-        vim.health.ok("Your vim.g.plugin_name_configuration variable is great!")
+        vim.health.ok("Your vim.g.plugin_template_configuration variable is great!")
     end
 
     for _, issue in ipairs(issues) do

@@ -1,14 +1,14 @@
 --- Connect Neovim's COMMAND mode to our Lua functions.
 ---
---- @module 'plugin_name._cli.cli_subcommand'
+--- @module 'plugin_template._cli.cli_subcommand'
 ---
 
 local M = {}
 
 --- Check if `full` contains `prefix` + whitespace.
 ---
---- @param full string Some full text like `"PluginName blah"`.
---- @param prefix string The expected starting text. e.g. `"PluginName"`.
+--- @param full string Some full text like `"PluginTemplate blah"`.
+--- @param prefix string The expected starting text. e.g. `"PluginTemplate"`.
 --- @return boolean # If a subcommand syntax was found, return true.
 ---
 local function _is_subcommand(full, prefix)
@@ -19,9 +19,9 @@ end
 
 --- Get the auto-complete, if any, for a subcommand.
 ---
---- @param text string Some full text like `"PluginName blah"`.
---- @param prefix string The expected starting text. e.g. `"PluginName"`.
---- @param subcommands PluginNameSubcommands All allowed commands.
+--- @param text string Some full text like `"PluginTemplate blah"`.
+--- @param prefix string The expected starting text. e.g. `"PluginTemplate"`.
+--- @param subcommands PluginTemplateSubcommands All allowed commands.
 ---
 local function _get_subcommand_completion(text, prefix, subcommands)
     local expression = "^" .. prefix .. "*%s(%S+)%s(.*)$"
@@ -40,11 +40,11 @@ end
 
 --- Create a function that implements "Vim COMMAND mode auto-complete".
 ---
---- Basically it's a function that returns a function that makes `:PluginName
---- hello` auto-complete to makes `:PluginName hello-world`.
+--- Basically it's a function that returns a function that makes `:PluginTemplate
+--- hello` auto-complete to makes `:PluginTemplate hello-world`.
 ---
---- @param prefix string The command to exclude from auto-complete. e.g. `"PluginName"`.
---- @param subcommands PluginNameSubcommands All allowed commands.
+--- @param prefix string The command to exclude from auto-complete. e.g. `"PluginTemplate"`.
+--- @param subcommands PluginTemplateSubcommands All allowed commands.
 --- @return function # The generated auto-complete function.
 ---
 function M.make_command_completer(prefix, subcommands)
@@ -75,16 +75,16 @@ function M.get_complete_options(data, positional_choices, named_choices)
     return { "aa", "bbb", "ccccc" }
 end
 
---- Wrap the `plugin_name` CLI / API in a way Neovim understands.
+--- Wrap the `plugin_template` CLI / API in a way Neovim understands.
 ---
---- Since `:PluginName` supports multiple sub-commands like `:PluginName
---- hello-world` and `:PluginName goodnight-moon`, something has to make sure
+--- Since `:PluginTemplate` supports multiple sub-commands like `:PluginTemplate
+--- hello-world` and `:PluginTemplate goodnight-moon`, something has to make sure
 --- that the right Lua function gets called depending on what the user asks for.
 ---
 --- This function handles that process, which we call "triage".
 ---
---- @param subcommands PluginNameSubcommands
----     All registered commands for `plugin_name` which we will let users run.
+--- @param subcommands PluginTemplateSubcommands
+---     All registered commands for `plugin_template` which we will let users run.
 ---     If the user gives an incorrect subcommand name, an error is displayed instead.
 ---
 function M.make_triager(subcommands)
@@ -101,7 +101,7 @@ function M.make_triager(subcommands)
         local subcommand = subcommands[subcommand_key]
 
         if not subcommand then
-            vim.notify("PluginName: Unknown command: " .. subcommand_key, vim.log.levels.ERROR)
+            vim.notify("PluginTemplate: Unknown command: " .. subcommand_key, vim.log.levels.ERROR)
 
             return
         end

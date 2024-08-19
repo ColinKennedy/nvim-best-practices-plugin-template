@@ -23,8 +23,8 @@
 - Rename from plugin-name to plugin-template
 
 - replace all plugin-template with plugin-name instead
-- replace all plugin_template with plugin_name instead
-- replace all PluginTemplate with PluginName instead
+- replace all plugin_template with plugin_template instead
+- replace all PluginTemplate with PluginTemplate instead
 
 - argparse - allow repeated flags, maybe?
 - Make sure named auto-complete works not just for keys but also for values
