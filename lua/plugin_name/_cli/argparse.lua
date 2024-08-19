@@ -7,6 +7,8 @@
 
 local M = {}
 
+-- TODO: Clean this code up, at some point
+
 --- @enum ArgumentType
 M.ArgumentType = {
     flag = "__flag",
@@ -117,7 +119,7 @@ function M.parse_arguments(text)
     local start_index = 1
     local escaped_character_count = 0
 
-    local index = 1
+    local physical_index = 1
 
     --- Look ahead to the next character in `text`.
     ---
@@ -128,13 +130,15 @@ function M.parse_arguments(text)
         return text:sub(index + 1, index + 1)
     end
 
+    local logical_index = physical_index
+
     --- Adds any accumulated argument data to the final output.
     ---
     --- Any buffered / remainder text is cleared.
     ---
     local function _add_to_output()
         remainder.value = ""
-        local end_index = index - escaped_character_count - 1
+        local end_index = physical_index - escaped_character_count - 1
         -- TODO: Replace with numbers later
         -- local range = {start_index, end_index}
         local range = string.format("%s,%s", start_index, end_index)
@@ -193,8 +197,8 @@ function M.parse_arguments(text)
         state = _State.argument_start
     end
 
-    while index <= #text do
-        local character = text:sub(index, index)
+    while physical_index <= #text do
+        local character = text:sub(physical_index, physical_index)
         remainder.value = remainder.value .. character
 
         local function _append_to_wip_argument(alternate_character)
@@ -206,21 +210,22 @@ function M.parse_arguments(text)
         end
 
         if state == _State.argument_start then
-            start_index = index
+            start_index = logical_index
 
             if is_alpha_numeric(character) then
                 -- NOTE: We know we've encounted some -f` or `--foo` or
                 -- `--foo=bar` but we aren't sure which it is yet.
                 --
                 if character == "-" then
-                    local next_character = peek(index)
+                    local next_character = peek(physical_index)
 
                     if next_character == "-" then
                         -- NOTE: It's definitely a `--foo` flag or `--foo=bar` argument.
                         state = _State.in_double_flag
                         _reset_argument()
                         remainder.value = remainder.value .. next_character
-                        index = index + 1
+                        logical_index = logical_index + 1
+                        physical_index = physical_index + 1
                         needs_name = true
                         needs_value = true
                     else
@@ -249,13 +254,15 @@ function M.parse_arguments(text)
             --
             if not is_escaping and _is_quote(character) then
                 -- NOTE: We've reached the end of the quote
-                -- TODO: I have no idea why this index = index + 1 works. Remove it?
-                index = index + 1
+                -- TODO: I have no idea why this physical_index = physical_index + 1 works. Remove it?
+                physical_index = physical_index + 1
+                logical_index = logical_index + 1
                 _add_to_output()
                 _reset_all()
             else
                 if is_escaping then
                     escaped_character_count = escaped_character_count + 1
+                    logical_index = logical_index - 1
                     is_escaping = false -- NOTE: The escaped character was consumed
                 end
                 _append_to_wip_argument()
@@ -269,12 +276,13 @@ function M.parse_arguments(text)
                 current_name = current_argument
                 _reset_argument()
 
-                if _is_quote(peek(index)) then
+                if _is_quote(peek(physical_index)) then
                     -- NOTE: We've discovered a `--foo="bar thing"` argument
                     -- and we're just about to find the `"bar thing"` part
                     --
                     state = _State.in_quote
-                    index = index + 1
+                    physical_index = physical_index + 1
+                    logical_index = logical_index + 1
                 else
                     state = _State.normal
                 end
@@ -296,7 +304,7 @@ function M.parse_arguments(text)
             -- NOTE: Since single-flags can be appended together like `"-abc"`
             -- or "-zzz", we need some special logic to keep track of every flag.
             --
-            local next_character = peek(index)
+            local next_character = peek(physical_index)
 
             if _is_whitespace(next_character) or next_character == "" then
                 -- NOTE: We've reached the end of 1+ single flag(s).
@@ -311,9 +319,11 @@ function M.parse_arguments(text)
                     start_index = start_index + 1
                     current_name = character_
                     -- TODO: Gross. Need to make this cleaner
-                    index = index + 1
+                    physical_index = physical_index + 1
+                    logical_index = logical_index + 1
                     _add_to_output()
-                    index = index - 1
+                    logical_index = logical_index - 1
+                    physical_index = physical_index - 1
                 end
 
                 _reset_all()
@@ -322,10 +332,12 @@ function M.parse_arguments(text)
             end
         elseif state == _State.normal then
             if is_escaping then
-                local next = peek(index)
+                local next = peek(physical_index)
                 _append_to_wip_argument(next)
-                index = index + 1
+                logical_index = logical_index + 1
+                physical_index = physical_index + 1
                 escaped_character_count = escaped_character_count + 1
+                logical_index = logical_index - 1
                 is_escaping = false -- NOTE: The escaped character was consumed
             elseif _is_whitespace(character) then
                 _add_to_output()
@@ -336,7 +348,8 @@ function M.parse_arguments(text)
             end
         end
 
-        index = index + 1
+        logical_index = logical_index + 1
+        physical_index = physical_index + 1
     end
 
     if state == _State.normal and current_argument ~= "" then

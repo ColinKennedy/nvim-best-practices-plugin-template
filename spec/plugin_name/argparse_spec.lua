@@ -242,22 +242,26 @@ describe("quotes", function()
         )
     end)
 
-    -- TODO: Fix
-    -- it("#escaped multiple backslashes - 002", function()
-    --     assert.same(
-    --         {
-    --             arguments = {
-    --                 {
-    --                     argument_type=argparse.ArgumentType.position,
-    --                     value="foo\\ b\\ar",
-    --                     range="1,8",
-    --                 },
-    --             },
-    --             remainder = {value=""},
-    --         },
-    --         argparse.parse_arguments("foo\\\\ b\\\\ar")
-    --     )
-    -- end)
+    it("#escaped multiple backslashes - 002", function()
+        assert.same(
+            {
+                arguments = {
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        value="foo\\",
+                        range="1,4",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        value="b\\ar",
+                        range="6,9",
+                    },
+                },
+                remainder = {value=""},
+            },
+            argparse.parse_arguments("foo\\\\ b\\\\ar")
+        )
+    end)
 
     it("#escaped multiple backslashes - 003", function()
         assert.same(
