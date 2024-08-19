@@ -285,7 +285,7 @@ function M.parse_arguments(text)
                     current_argument = true
                     _add_to_output()
                     _reset_all()
-                -- TODO: We might need this. Not sure
+                -- TODO: We might need this. Not sure. Probably remove this
                 -- else
                 --     is_escaping = false -- NOTE: The escaped character was consumed
                 end

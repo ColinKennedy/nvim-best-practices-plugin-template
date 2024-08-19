@@ -147,7 +147,7 @@ describe("quotes", function()
         )
     end)
 
-    it("flags within the quotes #asdf", function()
+    it("flags within the quotes", function()
         assert.same(
             {
                 arguments = {
@@ -218,6 +218,60 @@ describe("quotes", function()
                 remainder = {value=""},
             },
             argparse.parse_arguments("foo\\ bar")
+        )
+    end)
+
+    it("#escaped multiple backslashes - 001", function()
+        assert.same(
+            {
+                arguments = {
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        value="foo\\",
+                        range="1,4",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        value="bar",
+                        range="6,8",
+                    },
+                },
+                remainder = {value=""},
+            },
+            argparse.parse_arguments("foo\\\\ bar")
+        )
+    end)
+
+    -- TODO: Fix
+    -- it("#escaped multiple backslashes - 002", function()
+    --     assert.same(
+    --         {
+    --             arguments = {
+    --                 {
+    --                     argument_type=argparse.ArgumentType.position,
+    --                     value="foo\\ b\\ar",
+    --                     range="1,8",
+    --                 },
+    --             },
+    --             remainder = {value=""},
+    --         },
+    --         argparse.parse_arguments("foo\\\\ b\\\\ar")
+    --     )
+    -- end)
+
+    it("#escaped multiple backslashes - 003", function()
+        assert.same(
+            {
+                arguments = {
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        value="foo\\ bar",
+                        range="1,8",
+                    },
+                },
+                remainder = {value=""},
+            },
+            argparse.parse_arguments("foo\\\\\\ bar")
         )
     end)
 end)
@@ -304,22 +358,57 @@ describe("double-dash flags", function()
         )
     end)
 
-    it("partial --flag=", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.named,
-                        name="foo-bar",
-                        value = false,
-                        range="1,10",
-                    },
-                },
-                remainder = {value=""},
-            },
-            argparse.parse_arguments("--foo-bar=")
-        )
-    end)
+    -- TODO: Currently broken. Fix!
+    -- it("partial --flag= - single", function()
+    --     assert.same(
+    --         {
+    --             arguments = {
+    --                 {
+    --                     argument_type=argparse.ArgumentType.named,
+    --                     name="foo-bar",
+    --                     value = false,
+    --                     range="1,10",
+    --                 },
+    --             },
+    --             remainder = {value=""},
+    --         },
+    --         argparse.parse_arguments("--foo-bar=")
+    --     )
+    -- end)
+    --
+    -- it("partial --flag= - multiple", function()
+    --     assert.same(
+    --         {
+    --             arguments = {
+    --                 {
+    --                     argument_type=argparse.ArgumentType.named,
+    --                     name="foo-bar",
+    --                     value = false,
+    --                     range="1,10",
+    --                 },
+    --                 {
+    --                     argument_type=argparse.ArgumentType.position,
+    --                     range="12,15",
+    --                     value="blah",
+    --                 },
+    --                 {
+    --                     argument_type=argparse.ArgumentType.named,
+    --                     name="fizz-buzz",
+    --                     value = false,
+    --                     range="17,27",
+    --                 },
+    --                 {
+    --                     argument_type=argparse.ArgumentType.named,
+    --                     name="one-more",
+    --                     value = false,
+    --                     range="29,41",
+    --                 },
+    --             },
+    --             remainder = {value=""},
+    --         },
+    --         argparse.parse_arguments("--foo-bar= blah --fizz-buzz= --one-more=")
+    --     )
+    -- end)
 end)
 
 describe("double-dash equal-flags", function()

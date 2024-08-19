@@ -13,4 +13,9 @@ local M = {}
 -- TODO: Make sure type-hinting works with this
 M.run_hello_world_say = say_command.run_say
 
+-- -- TODO: Finish these
+-- M.run_goodnight_moon_read = read_command.run_say
+-- M.run_goodnight_moon_count_sheep = count_sheep_command.run
+-- M.run_goodnight_moon_sleep = sleep_command.run
+
 return M
