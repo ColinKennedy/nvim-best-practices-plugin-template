@@ -613,12 +613,17 @@ end
 ---     The starting point of the argument "tree" used to gather the arguments.
 ---
 local function _compute_completion_options(tree, input)
-    local all_but_last_argument = #input - 1
+    local all_but_last_argument = #input.arguments
     local tree_index = 1
-    local current_options = _get_current_options(tree, tree_index)
+    --- @type (FlagArgument | PositionArgument | NamedArgument)[]?
+    local current_options = nil
 
     for index=1, all_but_last_argument do
-        local argument = input[index]
+        if not current_options then
+            current_options = _get_current_options(tree, tree_index)
+        end
+
+        local argument = input.arguments[index]
         local matches = _get_exact_matches(argument, current_options)
 
         if vim.tbl_isempty(matches) then
@@ -639,7 +644,7 @@ local function _compute_completion_options(tree, input)
         end
     end
 
-    return current_options, tree_index
+    return (current_options or {}), tree_index
 end
 
 --- Find the auto-completion results for `input` and `column`, using `tree`.
@@ -684,21 +689,31 @@ function M.get_options(tree, input, column)
         input,
         _get_cursor_offset(input, column)
     )
+
     local options, tree_index = _compute_completion_options(tree, stripped)
+
+    -- if column >= input.arguments[#input.arguments].range.end_column then
+    --     if input.remainder.value == "" then
+    --         -- We must be on the last argument. Let's find out if it is a partial match.
+    --         local matches = _get_exact_matches(last, options)
+    --
+    --         if not vim.tbl_isempty(matches) then
+    --             return {}
+    --         end
+    --     end
+    -- end
+
+    -- TODO: Finish
+    local last = stripped.arguments[#stripped.arguments]
+    local matches = _get_exact_matches(last, options)
 
     return _get_auto_complete_values(options)
 
-    -- -- TODO: Finish
-    -- local last = stripped[#stripped]
-    -- local matches = _get_exact_matches(last, options)
-    --
     -- -- TODO: Handle this
     -- if vim.tbl_isempty(matches) then
     --     -- NOTE: Check for partial matches
     --     return
     -- end
-    --
-    -- print('DEBUGPRINT[1]: completion.lua:436: last argument=' .. vim.inspect(last))
     --
     -- if column == #input then
     --     -- TODO: Do "remainder" logic here, if needed
