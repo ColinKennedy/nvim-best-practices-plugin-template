@@ -9,7 +9,7 @@ local argparse = require("plugin_template._cli.argparse")
 
 describe("default", function()
     it("works even if #empty #simple", function()
-        assert.same({ arguments = {}, remainder = { value = "" } }, argparse.parse_arguments(""))
+        assert.same({ arguments = {}, text="", remainder = { value = "" } }, argparse.parse_arguments(""))
     end)
 end)
 
@@ -23,6 +23,7 @@ describe("positional arguments", function()
                     value = "foo",
                 },
             },
+            text="foo",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo"))
     end)
@@ -41,6 +42,7 @@ describe("positional arguments", function()
                     value = "bar",
                 },
             },
+            text="foo bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo bar"))
     end)
@@ -54,6 +56,7 @@ describe("positional arguments", function()
                     value = "foo ",
                 },
             },
+            text="foo\\ ",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\ "))
     end)
@@ -67,6 +70,7 @@ describe("positional arguments", function()
                     value = "foo bar",
                 },
             },
+            text="foo\\ bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\ bar"))
     end)
@@ -87,6 +91,7 @@ describe("quotes", function()
                     value = "bar fizz buzz",
                 },
             },
+            text='foo "bar fizz buzz"',
             remainder = { value = "" },
         }, argparse.parse_arguments('foo "bar fizz buzz"'))
         assert.same({
@@ -102,6 +107,7 @@ describe("quotes", function()
                     value = "foo",
                 },
             },
+            text='"bar fizz buzz" foo',
             remainder = { value = "" },
         }, argparse.parse_arguments('"bar fizz buzz" foo'))
         assert.same({
@@ -122,6 +128,7 @@ describe("quotes", function()
                     value = "buzz",
                 },
             },
+            text='foo "bar fizz" buzz',
             remainder = { value = "" },
         }, argparse.parse_arguments('foo "bar fizz" buzz'))
     end)
@@ -140,6 +147,7 @@ describe("quotes", function()
                     value = "bar -f --fizz",
                 },
             },
+            text="foo 'bar -f --fizz'",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo 'bar -f --fizz'"))
     end)
@@ -158,6 +166,7 @@ describe("quotes", function()
                     value = "bar",
                 },
             },
+            text="foo bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo bar"))
     end)
@@ -171,6 +180,7 @@ describe("quotes", function()
                     range = {start_column=1, end_column=4},
                 },
             },
+            text="foo\\ ",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\ "))
     end)
@@ -184,6 +194,7 @@ describe("quotes", function()
                     range = {start_column=1, end_column=7},
                 },
             },
+            text="foo\\ bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\ bar"))
     end)
@@ -202,6 +213,7 @@ describe("quotes", function()
                     range = {start_column=6, end_column=8},
                 },
             },
+            text="foo\\\\ bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\\\ bar"))
     end)
@@ -220,6 +232,7 @@ describe("quotes", function()
                     range = {start_column=6, end_column=9},
                 },
             },
+            text="foo\\\\ b\\\\ar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\\\ b\\\\ar"))
     end)
@@ -233,6 +246,7 @@ describe("quotes", function()
                     range = {start_column=1, end_column=8},
                 },
             },
+            text="foo\\\\\\ bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\\\\\ bar"))
     end)
@@ -261,6 +275,7 @@ describe("quotes", function()
                     range = {start_column=8, end_column=9},
                 },
             },
+            text="foo\\\\ -zzz",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\\\ -zzz"))
     end)
@@ -281,6 +296,7 @@ describe("double-dash flags", function()
                     range = {start_column=11, end_column=16},
                 },
             },
+            text="--foo-bar --fizz",
             remainder = { value = "" },
         }, argparse.parse_arguments("--foo-bar --fizz"))
     end)
@@ -294,6 +310,7 @@ describe("double-dash flags", function()
                     range = {start_column=1, end_column=9},
                 },
             },
+            text="--foo-bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("--foo-bar"))
         assert.same({
@@ -304,6 +321,7 @@ describe("double-dash flags", function()
                     range = {start_column=1, end_column=5},
                 },
             },
+            text="--foo",
             remainder = { value = "" },
         }, argparse.parse_arguments("--foo"))
     end)
@@ -333,60 +351,105 @@ describe("double-dash flags", function()
                 },
             },
             remainder = { value = "" },
+            text="--foo --bar --fizz --buzz",
         }, argparse.parse_arguments("--foo --bar --fizz --buzz"))
     end)
 
-    -- TODO: Currently broken. Fix!
-    -- it("partial --flag= - single", function()
-    --     assert.same(
-    --         {
-    --             arguments = {
-    --                 {
-    --                     argument_type=argparse.ArgumentType.named,
-    --                     name="foo-bar",
-    --                     value = false,
-    --                     range={start_column=1, end_column=10},
-    --                 },
-    --             },
-    --             remainder = {value=""},
-    --         },
-    --         argparse.parse_arguments("--foo-bar=")
-    --     )
-    -- end)
-    --
-    -- it("partial --flag= - multiple", function()
-    --     assert.same(
-    --         {
-    --             arguments = {
-    --                 {
-    --                     argument_type=argparse.ArgumentType.named,
-    --                     name="foo-bar",
-    --                     value = false,
-    --                     range={start_column=1, end_column=10},
-    --                 },
-    --                 {
-    --                     argument_type=argparse.ArgumentType.position,
-    --                     range={start_column=12, end_column=15},
-    --                     value="blah",
-    --                 },
-    --                 {
-    --                     argument_type=argparse.ArgumentType.named,
-    --                     name="fizz-buzz",
-    --                     value = false,
-    --                     range={start_column=17, end_column=27},
-    --                 },
-    --                 {
-    --                     argument_type=argparse.ArgumentType.named,
-    --                     name="one-more",
-    --                     value = false,
-    --                     range={start_column=29, end_column=41},
-    --                 },
-    --             },
-    --             remainder = {value=""},
-    --         },
-    --         argparse.parse_arguments("--foo-bar= blah --fizz-buzz= --one-more=")
-    --     )
-    -- end)
+    it("partial --flag= - single", function()
+        assert.same(
+            {
+                arguments = {
+                    {
+                        argument_type=argparse.ArgumentType.named,
+                        name="foo-bar",
+                        value = false,
+                        range={start_column=1, end_column=10},
+                    },
+                },
+                text = "--foo-bar=",
+                remainder = {value=""},
+            },
+            argparse.parse_arguments("--foo-bar=")
+        )
+    end)
+
+    it("full --flag= - multiple #asdf", function()
+        assert.same(
+            {
+                arguments = {
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        value = "hello-world",
+                        range={start_column=1, end_column=11},
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        value = "say",
+                        range={start_column=13, end_column=15},
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        value = "word",
+                        range={start_column=17, end_column=20},
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        value = 'Hi',
+                        range={start_column=22, end_column=25},
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.named,
+                        name = "repeat",
+                        value = "2",
+                        range={start_column=27, end_column=36},
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.named,
+                        name = "style",
+                        value = "uppercase",
+                        range={start_column=38, end_column=54},
+                    },
+                },
+                remainder = {value=""},
+                text='hello-world say word "Hi" --repeat=2 --style=uppercase',
+            },
+            argparse.parse_arguments('hello-world say word "Hi" --repeat=2 --style=uppercase')
+        )
+    end)
+    it("partial --flag= - multiple", function()
+        assert.same(
+            {
+                arguments = {
+                    {
+                        argument_type=argparse.ArgumentType.named,
+                        name="foo-bar",
+                        value = false,
+                        range={start_column=1, end_column=10},
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.position,
+                        range={start_column=12, end_column=15},
+                        value="blah",
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.named,
+                        name="fizz-buzz",
+                        value = false,
+                        range={start_column=17, end_column=28},
+                    },
+                    {
+                        argument_type=argparse.ArgumentType.named,
+                        name="one-more",
+                        value = false,
+                        range={start_column=30, end_column=40},
+                    },
+                },
+                remainder = {value=""},
+                text="--foo-bar= blah --fizz-buzz= --one-more=",
+            },
+            argparse.parse_arguments("--foo-bar= blah --fizz-buzz= --one-more=")
+        )
+    end)
 end)
 
 describe("double-dash equal-flags", function()
@@ -405,6 +468,7 @@ describe("double-dash equal-flags", function()
                 },
             },
             remainder = { value = "" },
+            text="--foo-bar --fizz",
         }, argparse.parse_arguments("--foo-bar --fizz"))
     end)
 
@@ -418,6 +482,7 @@ describe("double-dash equal-flags", function()
                 },
             },
             remainder = { value = "" },
+            text="--foo-bar",
         }, argparse.parse_arguments("--foo-bar"))
         assert.same({
             arguments = {
@@ -428,6 +493,7 @@ describe("double-dash equal-flags", function()
                 },
             },
             remainder = { value = "" },
+            text="--foo",
         }, argparse.parse_arguments("--foo"))
     end)
 
@@ -459,7 +525,10 @@ describe("double-dash equal-flags", function()
                 },
             },
             remainder = { value = "" },
-        }, argparse.parse_arguments("--foo='text' --bar=\"some thing\" --fizz --buzz='blah'"))
+            text="--foo='text' --bar=\"some thing\" --fizz --buzz='blah'",
+        }, argparse.parse_arguments(
+            "--foo='text' --bar=\"some thing\" --fizz --buzz='blah'"
+        ))
     end)
 end)
 
@@ -474,6 +543,7 @@ describe("single-dash flags", function()
                 },
             },
             remainder = { value = "" },
+            text="-f",
         }, argparse.parse_arguments("-f"))
     end)
 
@@ -496,6 +566,7 @@ describe("single-dash flags", function()
                     range = {start_column=3, end_column=4},
                 },
             },
+            text="-fbz",
             remainder = { value = "" },
         }, argparse.parse_arguments("-fbz"))
     end)
@@ -519,6 +590,7 @@ describe("single-dash flags", function()
                     range = {start_column=7, end_column=8},
                 },
             },
+            text="-f -b -z",
             remainder = { value = "" },
         }, argparse.parse_arguments("-f -b -z"))
     end)
@@ -534,6 +606,7 @@ describe("remainder - positions", function()
                     value = "foo",
                 },
             },
+            text="foo ",
             remainder = { value = " " },
         }, argparse.parse_arguments("foo "))
     end)
@@ -552,6 +625,7 @@ describe("remainder - positions", function()
                     value = "bar",
                 },
             },
+            text="foo bar  ",
             remainder = { value = "  " },
         }, argparse.parse_arguments("foo bar  "))
     end)
@@ -577,6 +651,7 @@ describe("remainder - flags", function()
                     range = {start_column=7, end_column=8},
                 },
             },
+            text="-f -b -z -",
             remainder = { value = " -" },
         }, argparse.parse_arguments("-f -b -z -"))
     end)
@@ -600,6 +675,7 @@ describe("remainder - flags", function()
                     range = {start_column=7, end_column=8},
                 },
             },
+            text="-f -b -z --",
             remainder = { value = " --" },
         }, argparse.parse_arguments("-f -b -z --"))
     end)
@@ -628,12 +704,13 @@ describe("remainder - flags", function()
                     range = {start_column=10, end_column=12},
                 },
             },
+            text="-f -b -z --r",
             remainder = { value = "" },
         }, argparse.parse_arguments("-f -b -z --r"))
     end)
 
     it("sees spaces when no arguments are given", function()
-        assert.same({ arguments = {}, remainder = { value = "    " } }, argparse.parse_arguments("    "))
+        assert.same({ arguments = {}, text = "    ", remainder = { value = "    " } }, argparse.parse_arguments("    "))
     end)
 
     it("stores the last space(s) - #multiple", function()
@@ -655,6 +732,7 @@ describe("remainder - flags", function()
                     range = {start_column=7, end_column=8},
                 },
             },
+            text="-f -b -z  ",
             remainder = { value = "  " },
         }, argparse.parse_arguments("-f -b -z  "))
     end)
@@ -678,6 +756,7 @@ describe("remainder - flags", function()
                     range = {start_column=7, end_column=8},
                 },
             },
+            text="-f -b -z ",
             remainder = { value = " " },
         }, argparse.parse_arguments("-f -b -z "))
     end)
@@ -711,6 +790,7 @@ describe("remainder - flags", function()
                     range = {start_column=9, end_column=10},
                 },
             },
+            text="-f -b -xyz ",
             remainder = { value = " " },
         }, argparse.parse_arguments("-f -b -xyz "))
     end)

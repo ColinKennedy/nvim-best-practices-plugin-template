@@ -82,12 +82,12 @@ describe("default", function()
         -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --r"), 14))
         -- -- -- TODO: Figure out how to handle this case later
         -- -- -- NOTE: Completing the =, so people know that this is requires an argument
-        -- -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat"), 20))
-        -- -- NOTE: Completing the value of the named argument
-        -- assert.same(
-        --     {"1", "2", "3", "4", "5"},
-        --     completion.get_options(tree, _parse("say phrase --repeat="), 21)
-        -- )
+        -- -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat"), 19))
+        -- NOTE: Completing the value of the named argument
+        assert.same(
+            {"1", "2", "3", "4", "5"},
+            completion.get_options(tree, _parse("say phrase --repeat="), 20)
+        )
         -- -- NOTE: Completion finished
         -- assert.same(
         --     {},

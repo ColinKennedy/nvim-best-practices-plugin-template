@@ -46,7 +46,9 @@ M.ArgumentType = {
 --- @field name ...
 ---     The text of the argument. e.g. The `"foo"` part of `"--foo=bar"`.
 --- @field value string
----     The second-hand side of the argument. e.g. The `"bar"` part of `"--foo=bar"`.
+---     The second-hand side of the argument. e.g. The `"bar"` part of
+---     `"--foo=bar"`. If the argument is partially written like `"--foo="`
+---     then this will be an empty string.
 
 --- @class ArgparseResults
 ---     All information that was found from parsing some user's input.
@@ -63,11 +65,12 @@ M.ArgumentType = {
 --- An internal tracker for the arguments.
 local _State = {
     argument_start = "argument_start",
-    normal = "normal",
     in_double_flag = "in_double_flag",
-    in_single_flag = "in_single_flag",
     in_quote = "in_quote",
+    in_single_flag = "in_single_flag",
     in_value = "in_value",
+    normal = "normal",
+    value_is_pending = "values_is_pending",
 }
 
 --- Check if `character` is a typical a-zA-Z0-9 character.
@@ -276,7 +279,7 @@ function M.parse_arguments(text)
                     physical_index = physical_index + 1
                     logical_index = logical_index + 1
                 else
-                    state = _State.normal
+                    state = _State.value_is_pending
                 end
             elseif _is_whitespace(character) then
                 -- NOTE: Ignore whitespace in some situations.
@@ -321,6 +324,16 @@ function M.parse_arguments(text)
             else
                 _append_to_wip_argument()
             end
+        elseif state == _State.value_is_pending then
+            if _is_whitespace(character) then
+                if current_argument == "" then
+                    current_argument = false
+                end
+                _add_to_output()
+                _reset_all()
+            else
+                _append_to_wip_argument()
+            end
         elseif state == _State.normal then
             if is_escaping then
                 local next = peek(physical_index)
@@ -341,7 +354,14 @@ function M.parse_arguments(text)
         physical_index = physical_index + 1
     end
 
-    if state == _State.normal and current_argument ~= "" then
+    if state == _State.value_is_pending then
+        if current_argument == "" then
+            current_argument = false
+        end
+
+        _add_to_output()
+        _reset_all()
+    elseif state == _State.normal and current_argument ~= "" then
         _add_to_output()
     elseif (state == _State.in_double_flag or state == _State.in_single_flag) and current_argument ~= "" then
         current_name = current_argument
@@ -350,7 +370,7 @@ function M.parse_arguments(text)
         _add_to_output()
     end
 
-    return { arguments = output, remainder = remainder }
+    return { arguments = output, text = text, remainder = remainder }
 end
 
 return M

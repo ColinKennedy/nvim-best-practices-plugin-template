@@ -15,6 +15,8 @@
    - in argument
    - after argument (no space)
    - after argument (space)
+  - named argument choices
+   - Make sure it works when cursor is in the middle of a command string
 
 
 - Do existing TODO notes
