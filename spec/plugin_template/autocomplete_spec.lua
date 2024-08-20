@@ -41,7 +41,7 @@ describe("default", function()
         assert.same({}, completion.get_options(tree, _parse(""), 1))
     end)
 
-    it("works with a basic multi-position example #asdf", function()
+    it("works with a basic multi-position example", function()
         local tree = {
             "say",
             {"phrase", "word"},
