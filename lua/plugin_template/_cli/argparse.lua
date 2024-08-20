@@ -20,6 +20,15 @@ M.ArgumentType = {
 ---     A base class to inherit from.
 --- @field argument_type ArgumentType
 ---     An type indicator for this argument.
+--- @field range ArgumentRange
+---     The start and end index (both are inclusive) of the argument.
+
+--- @class ArgumentRange
+---     The start and end index (both are inclusive) of the argument.
+--- @field start_column number
+---     The first index of the argument (inclusive).
+--- @field end_column number
+---     The last index of the argument (inclusive).
 
 --- @class FlagArgument : BaseArgument
 ---     An argument that has a name but no value. It starts with either - or --
@@ -139,9 +148,7 @@ function M.parse_arguments(text)
     local function _add_to_output()
         remainder.value = ""
         local end_index = physical_index - escaped_character_count - 1
-        -- TODO: Replace with numbers later
-        -- local range = {start_index, end_index}
-        local range = string.format("%s,%s", start_index, end_index)
+        local range = {start_column=start_index, end_column=end_index}
 
         if not needs_value then
             table.insert(output, {

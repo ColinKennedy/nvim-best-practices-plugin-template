@@ -1,4 +1,22 @@
 - Try one more time to get completion working
+ - Add unitests for different cursor positions along the completion results
+  - positional argument
+   - before argument
+   - in argument
+   - after argument (no space)
+   - after argument (space)
+  - named argument
+   - before argument
+   - in argument
+   - after argument (no space)
+   - after argument (space)
+  - flag
+   - before argument
+   - in argument
+   - after argument (no space)
+   - after argument (space)
+
+
 - Do existing TODO notes
 - /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/plugin_template/_cli/completion.lua
 

@@ -19,7 +19,7 @@ describe("positional arguments", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "1,3",
+                    range = {start_column=1, end_column=3},
                     value = "foo",
                 },
             },
@@ -32,12 +32,12 @@ describe("positional arguments", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "1,3",
+                    range = {start_column=1, end_column=3},
                     value = "foo",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "5,7",
+                    range = {start_column=5, end_column=7},
                     value = "bar",
                 },
             },
@@ -50,7 +50,7 @@ describe("positional arguments", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "1,4",
+                    range = {start_column=1, end_column=4},
                     value = "foo ",
                 },
             },
@@ -63,7 +63,7 @@ describe("positional arguments", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "1,7",
+                    range = {start_column=1, end_column=7},
                     value = "foo bar",
                 },
             },
@@ -78,12 +78,12 @@ describe("quotes", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "1,3",
+                    range = {start_column=1, end_column=3},
                     value = "foo",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "5,19",
+                    range = {start_column=5, end_column=19},
                     value = "bar fizz buzz",
                 },
             },
@@ -93,12 +93,12 @@ describe("quotes", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "1,15",
+                    range = {start_column=1, end_column=15},
                     value = "bar fizz buzz",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "17,19",
+                    range = {start_column=17, end_column=19},
                     value = "foo",
                 },
             },
@@ -108,17 +108,17 @@ describe("quotes", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "1,3",
+                    range = {start_column=1, end_column=3},
                     value = "foo",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "5,14",
+                    range = {start_column=5, end_column=14},
                     value = "bar fizz",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "16,19",
+                    range = {start_column=16, end_column=19},
                     value = "buzz",
                 },
             },
@@ -131,12 +131,12 @@ describe("quotes", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "1,3",
+                    range = {start_column=1, end_column=3},
                     value = "foo",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "5,19",
+                    range = {start_column=5, end_column=19},
                     value = "bar -f --fizz",
                 },
             },
@@ -149,12 +149,12 @@ describe("quotes", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "1,3",
+                    range = {start_column=1, end_column=3},
                     value = "foo",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "5,7",
+                    range = {start_column=5, end_column=7},
                     value = "bar",
                 },
             },
@@ -168,7 +168,7 @@ describe("quotes", function()
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "foo ",
-                    range = "1,4",
+                    range = {start_column=1, end_column=4},
                 },
             },
             remainder = { value = "" },
@@ -181,7 +181,7 @@ describe("quotes", function()
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "foo bar",
-                    range = "1,7",
+                    range = {start_column=1, end_column=7},
                 },
             },
             remainder = { value = "" },
@@ -194,12 +194,12 @@ describe("quotes", function()
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "foo\\",
-                    range = "1,4",
+                    range = {start_column=1, end_column=4},
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "bar",
-                    range = "6,8",
+                    range = {start_column=6, end_column=8},
                 },
             },
             remainder = { value = "" },
@@ -212,12 +212,12 @@ describe("quotes", function()
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "foo\\",
-                    range = "1,4",
+                    range = {start_column=1, end_column=4},
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "b\\ar",
-                    range = "6,9",
+                    range = {start_column=6, end_column=9},
                 },
             },
             remainder = { value = "" },
@@ -230,7 +230,7 @@ describe("quotes", function()
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "foo\\ bar",
-                    range = "1,8",
+                    range = {start_column=1, end_column=8},
                 },
             },
             remainder = { value = "" },
@@ -243,22 +243,22 @@ describe("quotes", function()
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "foo\\",
-                    range = "1,4",
+                    range = {start_column=1, end_column=4},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = "6,9",
+                    range = {start_column=6, end_column=9},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = "7,9",
+                    range = {start_column=7, end_column=9},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = "8,9",
+                    range = {start_column=8, end_column=9},
                 },
             },
             remainder = { value = "" },
@@ -273,12 +273,12 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo-bar",
-                    range = "1,9",
+                    range = {start_column=1, end_column=9},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "fizz",
-                    range = "11,16",
+                    range = {start_column=11, end_column=16},
                 },
             },
             remainder = { value = "" },
@@ -291,7 +291,7 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo-bar",
-                    range = "1,9",
+                    range = {start_column=1, end_column=9},
                 },
             },
             remainder = { value = "" },
@@ -301,7 +301,7 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo",
-                    range = "1,5",
+                    range = {start_column=1, end_column=5},
                 },
             },
             remainder = { value = "" },
@@ -314,22 +314,22 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo",
-                    range = "1,5",
+                    range = {start_column=1, end_column=5},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "bar",
-                    range = "7,11",
+                    range = {start_column=7, end_column=11},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "fizz",
-                    range = "13,18",
+                    range = {start_column=13, end_column=18},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "buzz",
-                    range = "20,25",
+                    range = {start_column=20, end_column=25},
                 },
             },
             remainder = { value = "" },
@@ -345,7 +345,7 @@ describe("double-dash flags", function()
     --                     argument_type=argparse.ArgumentType.named,
     --                     name="foo-bar",
     --                     value = false,
-    --                     range="1,10",
+    --                     range={start_column=1, end_column=10},
     --                 },
     --             },
     --             remainder = {value=""},
@@ -362,24 +362,24 @@ describe("double-dash flags", function()
     --                     argument_type=argparse.ArgumentType.named,
     --                     name="foo-bar",
     --                     value = false,
-    --                     range="1,10",
+    --                     range={start_column=1, end_column=10},
     --                 },
     --                 {
     --                     argument_type=argparse.ArgumentType.position,
-    --                     range="12,15",
+    --                     range={start_column=12, end_column=15},
     --                     value="blah",
     --                 },
     --                 {
     --                     argument_type=argparse.ArgumentType.named,
     --                     name="fizz-buzz",
     --                     value = false,
-    --                     range="17,27",
+    --                     range={start_column=17, end_column=27},
     --                 },
     --                 {
     --                     argument_type=argparse.ArgumentType.named,
     --                     name="one-more",
     --                     value = false,
-    --                     range="29,41",
+    --                     range={start_column=29, end_column=41},
     --                 },
     --             },
     --             remainder = {value=""},
@@ -396,12 +396,12 @@ describe("double-dash equal-flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo-bar",
-                    range = "1,9",
+                    range = {start_column=1, end_column=9},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "fizz",
-                    range = "11,16",
+                    range = {start_column=11, end_column=16},
                 },
             },
             remainder = { value = "" },
@@ -414,7 +414,7 @@ describe("double-dash equal-flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo-bar",
-                    range = "1,9",
+                    range = {start_column=1, end_column=9},
                 },
             },
             remainder = { value = "" },
@@ -424,7 +424,7 @@ describe("double-dash equal-flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo",
-                    range = "1,5",
+                    range = {start_column=1, end_column=5},
                 },
             },
             remainder = { value = "" },
@@ -437,24 +437,24 @@ describe("double-dash equal-flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "foo",
-                    range = "1,12",
+                    range = {start_column=1, end_column=12},
                     value = "text",
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "bar",
-                    range = "14,31",
+                    range = {start_column=14, end_column=31},
                     value = "some thing",
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "fizz",
-                    range = "33,38",
+                    range = {start_column=33, end_column=38},
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "buzz",
-                    range = "40,52",
+                    range = {start_column=40, end_column=52},
                     value = "blah",
                 },
             },
@@ -470,7 +470,7 @@ describe("single-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = "1,2",
+                    range = {start_column=1, end_column=2},
                 },
             },
             remainder = { value = "" },
@@ -483,17 +483,17 @@ describe("single-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = "1,4",
+                    range = {start_column=1, end_column=4},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = "2,4",
+                    range = {start_column=2, end_column=4},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = "3,4",
+                    range = {start_column=3, end_column=4},
                 },
             },
             remainder = { value = "" },
@@ -506,17 +506,17 @@ describe("single-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = "1,2",
+                    range = {start_column=1, end_column=2},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = "4,5",
+                    range = {start_column=4, end_column=5},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = "7,8",
+                    range = {start_column=7, end_column=8},
                 },
             },
             remainder = { value = "" },
@@ -530,7 +530,7 @@ describe("remainder - positions", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "1,3",
+                    range = {start_column=1, end_column=3},
                     value = "foo",
                 },
             },
@@ -543,12 +543,12 @@ describe("remainder - positions", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "1,3",
+                    range = {start_column=1, end_column=3},
                     value = "foo",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = "5,7",
+                    range = {start_column=5, end_column=7},
                     value = "bar",
                 },
             },
@@ -564,17 +564,17 @@ describe("remainder - flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = "1,2",
+                    range = {start_column=1, end_column=2},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = "4,5",
+                    range = {start_column=4, end_column=5},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = "7,8",
+                    range = {start_column=7, end_column=8},
                 },
             },
             remainder = { value = " -" },
@@ -587,17 +587,17 @@ describe("remainder - flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = "1,2",
+                    range = {start_column=1, end_column=2},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = "4,5",
+                    range = {start_column=4, end_column=5},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = "7,8",
+                    range = {start_column=7, end_column=8},
                 },
             },
             remainder = { value = " --" },
@@ -610,22 +610,22 @@ describe("remainder - flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = "1,2",
+                    range = {start_column=1, end_column=2},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = "4,5",
+                    range = {start_column=4, end_column=5},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = "7,8",
+                    range = {start_column=7, end_column=8},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "r",
-                    range = "10,12",
+                    range = {start_column=10, end_column=12},
                 },
             },
             remainder = { value = "" },
@@ -642,17 +642,17 @@ describe("remainder - flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = "1,2",
+                    range = {start_column=1, end_column=2},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = "4,5",
+                    range = {start_column=4, end_column=5},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = "7,8",
+                    range = {start_column=7, end_column=8},
                 },
             },
             remainder = { value = "  " },
@@ -665,17 +665,17 @@ describe("remainder - flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = "1,2",
+                    range = {start_column=1, end_column=2},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = "4,5",
+                    range = {start_column=4, end_column=5},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = "7,8",
+                    range = {start_column=7, end_column=8},
                 },
             },
             remainder = { value = " " },
@@ -688,27 +688,27 @@ describe("remainder - flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = "1,2",
+                    range = {start_column=1, end_column=2},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = "4,5",
+                    range = {start_column=4, end_column=5},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "x",
-                    range = "7,10",
+                    range = {start_column=7, end_column=10},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "y",
-                    range = "8,10",
+                    range = {start_column=8, end_column=10},
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = "9,10",
+                    range = {start_column=9, end_column=10},
                 },
             },
             remainder = { value = " " },
