@@ -15,6 +15,9 @@ local argparse_helper = require("plugin_template._cli.argparse_helper")
 ---     A --key=value pair. Basically it's a FlagArgument that has an extra value.
 --- @field used number
 ---     The number of times that this option has been used already (0-or-greater value).
+--- @field choices (string[] | fun(): string[])
+---     Since `NamedOption` requires a name + value, `choices` is used to
+---     auto-complete its values, starting at `--foo=`.
 --- @field count OptionCount
 ---     The number of times that this option can be used.
 
@@ -60,8 +63,8 @@ end
 
 --- Check if `options` has any count-enabled arguments that still have usages left.
 ---
---- @param options CompletionOption[]
---- @return boolean # All of `options` don't have any counts left.
+--- @param options CompletionOption[] A complete list of `options` to consider.
+--- @return boolean # If all of `options` don't have any counts left, return `true`.
 ---
 local function _is_exhausted(options)
     for _, option in ipairs(options) do
@@ -73,10 +76,15 @@ local function _is_exhausted(options)
     return false
 end
 
-local function _is_unfinished_named_argument(data)
+--- Check if `argument` is a partially written named (--foo=) argument.
+---
+--- @param argument ArgparseArgument
+--- @return boolean # If it's a match, return `true`.
+---
+local function _is_unfinished_named_argument(argument)
     if
-        data.argument_type == argparse.ArgumentType.named
-        and data.value == false
+        argument.argument_type == argparse.ArgumentType.named
+        and argument.value == false
     then
         return true
     end
@@ -84,6 +92,12 @@ local function _is_unfinished_named_argument(data)
     return false
 end
 
+--- Check if `data` is actually an unfinished / partial named argument.
+---
+--- @param data ArgparseArgument A (maybe) partially written user argument.
+--- @param option CompletionOption The option to check for a match.
+--- @return boolean # If there's a match, return `true`.
+---
 local function _is_partial_match_named_argument(data, option)
     if
         data.argument_type == argparse.ArgumentType.named
@@ -112,6 +126,12 @@ local function _is_partial_match_named_argument(data, option)
     return false
 end
 
+--- Find all `options` that match `argument`.
+---
+--- @param data ArgparseArgument A partially written user argument.
+--- @param option CompletionOption The option to check for a match.
+--- @return boolean # If there's a match, return `true`.
+---
 local function _is_partial_match(data, option)
     if
         data.argument_type == argparse.ArgumentType.position
@@ -256,6 +276,16 @@ end
 --     return false
 -- end
 
+--- Find the label name of `option`.
+---
+--- - --foo = foo
+--- - --foo=bar = foo
+--- - -f = f
+--- - foo = foo
+---
+--- @param option ArgparseArgument Some argument / option to query.
+--- @return string # The found name.
+---
 local function _get_argument_name(option)
     if option.argument_type == argparse.ArgumentType.position then
         return option.value
@@ -306,11 +336,17 @@ local function _increment_used(all_options, matching_options)
     end
 end
 
-local function _get_matches(data, options)
+--- Find all `options` that match `argument`.
+---
+--- @param argument ArgparseArgument A partially written user argument.
+--- @param options CompletionOption[] The options to consider for auto-completion.
+--- @return CompletionOption[] # All options that match part of `argument`.
+---
+local function _get_partial_matches(argument, options)
     local output = {}
 
     for _, option in ipairs(options) do
-        if _is_partial_match(data, option) then
+        if _is_partial_match(argument, option) then
             table.insert(output, option)
         end
     end
@@ -330,18 +366,29 @@ end
 --     return output
 -- end
 
-local function _handle_partial_matches(data, current_options)
-    local options = _get_matches(data, current_options)
+--- Find all `options` that match `argument`.
+---
+--- @param argument ArgparseArgument A partially written user argument.
+--- @param options CompletionOption[] The options to consider for auto-completion.
+--- @return CompletionOption[] # All options that match part of `argument`.
+---
+local function _handle_partial_matches(argument, options)
+    local matches = _get_partial_matches(argument, options)
 
-    if vim.tbl_isempty(options) then
+    if vim.tbl_isempty(matches) then
         return {}
     end
 
-    _increment_used(current_options, options)
+    _increment_used(options, matches)
 
-    return options
+    return matches
 end
 
+--- Check if `options` have been used up (and we are ready to get more options).
+---
+--- @param options All options that may have been used in previous runs.
+--- @return boolean # If `options` still has required uses, return `false`.
+---
 local function _needs_next_options(options)
     for _, option in ipairs(options) do
         if option.required and _has_fixed_count(option) and _has_uses_left(option) then
@@ -352,6 +399,13 @@ local function _needs_next_options(options)
     return true
 end
 
+--- Get all auto-complete option from `options` that still has uses left.
+---
+--- @param options CompletionOption[]
+---     All options which may or may not have been already used.
+--- @return CompletionOption[]
+---     Any `options` that still need / want to be used.
+---
 local function _trim_exhausted_options(options)
     local output = {}
 
@@ -410,6 +464,16 @@ local function _compute_completion_options(tree, input)
     return current_options, tree_index
 end
 
+--- Remove the ending `index` options from `input`.
+---
+--- @param input ArgparseResults
+---     The parsed arguments + any remainder text.
+--- @param column number
+---     The found index. If all arguments are < `column` then the returning
+---     index will cover all of `input.arguments`.
+--- @return ArgparseResults
+---     The stripped copy from `input`.
+---
 local function _rstrip_input(input, column)
     local stripped = argparse_helper.rstrip_arguments(
         input,
@@ -427,6 +491,13 @@ local function _rstrip_input(input, column)
     return stripped
 end
 
+--- If there is one, grab the final argument `--foo=` argument.
+---
+--- The `--foo=` is "unfinished" because it's missing a value.
+---
+--- @param input ArgparseResults The some argument / completion information.
+--- @return ArgparseArgument? # The found named argument, if any.
+---
 local function _get_unfinished_named_argument_data(input)
     local last = input.arguments[#input.arguments] or {}
 
@@ -437,10 +508,11 @@ local function _get_unfinished_named_argument_data(input)
     return nil
 end
 
--- local function _get_remainder_argument(input)
---     local text = input.remainder.value
--- end
-
+--- Get the named auto-complete options, if any.
+---
+--- @param option NamedOption The named option to grab from.
+--- @return string[] # The found auto-complete options, if any.
+---
 local function _get_named_option_choices(option)
     if not option.choices then
         return {}
@@ -450,9 +522,24 @@ local function _get_named_option_choices(option)
         return option.choices()
     end
 
-    return option.choices
+    local choices = option.choices
+    --- @cast choices string[]
+
+    return choices
 end
 
+--- Get the auto-completion options for some named argument.
+---
+--- Important: It's assumed that this named argument doesn't already have
+--- a value or the value is incomplete.
+---
+--- @param tree OptionTree
+---     The fully-parsed completion information.
+--- @param argument ArgparseArgument
+---     The unfinished named argument, if any.
+--- @return string[]
+---     The found auto-complete options.
+---
 local function _get_unfinished_named_argument_auto_complete_options(tree, argument)
     -- TODO: Get these options more intelligently. This section needs to consider
     -- flags that are `count="*"` because they could also be options
@@ -623,7 +710,8 @@ function M.get_options(tree, input, column)
     end
 
     local options, tree_index = _compute_completion_options(tree, stripped)
-    print('DEBUGPRINT[126]: completion.lua:629: options=' .. vim.inspect(options))
+    -- TODO: Remove this code
+    print('DEBUGPRINT[136]: completion.lua:625: options=' .. vim.inspect(options))
 
     -- if column >= input.arguments[#input.arguments].range.end_column then
     --     if input.remainder.value == "" then
@@ -668,16 +756,6 @@ function M.get_options(tree, input, column)
     )
 
     return _get_auto_complete_values(matches)
-
-    -- -- TODO: Handle this
-    -- if vim.tbl_isempty(matches) then
-    --     -- NOTE: Check for partial matches
-    --     return
-    -- end
-    --
-    -- if column == #input then
-    --     -- TODO: Do "remainder" logic here, if needed
-    -- end
 end
 
 return M
