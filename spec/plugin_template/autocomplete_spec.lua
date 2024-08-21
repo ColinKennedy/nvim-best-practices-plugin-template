@@ -40,8 +40,10 @@ describe("default", function()
 
         assert.same({}, completion.get_options(tree, _parse(""), 1))
     end)
+end)
 
-    it("works with a basic multi-position example #asdf", function()
+describe("simple", function()
+    it("works with a basic multi-position example", function()
         local tree = {
             "say",
             {"phrase", "word"},
@@ -109,29 +111,133 @@ describe("default", function()
         --     completion.get_options(tree, _parse("say phrase --repeat=5 --"), 24)
         -- )
         --
-        assert.same(
-            {"--style="},
-            completion.get_options(tree, _parse("say phrase --repeat=5 --s"), 25)
-        )
+        -- assert.same(
+        --     {"--style="},
+        --     completion.get_options(tree, _parse("say phrase --repeat=5 --s"), 25)
+        -- )
 
         -- assert.same(
         --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style"))
+        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style"), 29)
         -- )
-        --
+
         -- assert.same(
         --     {"lowercase", "uppercase"},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style="))
+        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style="), 30)
         -- )
-        --
+
         -- assert.same(
         --     {"lowercase"},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style=l"))
+        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style=l"), 31)
         -- )
-        --
+
         -- assert.same(
         --     {},
         --     completion.get_options(tree, _parse("say phrase --repeat=5 --style=lowercase"))
         -- )
+    end)
+end)
+
+describe("named argument", function()
+    it("auto-completes on the dashes - 001", function()
+        local tree = {
+            {
+                argument_type=argparse.ArgumentType.named,
+                name="style",
+                choices={"lowercase", "uppercase"},
+            },
+        }
+
+        assert.same({"--style="}, completion.get_options(tree, _parse("-"), 1))
+    end)
+
+    it("auto-completes on the dashes - 002", function()
+        local tree = {
+            {
+                argument_type=argparse.ArgumentType.named,
+                name="style",
+                choices={"lowercase", "uppercase"},
+            },
+        }
+
+        assert.same({"--style="}, completion.get_options(tree, _parse("--"), 1))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--"), 2))
+    end)
+
+    it("auto-completes on a partial argument name - 001", function()
+        local tree = {
+            {
+                argument_type=argparse.ArgumentType.named,
+                name="style",
+                choices={"lowercase", "uppercase"},
+            },
+        }
+
+        assert.same({"--style="}, completion.get_options(tree, _parse("--s"), 1))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--s"), 2))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--s"), 3))
+    end)
+
+    it("auto-completes on a partial argument name - 002", function()
+        local tree = {
+            {
+                argument_type=argparse.ArgumentType.named,
+                name="style",
+                choices={"lowercase", "uppercase"},
+            },
+        }
+
+        assert.same({"--style="}, completion.get_options(tree, _parse("--styl"), 1))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--styl"), 2))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--styl"), 3))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--styl"), 4))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--styl"), 5))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--styl"), 6))
+    end)
+
+    it("auto-completes on a partial argument name - 003", function()
+        local tree = {
+            {
+                argument_type=argparse.ArgumentType.named,
+                name="style",
+                choices={"lowercase", "uppercase"},
+            },
+        }
+
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 1))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 2))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 3))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 4))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 5))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 6))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 7))
+    end)
+
+    it("does not auto-complete the name anymore and auto-completes the value", function()
+        local tree = {
+            {
+                choices=function(value)
+                    local output = {}
+                    value = value or 0
+
+                    for index=1,5 do
+                        table.insert(output, tostring(value + index))
+                    end
+
+                    return output
+                end,
+                name="repeat",
+                argument_type=argparse.ArgumentType.named,
+            },
+        }
+
+        assert.same({}, completion.get_options(tree, _parse("--style="), 1))
+        assert.same({}, completion.get_options(tree, _parse("--style="), 2))
+        assert.same({}, completion.get_options(tree, _parse("--style="), 3))
+        assert.same({}, completion.get_options(tree, _parse("--style="), 4))
+        assert.same({}, completion.get_options(tree, _parse("--style="), 5))
+        assert.same({}, completion.get_options(tree, _parse("--style="), 6))
+        assert.same({}, completion.get_options(tree, _parse("--style="), 7))
+        assert.same({}, completion.get_options(tree, _parse("--style="), 8))
     end)
 end)

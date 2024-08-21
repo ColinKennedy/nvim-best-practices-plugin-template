@@ -378,19 +378,18 @@ local function _compute_completion_options(tree, input)
     -- TODO: This variable name is wrong. Change it later
     local all_but_last_argument = #input.arguments
     local tree_index = 1
+    local current_options = _get_current_options(tree, tree_index)
+    local input_count = #input.arguments
 
-    --- @type CompletionOption[]?
-    local current_options = nil
-
-    for index=1, all_but_last_argument do
-        if not current_options then
-            current_options = _get_current_options(tree, tree_index)
-        end
-
+    for index=1, input_count do
         local argument = input.arguments[index]
         local matches = _get_exact_matches(argument, current_options)
 
         if vim.tbl_isempty(matches) then
+            if index == input_count then
+                return current_options, tree_index
+            end
+
             -- NOTE: Something went wrong. The user must've mistyped something.
             --
             -- Since we no longer know where we are in the tree, it's not
@@ -624,6 +623,7 @@ function M.get_options(tree, input, column)
     end
 
     local options, tree_index = _compute_completion_options(tree, stripped)
+    print('DEBUGPRINT[126]: completion.lua:629: options=' .. vim.inspect(options))
 
     -- if column >= input.arguments[#input.arguments].range.end_column then
     --     if input.remainder.value == "" then
