@@ -38,6 +38,17 @@ local function _get_subcommand_completion(text, prefix, subcommands)
     return nil
 end
 
+--- Change `text` to something that will work with Lua regex.
+---
+--- @param text string Some raw text. e.g. `"foo-bar"`.
+--- @return string # Escaped text, e.g. `"foo%-bar"`.
+---
+local function _escape(text)
+    local escaped = text:gsub("%-", "%%-")
+
+    return escaped
+end
+
 --- Create a function that implements "Vim COMMAND mode auto-complete".
 ---
 --- Basically it's a function that returns a function that makes `:PluginTemplate
@@ -57,11 +68,15 @@ function M.make_command_completer(prefix, subcommands)
 
         if _is_subcommand(text, prefix) then
             local keys = vim.tbl_keys(subcommands)
-            return vim.iter(keys)
-                :filter(function(key)
-                    return key:find(args) ~= nil
-                end)
-                :totable()
+            local output = {}
+
+            for _, key in ipairs(keys) do
+                if key:find(_escape(args)) ~= nil then
+                    table.insert(output, key)
+                end
+            end
+
+            return output
         end
 
         return nil

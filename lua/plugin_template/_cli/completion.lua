@@ -573,7 +573,7 @@ local function _get_unfinished_named_argument_auto_complete_options(tree, argume
         for _, value in ipairs(_get_named_option_choices(match, current_value))
         do
             if not vim.tbl_contains(output, value) then
-                table.insert(output, value)
+                table.insert(output, string.format("--%s=%s", argument.name, value))
             end
         end
     end
