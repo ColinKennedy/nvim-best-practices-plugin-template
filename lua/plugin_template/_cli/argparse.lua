@@ -58,6 +58,8 @@ M.ArgumentType = {
 ---     The arguments that were able to be parsed
 --- @field remainder ArgparseRemainder
 ---     Any leftover text during parsing that didn't match an argument.
+--- @field text string
+---     The original, raw, unparsed user arguments.
 
 --- @class ArgparseRemainder
 ---     Any leftover text during parsing that didn't match an argument.

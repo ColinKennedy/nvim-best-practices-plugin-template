@@ -34,6 +34,8 @@ end
 --- @param index number
 ---     A 1-or-more value. 1 has not effect. 2-or-more will remove arguments
 ---     from the right-hand side of `results`.
+--- @return ArgparseResults
+---     The stripped copy from `results`.
 ---
 function M.rstrip_arguments(results, index)
     local copy = vim.tbl_deep_extend("force", {}, results)

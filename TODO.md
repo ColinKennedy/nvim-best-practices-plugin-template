@@ -17,6 +17,14 @@
    - after argument (space)
   - named argument choices
    - Make sure it works when cursor is in the middle of a command string
+ - Add unittest to make sure that an optional, repeatable --flag / --named=arg can be used in multiple places. e.g.
+ ```lua
+ local style = {count=3, ...}
+ local tree = { {style}, {style}, }
+ ```
+ - required flag / named arguments
+ - Make sure cursor position works with named arguments as expected
+ - Allow "any" argument somehow
 
 
 - Do existing TODO notes

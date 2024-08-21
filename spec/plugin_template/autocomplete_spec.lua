@@ -241,3 +241,44 @@ describe("named argument", function()
         assert.same({}, completion.get_options(tree, _parse("--style="), 8))
     end)
 end)
+
+describe("flag argument", function()
+    it("auto-completes on the dash", function()
+        local tree = {
+            {
+                argument_type=argparse.ArgumentType.flag,
+                name="f",
+            },
+        }
+
+        assert.same({"-f"}, completion.get_options(tree, _parse("-"), 1))
+    end)
+
+    it("does not auto-complete if at the end of the flag", function()
+        local tree = {
+            {
+                argument_type=argparse.ArgumentType.flag,
+                name="f",
+            },
+        }
+
+        assert.same({}, completion.get_options(tree, _parse("-f"), 1))
+        assert.same({}, completion.get_options(tree, _parse("-f"), 2))
+    end)
+
+    it("auto-completes if there's a another flag that can be used", function()
+        local tree = {
+            {
+                argument_type=argparse.ArgumentType.flag,
+                name="f",
+            },
+            {
+                argument_type=argparse.ArgumentType.flag,
+                name="a",
+            },
+        }
+
+        assert.same({}, completion.get_options(tree, _parse("-f"), 1))
+        assert.same({"a"}, completion.get_options(tree, _parse("-f"), 2))
+    end)
+end)

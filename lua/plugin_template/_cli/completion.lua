@@ -605,7 +605,7 @@ local function _get_arguments(argument)
     end
 
     if type_ == "table" then
-        return argument
+        return {argument}
     end
 
     -- TODO: Log error
