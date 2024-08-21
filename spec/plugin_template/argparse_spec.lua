@@ -373,7 +373,7 @@ describe("double-dash flags", function()
         )
     end)
 
-    it("full --flag= - multiple #asdf", function()
+    it("full --flag= - multiple", function()
         assert.same(
             {
                 arguments = {

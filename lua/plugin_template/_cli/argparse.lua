@@ -50,9 +50,11 @@ M.ArgumentType = {
 ---     `"--foo=bar"`. If the argument is partially written like `"--foo="`
 ---     then this will be an empty string.
 
+--- @alias ArgparseArgument FlagArgument | PositionArgument | NamedArgument
+
 --- @class ArgparseResults
 ---     All information that was found from parsing some user's input.
---- @field arguments (FlagArgument | PositionArgument | NamedArgument)[]
+--- @field arguments ArgparseArgument[]
 ---     The arguments that were able to be parsed
 --- @field remainder ArgparseRemainder
 ---     Any leftover text during parsing that didn't match an argument.

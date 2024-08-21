@@ -75,19 +75,19 @@ describe("default", function()
         -- assert.same({"phrase"}, completion.get_options(tree, _parse("say p"), 5))
         -- assert.same({}, completion.get_options(tree, _parse("say phrase"), 10))
         -- assert.same({"--repeat=", "--style="}, completion.get_options(tree, _parse("say phrase "), 11))
-
+        --
         -- -- NOTE: Beginning a --double-dash named argument, maybe (we don't know yet)
         -- assert.same({"--repeat=", "--style="}, completion.get_options(tree, _parse("say phrase --"), 13))
         -- -- NOTE: Completing the name to a --double-dash named argument
         -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --r"), 14))
-        -- -- -- TODO: Figure out how to handle this case later
-        -- -- -- NOTE: Completing the =, so people know that this is requires an argument
-        -- -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat"), 19))
-        -- NOTE: Completing the value of the named argument
-        assert.same(
-            {"1", "2", "3", "4", "5"},
-            completion.get_options(tree, _parse("say phrase --repeat="), 20)
-        )
+        -- -- -- -- TODO: Figure out how to handle this case later
+        -- -- -- -- NOTE: Completing the =, so people know that this is requires an argument
+        -- -- -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat"), 19))
+        -- -- NOTE: Completing the value of the named argument
+        -- assert.same(
+        --     {"1", "2", "3", "4", "5"},
+        --     completion.get_options(tree, _parse("say phrase --repeat="), 20)
+        -- )
         -- -- NOTE: Completion finished
         -- assert.same(
         --     {},
@@ -98,22 +98,22 @@ describe("default", function()
         --     {},
         --     completion.get_options(tree, _parse("say phrase --repeat=5 --repe"), 30)
         -- )
+        --
+        -- assert.same(
+        --     {"--style="},
+        --     completion.get_options(tree, _parse("say phrase --repeat=5 "), 22)
+        -- )
+        --
+        -- assert.same(
+        --     {"--style="},
+        --     completion.get_options(tree, _parse("say phrase --repeat=5 --"), 24)
+        -- )
+        --
+        assert.same(
+            {"--style="},
+            completion.get_options(tree, _parse("say phrase --repeat=5 --s"), 25)
+        )
 
-        -- assert.same(
-        --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 "))
-        -- )
-        --
-        -- assert.same(
-        --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --"))
-        -- )
-        --
-        -- assert.same(
-        --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --s"))
-        -- )
-        --
         -- assert.same(
         --     {"--style="},
         --     completion.get_options(tree, _parse("say phrase --repeat=5 --style"))
