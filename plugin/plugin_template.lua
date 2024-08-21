@@ -43,8 +43,15 @@ local _SUBCOMMANDS = {
                 {
                     {
                         choices = function(value)
+                            if value == "" then
+                                value = 0
+                            else
+                                value = tonumber(value)
+                            end
+
+                            --- @cast value number
+
                             local output = {}
-                            value = value or 0
 
                             for index = 1, 5 do
                                 table.insert(output, tostring(value + index))
@@ -65,7 +72,7 @@ local _SUBCOMMANDS = {
 
             local arguments = argparse.parse_arguments(data)
 
-            return completion.get_options(tree, arguments)
+            return completion.get_options(tree, arguments, vim.fn.getcmdpos())
         end,
         run = function(arguments)
             local runner = require("plugin_template._cli.runner")
