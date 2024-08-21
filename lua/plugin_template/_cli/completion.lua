@@ -76,21 +76,21 @@ local function _is_exhausted(options)
     return false
 end
 
---- Check if `argument` is a partially written named (--foo=) argument.
----
---- @param argument ArgparseArgument
---- @return boolean # If it's a match, return `true`.
----
-local function _is_unfinished_named_argument(argument)
-    if
-        argument.argument_type == argparse.ArgumentType.named
-        and argument.value == false
-    then
-        return true
-    end
-
-    return false
-end
+-- --- Check if `argument` is a partially written named (--foo=) argument.
+-- ---
+-- --- @param argument ArgparseArgument
+-- --- @return boolean # If it's a match, return `true`.
+-- ---
+-- local function _is_unfinished_named_argument(argument)
+--     if
+--         argument.argument_type == argparse.ArgumentType.named
+--         and argument.value == false
+--     then
+--         return true
+--     end
+--
+--     return false
+-- end
 
 --- Check if `data` is actually an unfinished / partial named argument.
 ---
@@ -498,10 +498,10 @@ end
 --- @param input ArgparseResults The some argument / completion information.
 --- @return ArgparseArgument? # The found named argument, if any.
 ---
-local function _get_unfinished_named_argument_data(input)
+local function _get_named_argument_data(input)
     local last = input.arguments[#input.arguments] or {}
 
-    if _is_unfinished_named_argument(last) then
+    if last.argument_type == argparse.ArgumentType.named then
         return last
     end
 
@@ -750,15 +750,14 @@ function M.get_options(tree, input, column)
     tree = _fill_missing_data(tree)
 
     local stripped = _rstrip_input(input, column)
-    local argument = _get_unfinished_named_argument_data(stripped)
+    local argument = _get_named_argument_data(stripped)
 
-    if argument then
+    if argument and argument.argument_type == argparse.ArgumentType.named then
         return _get_unfinished_named_argument_auto_complete_options(tree, argument)
     end
 
     local options, tree_index = _compute_completion_options(tree, stripped)
     -- TODO: Remove this code
-    print('DEBUGPRINT[136]: completion.lua:625: options=' .. vim.inspect(options))
 
     -- if column >= input.arguments[#input.arguments].range.end_column then
     --     if input.remainder.value == "" then

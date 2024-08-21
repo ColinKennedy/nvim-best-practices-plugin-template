@@ -127,10 +127,10 @@ describe("simple", function()
         --     completion.get_options(tree, _parse("say phrase --repeat=5 --style="), 30)
         -- )
 
-        -- assert.same(
-        --     {"lowercase"},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style=l"), 31)
-        -- )
+        assert.same(
+            {"lowercase"},
+            completion.get_options(tree, _parse("say phrase --repeat=5 --style=l"), 31)
+        )
 
         -- assert.same(
         --     {},
