@@ -1,3 +1,5 @@
+- When there's no arguments written yet, auto-complete the first thing(s)
+
 - Try one more time to get completion working
  - Add unitests for different cursor positions along the completion results
   - positional argument

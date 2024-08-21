@@ -248,6 +248,46 @@ describe("named argument", function()
         assert.same({}, completion.get_options(tree, _parse("--style="), 7))
         assert.same({}, completion.get_options(tree, _parse("--style="), 8))
     end)
+
+    it("should only auto-complete --repeat once", function()
+        local tree = {
+            "say",
+            { "phrase", "word" },
+            {
+                {
+                    choices = function(value)
+                        if value == "" then
+                            value = 0
+                        else
+                            value = tonumber(value)
+                        end
+
+                        --- @cast value number
+
+                        local output = {}
+
+                        for index = 1, 5 do
+                            table.insert(output, tostring(value + index))
+                        end
+
+                        return output
+                    end,
+                    name = "repeat",
+                    argument_type = argparse.ArgumentType.named,
+                },
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "style",
+                    choices = { "lowercase", "uppercase" },
+                },
+            },
+        }
+
+        local data = "hello-world say word --repeat= --repe"
+        local arguments = argparse.parse_arguments(data)
+
+        assert.same({}, completion.get_options(tree, arguments, 37))
+    end)
 end)
 
 describe("flag argument", function()

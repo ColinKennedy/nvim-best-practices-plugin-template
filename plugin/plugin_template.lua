@@ -47,6 +47,10 @@ local _SUBCOMMANDS = {
                                 value = 0
                             else
                                 value = tonumber(value)
+
+                                if type(value) ~= "number" then
+                                    return {}
+                                end
                             end
 
                             --- @cast value number
