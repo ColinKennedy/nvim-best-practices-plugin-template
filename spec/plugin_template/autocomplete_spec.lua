@@ -50,8 +50,14 @@ describe("simple", function()
             {
                 {
                     choices=function(value)
+                        if value == ""
+                        then
+                            value = 0
+                        else
+                            value = tonumber(value)
+                        end
+
                         local output = {}
-                        value = value or 0
 
                         for index=1,5 do
                             table.insert(output, tostring(value + index))
@@ -70,51 +76,51 @@ describe("simple", function()
             }
         }
 
-        -- -- NOTE: Simple examples
-        -- assert.same({"say"}, completion.get_options(tree, _parse("sa"), 2))
-        -- assert.same({}, completion.get_options(tree, _parse("say"), 3))
-        -- assert.same({"phrase", "word"}, completion.get_options(tree, _parse("say "), 4))
-        -- assert.same({"phrase"}, completion.get_options(tree, _parse("say p"), 5))
-        -- assert.same({}, completion.get_options(tree, _parse("say phrase"), 10))
-        -- assert.same({"--repeat=", "--style="}, completion.get_options(tree, _parse("say phrase "), 11))
-        --
-        -- -- NOTE: Beginning a --double-dash named argument, maybe (we don't know yet)
-        -- assert.same({"--repeat=", "--style="}, completion.get_options(tree, _parse("say phrase --"), 13))
-        -- -- NOTE: Completing the name to a --double-dash named argument
-        -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --r"), 14))
-        -- -- -- -- TODO: Figure out how to handle this case later
-        -- -- -- -- NOTE: Completing the =, so people know that this is requires an argument
-        -- -- -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat"), 19))
-        -- -- NOTE: Completing the value of the named argument
-        -- assert.same(
-        --     {"1", "2", "3", "4", "5"},
-        --     completion.get_options(tree, _parse("say phrase --repeat="), 20)
-        -- )
-        -- -- NOTE: Completion finished
-        -- assert.same(
-        --     {},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5"), 22)
-        -- )
-        -- -- NOTE: Asking for repeat again will not show the value (because count == 0)
-        -- assert.same(
-        --     {},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --repe"), 30)
-        -- )
-        --
-        -- assert.same(
-        --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 "), 22)
-        -- )
-        --
-        -- assert.same(
-        --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --"), 24)
-        -- )
-        --
-        -- assert.same(
-        --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --s"), 25)
-        -- )
+        -- NOTE: Simple examples
+        assert.same({"say"}, completion.get_options(tree, _parse("sa"), 2))
+        assert.same({}, completion.get_options(tree, _parse("say"), 3))
+        assert.same({"phrase", "word"}, completion.get_options(tree, _parse("say "), 4))
+        assert.same({"phrase"}, completion.get_options(tree, _parse("say p"), 5))
+        assert.same({}, completion.get_options(tree, _parse("say phrase"), 10))
+        assert.same({"--repeat=", "--style="}, completion.get_options(tree, _parse("say phrase "), 11))
+
+        -- NOTE: Beginning a --double-dash named argument, maybe (we don't know yet)
+        assert.same({"--repeat=", "--style="}, completion.get_options(tree, _parse("say phrase --"), 13))
+        -- NOTE: Completing the name to a --double-dash named argument
+        assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --r"), 14))
+        -- -- -- TODO: Figure out how to handle this case later
+        -- -- -- NOTE: Completing the =, so people know that this is requires an argument
+        -- -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat"), 19))
+        -- NOTE: Completing the value of the named argument
+        assert.same(
+            {"1", "2", "3", "4", "5"},
+            completion.get_options(tree, _parse("say phrase --repeat="), 20)
+        )
+        assert.same(
+            {"6", "7", "8", "9", "10"},
+            completion.get_options(tree, _parse("say phrase --repeat=5"), 22)
+        )
+
+        assert.same(
+            {"--style="},
+            completion.get_options(tree, _parse("say phrase --repeat=5 "), 22)
+        )
+
+        -- NOTE: Asking for repeat again will not show the value (because count == 0)
+        assert.same(
+            {},
+            completion.get_options(tree, _parse("say phrase --repeat=5 --repe"), 30)
+        )
+
+        assert.same(
+            {"--style="},
+            completion.get_options(tree, _parse("say phrase --repeat=5 --"), 24)
+        )
+
+        assert.same(
+            {"--style="},
+            completion.get_options(tree, _parse("say phrase --repeat=5 --s"), 25)
+        )
 
         -- -- TODO: Figure out if I'd actually want this. Then implement it if it makes sense to
         -- assert.same(
@@ -122,20 +128,20 @@ describe("simple", function()
         --     completion.get_options(tree, _parse("say phrase --repeat=5 --style"), 29)
         -- )
 
-        -- assert.same(
-        --     {"lowercase", "uppercase"},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style="), 30)
-        -- )
+        assert.same(
+            {"lowercase", "uppercase"},
+            completion.get_options(tree, _parse("say phrase --repeat=5 --style="), 30)
+        )
 
         assert.same(
             {"lowercase"},
             completion.get_options(tree, _parse("say phrase --repeat=5 --style=l"), 31)
         )
 
-        -- assert.same(
-        --     {},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style=lowercase"))
-        -- )
+        assert.same(
+            {},
+            completion.get_options(tree, _parse("say phrase --repeat=5 --style=lowercase"), 39)
+        )
     end)
 end)
 

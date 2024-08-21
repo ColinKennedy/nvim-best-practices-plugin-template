@@ -565,6 +565,10 @@ local function _get_unfinished_named_argument_auto_complete_options(tree, argume
     local output = {}
     local current_value = argument.value
 
+    if current_value == false then
+        current_value = ""
+    end
+
     for _, match in ipairs(matches) do
         for _, value in ipairs(_get_named_option_choices(match, current_value))
         do
@@ -645,7 +649,7 @@ local function _get_startswith_auto_complete_function(items)
         local output = {}
 
         for _, item in ipairs(items) do
-            if vim.startswith(item, current_value) then
+            if item ~= current_value and vim.startswith(item, current_value) then
                 table.insert(output, item)
             end
         end
@@ -753,7 +757,10 @@ function M.get_options(tree, input, column)
     local argument = _get_named_argument_data(stripped)
 
     if argument and argument.argument_type == argparse.ArgumentType.named then
-        return _get_unfinished_named_argument_auto_complete_options(tree, argument)
+        if stripped.remainder.value == "" then
+            -- The cursor is on the last argument
+            return _get_unfinished_named_argument_auto_complete_options(tree, argument)
+        end
     end
 
     local options, tree_index = _compute_completion_options(tree, stripped)
