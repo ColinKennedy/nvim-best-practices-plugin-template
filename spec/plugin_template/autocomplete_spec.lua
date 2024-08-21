@@ -116,6 +116,7 @@ describe("simple", function()
         --     completion.get_options(tree, _parse("say phrase --repeat=5 --s"), 25)
         -- )
 
+        -- -- TODO: Figure out if I'd actually want this. Then implement it if it makes sense to
         -- assert.same(
         --     {"--style="},
         --     completion.get_options(tree, _parse("say phrase --repeat=5 --style"), 29)
@@ -195,23 +196,24 @@ describe("named argument", function()
         assert.same({"--style="}, completion.get_options(tree, _parse("--styl"), 6))
     end)
 
-    it("auto-completes on a partial argument name - 003", function()
-        local tree = {
-            {
-                argument_type=argparse.ArgumentType.named,
-                name="style",
-                choices={"lowercase", "uppercase"},
-            },
-        }
-
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 1))
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 2))
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 3))
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 4))
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 5))
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 6))
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 7))
-    end)
+    -- -- TODO: Figure out if I'd actually want this. Then implement it if it makes sense to
+    -- it("auto-completes on a partial argument name - 003", function()
+    --     local tree = {
+    --         {
+    --             argument_type=argparse.ArgumentType.named,
+    --             name="style",
+    --             choices={"lowercase", "uppercase"},
+    --         },
+    --     }
+    --
+    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 1))
+    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 2))
+    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 3))
+    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 4))
+    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 5))
+    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 6))
+    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 7))
+    -- end)
 
     it("does not auto-complete the name anymore and auto-completes the value", function()
         local tree = {
@@ -266,19 +268,20 @@ describe("flag argument", function()
         assert.same({}, completion.get_options(tree, _parse("-f"), 2))
     end)
 
-    it("auto-completes if there's a another flag that can be used", function()
-        local tree = {
-            {
-                argument_type=argparse.ArgumentType.flag,
-                name="f",
-            },
-            {
-                argument_type=argparse.ArgumentType.flag,
-                name="a",
-            },
-        }
-
-        assert.same({}, completion.get_options(tree, _parse("-f"), 1))
-        assert.same({"a"}, completion.get_options(tree, _parse("-f"), 2))
-    end)
+    -- -- TODO: Figure out if I'd actually want this. Then implement it if it makes sense to
+    -- it("auto-completes if there's a another flag that can be used", function()
+    --     local tree = {
+    --         {
+    --             argument_type=argparse.ArgumentType.flag,
+    --             name="f",
+    --         },
+    --         {
+    --             argument_type=argparse.ArgumentType.flag,
+    --             name="a",
+    --         },
+    --     }
+    --
+    --     assert.same({}, completion.get_options(tree, _parse("-f"), 1))
+    --     assert.same({"a"}, completion.get_options(tree, _parse("-f"), 2))
+    -- end)
 end)

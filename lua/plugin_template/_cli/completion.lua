@@ -15,7 +15,7 @@ local argparse_helper = require("plugin_template._cli.argparse_helper")
 ---     A --key=value pair. Basically it's a FlagArgument that has an extra value.
 --- @field used number
 ---     The number of times that this option has been used already (0-or-greater value).
---- @field choices (string[] | fun(): string[])
+--- @field choices (string[] | fun(current_value: string): string[])
 ---     Since `NamedOption` requires a name + value, `choices` is used to
 ---     auto-complete its values, starting at `--foo=`.
 --- @field count OptionCount
@@ -511,21 +511,34 @@ end
 --- Get the named auto-complete options, if any.
 ---
 --- @param option NamedOption The named option to grab from.
+--- @param current_value string An existing value for the argument, if any.
 --- @return string[] # The found auto-complete options, if any.
 ---
-local function _get_named_option_choices(option)
+local function _get_named_option_choices(option, current_value)
     if not option.choices then
         return {}
     end
 
     if type(option.choices) == "function" then
-        return option.choices()
+        return option.choices(current_value)
     end
 
     local choices = option.choices
     --- @cast choices string[]
 
     return choices
+end
+
+local function _get_named_arguments(options)
+    local output = {}
+
+    for _, option in ipairs(options) do
+        if option.argument_type == argparse.ArgumentType.named then
+            table.insert(output, option)
+        end
+    end
+
+    return output
 end
 
 --- Get the auto-completion options for some named argument.
@@ -545,14 +558,15 @@ local function _get_unfinished_named_argument_auto_complete_options(tree, argume
     -- flags that are `count="*"` because they could also be options
     --
     local options = tree[#tree]
+    options = _get_named_arguments(options)
     local matches = _get_exact_matches(argument, options, false)
+    --- @cast matches NamedOption[]
 
     local output = {}
+    local current_value = argument.value
 
     for _, match in ipairs(matches) do
-        local values = _get_named_option_choices(match)
-
-        for _, value in ipairs(values)
+        for _, value in ipairs(_get_named_option_choices(match, current_value))
         do
             if not vim.tbl_contains(output, value) then
                 table.insert(output, value)
@@ -612,6 +626,35 @@ local function _get_arguments(argument)
     return {}
 end
 
+local function _is_string_list(items)
+    if type(items) ~= "table" then
+        return false
+    end
+
+    for _, item in ipairs(items) do
+        if type(item) ~= "string" then
+            return false
+        end
+    end
+
+    return true
+end
+
+local function _get_startswith_auto_complete_function(items)
+    local function _get_choices(current_value)
+        local output = {}
+
+        for _, item in ipairs(items) do
+            if vim.startswith(item, current_value) then
+                table.insert(output, item)
+            end
+        end
+
+        return output
+    end
+
+    return _get_choices
+end
 
 --- Convert `tree` into a completion tree (if it isn't already).
 ---
@@ -646,11 +689,15 @@ local function _fill_missing_data(tree)
                 if item.required == nil then
                     item.required = true
                 end
-            elseif (
-                item.argument_type == argparse.ArgumentType.named
-                or item.argument_type == argparse.ArgumentType.flag
-            )
-            then
+            elseif item.argument_type == argparse.ArgumentType.named then
+                if item.required == nil then
+                    item.required = false
+                end
+
+                if item.choices and _is_string_list(item.choices) then
+                    item.choices = _get_startswith_auto_complete_function(item.choices)
+                end
+            elseif item.argument_type == argparse.ArgumentType.flag then
                 if item.required == nil then
                     item.required = false
                 end
