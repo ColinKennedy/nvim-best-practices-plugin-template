@@ -1,4 +1,12 @@
 - When there's no arguments written yet, auto-complete the first thing(s)
+- Add unittest to make sure that an optional, repeatable --flag / --named=arg can be used in multiple places. e.g.
+```lua
+local style = {count=3, ...}
+local tree = { {style}, {style}, }
+```
+
+- Do existing TODO notes
+- /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/plugin_template/_cli/completion.lua
 
 - Try one more time to get completion working
  - Add unitests for different cursor positions along the completion results
@@ -19,18 +27,9 @@
    - after argument (space)
   - named argument choices
    - Make sure it works when cursor is in the middle of a command string
- - Add unittest to make sure that an optional, repeatable --flag / --named=arg can be used in multiple places. e.g.
- ```lua
- local style = {count=3, ...}
- local tree = { {style}, {style}, }
- ```
  - required flag / named arguments
  - Make sure cursor position works with named arguments as expected
  - Allow "any" argument somehow
-
-
-- Do existing TODO notes
-- /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/plugin_template/_cli/completion.lua
 
 - Add unittests for failed stuff (bad commands with incorrect arguments)
  - command running
