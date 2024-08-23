@@ -2,20 +2,6 @@
  - Telescope
  - For example, it might be useful to add a telescope.nvim extension or a lualine component.
 
-lualine
-```lua
-{
-    display = {color="TODO", text="Some text"}
-}
--- {"plugin_template"}
-{
-    "plugin_template",
-    display = {
-        goodnight_moon = {color={fg="#FFFFFF"}, text="AAAA"},
-        hello_world = {color={fg="#333333"}, text="TTTT"},
-    },
-},
-```
 
 - Fix command folder structure
 

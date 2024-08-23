@@ -10,11 +10,14 @@ local configuration_ = require("plugin_template._core.configuration")
 local say_constant = require("plugin_template._commands.say.constant")
 local tabler = require("plugin_template._core.tabler")
 
--- TODO: Docstrings
-
 local M = {}
 
-local function _get_base_issues(data)
+--- Check all "commands" values for completeness.
+---
+--- @param data PluginTemplateConfiguration All of the user's fallback settings.
+--- @return string[] # All found issues, if any.
+---
+local function _get_command_issues(data)
     local output = {}
 
     local success, message = pcall(
@@ -138,6 +141,11 @@ local function _get_lualine_command_issues(command, data)
     return output
 end
 
+--- Check all "tools.lualine" values for completeness.
+---
+--- @param data PluginTemplateConfiguration All of the user's fallback settings.
+--- @return string[] # All found issues, if any.
+---
 local function _get_lualine_issues(data)
     local output = {}
 
@@ -190,7 +198,7 @@ function M.get_issues(data)
     end
 
     local output = {}
-    vim.list_extend(output, _get_base_issues(data))
+    vim.list_extend(output, _get_command_issues(data))
 
     local lualine = tabler.get_value(data, { "tools", "lualine" })
 

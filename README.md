@@ -13,6 +13,21 @@ TODO: Show how to do lualine via code
 
 A template repository for Neovim plugins.
 
+lualine
+```lua
+{
+    display = {color="TODO", text="Some text"}
+}
+-- {"plugin_template"}
+{
+    "plugin_template",
+    display = {
+        goodnight_moon = {color={fg="#FFFFFF"}, text="AAAA"},
+        hello_world = {color={fg="#333333"}, text="TTTT"},
+    },
+},
+```
+
 TODO
 ```lua
 {
