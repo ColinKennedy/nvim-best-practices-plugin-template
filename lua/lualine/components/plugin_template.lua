@@ -6,11 +6,12 @@
 ---
 
 local configuration = require("plugin_template._core.configuration")
-local state = require("plugin_template._core.state")
 local lualine_require = require("lualine_require")
 local modules = lualine_require.lazy_require({ highlight = "lualine.highlight" })
+local state = require("plugin_template._core.state")
+local tabler = require("plugin_template._core.tabler")
 
-local M = {}
+local M = require("lualine.component"):extend()
 
 --- @class PluginTemplateLualineConfiguration
 ---     The Raw user settings from lualine's configuration.
@@ -36,36 +37,53 @@ function M:init(options)
         data = options.display or {}
     end
 
-    M.super.init(self, vim.tbl_deep_extend("force", configuration.DATA.commands, data))
+    configuration.initialize_data_if_needed()
+    local defaults = tabler.get_value(configuration.DATA, {"tools", "lualine"}) or {}
+    defaults = vim.tbl_deep_extend("force", defaults, data)
 
-    self._highlight_groups = {}
+    M.super.init(self, options)
 
-    for _, name in ipairs(vim.tbl_keys(configuration.DATA.profiles)) do
-        self._highlight_groups[name] =
-            modules.highlight.create_component_highlight_group(
-                name,
-                string.format("plugin_template_%s", data),
-                self.options
-            )
-    end
+    self._command_text = {
+        hello_world = tabler.get_value(defaults, {"hello_world", "text"}) or "<No Hello World text was found>",
+        goodnight_moon = tabler.get_value(defaults, {"goodnight_moon", "text"}) or "<No Goodnight moon text was found>",
+    }
+
+    self._highlight_groups = {
+        goodnight_moon = modules.highlight.create_component_highlight_group(
+            defaults.goodnight_moon.color or {link="Comment"},
+            "plugin_template_goodnight_moon",
+            self.options
+        ),
+        hello_world = modules.highlight.create_component_highlight_group(
+            defaults.hello_world.color or {link="Title"},
+            "plugin_template_hello_world",
+            self.options
+        ),
+    }
 end
 
 --- @return string? # Get the text for the Lualine component.
 function M:update_status()
-    local details = self._highlight_groups[state.PREVIOUS_COMMAND]
+    local command = state.PREVIOUS_COMMAND
 
-    if not details then
+    if not command then
         return nil
     end
 
-    local prefix = details.prefix or ""
+    local text = self._command_text[command]
+    local color = self._highlight_groups[state.PREVIOUS_COMMAND]
+
+    if not color then
+        return text
+    end
+
+    local prefix = modules.highlight.component_format_highlight(color)
 
     if not prefix then
-        return nil
+        return text
     end
 
-    return modules.highlight.component_format_highlight(prefix) or ""
+    return prefix .. text
 end
 
 return M
-

@@ -3,6 +3,8 @@
 --- @module 'plugin_template._commands.read.command'
 ---
 
+local state = require("plugin_template._core.state")
+
 local M = {}
 
 M._print = print
@@ -12,6 +14,8 @@ M._print = print
 --- @param book string The name of the book.
 ---
 function M.run(book)
+    state.PREVIOUS_COMMAND = "goodnight_moon"
+
     M._print(string.format("%s: it is a book", book))
 end
 

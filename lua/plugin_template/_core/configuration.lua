@@ -5,8 +5,6 @@
 
 local say_constant = require("plugin_template._commands.say.constant")
 
-local M = {}
-
 -- TODO: Make sure that function type-hints behave as expected even when
 -- a partial configuration definition is given
 
@@ -45,10 +43,30 @@ local M = {}
 --- @field style "lowercase" | "uppercase"
 ---     Control how the text is displayed. e.g. "uppercase" changes "hello" to "HELLO".
 
+--- @class PluginTemplateConfigurationTools
+---     Optional third-party tool integrations.
+--- @field lualine PluginTemplateConfigurationToolsLualine?
+---     A Vim statusline replacement that will show the command that the user just ran.
+
+--- @alias PluginTemplateConfigurationToolsLualine table<string, PluginTemplateConfigurationToolsLualineData>
+---     Each runnable command and its display text.
+
+--- @class PluginTemplateConfigurationToolsLualineData
+---     The display values that will be used when a specific `plugin_template`
+---     command runs.
+--- @field color vim.api.keyset.highlight
+---     The foreground/background color to use for the Lualine status.
+--- @field prefix string
+---     The text to display in lualine.
+
+
+local M = {}
+
 -- NOTE: Don't remove this line. It makes the Lua module much easier to reload
 vim.g.loaded_plugin_template = false
 
-local _DATA = {}
+M.DATA = {}
+
 local _DEFAULTS = {
     commands = {
         goodnight_moon = { read = { phrase = "A good book" } },
@@ -56,15 +74,21 @@ local _DEFAULTS = {
             say = { ["repeat"] = 1, style = say_constant.Keyword.style.lowercase },
         },
     },
+    tools = {
+        lualine = {
+            goodnight_moon = { color = {link="Comment"}, text = " Goodnight moon"},
+            hello_world = { color = {link="Title"}, text = " Hello, World!"},
+        },
+    },
 }
 
 --- Setup `plugin_template` for the first time, if needed.
-local function _initialize_data_if_needed()
+function M.initialize_data_if_needed()
     if vim.g.loaded_plugin_template then
         return
     end
 
-    _DATA = vim.tbl_deep_extend("force", _DEFAULTS, vim.g.plugin_template_configuration or {})
+    M.DATA = vim.tbl_deep_extend("force", _DEFAULTS, vim.g.plugin_template_configuration or {})
 
     vim.g.loaded_plugin_template = true
 end
@@ -75,9 +99,9 @@ end
 --- @return PluginTemplateConfiguration # The configuration with 100% filled out values.
 ---
 function M.resolve_data(data)
-    _initialize_data_if_needed()
+    M.initialize_data_if_needed()
 
-    return vim.tbl_deep_extend("force", _DATA, data or {})
+    return vim.tbl_deep_extend("force", M.DATA, data or {})
 end
 
 return M

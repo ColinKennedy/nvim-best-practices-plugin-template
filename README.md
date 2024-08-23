@@ -3,6 +3,9 @@ TODO: Add this
 - Update Makefile with more options
 
 
+TODO: Show how to do lualine via code
+
+
 # A Neovim Plugin Template
 
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ellisonleao/nvim-plugin-template/lint-test.yml?branch=main&style=for-the-badge)

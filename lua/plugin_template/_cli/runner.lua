@@ -3,7 +3,6 @@
 --- @module 'plugin_template._cli.runner'
 ---
 
-local argparse = require("plugin_template._cli.argparse")
 local argparse_helper = require("plugin_template._cli.argparse_helper")
 local count_sheep_cli = require("plugin_template._commands.count_sheep.cli")
 local read_cli = require("plugin_template._commands.read.cli")

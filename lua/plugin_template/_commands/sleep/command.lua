@@ -3,6 +3,8 @@
 --- @module 'plugin_template._commands.sleep.command'
 ---
 
+local state = require("plugin_template._core.state")
+
 local M = {}
 
 M._print = print
@@ -12,6 +14,8 @@ M._print = print
 --- @param count number Prints 1 zzz per `count`. A value that is 1-or-greater.
 ---
 function M.run(count)
+    state.PREVIOUS_COMMAND = "goodnight_moon"
+
     if count < 1 then
         -- TODO: Log warning
         count = 1

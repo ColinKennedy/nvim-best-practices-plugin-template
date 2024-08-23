@@ -4,6 +4,7 @@
 ---
 
 local constant = require("plugin_template._commands.say.constant")
+local state = require("plugin_template._core.state")
 
 local M = {}
 
@@ -19,6 +20,8 @@ M._print = print
 ---     Control how the text should be shown.
 ---
 local function _say(phrase, repeat_, style)
+    state.PREVIOUS_COMMAND = "hello_world"
+
     repeat_ = repeat_ or 1
     style = style or constant.Keyword.style.lowercase
     local text = vim.fn.join(phrase, " ")

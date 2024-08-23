@@ -28,6 +28,30 @@ function M.get_slice(table_, first, last, step)
     return sliced
 end
 
+--- Access the attribute(s) within `data` from `items`.
+---
+--- @param data table<...> Some nested data to query. e.g. `{a={b={c=true}}}`.
+--- @param items string[] Some attributes to query. e.g. `{"a", "b", "c"}`.
+--- @return ...? # The found value, if any.
+---
+function M.get_value(data, items)
+    local current = data
+
+    for _, item in ipairs(items) do
+        current = current[item]
+
+        if current == nil then
+            return nil
+        end
+    end
+
+    return current
+end
+
+--- Delete the contents of `data`.
+---
+--- @param data table<...> A dictionary or array to clear.
+---
 function M.clear(data)
     -- Clear the table
     for index = #data, 1, -1 do

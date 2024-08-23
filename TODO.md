@@ -1,5 +1,44 @@
+- Integrations
+ - Telescope
+ - For example, it might be useful to add a telescope.nvim extension or a lualine component.
+
+lualine
+```lua
+{
+    display = {color="TODO", text="Some text"}
+}
+-- {"plugin_template"}
+{
+    "plugin_template",
+    display = {
+        goodnight_moon = {color={fg="#FFFFFF"}, text="AAAA"},
+        hello_world = {color={fg="#333333"}, text="TTTT"},
+    },
+},
+```
+
+- Fix command folder structure
+
+- Make sure the issue templates are good
+
+- Change lua types to be dotted. Maybe.
+
+- Add luarocks auto-release integration
+
+- https://github.com/marketplace/actions/lua-typecheck-action
+- https://github.com/marketplace/actions/lua-typecheck-action
+- https://github.com/jeffzi/llscheck
+- https://github.com/mpeterv/luacheck
+
+
+- https://github.com/lua-fmt/lua-fmt
+- https://github.com/Koihik/LuaFormatter
+
+
+
 - When there's no arguments written yet, auto-complete the first thing(s)
 - Add unittest to make sure that an optional, repeatable --flag / --named=arg can be used in multiple places. e.g.
+
 ```lua
 local style = {count=3, ...}
 local tree = { {style}, {style}, }
@@ -35,7 +74,8 @@ local tree = { {style}, {style}, }
  - command running
  - auto-complete
 
-- Change lua types to be dotted. Maybe.
+- Make sure as much as possible is defer evaluated
+ - Does Lua import parent init.lua files?
 
 - autocomplete notes
  - when nothing is written, show the auto-complete
@@ -47,29 +87,11 @@ local tree = { {style}, {style}, }
   - Vendor the argparse in case the user doesn't have it installed
 - Add auto-completion function
 
-- Add luarocks auto-release integration
-
-- https://github.com/marketplace/actions/lua-typecheck-action
-- https://github.com/marketplace/actions/lua-typecheck-action
-- https://github.com/jeffzi/llscheck
-- https://github.com/mpeterv/luacheck
-
-- Add unittests for the auto-complete
-
 
 - Add doc/ or a GitHub Wiki
     - Explain the folder structure
 
-- https://github.com/lua-fmt/lua-fmt
-- https://github.com/Koihik/LuaFormatter
-
-- Integrations
- - Telescope
- - Lualine
- - For example, it might be useful to add a telescope.nvim extension or a lualine component.
-
 - Write instructions on what people should do when they use the template
-- Make sure the issue templates are good
 
 - Blow away all of the commits. Clean it up
 

@@ -93,11 +93,23 @@ describe("simple", function()
         -- -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat"), 19))
         -- NOTE: Completing the value of the named argument
         assert.same(
-            {"1", "2", "3", "4", "5"},
+            {
+                "--repeat=1",
+                "--repeat=2",
+                "--repeat=3",
+                "--repeat=4",
+                "--repeat=5",
+            },
             completion.get_options(tree, _parse("say phrase --repeat="), 20)
         )
         assert.same(
-            {"6", "7", "8", "9", "10"},
+            {
+                "--repeat=6",
+                "--repeat=7",
+                "--repeat=8",
+                "--repeat=9",
+                "--repeat=10",
+            },
             completion.get_options(tree, _parse("say phrase --repeat=5"), 22)
         )
 
@@ -129,12 +141,12 @@ describe("simple", function()
         -- )
 
         assert.same(
-            {"lowercase", "uppercase"},
+            {"--style=lowercase", "--style=uppercase"},
             completion.get_options(tree, _parse("say phrase --repeat=5 --style="), 30)
         )
 
         assert.same(
-            {"lowercase"},
+            {"--style=lowercase"},
             completion.get_options(tree, _parse("say phrase --repeat=5 --style=l"), 31)
         )
 

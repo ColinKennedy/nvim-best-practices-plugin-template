@@ -12,9 +12,9 @@ local M = {}
 --- @return boolean # If a subcommand syntax was found, return true.
 ---
 local function _is_subcommand(full, prefix)
-    local expression = "^" .. prefix .. "%s+%w*$"
+    local expression = "^" .. prefix .. "%s+.*$"
 
-    return full:match(expression)
+    return full:match(expression) ~= nil
 end
 
 --- Get the auto-complete, if any, for a subcommand.
