@@ -1,12 +1,9 @@
-- Fix command folder structure
-
 - Make sure the issue templates are good
 
 - Change lua types to be dotted. Maybe.
 
 - Add luarocks auto-release integration
 
-- https://github.com/marketplace/actions/lua-typecheck-action
 - https://github.com/marketplace/actions/lua-typecheck-action
 - https://github.com/jeffzi/llscheck
 - https://github.com/mpeterv/luacheck
@@ -90,11 +87,5 @@ foo bar --thing --thing --thing blah
 
 - Change the template to an auto-generator to describe what you want to use?
 
-- Move the CLI stuff into the API, maybe
-
-- Auto-complete
- - Get it working
  - Move the argparse + autocomplete stuff to its own lua package
  - Include the lua package + vendorize it here
- - Add auto-complete unittests
-
