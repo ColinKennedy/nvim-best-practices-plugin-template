@@ -1,8 +1,3 @@
-- Integrations
- - Telescope
- - For example, it might be useful to add a telescope.nvim extension or a lualine component.
-
-
 - Fix command folder structure
 
 - Make sure the issue templates are good
