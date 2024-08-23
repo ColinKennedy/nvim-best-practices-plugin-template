@@ -3,7 +3,7 @@
 --- @module 'plugin_template._core.configuration'
 ---
 
-local say_constant = require("plugin_template._commands.say.constant")
+local say_constant = require("plugin_template._commands.hello_world.say.constant")
 
 -- TODO: Make sure that function type-hints behave as expected even when
 -- a partial configuration definition is given

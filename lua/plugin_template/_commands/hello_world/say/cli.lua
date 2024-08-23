@@ -6,8 +6,8 @@
 local argparse = require("plugin_template._cli.argparse")
 local argparse_helper = require("plugin_template._cli.argparse_helper")
 local configuration_ = require("plugin_template._core.configuration")
-local constant = require("plugin_template._commands.say.constant")
-local say_command = require("plugin_template._commands.say.command")
+local constant = require("plugin_template._commands.hello_world.say.constant")
+local say_command = require("plugin_template._commands.hello_world.say.command")
 local tabler = require("plugin_template._core.tabler")
 
 local M = {}

@@ -4,7 +4,7 @@
 ---
 
 local argparse = require("plugin_template._cli.argparse")
-local sleep_command = require("plugin_template._commands.sleep.command")
+local sleep_command = require("plugin_template._commands.goodnight_moon.sleep.command")
 
 local M = {}
 

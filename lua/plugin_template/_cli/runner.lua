@@ -4,10 +4,10 @@
 ---
 
 local argparse_helper = require("plugin_template._cli.argparse_helper")
-local count_sheep_cli = require("plugin_template._commands.count_sheep.cli")
-local read_cli = require("plugin_template._commands.read.cli")
-local say_cli = require("plugin_template._commands.say.cli")
-local sleep_cli = require("plugin_template._commands.sleep.cli")
+local count_sheep_cli = require("plugin_template._commands.goodnight_moon.count_sheep.cli")
+local read_cli = require("plugin_template._commands.goodnight_moon.read.cli")
+local say_cli = require("plugin_template._commands.hello_world.say.cli")
+local sleep_cli = require("plugin_template._commands.goodnight_moon.sleep.cli")
 
 local _STARTING_GOODNIGHT_MOON_COMMANDS = {
     ["count-sheep"] = count_sheep_cli.run,

@@ -3,7 +3,7 @@
 --- @module 'plugin_template._commands.count_sheep.cli'
 ---
 
-local count_sheep_command = require("plugin_template._commands.count_sheep.command")
+local count_sheep_command = require("plugin_template._commands.goodnight_moon.count_sheep.command")
 
 local M = {}
 

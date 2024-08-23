@@ -8,10 +8,10 @@
 ---
 
 local api = require("plugin_template.api")
-local count_sheep_command = require("plugin_template._commands.count_sheep.command")
-local read_command = require("plugin_template._commands.read.command")
-local say_command = require("plugin_template._commands.say.command")
-local sleep_command = require("plugin_template._commands.sleep.command")
+local count_sheep_command = require("plugin_template._commands.goodnight_moon.count_sheep.command")
+local read_command = require("plugin_template._commands.hello_world.read.command")
+local say_command = require("plugin_template._commands.goodnight_moon.say.command")
+local sleep_command = require("plugin_template._commands.goodnight_moon.sleep.command")
 
 local _DATA = {}
 local _ORIGINAL_COUNT_SHEEP_PRINTER = count_sheep_command._print

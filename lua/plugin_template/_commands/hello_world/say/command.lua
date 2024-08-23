@@ -3,7 +3,7 @@
 --- @module 'plugin_template._commands.say.command'
 ---
 
-local constant = require("plugin_template._commands.say.constant")
+local constant = require("plugin_template._commands.hello_world.say.constant")
 local state = require("plugin_template._core.state")
 
 local M = {}
