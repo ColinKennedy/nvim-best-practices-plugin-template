@@ -138,7 +138,8 @@ describe("bad configuration", function()
         assert.is_truthy(
             vim.startswith(
                 issues[1],
-                'tools.lualine.goodnight_moon.color: expected a table. e.g. {fg="#000000", bg="#FFFFFF"}, {link="Title"}, etc, got '
+                'tools.lualine.goodnight_moon.color: expected a table. '
+                .. 'e.g. {fg="#000000", bg="#FFFFFF"}, {link="Title"}, etc, got '
             )
         )
     end)
@@ -177,7 +178,8 @@ describe("bad configuration", function()
         assert.is_truthy(
             vim.startswith(
                 issues[1],
-                'tools.lualine.hello_world.color: expected a table. e.g. {fg="#000000", bg="#FFFFFF"}, {link="Title"}, etc, got '
+                'tools.lualine.hello_world.color: expected a table. '
+                .. 'e.g. {fg="#000000", bg="#FFFFFF"}, {link="Title"}, etc, got '
             )
         )
     end)
@@ -193,7 +195,8 @@ describe("bad configuration", function()
         assert.is_truthy(
             vim.startswith(
                 issues[1],
-                'tools.lualine.hello_world.text: expected a string. e.g. "some text here", got '
+                'tools.lualine.hello_world.text: '
+                .. 'expected a string. e.g. "some text here", got '
             )
         )
     end)

@@ -19,11 +19,6 @@ local _SUBCOMMANDS = {
         complete = function(data)
             -- TODO: Add support later
             return nil
-            -- local positional_choices = {
-            --     [1] = { "count-sheep", "read", "sleep" },
-            -- }
-            --
-            -- return cli_subcommand.get_complete_options(data, positional_choices)
         end,
         run = function(arguments)
             local runner = require("plugin_template._cli.runner")

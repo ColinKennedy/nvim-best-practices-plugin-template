@@ -1,7 +1,5 @@
 --- Parse text into positional / named arguments.
 ---
---- @source https://github.com/lewis6991/gitsigns.nvim/blob/562dc47189ad3c8696dbf460d38603a74d544849/lua/gitsigns/cli/argparse.lua#L10
----
 --- @module 'plugin_template._cli.argparse'
 ---
 

@@ -85,11 +85,6 @@ function M.make_command_completer(prefix, subcommands)
     return runner
 end
 
--- TODO: Finish this
-function M.get_complete_options(data, positional_choices, named_choices)
-    return { "aa", "bbb", "ccccc" }
-end
-
 --- Wrap the `plugin_template` CLI / API in a way Neovim understands.
 ---
 --- Since `:PluginTemplate` supports multiple sub-commands like `:PluginTemplate

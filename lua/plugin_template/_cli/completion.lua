@@ -76,21 +76,40 @@ local function _is_exhausted(options)
     return false
 end
 
--- --- Check if `argument` is a partially written named (--foo=) argument.
--- ---
--- --- @param argument ArgparseArgument
--- --- @return boolean # If it's a match, return `true`.
--- ---
--- local function _is_unfinished_named_argument(argument)
---     if
---         argument.argument_type == argparse.ArgumentType.named
---         and argument.value == false
---     then
---         return true
---     end
---
---     return false
--- end
+--- Check if `data` is a fully-filled-out `option`.
+---
+--- @param data ArgparseArgument
+---     An argument that may be fully-filled-out or might be partially written
+---     by a user. If it is partially written, it is not included in the return.
+--- @param option CompletionOption
+---     All possible auto-complete tree options (fully-filled-out).
+--- @param require_value boolean?
+---     If `true`, then `data` cannot be a partially-written argument. This is
+---     usually for "unfinished named arguments" and not something that you'd
+---     usually need.
+--- @return boolean
+---     If `option` matches `data`.
+---
+local function _is_exact_match(data, option, require_value)
+    if
+        data.argument_type == argparse.ArgumentType.position
+        and data.argument_type == option.argument_type
+        and not _is_exhausted({ option })
+    then
+        return option.value == data.value
+    end
+
+    if
+        data.argument_type == argparse.ArgumentType.named
+        and data.argument_type == option.argument_type
+        and not _is_exhausted({ option })
+        and (not require_value or (require_value and data.value))
+    then
+        return option.name == data.name
+    end
+
+    return false
+end
 
 --- Check if `data` is actually an unfinished / partial named argument.
 ---
@@ -225,27 +244,6 @@ end
 ---     All `options` that match `data`.
 ---
 local function _get_exact_matches(data, options, require_value)
-    local function _is_exact_match(data, option)
-        if
-            data.argument_type == argparse.ArgumentType.position
-            and data.argument_type == option.argument_type
-            and not _is_exhausted({ option })
-        then
-            return option.value == data.value
-        end
-
-        if
-            data.argument_type == argparse.ArgumentType.named
-            and data.argument_type == option.argument_type
-            and not _is_exhausted({ option })
-            and (not require_value or (require_value and data.value))
-        then
-            return option.name == data.name
-        end
-
-        return false
-    end
-
     if require_value == nil then
         require_value = true
     end
@@ -253,7 +251,7 @@ local function _get_exact_matches(data, options, require_value)
     local output = {}
 
     for _, option in ipairs(options) do
-        if _is_exact_match(data, option) then
+        if _is_exact_match(data, option, require_value) then
             table.insert(output, option)
         end
     end
@@ -429,8 +427,6 @@ end
 ---     The starting point of the argument "tree" used to gather the options.
 ---
 local function _compute_completion_options(tree, input)
-    -- TODO: This variable name is wrong. Change it later
-    local all_but_last_argument = #input.arguments
     local tree_index = 1
     local current_options = _get_current_options(tree, tree_index)
     local input_count = #input.arguments
