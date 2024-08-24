@@ -39,7 +39,7 @@ M.ArgumentType = {
 --- @field value string
 ---     The position's label.
 
---- @class NamedArgument : Argument
+--- @class NamedArgument : ArgparseArgument
 ---     A --key=value pair. Basically it's a FlagArgument that has an extra value.
 --- @field name ...
 ---     The text of the argument. e.g. The `"foo"` part of `"--foo=bar"`.
@@ -153,7 +153,7 @@ function M.parse_arguments(text)
     local function _add_to_output()
         remainder.value = ""
         local end_index = physical_index - escaped_character_count - 1
-        local range = {start_column=start_index, end_column=end_index}
+        local range = { start_column = start_index, end_column = end_index }
 
         if not needs_value then
             table.insert(output, {

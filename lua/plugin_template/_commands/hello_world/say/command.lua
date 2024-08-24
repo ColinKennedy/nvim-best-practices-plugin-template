@@ -41,9 +41,9 @@ end
 ---
 --- @param phrase string[]
 ---     The text to say.
---- @param repeat_? number
+--- @param repeat_ number?
 ---     A 1-or-more value. The number of times to print `word`.
---- @param style? string
+--- @param style string?
 ---     Control how the text should be shown.
 ---
 function M.run_say_phrase(phrase, repeat_, style)

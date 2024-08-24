@@ -10,7 +10,7 @@ local has_telescope, telescope = pcall(require, "telescope")
 --- TODO: REmove this later - https://github.com/dhruvmanila/browser-bookmarks.nvim/blob/main/lua/telescope/_extensions/bookmarks.lua
 
 if not has_telescope then
-  error("Telescope interface requires telescope.nvim (https://github.com/nvim-telescope/telescope.nvim)")
+    error("Telescope interface requires telescope.nvim (https://github.com/nvim-telescope/telescope.nvim)")
 end
 
 local entry_display = require("telescope.pickers.entry_display")
@@ -39,33 +39,34 @@ local function _run_goodnight_moon(options)
 
     local books = {
         { "Guns, Germs, and Steel: The Fates of Human Societies", "Jared M. Diamond" },
-        {"Herodotus Histories", "Herodotus"},
-        {"The Origin of Consciousness in the Breakdown of the Bicameral Mind", "Julian Jaynes"},
-        {"What Every Programmer Should Know About Memory", "Ulrich Drepper"},
-        {"When: The Scientific Secrets of Perfect Timing", "Daniel H. Pinker"},
+        { "Herodotus Histories", "Herodotus" },
+        { "The Origin of Consciousness in the Breakdown of the Bicameral Mind", "Julian Jaynes" },
+        { "What Every Programmer Should Know About Memory", "Ulrich Drepper" },
+        { "When: The Scientific Secrets of Perfect Timing", "Daniel H. Pinker" },
     }
 
-    pickers.new(options, {
-        prompt_title = "Choose A Book",
-        finder = finders.new_table({
-            results = books,
-            entry_maker = function(entry)
-                local name, author = unpack(entry)
-                local value = string.format("%s - %s", name, author)
+    pickers
+        .new(options, {
+            prompt_title = "Choose A Book",
+            finder = finders.new_table({
+                results = books,
+                entry_maker = function(entry)
+                    local name, author = unpack(entry)
+                    local value = string.format("%s - %s", name, author)
 
-                return {
-                    display = make_display,
-                    author = author,
-                    name = name,
-                    value = value,
-                    ordinal = value,
-                }
-            end,
-        }),
-        previewer = false,
-        sorter = telescope_config.generic_sorter(options),
-    })
-    :find()
+                    return {
+                        display = make_display,
+                        author = author,
+                        name = name,
+                        value = value,
+                        ordinal = value,
+                    }
+                end,
+            }),
+            previewer = false,
+            sorter = telescope_config.generic_sorter(options),
+        })
+        :find()
 end
 
 local function _run_hello_world(options)
@@ -82,23 +83,24 @@ local function _run_hello_world(options)
 
     local phrases = { "Hi there!" }
 
-    pickers.new(options, {
-        prompt_title = "Say Hello",
-        finder = finders.new_table({
-            results = phrases,
-            entry_maker = function(entry)
-                return {
-                    display = make_display,
-                    name = entry,
-                    value = entry,
-                    ordinal = entry,
-                }
-            end,
-        }),
-        previewer = false,
-        sorter = telescope_config.generic_sorter(options),
-    })
-    :find()
+    pickers
+        .new(options, {
+            prompt_title = "Say Hello",
+            finder = finders.new_table({
+                results = phrases,
+                entry_maker = function(entry)
+                    return {
+                        display = make_display,
+                        name = entry,
+                        value = entry,
+                        ordinal = entry,
+                    }
+                end,
+            }),
+            previewer = false,
+            sorter = telescope_config.generic_sorter(options),
+        })
+        :find()
 end
 
 return telescope.register_extension({

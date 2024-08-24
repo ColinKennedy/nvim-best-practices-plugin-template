@@ -54,11 +54,11 @@ local say_constant = require("plugin_template._commands.hello_world.say.constant
 --- @class PluginTemplateConfigurationToolsLualineData
 ---     The display values that will be used when a specific `plugin_template`
 ---     command runs.
+--- @diagnostic disable-next-line: undefined-doc-name
 --- @field color vim.api.keyset.highlight
 ---     The foreground/background color to use for the Lualine status.
 --- @field prefix string
 ---     The text to display in lualine.
-
 
 local M = {}
 
@@ -76,8 +76,8 @@ local _DEFAULTS = {
     },
     tools = {
         lualine = {
-            goodnight_moon = { color = {link="Comment"}, text = " Goodnight moon"},
-            hello_world = { color = {link="Title"}, text = " Hello, World!"},
+            goodnight_moon = { color = { link = "Comment" }, text = " Goodnight moon" },
+            hello_world = { color = { link = "Title" }, text = " Hello, World!" },
         },
     },
 }

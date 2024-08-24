@@ -38,24 +38,25 @@ function M:init(options)
     end
 
     configuration.initialize_data_if_needed()
-    local defaults = tabler.get_value(configuration.DATA, {"tools", "lualine"}) or {}
+    local defaults = tabler.get_value(configuration.DATA, { "tools", "lualine" }) or {}
     defaults = vim.tbl_deep_extend("force", defaults, data)
 
     M.super.init(self, options)
 
     self._command_text = {
-        hello_world = tabler.get_value(defaults, {"hello_world", "text"}) or "<No Hello World text was found>",
-        goodnight_moon = tabler.get_value(defaults, {"goodnight_moon", "text"}) or "<No Goodnight moon text was found>",
+        hello_world = tabler.get_value(defaults, { "hello_world", "text" }) or "<No Hello World text was found>",
+        goodnight_moon = tabler.get_value(defaults, { "goodnight_moon", "text" })
+            or "<No Goodnight moon text was found>",
     }
 
     self._highlight_groups = {
         goodnight_moon = modules.highlight.create_component_highlight_group(
-            defaults.goodnight_moon.color or {link="Comment"},
+            defaults.goodnight_moon.color or { link = "Comment" },
             "plugin_template_goodnight_moon",
             self.options
         ),
         hello_world = modules.highlight.create_component_highlight_group(
-            defaults.hello_world.color or {link="Title"},
+            defaults.hello_world.color or { link = "Title" },
             "plugin_template_hello_world",
             self.options
         ),

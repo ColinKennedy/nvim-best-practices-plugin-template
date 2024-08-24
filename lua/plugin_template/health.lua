@@ -90,14 +90,14 @@ local function _get_lualine_command_issues(command, data)
     })
 
     if not success then
-        return {message}
+        return { message }
     end
 
     local output = {}
 
     success, message = pcall(vim.validate, {
         [string.format("tools.lualine.%s.text", command)] = {
-            tabler.get_value(data, {"text"}),
+            tabler.get_value(data, { "text" }),
             function(value)
                 if type(value) ~= "string" then
                     return false
@@ -115,7 +115,7 @@ local function _get_lualine_command_issues(command, data)
 
     success, message = pcall(vim.validate, {
         [string.format("tools.lualine.%s.color", command)] = {
-            tabler.get_value(data, {"color"}),
+            tabler.get_value(data, { "color" }),
             function(value)
                 if value == nil then
                     -- NOTE: It's okay for this value to be undefined because
@@ -149,7 +149,7 @@ end
 local function _get_lualine_issues(data)
     local output = {}
 
-    local lualine = tabler.get_value(data, { "tools", "lualine"})
+    local lualine = tabler.get_value(data, { "tools", "lualine" })
 
     local success, message = pcall(vim.validate, {
         ["tools.lualine"] = {
@@ -161,7 +161,7 @@ local function _get_lualine_issues(data)
 
                 return true
             end,
-            'a table. e.g. { goodnight_moon = {...}, hello_world = {...} }',
+            "a table. e.g. { goodnight_moon = {...}, hello_world = {...} }",
         },
     })
 
@@ -175,11 +175,8 @@ local function _get_lualine_issues(data)
         return output
     end
 
-    for _, command in ipairs({"goodnight_moon", "hello_world"}) do
-        local issues = _get_lualine_command_issues(
-            command,
-            tabler.get_value(lualine, { command})
-        )
+    for _, command in ipairs({ "goodnight_moon", "hello_world" }) do
+        local issues = _get_lualine_command_issues(command, tabler.get_value(lualine, { command }))
 
         vim.list_extend(output, issues)
     end

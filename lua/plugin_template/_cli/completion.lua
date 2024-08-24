@@ -384,7 +384,7 @@ end
 
 --- Check if `options` have been used up (and we are ready to get more options).
 ---
---- @param options All options that may have been used in previous runs.
+--- @param options CompletionOption[] All options used in current / previous runs.
 --- @return boolean # If `options` still has required uses, return `false`.
 ---
 local function _needs_next_options(options)
@@ -408,7 +408,7 @@ local function _trim_exhausted_options(options)
     local output = {}
 
     for _, option in ipairs(options) do
-        if option.argument_type ~= argparse.ArgumentType.position and not _is_exhausted({option}) then
+        if option.argument_type ~= argparse.ArgumentType.position and not _is_exhausted({ option }) then
             table.insert(output, option)
         end
     end
@@ -431,7 +431,7 @@ local function _compute_completion_options(tree, input)
     local current_options = _get_current_options(tree, tree_index)
     local input_count = #input.arguments
 
-    for index=1, input_count do
+    for index = 1, input_count do
         local argument = input.arguments[index]
         local matches = _get_exact_matches(argument, current_options)
 
@@ -471,10 +471,7 @@ end
 ---     The stripped copy from `input`.
 ---
 local function _rstrip_input(input, column)
-    local stripped = argparse_helper.rstrip_arguments(
-        input,
-        _get_cursor_offset(input, column)
-    )
+    local stripped = argparse_helper.rstrip_arguments(input, _get_cursor_offset(input, column))
 
     local last = stripped.arguments[#stripped.arguments]
 
@@ -566,8 +563,7 @@ local function _get_unfinished_named_argument_auto_complete_options(tree, argume
     end
 
     for _, match in ipairs(matches) do
-        for _, value in ipairs(_get_named_option_choices(match, current_value))
-        do
+        for _, value in ipairs(_get_named_option_choices(match, current_value)) do
             if not vim.tbl_contains(output, value) then
                 table.insert(output, string.format("--%s=%s", argument.name, value))
             end
@@ -619,7 +615,7 @@ local function _get_arguments(argument)
     end
 
     if type_ == "table" then
-        return {argument}
+        return { argument }
     end
 
     -- TODO: Log error
@@ -667,16 +663,13 @@ local function _fill_missing_data(tree)
     tree = vim.deepcopy(tree)
     --- @cast tree OptionTree
 
-    for index, items in ipairs(tree)
-    do
+    for index, items in ipairs(tree) do
         items = _get_arguments(items)
         tree[index] = items
     end
 
-    for _, items in ipairs(tree)
-    do
-        for _, item in ipairs(items)
-        do
+    for _, items in ipairs(tree) do
+        for _, item in ipairs(items) do
             if item.count == nil then
                 item.count = 1
             end
@@ -799,10 +792,7 @@ function M.get_options(tree, input, column)
         return {}
     end
 
-    local matches = _handle_partial_matches(
-        last,
-        (options or _get_current_options(tree, tree_index) or {})
-    )
+    local matches = _handle_partial_matches(last, (options or _get_current_options(tree, tree_index) or {}))
 
     return _get_auto_complete_values(matches)
 end

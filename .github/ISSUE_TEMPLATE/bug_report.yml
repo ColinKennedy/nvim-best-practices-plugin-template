@@ -21,13 +21,13 @@ body:
   - type: input
     attributes:
       label: "Neovim version (nvim -v)"
-      placeholder: "0.8.0 commit db1b0ee3b30f"
+      placeholder: "0.11.0 commit db1b0ee3b30f / NVIM v0.11.0-dev-345+g3e6cec0be"
     validations:
       required: true
   - type: input
     attributes:
       label: "Operating system/version"
-      placeholder: "MacOS 11.5"
+      placeholder: "Rocky 9"
     validations:
       required: true
   - type: textarea

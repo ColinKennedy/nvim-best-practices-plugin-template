@@ -5,6 +5,8 @@
 
 local M = {}
 
+--- @alias PluginTemplateSubcommands table<string, PluginTemplateSubcommand>
+
 --- Check if `full` contains `prefix` + whitespace.
 ---
 --- @param full string Some full text like `"PluginTemplate blah"`.
@@ -111,10 +113,7 @@ function M.make_triager(subcommands)
         local subcommand = subcommands[subcommand_key]
 
         if not subcommand then
-            vim.notify(
-                "PluginTemplate: Unknown command: " .. subcommand_key,
-                vim.log.levels.ERROR
-            )
+            vim.notify("PluginTemplate: Unknown command: " .. subcommand_key, vim.log.levels.ERROR)
 
             return
         end

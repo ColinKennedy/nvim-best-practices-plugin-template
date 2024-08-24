@@ -11,8 +11,6 @@ local cli_subcommand = require("plugin_template._cli.cli_subcommand")
 
 local _PREFIX = "PluginTemplate"
 
---- @alias PluginTemplateSubcommands table<string, PluginTemplateSubcommand>
-
 --- @type PluginTemplateSubcommands
 local _SUBCOMMANDS = {
     ["goodnight-moon"] = {

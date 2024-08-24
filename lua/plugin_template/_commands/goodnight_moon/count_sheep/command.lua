@@ -21,7 +21,7 @@ function M.run(count)
         count = 1
     end
 
-    for index=1,count do
+    for index = 1, count do
         M._print(string.format("%s Sheep", index))
     end
 end

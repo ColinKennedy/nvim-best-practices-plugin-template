@@ -1,4 +1,15 @@
 - Make sure the issue templates are good
+ - https://github.com/folke/which-key.nvim/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml&title=bug%3A+
+ - https://github.com/folke/which-key.nvim/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.yml&title=feature%3A+
+
+- Add logger and logging messages
+
+https://github.com/nvim-neorocks/nvim-best-practices/commits/master/runtime/doc/news.txt.atom
+https://github.com/neovim/neovim/commits/master/runtime/doc/news.txt.atom
+https://github.com/neovim/neovim/blob/master/.github/workflows/lintcommit.yml
+
+
+https://github.com/neovim/neovim/blob/master/.github/workflows/news.yml
 
 - Change lua types to be dotted. Maybe.
 
@@ -64,6 +75,9 @@ local tree = { {style}, {style}, }
  - Move to a luarocks module and include it here
   - Vendor the argparse in case the user doesn't have it installed
 - Add auto-completion function
+
+
+
 
 
 - Add doc/ or a GitHub Wiki

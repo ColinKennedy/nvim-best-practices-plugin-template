@@ -21,7 +21,7 @@ function M.run(count)
         count = 1
     end
 
-    for _=1,count do
+    for _ = 1, count do
         M._print("zzz")
     end
 end

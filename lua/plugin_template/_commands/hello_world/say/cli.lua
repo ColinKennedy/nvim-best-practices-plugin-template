@@ -18,14 +18,28 @@ local M = {}
 ---     All of the user's arguments.
 --- @param configuration PluginTemplateConfiguration?
 ---     Control how many times the phrase is said and the text's display.
---- @return string[] # All text that the user wrote.
+--- @return string[]?
+---     All text that the user wrote, if any.
+--- @return number?
+---     The number of times to print the phrase / word.
+--- @return ("lowercase" | "uppercase")?
+---     A modifier that runs before the text is printed.
 ---
 local function _get_data_details(arguments, configuration)
     local phrases = {}
 
-    local style = configuration.commands.hello_world.say.style or "lowercase"
+    local style = tabler.get_value(configuration, { "commands", "hello_world", "say", "style" }) or "lowercase"
+    --- @cast style ("lowercase" | "uppercase")?
 
-    local default_repeat = configuration.commands.hello_world.say["repeat"] or 1
+    if not style then
+        _LOGGER.fmt_warn('Configuration "%s" has no style.', configuration)
+
+        return {}
+    end
+
+    local default_repeat = tabler.get_value(configuration, { "commands", "hello_world", "say", "repeat" }) or 1
+    --- @cast default_repeat number
+
     local found_repeat = false
     local repeat_ = nil
 
