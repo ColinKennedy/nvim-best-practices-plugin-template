@@ -5,6 +5,7 @@
 
 local constant = require("plugin_template._commands.hello_world.say.constant")
 local state = require("plugin_template._core.state")
+local vlog = require("vendors.vlog")
 
 local M = {}
 
@@ -47,6 +48,7 @@ end
 ---     Control how the text should be shown.
 ---
 function M.run_say_phrase(phrase, repeat_, style)
+    vlog.debug("Running hello-world say word.")
     print("Saying phrase")
 
     _say(phrase, repeat_, style)
@@ -56,12 +58,13 @@ end
 ---
 --- @param word string
 ---     The text to say.
---- @param repeat_? number
+--- @param repeat_ number?
 ---     A 1-or-more value. The number of times to print `word`.
---- @param style? string
+--- @param style string?
 ---     Control how the text should be shown.
 ---
 function M.run_say_word(word, repeat_, style)
+    vlog.debug("Running hello-world say word.")
     print("Saying word")
 
     word = vim.fn.split(word, " ")[1] -- Make sure it's only one word

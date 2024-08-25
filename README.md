@@ -32,6 +32,7 @@ Telescope
 ```lua
 require("telescope").load_extension("plugin_template")
 ```
+- color customization - "TelescopeResultsNormal"}, { entry.author, "TelescopeResultsComment" } })
 
 
 TODO

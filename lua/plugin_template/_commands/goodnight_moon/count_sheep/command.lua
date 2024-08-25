@@ -4,6 +4,7 @@
 ---
 
 local state = require("plugin_template._core.state")
+local vlog = require("vendors.vlog")
 
 local M = {}
 
@@ -14,6 +15,7 @@ M._print = print
 --- @param count number Prints 1 sheep per `count`. A value that is 1-or-greater.
 ---
 function M.run(count)
+    vlog.debug("Running goodnight-moon count-sheep")
     state.PREVIOUS_COMMAND = "goodnight_moon"
 
     if count < 1 then

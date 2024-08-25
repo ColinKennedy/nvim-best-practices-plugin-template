@@ -3,6 +3,8 @@
 --- @module 'plugin_template._cli.argparse'
 ---
 
+local vlog = require("vendors.vlog")
+
 local M = {}
 
 -- TODO: Clean this code up, at some point
@@ -39,7 +41,7 @@ M.ArgumentType = {
 --- @field value string
 ---     The position's label.
 
---- @class NamedArgument : ArgparseArgument
+--- @class NamedArgument : BaseArgument
 ---     A --key=value pair. Basically it's a FlagArgument that has an extra value.
 --- @field name ...
 ---     The text of the argument. e.g. The `"foo"` part of `"--foo=bar"`.
@@ -371,6 +373,11 @@ function M.parse_arguments(text)
         needs_value = true
         _add_to_output()
     end
+
+    vlog.fmt_debug(
+        'Got "%s" arguments.',
+        { arguments = output, text = text, remainder = remainder }
+    )
 
     return { arguments = output, text = text, remainder = remainder }
 end

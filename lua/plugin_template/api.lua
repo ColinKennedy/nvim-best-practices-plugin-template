@@ -7,8 +7,8 @@
 ---
 
 local count_sheep_command = require("plugin_template._commands.goodnight_moon.count_sheep.command")
-local read_command = require("plugin_template._commands.hello_world.read.command")
-local say_command = require("plugin_template._commands.goodnight_moon.say.command")
+local read_command = require("plugin_template._commands.goodnight_moon.read.command")
+local say_command = require("plugin_template._commands.hello_world.say.command")
 local sleep_command = require("plugin_template._commands.goodnight_moon.sleep.command")
 
 local M = {}

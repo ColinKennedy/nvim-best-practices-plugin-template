@@ -6,14 +6,21 @@
 -- TODO: Consider moving this to a different branch in the repo or move the
 -- whole argparse into a different Lua project
 local argparse = require("plugin_template._cli.argparse")
+local configuration_ = require("plugin_template._core.configuration")
+
+--- @diagnostic disable: undefined-field
 
 describe("default", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("works even if #empty #simple", function()
         assert.same({ arguments = {}, text = "", remainder = { value = "" } }, argparse.parse_arguments(""))
     end)
 end)
 
 describe("positional arguments", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("#simple #single argument", function()
         assert.same({
             arguments = {
@@ -77,6 +84,8 @@ describe("positional arguments", function()
 end)
 
 describe("quotes", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("#quoted #position arguments", function()
         assert.same({
             arguments = {
@@ -282,6 +291,8 @@ describe("quotes", function()
 end)
 
 describe("double-dash flags", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("mixed --flag", function()
         assert.same({
             arguments = {
@@ -444,6 +455,8 @@ describe("double-dash flags", function()
 end)
 
 describe("double-dash equal-flags", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("mixed --flag", function()
         assert.same({
             arguments = {
@@ -522,6 +535,8 @@ describe("double-dash equal-flags", function()
 end)
 
 describe("single-dash flags", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("#single", function()
         assert.same({
             arguments = {
@@ -586,6 +601,8 @@ describe("single-dash flags", function()
 end)
 
 describe("remainder - positions", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("keeps track of single position text", function()
         assert.same({
             arguments = {
@@ -621,6 +638,8 @@ describe("remainder - positions", function()
 end)
 
 describe("remainder - flags", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("keeps track of flag text - 001", function()
         assert.same({
             arguments = {

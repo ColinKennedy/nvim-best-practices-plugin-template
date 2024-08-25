@@ -1,11 +1,17 @@
+--- Run auto-completion results for a Vim command CLI.
+---
+--- @module 'plugin_template._cli.completion'
+---
+
 local argparse = require("plugin_template._cli.argparse")
 local argparse_helper = require("plugin_template._cli.argparse_helper")
-
--- TODO: Add docstrings
+local vlog = require("vendors.vlog")
 
 --- @class FlagOption : FlagArgument
 ---     An argument that has a name but no value. It starts with either - or --
 ---     Examples: `-f` or `--foo` or `--foo-bar`
+--- @field required boolean
+---     If `true`, this option must be exhausted before more arguments can be parsed.
 --- @field used number
 ---     The number of times that this option has been used already (0-or-greater value).
 --- @field count OptionCount
@@ -53,10 +59,14 @@ local argparse_helper = require("plugin_template._cli.argparse_helper")
 
 local M = {}
 
+--- @param option CompletionOption
+--- @return boolean
 local function _has_fixed_count(option)
     return type(option.count) == "number"
 end
 
+--- @param option CompletionOption
+--- @return boolean
 local function _has_uses_left(option)
     return option.used < option.count
 end
@@ -522,6 +532,7 @@ local function _get_named_option_choices(option, current_value)
     return choices
 end
 
+-- TODO: Docstring
 local function _get_named_arguments(options)
     local output = {}
 
@@ -622,6 +633,11 @@ local function _get_arguments(argument)
     return {}
 end
 
+--- Check if `items` is a flat array/list of string values.
+---
+--- @param items ... An array to check.
+--- @return boolean # If found, return `true`.
+---
 local function _is_string_list(items)
     if type(items) ~= "table" then
         return false
@@ -636,6 +652,7 @@ local function _is_string_list(items)
     return true
 end
 
+-- TODO: Docstring
 local function _get_startswith_auto_complete_function(items)
     local function _get_choices(current_value)
         local output = {}
@@ -738,7 +755,7 @@ end
 --- @return string[]
 ---     All of the auto-completion options that were found, if any.
 ---
-function M.get_options(tree, input, column)
+local function _get_options(tree, input, column)
     -- TODO: Check every section in this function. Do I need all of these?
     tree = _fill_missing_data(tree)
 
@@ -795,6 +812,26 @@ function M.get_options(tree, input, column)
     local matches = _handle_partial_matches(last, (options or _get_current_options(tree, tree_index) or {}))
 
     return _get_auto_complete_values(matches)
+end
+
+--- Find the auto-completion results for `input` and `column`, using `tree`.
+---
+--- @param tree IncompleteOptionTree | ArgumentTree
+---     A basic CLI description that answers. 1. What arguments are next 2.
+---     What should we return for auto-complete, if anything.
+--- @param input ArgparseResults
+---     The user's parsed text.
+--- @param column number
+---     The starting point for the argument. Must be a 1-or-greater value.
+--- @return string[]
+---     All of the auto-completion options that were found, if any.
+---
+function M.get_options(tree, input, column)
+    local results = _get_options(tree, input, column)
+
+    vlog.fmt_debug('Got "%s" auto-completion results.', results)
+
+    return results
 end
 
 return M

@@ -1,5 +1,9 @@
 --- All `plugin_template` command definitions.
 
+local cli_subcommand = require("plugin_template._cli.cli_subcommand")
+
+local _PREFIX = "PluginTemplate"
+
 --- @class PluginTemplateSubcommand
 ---     A Python subparser's definition.
 --- @field run fun(data: string[], options: table?): nil
@@ -7,16 +11,14 @@
 --- @field complete? fun(data: string): string[]
 ---     Command completions callback, the `data` are  the lead of the subcommand's arguments
 
-local cli_subcommand = require("plugin_template._cli.cli_subcommand")
-
-local _PREFIX = "PluginTemplate"
+--- @alias PluginTemplateSubcommands table<string, PluginTemplateSubcommand>
 
 --- @type PluginTemplateSubcommands
 local _SUBCOMMANDS = {
     ["goodnight-moon"] = {
         complete = function(data)
             -- TODO: Add support later
-            return nil
+            return {}
         end,
         run = function(arguments)
             local runner = require("plugin_template._cli.runner")

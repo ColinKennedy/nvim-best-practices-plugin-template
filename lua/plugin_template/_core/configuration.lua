@@ -12,6 +12,10 @@ local say_constant = require("plugin_template._commands.hello_world.say.constant
 ---     The user's customizations for this plugin.
 --- @field commands PluginTemplateConfigurationCommands?
 ---     Customize the fallback behavior of all `:PluginTemplate` commands.
+--- @field logging PluginTemplateLoggingConfiguration?
+---     Control how and which logs print to file / Neovim.
+--- @field tools PluginTemplateConfigurationTools?
+---     Optional third-party tool integrations.
 
 --- @class PluginTemplateConfigurationCommands
 ---     Customize the fallback behavior of all `:PluginTemplate` commands.
@@ -24,6 +28,16 @@ local say_constant = require("plugin_template._commands.hello_world.say.constant
 ---     The default values when a user calls `:PluginTemplate goodnight-moon`.
 --- @field read PluginTemplateConfigurationGoodnightMoonRead?
 ---     The default values when a user calls `:PluginTemplate goodnight-moon read`.
+
+--- @class PluginTemplateLoggingConfiguration
+---     Control whether or not logging is printed to the console or to disk.
+--- @field level ("trace" | "debug" | "info" | "warn" | "error" | "fatal")?
+---     Any messages above this level will be logged.
+--- @field use_console boolean?
+---     Should print the output to neovim while running. Warning: This is very
+---     spammy. You probably don't want to enable this unless you have to.
+--- @field use_file boolean?
+---     Should write to a file.
 
 --- @class PluginTemplateConfigurationGoodnightMoonRead
 ---     The default values when a user calls `:PluginTemplate goodnight-moon read`.
@@ -55,10 +69,12 @@ local say_constant = require("plugin_template._commands.hello_world.say.constant
 ---     The display values that will be used when a specific `plugin_template`
 ---     command runs.
 --- @diagnostic disable-next-line: undefined-doc-name
---- @field color vim.api.keyset.highlight
+--- @field color vim.api.keyset.highlight?
 ---     The foreground/background color to use for the Lualine status.
---- @field prefix string
+--- @field prefix string?
 ---     The text to display in lualine.
+
+local vlog = require("vendors.vlog")
 
 local M = {}
 
@@ -74,10 +90,21 @@ local _DEFAULTS = {
             say = { ["repeat"] = 1, style = say_constant.Keyword.style.lowercase },
         },
     },
+    logging = {
+        level = "info",
+        use_console = false,
+        use_file = false,
+    },
     tools = {
         lualine = {
+            -- TODO: Make sure link actually works. Fix it, if not
             goodnight_moon = { color = { link = "Comment" }, text = " Goodnight moon" },
             hello_world = { color = { link = "Title" }, text = " Hello, World!" },
+        },
+        telescope = {
+            -- NOTE: Cusomize
+            -- goodnight_moon = {"Foo Book", "Bar Book Title" },
+            hello_world = { "Hi there!" },
         },
     },
 }
@@ -91,6 +118,10 @@ function M.initialize_data_if_needed()
     M.DATA = vim.tbl_deep_extend("force", _DEFAULTS, vim.g.plugin_template_configuration or {})
 
     vim.g.loaded_plugin_template = true
+
+    vlog.new(M.DATA.logging or {}, true)
+
+    vlog.fmt_debug("Initialized plugin-template's configuration.")
 end
 
 --- Merge `data` with the user's current configuration.

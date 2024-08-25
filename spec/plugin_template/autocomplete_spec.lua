@@ -7,10 +7,15 @@
 
 local argparse = require("plugin_template._cli.argparse")
 local completion = require("plugin_template._cli.completion")
+local configuration = require("plugin_template._core.configuration")
+
+--- @diagnostic disable: undefined-field
 
 local _parse = argparse.parse_arguments
 
 describe("default", function()
+    before_each(configuration.initialize_data_if_needed)
+
     it("works even if #empty #simple", function()
         local tree = {
             "say",
@@ -43,6 +48,8 @@ describe("default", function()
 end)
 
 describe("simple", function()
+    before_each(configuration.initialize_data_if_needed)
+
     it("works with a basic multi-position example", function()
         local tree = {
             "say",
@@ -136,6 +143,8 @@ describe("simple", function()
 end)
 
 describe("named argument", function()
+    before_each(configuration.initialize_data_if_needed)
+
     it("auto-completes on the dashes - 001", function()
         local tree = {
             {
@@ -281,6 +290,8 @@ describe("named argument", function()
 end)
 
 describe("flag argument", function()
+    before_each(configuration.initialize_data_if_needed)
+
     it("auto-completes on the dash", function()
         local tree = {
             {

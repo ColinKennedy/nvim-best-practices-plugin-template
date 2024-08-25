@@ -9,6 +9,7 @@ local configuration_ = require("plugin_template._core.configuration")
 local constant = require("plugin_template._commands.hello_world.say.constant")
 local say_command = require("plugin_template._commands.hello_world.say.command")
 local tabler = require("plugin_template._core.tabler")
+local vlog = require("vendors.vlog")
 
 local M = {}
 
@@ -32,7 +33,7 @@ local function _get_data_details(arguments, configuration)
     --- @cast style ("lowercase" | "uppercase")?
 
     if not style then
-        _LOGGER.fmt_warn('Configuration "%s" has no style.', configuration)
+        vlog.fmt_warn('Configuration "%s" has no style.', configuration)
 
         return {}
     end
@@ -51,7 +52,7 @@ local function _get_data_details(arguments, configuration)
         if argument.argument_type == argparse.ArgumentType.named then
             if argument.name == "repeat" then
                 if not found_repeat then
-                    repeat_ = argument.value
+                    repeat_ = tonumber(argument.value)
                     found_repeat = true
                 else
                     repeat_ = repeat_ + argument.value
@@ -66,7 +67,7 @@ local function _get_data_details(arguments, configuration)
 
     repeat_ = repeat_ or default_repeat
 
-    return { phrases, repeat_, style }
+    return phrases, repeat_, style
 end
 
 --- Parse `"hello-world say"` from COMMAND mode and run it.
@@ -80,15 +81,29 @@ function M.run_say(data)
     local configuration = configuration_.resolve_data()
 
     if subcommand == constant.Subcommand.phrase then
-        local phrase, repeat_, style = unpack(_get_data_details(data.arguments, configuration))
-        say_command.run_say_phrase(phrase, repeat_, style)
+        local phrases, repeat_, style = _get_data_details(data.arguments, configuration)
+
+        if not phrases then
+            vlog.warn('Unable to get phrases from "%s" arguments.', data.arguments)
+
+            return
+        end
+
+        say_command.run_say_phrase(phrases, repeat_, style)
 
         return
     end
 
     if subcommand == constant.Subcommand.word then
-        local phrase, repeat_, style = unpack(_get_data_details(data.arguments, configuration))
-        say_command.run_say_word(phrase[1], repeat_, style)
+        local phrases, repeat_, style = _get_data_details(data.arguments, configuration)
+
+        if not phrases then
+            vlog.warn('Unable to get phrases from "%s" arguments.', data.arguments)
+
+            return
+        end
+
+        say_command.run_say_word(phrases[1], repeat_, style)
 
         return
     end

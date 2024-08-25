@@ -1,4 +1,7 @@
-.PHONY: luacheck stylua test
+.PHONY: llscheck luacheck stylua test
+
+llscheck:
+	llscheck --configpath .luarc.json .
 
 luacheck:
 	luacheck lua plugin spec

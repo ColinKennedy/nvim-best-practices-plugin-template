@@ -2,11 +2,18 @@
  - https://github.com/folke/which-key.nvim/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml&title=bug%3A+
  - https://github.com/folke/which-key.nvim/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.yml&title=feature%3A+
 
-- Add logger and logging messages
+- make sure the lualine configuration color + options work as expected
+
+- Add telescope configuration
+ - colors, I guess
+
+- template - Add explanation on how to get the logs from a file, easily
 
 https://github.com/nvim-neorocks/nvim-best-practices/commits/master/runtime/doc/news.txt.atom
 https://github.com/neovim/neovim/commits/master/runtime/doc/news.txt.atom
 https://github.com/neovim/neovim/blob/master/.github/workflows/lintcommit.yml
+https://github.com/neovim/neovim/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml
+https://github.com/folke/which-key.nvim/blob/main/.github/ISSUE_TEMPLATE/config.yml
 
 
 https://github.com/neovim/neovim/blob/master/.github/workflows/news.yml
@@ -32,6 +39,9 @@ https://github.com/neovim/neovim/blob/master/.github/workflows/news.yml
 local style = {count=3, ...}
 local tree = { {style}, {style}, }
 ```
+
+- Replace CLI -> command
+- Replace command -> runner
 
 - Do existing TODO notes
 - /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/plugin_template/_cli/completion.lua

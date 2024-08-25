@@ -8,10 +8,13 @@
 ---
 
 local api = require("plugin_template.api")
+local configuration = require("plugin_template._core.configuration")
 local count_sheep_command = require("plugin_template._commands.goodnight_moon.count_sheep.command")
-local read_command = require("plugin_template._commands.hello_world.read.command")
-local say_command = require("plugin_template._commands.goodnight_moon.say.command")
+local read_command = require("plugin_template._commands.goodnight_moon.read.command")
+local say_command = require("plugin_template._commands.hello_world.say.command")
 local sleep_command = require("plugin_template._commands.goodnight_moon.sleep.command")
+
+--- @diagnostic disable: undefined-field
 
 local _DATA = {}
 local _ORIGINAL_COUNT_SHEEP_PRINTER = count_sheep_command._print
@@ -19,6 +22,10 @@ local _ORIGINAL_READ_PRINTER = read_command._print
 local _ORIGINAL_SAY_PRINTER = say_command._print
 local _ORIGINAL_SLEEP_PRINTER = sleep_command._print
 
+--- Keep track of text that would have been printed. Save it to a variable instead.
+---
+--- @param data string Some text to print to stdout.
+---
 local function _save_prints(data)
     table.insert(_DATA, data)
 end
@@ -26,6 +33,7 @@ end
 describe("hello world api - say phrase/word", function()
     before_each(function()
         say_command._print = _save_prints
+        configuration.initialize_data_if_needed()
     end)
 
     after_each(function()
@@ -55,6 +63,7 @@ end)
 describe("hello world commands - say phrase/word", function()
     before_each(function()
         say_command._print = _save_prints
+        configuration.initialize_data_if_needed()
     end)
 
     after_each(function()
@@ -86,6 +95,7 @@ describe("goodnight-moon api", function()
         count_sheep_command._print = _save_prints
         read_command._print = _save_prints
         sleep_command._print = _save_prints
+        configuration.initialize_data_if_needed()
     end)
 
     after_each(function()
@@ -119,6 +129,7 @@ describe("goodnight-moon commands", function()
         count_sheep_command._print = _save_prints
         read_command._print = _save_prints
         sleep_command._print = _save_prints
+        configuration.initialize_data_if_needed()
     end)
 
     after_each(function()
