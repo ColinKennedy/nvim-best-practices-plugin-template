@@ -19,8 +19,11 @@ local pickers = require("telescope.pickers")
 local telescope_actions = require("telescope.actions")
 local telescope_config = require("telescope.config").values
 
+local configuration = require("plugin_template._core.configuration")
 local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
 local say_runner = require("plugin_template._commands.hello_world.say.runner")
+
+configuration.initialize_data_if_needed()
 
 --- @alias TelescopeCommandOptions table<..., ...>
 

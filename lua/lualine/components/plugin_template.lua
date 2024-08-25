@@ -31,6 +31,7 @@ local M = require("lualine.component"):extend()
 ---
 function M:init(options)
     configuration.initialize_data_if_needed()
+
     --- @type table<string, plugin_template.LualineDisplayData>
     local data
 

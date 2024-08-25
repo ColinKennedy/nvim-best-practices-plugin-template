@@ -3,6 +3,7 @@
 --- @module 'plugin_template._commands.read.command'
 ---
 
+local configuration = require("plugin_template._core.configuration")
 local state = require("plugin_template._core.state")
 local vlog = require("vendors.vlog")
 
@@ -15,6 +16,7 @@ M._print = print
 --- @param book string The name of the book.
 ---
 function M.run(book)
+    configuration.initialize_data_if_needed()
     vlog.debug("Running goodnight-moon count-sheep")
 
     state.PREVIOUS_COMMAND = "goodnight_moon"

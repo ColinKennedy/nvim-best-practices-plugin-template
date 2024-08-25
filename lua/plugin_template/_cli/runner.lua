@@ -49,7 +49,10 @@ function M.run_copy_logs()
 
     vim.fn.setreg("+", contents)
 
-    vim.notify("Log file was copied to the clipboard.", vim.log.levels.INFO)
+    vim.notify(
+        string.format('Log file "%s" was copied to the clipboard.', path),
+        vim.log.levels.INFO
+    )
 end
 
 --- Run one of the `goodnight-moon {read,sleep,...}` commands using `data`.

@@ -69,6 +69,8 @@ end
 ---
 function M.make_command_completer(prefix, subcommands)
     local function runner(args, text, _)
+        local configuration = require("plugin_template._core.configuration")
+        configuration.initialize_data_if_needed()
         local completion = _get_subcommand_completion(text, prefix, subcommands)
 
         if completion then
@@ -114,7 +116,9 @@ function M.make_triager(subcommands)
     --- @param opts table
     ---
     local function runner(opts)
+        local configuration = require("plugin_template._core.configuration")
         local argparse = require("plugin_template._cli.argparse")
+        configuration.initialize_data_if_needed()
 
         local subcommand_key = opts.fargs[1]
         local subcommand = subcommands[subcommand_key]
