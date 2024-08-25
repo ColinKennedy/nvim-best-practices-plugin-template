@@ -13,6 +13,9 @@ local vlog = require("vendors.vlog")
 
 local M = {}
 
+-- NOTE: This file is defer-loaded so it's okay to run this in the global scope
+configuration_.initialize_data_if_needed()
+
 --- Check if `data` is a boolean under `key`.
 ---
 --- @param key string The configuration value that we are checking.

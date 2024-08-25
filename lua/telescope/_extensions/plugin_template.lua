@@ -23,6 +23,7 @@ local configuration = require("plugin_template._core.configuration")
 local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
 local say_runner = require("plugin_template._commands.hello_world.say.runner")
 
+-- NOTE: This file is defer-loaded so it's okay to run this in the global scope
 configuration.initialize_data_if_needed()
 
 --- @alias TelescopeCommandOptions table<..., ...>
