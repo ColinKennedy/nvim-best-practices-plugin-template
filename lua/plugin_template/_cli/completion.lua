@@ -823,8 +823,16 @@ end
 ---     All of the auto-completion options that were found, if any.
 ---
 local function _get_options(tree, input, column)
-    -- TODO: Check every section in this function. Do I need all of these?
+    -- TODO: Check every section in this function. Do I need all of these? If
+    -- not remove the code for it
+    --
     tree = _fill_missing_data(tree)
+
+    if vim.tbl_isempty(input.arguments) then
+        local options = _get_current_options(tree, 1)
+
+        return _get_auto_complete_values(options or {})
+    end
 
     local stripped = _rstrip_input(input, column)
     local argument = _get_remainder_named_argument(stripped, tree)
