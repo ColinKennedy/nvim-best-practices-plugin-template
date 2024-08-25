@@ -45,6 +45,11 @@ M.ArgumentType = {
 ---     A --key=value pair. Basically it's a FlagArgument that has an extra value.
 --- @field name ...
 ---     The text of the argument. e.g. The `"foo"` part of `"--foo=bar"`.
+--- @field needs_choice_completion boolean
+---     If `true`, it means that we've typed `"--foo="` and are ready to
+---     auto-complete for `"--foo=bar"`. If `false`, it means we've typed
+---     `"--"`, `"--f"`, `"--fo"`, `"--foo"`, and we are still auto-completing
+---     the name and aren't ready to auto-complete for the choices yet.
 --- @field value string | boolean
 ---     The second-hand side of the argument. e.g. The `"bar"` part of
 ---     `"--foo=bar"`. If the argument is partially written like `"--foo="`
@@ -181,10 +186,13 @@ function M.parse_arguments(text)
             return
         end
 
+        local needs_choice_completion = needs_value
+
         table.insert(output, {
             argument_type = M.ArgumentType.named,
-            range = range,
+            needs_choice_completion = needs_choice_completion,
             name = current_name,
+            range = range,
             value = current_argument,
         })
     end

@@ -494,18 +494,81 @@ local function _rstrip_input(input, column)
     return stripped
 end
 
+--- Look within `options` for a flag like `-f` by name.
+---
+--- @param options CompletionOption[]
+---     Some auto-completion options to consider. It might contain flag
+---     / position / named arguments.
+--- @param name string
+---     The argument to search for. e.g. `"f"`.
+--- @return FlagOption[]
+---     All found flags, if any.
+---
+local function _get_flag_arguments(options, name)
+    local output = {}
+
+    for _, option in ipairs(options) do
+        if option.argument_type == argparse.ArgumentType.flag and option.name == name then
+            table.insert(output, name)
+        end
+    end
+
+    return output
+end
+
+--- Change `argument` flag to a named argument.
+---
+--- @param argument FlagArgument An `"--foo"` argument that doesn't expect a value.
+--- @return NamedArgument # An `"--foo=..."` argument that expects a value.
+---
+local function _convert_flag_to_named_argument(argument)
+    local copy = vim.deepcopy(argument)
+    copy.argument_type = argparse.ArgumentType.named
+    copy.needs_choice_completion = false
+
+    return copy
+end
+
 --- If there is one, grab the final argument `--foo=` argument.
 ---
 --- The `--foo=` is "unfinished" because it's missing a value.
 ---
 --- @param input ArgparseResults The some argument / completion information.
+--- @param tree OptionTree The fully-parsed completion information.
 --- @return ArgparseArgument? # The found named argument, if any.
 ---
-local function _get_named_argument_data(input)
+local function _get_remainder_named_argument(input, tree)
     local last = input.arguments[#input.arguments] or {}
 
     if last.argument_type == argparse.ArgumentType.named then
         return last
+    end
+
+    local options = _get_current_options(tree, #tree)
+
+    if (
+        last.argument_type == argparse.ArgumentType.flag
+        and not vim.tbl_contains(_get_flag_arguments(options, last.name))
+    )
+    then
+        -- NOTE: This happens when the user has written `--foo`. We know from
+        -- the tree that this needs to be `--foo={bar, fizz, buzz}` but they
+        -- haven't written the full argument name yet.
+        --
+        -- Instead of assuming that they want to complete the argument choies
+        -- of `foo`, we just auto-complete for `foo`.
+        --
+        local named_last =_convert_flag_to_named_argument(last)
+        local matches = _get_exact_matches(named_last, options, false)
+
+        if vim.tbl_isempty(matches) then
+            return nil
+        end
+
+        named_last.choices = nil
+        named_last.needs_choice_completion = false
+
+        return named_last
     end
 
     return nil
@@ -558,6 +621,10 @@ end
 ---     The found auto-complete options.
 ---
 local function _get_unfinished_named_argument_auto_complete_options(tree, argument)
+    if not argument.needs_choice_completion then
+        return {string.format("--%s=", argument.name)}
+    end
+
     -- TODO: Get these options more intelligently. This section needs to consider
     -- flags that are `count="*"` because they could also be options
     --
@@ -760,7 +827,7 @@ local function _get_options(tree, input, column)
     tree = _fill_missing_data(tree)
 
     local stripped = _rstrip_input(input, column)
-    local argument = _get_named_argument_data(stripped)
+    local argument = _get_remainder_named_argument(stripped, tree)
 
     if argument and argument.argument_type == argparse.ArgumentType.named then
         if stripped.remainder.value == "" then

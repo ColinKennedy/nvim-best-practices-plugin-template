@@ -126,11 +126,10 @@ describe("simple", function()
 
         assert.same({ "--style=" }, completion.get_options(tree, _parse("say phrase --repeat=5 --s"), 25))
 
-        -- -- TODO: Figure out if I'd actually want this. Then implement it if it makes sense to
-        -- assert.same(
-        --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style"), 29)
-        -- )
+        assert.same(
+            {"--style="},
+            completion.get_options(tree, _parse("say phrase --repeat=5 --style"), 29)
+        )
 
         assert.same(
             { "--style=lowercase", "--style=uppercase" },
