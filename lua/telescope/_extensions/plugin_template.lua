@@ -19,8 +19,8 @@ local pickers = require("telescope.pickers")
 local telescope_actions = require("telescope.actions")
 local telescope_config = require("telescope.config").values
 
-local read_command = require("plugin_template._commands.goodnight_moon.read.command")
-local say_command = require("plugin_template._commands.hello_world.say.command")
+local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
+local say_runner = require("plugin_template._commands.hello_world.say.runner")
 
 --- @alias TelescopeCommandOptions table<..., ...>
 
@@ -60,7 +60,7 @@ end
 local function _run_goodnight_moon(options)
     local function _select_book(buffer)
         for _, book in ipairs(_get_selection(buffer)) do
-            read_command.run(book)
+            read_runner.run(book)
         end
 
         telescope_actions.close(buffer)
@@ -124,7 +124,7 @@ local function _run_hello_world(options)
     local function _select_phrases(buffer)
         local phrases = _get_selection(buffer)
 
-        say_command.run_say_phrase(phrases)
+        say_runner.run_say_phrase(phrases)
 
         telescope_actions.close(buffer)
     end

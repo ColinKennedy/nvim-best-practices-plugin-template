@@ -1,20 +1,20 @@
 --- Run Vim commands like `:PluginTemplate` in Lua.
 ---
---- @module 'plugin_template._cli.runner'
+--- @module 'plugin_template._cli.command'
 ---
 
 local argparse_helper = require("plugin_template._cli.argparse_helper")
-local count_sheep_cli = require("plugin_template._commands.goodnight_moon.count_sheep.cli")
-local read_cli = require("plugin_template._commands.goodnight_moon.read.cli")
-local say_cli = require("plugin_template._commands.hello_world.say.cli")
-local sleep_cli = require("plugin_template._commands.goodnight_moon.sleep.cli")
+local count_sheep_command = require("plugin_template._commands.goodnight_moon.count_sheep.command")
+local read_command = require("plugin_template._commands.goodnight_moon.read.command")
+local say_command = require("plugin_template._commands.hello_world.say.command")
+local sleep_command = require("plugin_template._commands.goodnight_moon.sleep.command")
 
 local _STARTING_GOODNIGHT_MOON_COMMANDS = {
-    ["count-sheep"] = count_sheep_cli.run,
-    read = read_cli.run,
-    sleep = sleep_cli.run,
+    ["count-sheep"] = count_sheep_command.run,
+    read = read_command.run,
+    sleep = sleep_command.run,
 }
-local _STARTING_HELLO_WORLD_COMMANDS = { say = say_cli.run_say }
+local _STARTING_HELLO_WORLD_COMMANDS = { say = say_command.run_say }
 
 local M = {}
 
@@ -24,10 +24,10 @@ local M = {}
 ---     The parsed user input. e.g. `'goodnight-moon read "a book"'`.
 ---
 function M.run_goodnight_moon(data)
-    local runner = _STARTING_GOODNIGHT_MOON_COMMANDS[data.arguments[2].value]
+    local command = _STARTING_GOODNIGHT_MOON_COMMANDS[data.arguments[2].value]
     data = argparse_helper.lstrip_arguments(data, 3)
 
-    runner(data)
+    command(data)
 end
 
 --- Run one of the `hello-world {say} {phrase,word}` commands using `data`.
@@ -36,10 +36,10 @@ end
 ---     The parsed user input. e.g. `'goodnight-moon read "a book"'`.
 ---
 function M.run_hello_world(data)
-    local runner = _STARTING_HELLO_WORLD_COMMANDS[data.arguments[2].value]
+    local command = _STARTING_HELLO_WORLD_COMMANDS[data.arguments[2].value]
     data = argparse_helper.lstrip_arguments(data, 3)
 
-    runner(data)
+    command(data)
 end
 
 return M

@@ -1,25 +1,19 @@
---- The main file that implements `goodnight-moon read` outside of COMMAND mode.
+--- Parse `"goodnight-moon read"` from COMMAND mode and run it.
 ---
---- @module 'plugin_template._commands.read.command'
+--- @module 'plugin_template._commands.count_sheep.cli'
 ---
 
-local state = require("plugin_template._core.state")
-local vlog = require("vendors.vlog")
+local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
 
 local M = {}
 
-M._print = print
-
---- Print the name of the book.
+--- Parse `"goodnight-moon read"` from COMMAND mode and run it.
 ---
---- @param book string The name of the book.
+--- @param data ArgparseResults All found user data.
 ---
-function M.run(book)
-    vlog.debug("Running goodnight-moon count-sheep")
-
-    state.PREVIOUS_COMMAND = "goodnight_moon"
-
-    M._print(string.format("%s: it is a book", book))
+function M.run(data)
+    local book = data.arguments[1].value
+    read_runner.run(book)
 end
 
 return M

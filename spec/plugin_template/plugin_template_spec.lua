@@ -9,18 +9,18 @@
 
 local api = require("plugin_template.api")
 local configuration = require("plugin_template._core.configuration")
-local count_sheep_command = require("plugin_template._commands.goodnight_moon.count_sheep.command")
-local read_command = require("plugin_template._commands.goodnight_moon.read.command")
-local say_command = require("plugin_template._commands.hello_world.say.command")
-local sleep_command = require("plugin_template._commands.goodnight_moon.sleep.command")
+local count_sheep_runner = require("plugin_template._commands.goodnight_moon.count_sheep.runner")
+local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
+local say_runner = require("plugin_template._commands.hello_world.say.runner")
+local sleep_runner = require("plugin_template._commands.goodnight_moon.sleep.runner")
 
 --- @diagnostic disable: undefined-field
 
 local _DATA = {}
-local _ORIGINAL_COUNT_SHEEP_PRINTER = count_sheep_command._print
-local _ORIGINAL_READ_PRINTER = read_command._print
-local _ORIGINAL_SAY_PRINTER = say_command._print
-local _ORIGINAL_SLEEP_PRINTER = sleep_command._print
+local _ORIGINAL_COUNT_SHEEP_PRINTER = count_sheep_runner._print
+local _ORIGINAL_READ_PRINTER = read_runner._print
+local _ORIGINAL_SAY_PRINTER = say_runner._print
+local _ORIGINAL_SLEEP_PRINTER = sleep_runner._print
 
 --- Keep track of text that would have been printed. Save it to a variable instead.
 ---
@@ -32,12 +32,12 @@ end
 
 describe("hello world api - say phrase/word", function()
     before_each(function()
-        say_command._print = _save_prints
+        say_runner._print = _save_prints
         configuration.initialize_data_if_needed()
     end)
 
     after_each(function()
-        say_command._print = _ORIGINAL_SAY_PRINTER
+        say_runner._print = _ORIGINAL_SAY_PRINTER
         _DATA = {}
     end)
 
@@ -62,12 +62,12 @@ end)
 
 describe("hello world commands - say phrase/word", function()
     before_each(function()
-        say_command._print = _save_prints
+        say_runner._print = _save_prints
         configuration.initialize_data_if_needed()
     end)
 
     after_each(function()
-        say_command._print = _ORIGINAL_SAY_PRINTER
+        say_runner._print = _ORIGINAL_SAY_PRINTER
         _DATA = {}
     end)
 
@@ -92,16 +92,16 @@ end)
 
 describe("goodnight-moon api", function()
     before_each(function()
-        count_sheep_command._print = _save_prints
-        read_command._print = _save_prints
-        sleep_command._print = _save_prints
+        count_sheep_runner._print = _save_prints
+        read_runner._print = _save_prints
+        sleep_runner._print = _save_prints
         configuration.initialize_data_if_needed()
     end)
 
     after_each(function()
-        count_sheep_command._print = _ORIGINAL_COUNT_SHEEP_PRINTER
-        read_command._print = _ORIGINAL_READ_PRINTER
-        sleep_command._print = _ORIGINAL_SLEEP_PRINTER
+        count_sheep_runner._print = _ORIGINAL_COUNT_SHEEP_PRINTER
+        read_runner._print = _ORIGINAL_READ_PRINTER
+        sleep_runner._print = _ORIGINAL_SLEEP_PRINTER
         _DATA = {}
     end)
 
@@ -126,16 +126,16 @@ end)
 
 describe("goodnight-moon commands", function()
     before_each(function()
-        count_sheep_command._print = _save_prints
-        read_command._print = _save_prints
-        sleep_command._print = _save_prints
+        count_sheep_runner._print = _save_prints
+        read_runner._print = _save_prints
+        sleep_runner._print = _save_prints
         configuration.initialize_data_if_needed()
     end)
 
     after_each(function()
-        count_sheep_command._print = _ORIGINAL_COUNT_SHEEP_PRINTER
-        read_command._print = _ORIGINAL_READ_PRINTER
-        sleep_command._print = _ORIGINAL_SLEEP_PRINTER
+        count_sheep_runner._print = _ORIGINAL_COUNT_SHEEP_PRINTER
+        read_runner._print = _ORIGINAL_READ_PRINTER
+        sleep_runner._print = _ORIGINAL_SLEEP_PRINTER
         _DATA = {}
     end)
 

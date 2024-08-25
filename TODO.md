@@ -1,8 +1,5 @@
 - Finish up the README
 
-- Replace CLI -> command
-- Replace command -> runner
-
 - Make sure the issue templates are good
  - https://github.com/folke/which-key.nvim/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml&title=bug%3A+
  - https://github.com/folke/which-key.nvim/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.yml&title=feature%3A+
@@ -21,9 +18,6 @@ https://github.com/folke/which-key.nvim/blob/main/.github/ISSUE_TEMPLATE/config.
 https://github.com/neovim/neovim/blob/master/.github/workflows/news.yml
 
 - Add luarocks auto-release integration
-
-
-- https://github.com/Koihik/LuaFormatter
 
 
 

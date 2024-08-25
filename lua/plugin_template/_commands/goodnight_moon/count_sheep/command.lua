@@ -1,31 +1,22 @@
---- The main file that implements `goodnight-moon count-sheep` outside of COMMAND mode.
+--- Parse `"goodnight-moon count-sheep"` from COMMAND mode and run it.
 ---
---- @module 'plugin_template._commands.count_sheep.command'
+--- @module 'plugin_template._commands.count_sheep.cli'
 ---
 
-local state = require("plugin_template._core.state")
-local vlog = require("vendors.vlog")
+local count_sheep_runner = require("plugin_template._commands.goodnight_moon.count_sheep.runner")
 
 local M = {}
 
-M._print = print
-
---- Count a sheep for each `count`.
+--- Parse `"goodnight-moon count-sheep"` from COMMAND mode and run it.
 ---
---- @param count number Prints 1 sheep per `count`. A value that is 1-or-greater.
+--- @param data ArgparseResults All found user data.
 ---
-function M.run(count)
-    vlog.debug("Running goodnight-moon count-sheep")
-    state.PREVIOUS_COMMAND = "goodnight_moon"
+function M.run(data)
+    local value = data.arguments[1].value
+    --- @cast value string
+    local count = tonumber(value) or 1
 
-    if count < 1 then
-        -- TODO: Log warning
-        count = 1
-    end
-
-    for index = 1, count do
-        M._print(string.format("%s Sheep", index))
-    end
+    count_sheep_runner.run(count)
 end
 
 return M

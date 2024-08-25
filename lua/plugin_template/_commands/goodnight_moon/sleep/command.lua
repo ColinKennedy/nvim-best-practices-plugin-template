@@ -1,33 +1,31 @@
---- The main file that implements `goodnight-moon sleep` outside of COMMAND mode.
+--- Parse `"goodnight-moon sleep"` from COMMAND mode and run it.
 ---
---- @module 'plugin_template._commands.sleep.command'
+--- @module 'plugin_template._commands.sleep.cli'
 ---
 
-local state = require("plugin_template._core.state")
-local vlog = require("vendors.vlog")
+local argparse = require("plugin_template._cli.argparse")
+local sleep_runner = require("plugin_template._commands.goodnight_moon.sleep.runner")
 
 local M = {}
 
-M._print = print
+local function _is_z_flag(argument)
+    return argument.argument_type == argparse.ArgumentType.flag and argument.name == "z"
+end
 
---- Print zzz each `count`.
+--- Parse `"goodnight-moon sleep"` from COMMAND mode and run it.
 ---
---- @param count number Prints 1 zzz per `count`. A value that is 1-or-greater.
+--- @param data ArgparseResults All found user data.
 ---
-function M.run(count)
-    vlog.debug("Running goodnight-moon count-sheep")
+function M.run(data)
+    local count = 0
 
-    state.PREVIOUS_COMMAND = "goodnight_moon"
-
-    if count < 1 then
-        vlog.fmt_warn('count-sheep "%s" is invalid. Setting the value to to 1-or-greater, instead.', count)
-
-        count = 1
+    for _, argument in ipairs(data.arguments) do
+        if _is_z_flag(argument) then
+            count = count + 1
+        end
     end
 
-    for _ = 1, count do
-        M._print("zzz")
-    end
+    sleep_runner.run(count)
 end
 
 return M
