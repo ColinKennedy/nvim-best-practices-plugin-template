@@ -13,24 +13,24 @@ local tabler = require("plugin_template._core.tabler")
 
 local M = require("lualine.component"):extend()
 
---- @class PluginTemplateLualineConfiguration
+--- @class plugin_template.LualineConfiguration
 ---     The Raw user settings from lualine's configuration.
 ---     e.g. `require("lualine").setup { sections = { { "plugin_template", ... }}}`
 ---     where "..." is the user's settings.
---- @field display table<string, PluginTemplateLualineDisplayData>?
+--- @field display table<string, plugin_template.LualineDisplayData>?
 
---- @class PluginTemplateLualineDisplayData
+--- @class plugin_template.LualineDisplayData
 ---     Any text, icons, etc that will be displayed for `plugin_template` commands.
 --- @field prefix string
 ---     The text to display when a command was called. e.g. " Goodnight moon".
 
 --- Setup all colors / text for lualine to display later.
 ---
---- @param options PluginTemplateLualineConfiguration?
+--- @param options plugin_template.LualineConfiguration?
 ---     The options to pass from lualine to `plugin_templaet`.
 ---
 function M:init(options)
-    --- @type table<string, PluginTemplateLualineDisplayData>
+    --- @type table<string, plugin_template.LualineDisplayData>
     local data
 
     if options then

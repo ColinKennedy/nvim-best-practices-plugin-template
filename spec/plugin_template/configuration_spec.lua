@@ -13,7 +13,7 @@ local mock_vim = require("test_utilities.mock_vim")
 
 --- Make sure `data`, whether undefined, defined, or partially defined, is broken.
 ---
---- @param data PluginTemplateConfiguration? The user customizations, if any.
+--- @param data plugin_template.Configuration? The user customizations, if any.
 --- @param messages string[] All found, expected error messages.
 ---
 local function _assert_bad(data, messages)
@@ -31,7 +31,7 @@ end
 
 --- Make sure `data`, whether undefined, defined, or partially defined, works.
 ---
---- @param data PluginTemplateConfiguration? The user customizations, if any.
+--- @param data plugin_template.Configuration? The user customizations, if any.
 ---
 local function _assert_good(data)
     data = configuration_.resolve_data(data)
@@ -177,6 +177,7 @@ describe("bad configuration - logging", function()
 end)
 --- @diagnostic enable: assign-type-mismatch
 
+--- @diagnostic disable: assign-type-mismatch
 describe("health.check", function()
     before_each(
         function()
@@ -228,3 +229,4 @@ describe("health.check", function()
         vim.startswith(found[#found], 'tools.lualine.hello_world.text: expected a string. e.g. "some text here", got ')
     end)
 end)
+--- @diagnostic enable: assign-type-mismatch

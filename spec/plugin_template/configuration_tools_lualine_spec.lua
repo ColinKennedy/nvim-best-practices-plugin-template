@@ -11,7 +11,7 @@ local health = require("plugin_template.health")
 
 --- Make sure `data`, whether undefined, defined, or partially defined, is broken.
 ---
---- @param data PluginTemplateConfiguration? The user customizations, if any.
+--- @param data plugin_template.Configuration? The user customizations, if any.
 --- @param messages string[] All found, expected error messages.
 ---
 local function _assert_bad(data, messages)
@@ -29,7 +29,7 @@ end
 
 --- Make sure `data`, whether undefined, defined, or partially defined, works.
 ---
---- @param data PluginTemplateConfiguration? The user customizations, if any.
+--- @param data plugin_template.Configuration? The user customizations, if any.
 ---
 local function _assert_good(data)
     data = configuration_.resolve_data(data)

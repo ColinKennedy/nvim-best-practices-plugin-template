@@ -44,7 +44,7 @@ end
 
 --- Check all "commands" values for completeness.
 ---
---- @param data PluginTemplateConfiguration All of the user's fallback settings.
+--- @param data plugin_template.Configuration All of the user's fallback settings.
 --- @return string[] # All found issues, if any.
 ---
 local function _get_command_issues(data)
@@ -173,7 +173,7 @@ end
 
 --- Check all "tools.lualine" values for completeness.
 ---
---- @param data PluginTemplateConfiguration All of the user's fallback settings.
+--- @param data plugin_template.Configuration All of the user's fallback settings.
 --- @return string[] # All found issues, if any.
 ---
 local function _get_lualine_issues(data)
@@ -216,7 +216,7 @@ end
 
 --- Check if logging configuration `data` has any issues.
 ---
---- @param data PluginTemplateLoggingConfiguration The user's logger settings.
+--- @param data plugin_template.LoggingConfiguration The user's logger settings.
 --- @return string[] # All of the found issues, if any.
 ---
 local function _get_logging_issues(data)
@@ -279,7 +279,7 @@ end
 
 --- Check `data` for problems and return each of them.
 ---
---- @param data PluginTemplateConfiguration? All extra customizations for this plugin.
+--- @param data plugin_template.Configuration? All extra customizations for this plugin.
 --- @return string[] # All found issues, if any.
 ---
 function M.get_issues(data)
@@ -307,7 +307,7 @@ end
 
 --- Make sure `data` will work for `plugin_template`.
 ---
---- @param data PluginTemplateConfiguration? All extra customizations for this plugin.
+--- @param data plugin_template.Configuration? All extra customizations for this plugin.
 ---
 function M.check(data)
     vlog.debug("Running plugin-template health check.")

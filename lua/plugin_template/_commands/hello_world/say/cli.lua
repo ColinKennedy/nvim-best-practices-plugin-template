@@ -17,7 +17,7 @@ local M = {}
 ---
 --- @param arguments (FlagArgument | PositionArgument | NamedArgument)[]
 ---     All of the user's arguments.
---- @param configuration PluginTemplateConfiguration?
+--- @param configuration plugin_template.Configuration?
 ---     Control how many times the phrase is said and the text's display.
 --- @return string[]?
 ---     All text that the user wrote, if any.
