@@ -6,6 +6,7 @@
 --- @module 'plugin_template.api'
 ---
 
+local configuration = require("plugin_template._core.configuration")
 local count_sheep_runner = require("plugin_template._commands.goodnight_moon.count_sheep.runner")
 local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
 local say_runner = require("plugin_template._commands.hello_world.say.runner")
@@ -13,9 +14,10 @@ local sleep_runner = require("plugin_template._commands.goodnight_moon.sleep.run
 
 local M = {}
 
+configuration.initialize_data_if_needed()
+
 -- TODO: (you) - Change this file to whatever you need it to be. These are just
 -- some example commands
-
 M.run_hello_world_say_phrase = say_runner.run_say_phrase
 M.run_hello_world_say_word = say_runner.run_say_word
 M.run_goodnight_moon_read = read_runner.run

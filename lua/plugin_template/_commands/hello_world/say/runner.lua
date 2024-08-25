@@ -3,7 +3,6 @@
 --- @module 'plugin_template._commands.say.command'
 ---
 
-local configuration = require("plugin_template._core.configuration")
 local constant = require("plugin_template._commands.hello_world.say.constant")
 local state = require("plugin_template._core.state")
 local vlog = require("plugin_template._vendors.vlog")
@@ -12,7 +11,7 @@ local M = {}
 
 M._print = print
 
---- Print `phrase` according to `configuration`.
+--- Print `phrase` according to the other options.
 ---
 --- @param phrase string[]
 ---     The text to say.
@@ -39,7 +38,7 @@ local function _say(phrase, repeat_, style)
     end
 end
 
---- Print `phrase` according to `configuration`.
+--- Print `phrase` according to the other options.
 ---
 --- @param phrase string[]
 ---     The text to say.
@@ -49,14 +48,13 @@ end
 ---     Control how the text should be shown.
 ---
 function M.run_say_phrase(phrase, repeat_, style)
-    configuration.initialize_data_if_needed()
     vlog.debug("Running hello-world say word.")
     print("Saying phrase")
 
     _say(phrase, repeat_, style)
 end
 
---- Print `word` according to `configuration`.
+--- Print `phrase` according to the other options.
 ---
 --- @param word string
 ---     The text to say.
@@ -66,7 +64,6 @@ end
 ---     Control how the text should be shown.
 ---
 function M.run_say_word(word, repeat_, style)
-    configuration.initialize_data_if_needed()
     vlog.debug("Running hello-world say word.")
     print("Saying word")
 
