@@ -9,7 +9,7 @@
 -- User configuration section
 local default_config = {
     -- Name of the plugin. Prepended to log messages
-    plugin = "spellbound",
+    plugin = "plugin_template",
 
     -- Should print the output to neovim while running
     use_console = true,
@@ -42,8 +42,17 @@ local log = {}
 
 local unpack = unpack or table.unpack
 
+local _LEVEL_NUMBER_TO_LEVEL_NAME = {
+    [vim.log.levels.DEBUG] = "debug",
+    [vim.log.levels.ERROR] = "error",
+    [vim.log.levels.INFO] = "info",
+    [vim.log.levels.TRACE] = "trace",
+    [vim.log.levels.WARN] = "warn",
+}
+
 log.new = function(config, standalone)
     config = vim.tbl_deep_extend("force", default_config, config)
+    config.level = _LEVEL_NUMBER_TO_LEVEL_NAME[config.level] or config.level
 
     local obj
     if standalone then
