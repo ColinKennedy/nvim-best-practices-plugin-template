@@ -131,60 +131,42 @@ end)
 --- @diagnostic enable: assign-type-mismatch
 --- @diagnostic enable: missing-fields
 
-
 --- @diagnostic disable: assign-type-mismatch
 describe("bad configuration - logging", function()
     before_each(configuration_.initialize_data_if_needed)
 
     it("happens with a bad value for logging", function()
-        _assert_bad(
-            { logging = false },
-            { 'logging: expected a table. e.g. { level = "info", ... }, got false' }
-        )
+        _assert_bad({ logging = false }, { 'logging: expected a table. e.g. { level = "info", ... }, got false' })
     end)
 
     it("happens with a bad value for logging.level", function()
-        _assert_bad(
-            { logging = {level = false} },
-            {
-                'logging.level: expected an enum. '
-                .. 'e.g. "trace" | "debug" | "info" | "warn" | "error" | "fatal", got false'
-            }
-        )
+        _assert_bad({ logging = { level = false } }, {
+            "logging.level: expected an enum. "
+                .. 'e.g. "trace" | "debug" | "info" | "warn" | "error" | "fatal", got false',
+        })
 
-        _assert_bad(
-            { logging = {level = "does not exist"} },
-            {
-                'logging.level: expected an enum. '
-                .. 'e.g. "trace" | "debug" | "info" | "warn" | "error" | "fatal", got does not exist'
-            }
-        )
+        _assert_bad({ logging = { level = "does not exist" } }, {
+            "logging.level: expected an enum. "
+                .. 'e.g. "trace" | "debug" | "info" | "warn" | "error" | "fatal", got does not exist',
+        })
     end)
 
     it("happens with a bad value for logging.use_console", function()
-        _assert_bad(
-            { logging = {use_console = "asdf"} },
-            { 'logging.use_console: expected a boolean, got asdf' }
-        )
+        _assert_bad({ logging = { use_console = "asdf" } }, { "logging.use_console: expected a boolean, got asdf" })
     end)
 
     it("happens with a bad value for logging.use_file", function()
-        _assert_bad(
-            { logging = {use_file = "asdf"} },
-            { 'logging.use_file: expected a boolean, got asdf' }
-        )
+        _assert_bad({ logging = { use_file = "asdf" } }, { "logging.use_file: expected a boolean, got asdf" })
     end)
 end)
 --- @diagnostic enable: assign-type-mismatch
 
 --- @diagnostic disable: assign-type-mismatch
 describe("health.check", function()
-    before_each(
-        function()
-            configuration_.initialize_data_if_needed()
-            mock_vim.mock_vim_health()
-        end
-    )
+    before_each(function()
+        configuration_.initialize_data_if_needed()
+        mock_vim.mock_vim_health()
+    end)
     after_each(mock_vim.reset_mocked_vim_health)
 
     it("works with an empty configuration", function()

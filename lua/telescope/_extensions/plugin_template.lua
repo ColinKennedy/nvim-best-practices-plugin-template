@@ -22,9 +22,7 @@ local telescope_config = require("telescope.config").values
 local read_command = require("plugin_template._commands.goodnight_moon.read.command")
 local say_command = require("plugin_template._commands.hello_world.say.command")
 
-
 --- @alias TelescopeCommandOptions table<..., ...>
-
 
 --- Gather the selected Telescope entries.
 ---
@@ -39,7 +37,7 @@ local function _get_selection(buffer)
     local books = {}
 
     action_utils.map_selections(buffer, function(selection)
-      table.insert(books, selection.value)
+        table.insert(books, selection.value)
     end)
 
     if not vim.tbl_isempty(books) then
@@ -49,7 +47,7 @@ local function _get_selection(buffer)
     local selection = action_state.get_selected_entry()
 
     if selection ~= nil then
-        return {selection.value}
+        return { selection.value }
     end
 
     return {}
@@ -60,7 +58,6 @@ end
 --- @param options TelescopeCommandOptions The Telescope UI / layout options.
 ---
 local function _run_goodnight_moon(options)
-
     local function _select_book(buffer)
         for _, book in ipairs(_get_selection(buffer)) do
             read_command.run(book)
@@ -96,12 +93,10 @@ local function _run_goodnight_moon(options)
 
                     return {
                         display = function(entry)
-                            return displayer(
-                                {
-                                    { entry.name, "TelescopeResultsNormal"},
-                                    { entry.author, "TelescopeResultsComment" }
-                                }
-                            )
+                            return displayer({
+                                { entry.name, "TelescopeResultsNormal" },
+                                { entry.author, "TelescopeResultsComment" },
+                            })
                         end,
                         author = author,
                         name = name,
@@ -126,7 +121,6 @@ end
 --- @param options TelescopeCommandOptions The Telescope UI / layout options.
 ---
 local function _run_hello_world(options)
-
     local function _select_phrases(buffer)
         local phrases = _get_selection(buffer)
 
@@ -149,7 +143,9 @@ local function _run_hello_world(options)
                 results = phrases,
                 entry_maker = function(data)
                     return {
-                        display = function(entry) return displayer({ entry.value }) end,
+                        display = function(entry)
+                            return displayer({ entry.value })
+                        end,
                         name = data,
                         value = data,
                         ordinal = data,

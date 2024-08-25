@@ -5,7 +5,6 @@
 
 local M = {}
 
-
 --- @class PluginTemplateSubcommand
 ---     A Python subparser's definition.
 --- @field run fun(data: string[], options: table?): nil

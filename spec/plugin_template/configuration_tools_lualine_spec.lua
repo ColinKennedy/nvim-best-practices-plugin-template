@@ -131,16 +131,14 @@ end)
 
 describe("good configuration - tools.lualine", function()
     it("example good values", function()
-        _assert_good(
-            {
-                tools = {
-                    lualine = {
-                        goodnight_moon = {text = "ttt"},
-                        hello_world = {text = "yyyy"},
-                    }
-                }
-            }
-        )
+        _assert_good({
+            tools = {
+                lualine = {
+                    goodnight_moon = { text = "ttt" },
+                    hello_world = { text = "yyyy" },
+                },
+            },
+        })
     end)
 
     it("happens with a bad value for tools.lualine.goodnight_moon.color", function()
