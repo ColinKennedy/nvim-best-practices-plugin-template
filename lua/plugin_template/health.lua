@@ -9,7 +9,7 @@
 local configuration_ = require("plugin_template._core.configuration")
 local say_constant = require("plugin_template._commands.hello_world.say.constant")
 local tabler = require("plugin_template._core.tabler")
-local vlog = require("vendors.vlog")
+local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 

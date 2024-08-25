@@ -74,7 +74,7 @@ local say_constant = require("plugin_template._commands.hello_world.say.constant
 --- @field prefix string?
 ---     The text to display in lualine.
 
-local vlog = require("vendors.vlog")
+local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 

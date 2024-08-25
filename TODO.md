@@ -1,19 +1,12 @@
-- Make sure the issue templates are good
 - make sure the lualine configuration color + options work as expected
 
-- Move vlog to its own folder
+- Add a doc/news.txt
 
-https://github.com/nvim-neorocks/nvim-best-practices/commits/master/runtime/doc/news.txt.atom
-https://github.com/neovim/neovim/commits/master/runtime/doc/news.txt.atom
-https://github.com/neovim/neovim/blob/master/.github/workflows/lintcommit.yml
-https://github.com/neovim/neovim/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml
-https://github.com/folke/which-key.nvim/blob/main/.github/ISSUE_TEMPLATE/config.yml
+TODO: Add "TODO: (you)" in various places in the code-base
 
-
-https://github.com/neovim/neovim/blob/master/.github/workflows/news.yml
+- Add doc/ or a GitHub Wiki
 
 - Add luarocks auto-release integration
-
 
 
 - When there's no arguments written yet, auto-complete the first thing(s)
@@ -48,7 +41,7 @@ local tree = { {style}, {style}, }
    - Make sure it works when cursor is in the middle of a command string
  - required flag / named arguments
  - Make sure cursor position works with named arguments as expected
- - Allow "any" argument somehow
+ - Allow "any" argument, somehow
 
 - Add unittests for failed stuff (bad commands with incorrect arguments)
  - command running
@@ -63,13 +56,6 @@ local tree = { {style}, {style}, }
  - Move to a luarocks module and include it here
   - Vendor the argparse in case the user doesn't have it installed
 - Add auto-completion function
-
-
-
-
-
-- Add doc/ or a GitHub Wiki
-    - Explain the folder structure
 
 - Write instructions on what people should do when they use the template
 
@@ -93,3 +79,5 @@ foo bar --thing --thing --thing blah
  - Include the lua package + vendorize it here
 
 TODO: Add "TODO: (you)" in various places in the code-base
+
+- Make sure the issue templates are good

@@ -3,7 +3,7 @@
 --- @module 'plugin_template._cli.argparse'
 ---
 
-local vlog = require("vendors.vlog")
+local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 

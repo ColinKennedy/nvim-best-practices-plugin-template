@@ -9,11 +9,10 @@ A template repository for Neovim plugins.
 # Features
 - Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices)
 - Fast start-up (the plugin is defer-loaded)
-- Built-in subcommand support + auto-completion
+- Built-in Vim commands with auto-completion
 - No external dependencies
 - [LuaCATS](https://luals.github.io/wiki/annotations/) annotations and type-hints, everywhere
-- Built-in integration
-https://github.com/LuaLS/lua-language-server
+- RSS feed support
 - Unittests use the full power of native [busted](https://olivinelabs.com/busted)
 - 100% Lua
 - Integrations
@@ -21,15 +20,12 @@ https://github.com/LuaLS/lua-language-server
     - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
     - `:checkhealth`
 - Github actions for:
-    - Linters
-        - [luacheck](https://github.com/mpeterv/luacheck)
-        - [llscheck](https://github.com/jeffzi/llscheck)
-    - Auto-formatters
-        - [StyLua](https://github.com/JohnnyMorganz/StyLua)
-    - Auto-generators
-        - [panvimdoc](https://github.com/kdheepak/panvimdoc)
-    - Auto-release
-        - [luarocks](https://luarocks.org) auto-release (LUAROCKS_API_KEY secret configuration required)
+    - PR reviews - Reminds users to update `doc/news.txt`
+    - [StyLua](https://github.com/JohnnyMorganz/StyLua) - Autoformats Lua code
+    - [llscheck](https://github.com/jeffzi/llscheck) - Checks for Lua type mismatches
+    - [luacheck](https://github.com/mpeterv/luacheck) - Checks for Lua code issues
+    - [luarocks](https://luarocks.org) auto-release (LUAROCKS_API_KEY secret configuration required)
+    - [panvimdoc](https://github.com/kdheepak/panvimdoc) - Documentation auto-generator
 
 # Using This Template
 1. Clone this template ![Clone this template](https://github.com/user-attachments/assets/a366825c-aeb1-4b8a-971d-bba7ee3c61d7)
@@ -200,4 +196,13 @@ busted .
 Run test based on tags
 ```sh
 busted . --tags=simple
+```
+
+# News
+TODO: Add relative link
+See doc/news.txt for updates.
+
+You can add changes to this plugin by adding this URL to your RSS feed:
+```
+https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom
 ```

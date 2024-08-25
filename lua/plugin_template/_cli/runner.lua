@@ -8,7 +8,7 @@ local count_sheep_command = require("plugin_template._commands.goodnight_moon.co
 local read_command = require("plugin_template._commands.goodnight_moon.read.command")
 local say_command = require("plugin_template._commands.hello_world.say.command")
 local sleep_command = require("plugin_template._commands.goodnight_moon.sleep.command")
-local vlog = require("vendors.vlog")
+local vlog = require("plugin_template._vendors.vlog")
 
 local _STARTING_GOODNIGHT_MOON_COMMANDS = {
     ["count-sheep"] = count_sheep_command.run,

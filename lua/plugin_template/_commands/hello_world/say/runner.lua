@@ -6,7 +6,7 @@
 local configuration = require("plugin_template._core.configuration")
 local constant = require("plugin_template._commands.hello_world.say.constant")
 local state = require("plugin_template._core.state")
-local vlog = require("vendors.vlog")
+local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 

@@ -5,7 +5,7 @@
 
 local argparse = require("plugin_template._cli.argparse")
 local argparse_helper = require("plugin_template._cli.argparse_helper")
-local vlog = require("vendors.vlog")
+local vlog = require("plugin_template._vendors.vlog")
 
 --- @class FlagOption : FlagArgument
 ---     An argument that has a name but no value. It starts with either - or --
