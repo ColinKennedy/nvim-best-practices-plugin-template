@@ -94,8 +94,8 @@ local function _run_goodnight_moon(options)
                     return {
                         display = function(entry)
                             return displayer({
-                                { entry.name, "TelescopeResultsNormal" },
-                                { entry.author, "TelescopeResultsComment" },
+                                { entry.name, "PluginTemplateTelescopeEntry" },
+                                { entry.author, "PluginTemplateTelescopeSecondary" },
                             })
                         end,
                         author = author,
@@ -162,6 +162,18 @@ local function _run_hello_world(options)
         })
         :find()
 end
+
+vim.api.nvim_set_hl(
+    0,
+    "PluginTemplateTelescopeEntry",
+    {link="TelescopeResultsNormal", default=true}
+)
+vim.api.nvim_set_hl(
+    0,
+    "PluginTemplateTelescopeSecondary",
+    {link="TelescopeResultsComment", default=true}
+)
+
 
 return telescope.register_extension({
     exports = {

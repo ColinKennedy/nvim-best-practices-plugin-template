@@ -1,12 +1,7 @@
-- Finish up the README
-
 - Make sure the issue templates are good
- - https://github.com/folke/which-key.nvim/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml&title=bug%3A+
- - https://github.com/folke/which-key.nvim/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.yml&title=feature%3A+
-
 - make sure the lualine configuration color + options work as expected
 
-- template - Add explanation on how to get the logs from a file, easily
+- Move vlog to its own folder
 
 https://github.com/nvim-neorocks/nvim-best-practices/commits/master/runtime/doc/news.txt.atom
 https://github.com/neovim/neovim/commits/master/runtime/doc/news.txt.atom
@@ -59,9 +54,6 @@ local tree = { {style}, {style}, }
  - command running
  - auto-complete
 
-- Make sure as much as possible is defer evaluated
- - Does Lua import parent init.lua files?
-
 - autocomplete notes
  - when nothing is written, show the auto-complete
 
@@ -99,3 +91,5 @@ foo bar --thing --thing --thing blah
 
  - Move the argparse + autocomplete stuff to its own lua package
  - Include the lua package + vendorize it here
+
+TODO: Add "TODO: (you)" in various places in the code-base

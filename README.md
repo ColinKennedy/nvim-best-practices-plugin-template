@@ -1,68 +1,171 @@
-TODO: Add this
-- Update the README.md
-- Update Makefile with more options
-
-
-TODO: Show how to do lualine via code
-
-
 # A Neovim Plugin Template
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ellisonleao/nvim-plugin-template/lint-test.yml?branch=main&style=for-the-badge)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ColinKennedy/nvim-plugin-template/test.yml?branch=main&style=for-the-badge)
 ![Lua](https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua)
 
 A template repository for Neovim plugins.
 
-lualine
-```lua
-{
-    display = {color="TODO", text="Some text"}
-}
--- {"plugin_template"}
-{
-    "plugin_template",
-    display = {
-        goodnight_moon = {color={fg="#FFFFFF"}, text="AAAA"},
-        hello_world = {color={fg="#333333"}, text="TTTT"},
-    },
-},
-```
 
-Telescope
-```lua
-require("telescope").load_extension("plugin_template")
-```
-- color customization - "TelescopeResultsNormal"}, { entry.author, "TelescopeResultsComment" } })
-
-
-TODO
-```lua
-{
-    'ColinKennedy/nvim-best-practices-plugin-template',
-    -- cmd = "PluginTemplate",
-    config = false,
-    directory = "/home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template",
-}
-```
-
-
-## Features and structure
-- 100% Lua
+# Features
 - Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices)
 - Fast start-up (the plugin is defer-loaded)
 - Built-in subcommand support + auto-completion
 - No external dependencies
+- [LuaCATS](https://luals.github.io/wiki/annotations/) annotations and type-hints, everywhere
+- Built-in integration
+https://github.com/LuaLS/lua-language-server
 - Unittests use the full power of native [busted](https://olivinelabs.com/busted)
+- 100% Lua
+- Integrations
+    - [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
+    - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
+    - `:checkhealth`
 - Github actions for:
-  - check for formatting errors [StyLua](https://github.com/JohnnyMorganz/StyLua)
-  - TODO: Add more checkers here
-  - vimdocs autogeneration from README.md file
-  - [luarocks](https://luarocks.org) auto-release (LUAROCKS_API_KEY secret configuration required)
+    - Linters
+        - [luacheck](https://github.com/mpeterv/luacheck)
+        - [llscheck](https://github.com/jeffzi/llscheck)
+    - Auto-formatters
+        - [StyLua](https://github.com/JohnnyMorganz/StyLua)
+    - Auto-generators
+        - [panvimdoc](https://github.com/kdheepak/panvimdoc)
+    - Auto-release
+        - [luarocks](https://luarocks.org) auto-release (LUAROCKS_API_KEY secret configuration required)
+
+# Using This Template
+1. Clone this template ![Clone this template](https://github.com/user-attachments/assets/a366825c-aeb1-4b8a-971d-bba7ee3c61d7)
+(Or use `gh repo create your-plugin -p ColinKennedy/nvim-best-practices-plugin-template`)
+
+2. Replace all instances of the name of this plugin with your desired named
+
+TODO: test this command, make sure it works
+```sh
+find . -type f -print0 | xargs -0 sed -i 's/PluginTemplate/YourPlugin/g ; s/plugin_template/your_plugin/g ; s/plugin-template/your-plugin/g s/nvim-best-practices-plugin-template/your-plugin.nvim/g ; s/ColinKennedy/YourUsername/g'
+```
+
+3. Remove any features that you don't need (people like integrations, keep them
+if you think you can use them! Adapt these integrations for your plugin)
+    - Removing [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
+    ```sh
+    rm -rf lua/lualine
+    rm configuration_tools_lualine_spec.lua
+    ```
+    - Removing [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
+    ```sh
+    rm -rf lua/lualine
+    TODO: Add this test
+    rm configuration_tools_telescope_spec.lua
+    ```
+
+4. Search for "TODO: (you)" in all files and fill them out
+```sh
+grep --recursive --line-number --word-regexp 'TODO: (you)' | nvim -q - -c "copen"
+```
+
+5. After you're done with the above, delete this section of the README.
+
+# Installation
+<!-- TODO: (you) - Add your dependencies as needed here -->
+- [lazy.nvim](https://github.com/folke/lazy.nvim)
+```lua
+{
+    "ColinKennedy/nvim-best-practices-plugin-template",
+}
+```
+
+## Configuration
+
+(These are default values)
+TODO: Make sure this is up to date and works
+- [lazy.nvim](https://github.com/folke/lazy.nvim)
+```lua
+{
+    "ColinKennedy/nvim-best-practices-plugin-template",
+    config = function()
+        vim.g.plugin_template_configuration = {
+            commands = {
+                goodnight_moon = { read = { phrase = "A good book" } },
+                hello_world = {
+                    say = { ["repeat"] = 1, style = "lowercase" },
+                },
+            },
+            logging = {
+                level = "info",
+                use_console = false,
+                use_file = false,
+            },
+            tools = {
+                lualine = {
+                    goodnight_moon = { color = { link = "Comment" }, text = " Goodnight moon" },
+                    hello_world = { color = { link = "Title" }, text = " Hello, World!" },
+                },
+                telescope = {
+                    -- goodnight_moon = {"Foo Book", "Bar Book Title" },
+                    hello_world = { "Hi there!" },
+                },
+            }
+        }
+    end
+}
+```
+
+## Lualine
+- [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
+```lua
+require("lualine").setup {
+    sections = {
+        lualine_y = {
+            -- ... Your other configuration ...
+            {
+                "plugin_template",
+                -- NOTE: These override default values
+                -- display = {
+                --     goodnight_moon = {color={fg="#FFFFFF"}, text="Custom message 1"}},
+                --     hello_world = {color={fg="#333333"}, text="Custom message 2"},
+                -- },
+            },
+        }
+    }
+}
+```
+
+## Telescope
+[telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
+```lua
+{
+    "nvim-telescope/telescope.nvim",
+    cmd = "Telescope",
+    config = function()
+        -- ... Your other configuration ...
+        require("telescope").load_extension("plugin_template")
+    end,
+    dependencies = {
+        "ColinKennedy/nvim-best-practices-plugin-template",
+        "nvim-lua/plenary.nvim",
+    },
+    version = "0.1.*",
+},
+```
+
+## Colors
+This plugin provides two default highlights
+
+TODO: Make sure these work
+
+- PluginTemplateTelescopeEntry
+- PluginTemplateTelescopeSecondary
+
+Both come with default colors that should look nice. If you want to change them, here's how:
+```lua
+vim.api.nvim_set_hl(0, "PluginTemplateTelescopeEntry", {link="Statement"})
+vim.api.nvim_set_hl(0, "PluginTemplateTelescopeSecondary", {link="Question"})
+```
+
 
 ## Commands
 Here are some example commands:
 
-TODO: Finish these
+<!-- TODO: (you) - You'll probably want to change all this or remove it. See -->
+<!-- plugin/plugin_template.lua for details. -->
 
 ```vim
 " A typical subcommand
@@ -78,37 +181,9 @@ TODO: Finish these
 :PluginTemplate goodnight-moon sleep -zzz
 ```
 
-TODO: Make sure people know that api.lua is anything they'd like it to be
 
-
-## Using it
-TODO: Is this still real? Maybe remove?
-
-Via `gh`:
-
-```
-$ gh repo create my-plugin -p ellisonleao/nvim-plugin-template
-```
-
-Via github web page:
-
-Click on `Use this template`
-
-![template](https://docs.github.com/assets/cb-36544/images/help/repository/use-this-template-button.png)
-
-TODO: Explain how to immediately make this template your own
-
-```sh
-find -name "*.lua" -type f | xargs sed -i 's/plugin_template/your_plugin/g ; s/PluginTemplate/YourPlugin/g'
-```
-
-
-## Install
-TODO Fill this out
-
-
-## Tests
-### Initialization
+# Tests
+## Initialization
 Run this line once before calling any `busted` command
 
 ```sh
@@ -116,14 +191,13 @@ eval $(luarocks path --lua-version 5.1 --bin)
 ```
 
 
-### Running
+## Running
 Run all tests
 ```sh
 busted .
 ```
 
-Run a suite of tests
-TODO: Write it
-
-Run an individual test
-TODO: Write it
+Run test based on tags
+```sh
+busted . --tags=simple
+```

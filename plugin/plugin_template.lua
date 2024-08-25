@@ -6,13 +6,26 @@ local _PREFIX = "PluginTemplate"
 
 --- @type PluginTemplateSubcommands
 local _SUBCOMMANDS = {
-    ["goodnight-moon"] = {
-        complete = function(data)
-            -- TODO: Add support later
-            return {}
-        end,
-        run = function(arguments)
+    ["copy-logs"] = {
+        run = function(_)
+            local configuration = require("plugin_template._core.configuration")
             local runner = require("plugin_template._cli.runner")
+
+            configuration.initialize_data_if_needed()
+
+            runner.run_copy_logs()
+        end,
+    },
+    ["goodnight-moon"] = {
+        -- TODO: Add support later
+        -- complete = function(data)
+        --     return {}
+        -- end,
+        run = function(arguments)
+            local configuration = require("plugin_template._core.configuration")
+            local runner = require("plugin_template._cli.runner")
+
+            configuration.initialize_data_if_needed()
 
             runner.run_goodnight_moon(arguments)
         end,
@@ -21,6 +34,9 @@ local _SUBCOMMANDS = {
         complete = function(data)
             local argparse = require("plugin_template._cli.argparse")
             local completion = require("plugin_template._cli.completion")
+            local configuration = require("plugin_template._core.configuration")
+
+            configuration.initialize_data_if_needed()
             -- TODO: include say/constant.lua later
 
             local tree = {
@@ -65,7 +81,10 @@ local _SUBCOMMANDS = {
             return completion.get_options(tree, arguments, vim.fn.getcmdpos())
         end,
         run = function(arguments)
+            local configuration = require("plugin_template._core.configuration")
             local runner = require("plugin_template._cli.runner")
+
+            configuration.initialize_data_if_needed()
 
             runner.run_hello_world(arguments)
         end,

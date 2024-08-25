@@ -5,7 +5,7 @@ labels: [enhancement]
 body:
   - type: checkboxes
     attributes:
-      label: Did you check the docs?
+      label: Did you check the documentation?
       description: Make sure you read all the docs before submitting a feature request
       options:
         - label: I have read all the docs

@@ -30,6 +30,7 @@ local M = require("lualine.component"):extend()
 ---     The options to pass from lualine to `plugin_templaet`.
 ---
 function M:init(options)
+    configuration.initialize_data_if_needed()
     --- @type table<string, plugin_template.LualineDisplayData>
     local data
 
@@ -37,7 +38,6 @@ function M:init(options)
         data = options.display or {}
     end
 
-    configuration.initialize_data_if_needed()
     local defaults = tabler.get_value(configuration.DATA, { "tools", "lualine" }) or {}
     defaults = vim.tbl_deep_extend("force", defaults, data)
 
