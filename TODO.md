@@ -1,13 +1,13 @@
-- make sure the lualine configuration color + options work as expected
-
 - Add a doc/news.txt
-
+- make sure the lualine configuration color + options work as expected
 TODO: Add "TODO: (you)" in various places in the code-base
-
 - Add doc/ or a GitHub Wiki
 
 - Add luarocks auto-release integration
 
+- Add unittests for lualine and telescope
+
+Remember what the rockspec file is for
 
 - When there's no arguments written yet, auto-complete the first thing(s)
 - Add unittest to make sure that an optional, repeatable --flag / --named=arg can be used in multiple places. e.g.

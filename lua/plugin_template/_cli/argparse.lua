@@ -45,7 +45,7 @@ M.ArgumentType = {
 ---     A --key=value pair. Basically it's a FlagArgument that has an extra value.
 --- @field name ...
 ---     The text of the argument. e.g. The `"foo"` part of `"--foo=bar"`.
---- @field value string
+--- @field value string | boolean
 ---     The second-hand side of the argument. e.g. The `"bar"` part of
 ---     `"--foo=bar"`. If the argument is partially written like `"--foo="`
 ---     then this will be an empty string.
