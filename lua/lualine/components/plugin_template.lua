@@ -45,12 +45,18 @@ function M:init(options)
     M.super.init(self, options)
 
     self._command_text = {
+        copy_logs = tabler.get_value(defaults, { "copy_logs", "text" }) or "<No Copy Logs text was found>",
         hello_world = tabler.get_value(defaults, { "hello_world", "text" }) or "<No Hello World text was found>",
         goodnight_moon = tabler.get_value(defaults, { "goodnight_moon", "text" })
             or "<No Goodnight moon text was found>",
     }
 
     self._highlight_groups = {
+        copy_logs = modules.highlight.create_component_highlight_group(
+            defaults.copy_logs.color or { link = "Question" },
+            "plugin_template_copy_logs",
+            self.options
+        ),
         goodnight_moon = modules.highlight.create_component_highlight_group(
             defaults.goodnight_moon.color or { link = "Comment" },
             "plugin_template_goodnight_moon",

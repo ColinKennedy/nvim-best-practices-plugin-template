@@ -12,10 +12,14 @@ M._print = print
 
 --- Print zzz each `count`.
 ---
---- @param count number Prints 1 zzz per `count`. A value that is 1-or-greater.
+--- @param count number? Prints 1 zzz per `count`. A value that is 1-or-greater.
 ---
 function M.run(count)
     vlog.debug("Running goodnight-moon count-sheep")
+
+    if count == nil then
+        count = 1
+    end
 
     state.PREVIOUS_COMMAND = "goodnight_moon"
 

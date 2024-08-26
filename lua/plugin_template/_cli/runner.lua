@@ -4,6 +4,7 @@
 ---
 
 local argparse_helper = require("plugin_template._cli.argparse_helper")
+local copy_logs_command = require("plugin_template._commands.copy_logs.command")
 local count_sheep_command = require("plugin_template._commands.goodnight_moon.count_sheep.command")
 local read_command = require("plugin_template._commands.goodnight_moon.read.command")
 local say_command = require("plugin_template._commands.hello_world.say.command")
@@ -20,39 +21,10 @@ local _STARTING_HELLO_WORLD_COMMANDS = { say = say_command.run_say }
 local M = {}
 
 --- Copy the contents of the saved log file to the user's system clipboard.
-function M.run_copy_logs()
-    local path = vlog:get_log_path()
+function M.run_copy_logs(data)
+    local log_path = data.arguments[2]
 
-    if not path or vim.fn.filereadable(path) ~= 1 then
-        vim.notify(
-            string.format('No "%s" path. Cannot copy the logs.', path),
-            vim.log.levels.ERROR
-        )
-
-        return
-    end
-
-    local file = io.open(path, "r")
-
-    if not file then
-      vim.notify(
-          string.format('Failed to read "%s" path. Cannot copy the logs.', path),
-          vim.log.levels.ERROR
-      )
-
-      return
-    end
-
-    local contents = file:read("*a")
-
-    file:close()
-
-    vim.fn.setreg("+", contents)
-
-    vim.notify(
-        string.format('Log file "%s" was copied to the clipboard.', path),
-        vim.log.levels.INFO
-    )
+    copy_logs_command.run(log_path)
 end
 
 --- Run one of the `goodnight-moon {read,sleep,...}` commands using `data`.

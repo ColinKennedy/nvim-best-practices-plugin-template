@@ -96,6 +96,21 @@ function M.make_command_completer(prefix, subcommands)
     return runner
 end
 
+--- If anything in `subcommands` is missing data, define default value(s) for it.
+---
+--- @param subcommands PluginTemplateSubcommands
+---     All registered commands for `plugin_template` to possibly modify.
+---
+local function _initialize_missing_values(subcommands)
+    for _, subcommand in ipairs(subcommands) do
+        if not subcommand.complete then
+            subcommand.complete = function()
+                return {}
+            end
+        end
+    end
+end
+
 --- Wrap the `plugin_template` CLI / API in a way Neovim understands.
 ---
 --- Since `:PluginTemplate` supports multiple sub-commands like `:PluginTemplate
@@ -109,6 +124,8 @@ end
 ---     If the user gives an incorrect subcommand name, an error is displayed instead.
 ---
 function M.make_triager(subcommands)
+    _initialize_missing_values(subcommands)
+
     --- Check for a subcommand and, if found, call its `run` caller field.
     ---
     --- @source `:h lua-guide-commands-create`

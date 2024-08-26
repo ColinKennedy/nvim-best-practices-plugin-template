@@ -7,20 +7,17 @@ local _PREFIX = "PluginTemplate"
 --- @type PluginTemplateSubcommands
 local _SUBCOMMANDS = {
     ["copy-logs"] = {
-        run = function(_)
+        run = function(arguments)
             local configuration = require("plugin_template._core.configuration")
             local runner = require("plugin_template._cli.runner")
 
             configuration.initialize_data_if_needed()
 
-            runner.run_copy_logs()
+            runner.run_copy_logs(arguments)
         end,
     },
     ["goodnight-moon"] = {
-        -- TODO: Add support later
-        -- complete = function(data)
-        --     return {}
-        -- end,
+        -- TODO: Add completion support, later
         run = function(arguments)
             local configuration = require("plugin_template._core.configuration")
             local runner = require("plugin_template._cli.runner")

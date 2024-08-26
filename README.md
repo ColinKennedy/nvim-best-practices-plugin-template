@@ -21,7 +21,7 @@ A template repository for Neovim plugins.
     - `:checkhealth`
 - Github actions for:
     - PR reviews - Reminds users to update `doc/news.txt`
-    - [StyLua](https://github.com/JohnnyMorganz/StyLua) - Autoformats Lua code
+    - [StyLua](https://github.com/JohnnyMorganz/StyLua) - Auto-formats Lua code
     - [llscheck](https://github.com/jeffzi/llscheck) - Checks for Lua type mismatches
     - [luacheck](https://github.com/mpeterv/luacheck) - Checks for Lua code issues
     - [luarocks](https://luarocks.org) auto-release (LUAROCKS_API_KEY secret configuration required)
@@ -40,10 +40,12 @@ find . -type f -print0 | xargs -0 sed -i 's/PluginTemplate/YourPlugin/g ; s/plug
 
 3. Remove any features that you don't need (people like integrations, keep them
 if you think you can use them! Adapt these integrations for your plugin)
+    TODO: Add these unittests
     - Removing [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
     ```sh
     rm -rf lua/lualine
     rm configuration_tools_lualine_spec.lua
+    rm lualine_spec.lua
     ```
     - Removing [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
     ```sh

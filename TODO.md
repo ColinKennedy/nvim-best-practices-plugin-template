@@ -1,11 +1,19 @@
+- TODO: Add "TODO: (you)" in various places in the code-base
 - Add a doc/news.txt
-- make sure the lualine configuration color + options work as expected
-TODO: Add "TODO: (you)" in various places in the code-base
 - Add doc/ or a GitHub Wiki
+- make sure the lualine configuration color + options work as expected
+- Do existing TODO notes
 
 - Add luarocks auto-release integration
 
-- Add unittests for lualine and telescope
+- Consider moving the api file to init.lua. As long as it does not auto-import
+
+- Add unittests for telescope
+ - https://github.com/nvim-lua/plenary.nvim/issues?q=wait+event
+ - https://github.com/nvim-lua/plenary.nvim/issues/424
+ - https://github.com/nvim-lua/plenary.nvim/commit/1252cb3344d3a7bf20614dca21e7cf17385eb1de
+ - https://github.com/nvim-lua/plenary.nvim/pull/447/files
+ - https://github.com/nvim-lua/plenary.nvim/pull/426
 
 Remember what the rockspec file is for
 
@@ -49,8 +57,6 @@ local tree = { {style}, {style}, }
 
 - autocomplete notes
  - when nothing is written, show the auto-complete
-
-- Re-enable the other unittests
 
 - Add argparse solution
  - Move to a luarocks module and include it here

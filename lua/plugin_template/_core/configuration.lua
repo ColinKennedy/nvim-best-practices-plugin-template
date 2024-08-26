@@ -98,6 +98,7 @@ local _DEFAULTS = {
     tools = {
         lualine = {
             -- TODO: Make sure link actually works. Fix it, if not
+            copy_logs = { color = { link = "Question" }, text = "󰈔 Copy Logs" },
             goodnight_moon = { color = { link = "Comment" }, text = " Goodnight moon" },
             hello_world = { color = { link = "Title" }, text = " Hello, World!" },
         },
