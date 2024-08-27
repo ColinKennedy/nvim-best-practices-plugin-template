@@ -15,8 +15,6 @@ end
 
 --- Enable lualine so we can create lualine component(s) and other various tasks.
 local function _setup_lualine()
-    require("lualine").setup()
-
     state.PREVIOUS_COMMAND = nil
 
     mock_test.silence_all_internal_prints()

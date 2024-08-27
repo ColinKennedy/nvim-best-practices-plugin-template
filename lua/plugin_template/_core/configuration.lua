@@ -100,10 +100,9 @@ local _DEFAULTS = {
             hello_world = { color = { link = "Title" }, text = " Hello, World!" },
         },
         telescope = {
-            -- TODO: Finish
-            -- NOTE: Cusomize
+            -- TODO: Finish + make sure to implment this in telescope
             -- goodnight_moon = {"Foo Book", "Bar Book Title" },
-            hello_world = { "Hi there!" },
+            hello_world = { "Hi there!", "Hello, Sailor!", "What's up, doc?" },
         },
     },
 }

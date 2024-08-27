@@ -1,12 +1,13 @@
 - Change internal prints to use vim.notify instead
+- Get all CI stuff to pass
+- Make sure the issue templates are good
+- make sure the lualine configuration color + options work as expected
+- Make sure the auto-generated documentation looks good
+   - Leave notes on how to make it from scratch
+
 
 - TODO: Add "TODO: (you)" in various places in the code-base
-- Add doc/ or a GitHub Wiki
-- make sure the lualine configuration color + options work as expected
 - Do existing TODO notes
-
-- Make sure the issue templates are good
-- Get all CI stuff to pass
 
 - Add luarocks auto-release integration
 
