@@ -97,7 +97,7 @@ describe("simple", function()
         -- NOTE: Completing the name to a --double-dash named argument
         assert.same({ "--repeat=" }, completion.get_options(tree, _parse("say phrase --r"), 14))
         -- NOTE: Completing the =, so people know that this is requires an argument
-        assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat"), 19))
+        assert.same({ "--repeat=" }, completion.get_options(tree, _parse("say phrase --repeat"), 19))
         -- NOTE: Completing the value of the named argument
         assert.same({
             "--repeat=1",
@@ -123,10 +123,7 @@ describe("simple", function()
 
         assert.same({ "--style=" }, completion.get_options(tree, _parse("say phrase --repeat=5 --s"), 25))
 
-        assert.same(
-            {"--style="},
-            completion.get_options(tree, _parse("say phrase --repeat=5 --style"), 29)
-        )
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("say phrase --repeat=5 --style"), 29))
 
         assert.same(
             { "--style=lowercase", "--style=uppercase" },
@@ -204,19 +201,19 @@ describe("named argument", function()
     it("auto-completes on a partial argument name - 003", function()
         local tree = {
             {
-                argument_type=argparse.ArgumentType.named,
-                name="style",
-                choices={"lowercase", "uppercase"},
+                argument_type = argparse.ArgumentType.named,
+                name = "style",
+                choices = { "lowercase", "uppercase" },
             },
         }
 
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 1))
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 2))
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 3))
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 4))
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 5))
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 6))
-        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 7))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 1))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 2))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 3))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 4))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 5))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 6))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 7))
     end)
 
     it("does not auto-complete the name anymore and auto-completes the value", function()

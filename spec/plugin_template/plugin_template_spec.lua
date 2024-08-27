@@ -46,7 +46,7 @@ describe("hello world api - say phrase/word", function()
     end)
 
     it("runs hello-world with default arguments - 002", function()
-        api.run_hello_world_say_phrase({ })
+        api.run_hello_world_say_phrase({})
 
         assert.same({ "No phrase was given" }, _DATA)
     end)

@@ -9,7 +9,6 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
-
 --- Count a sheep for each `count`.
 ---
 --- @param count number Prints 1 sheep per `count`. A value that is 1-or-greater.

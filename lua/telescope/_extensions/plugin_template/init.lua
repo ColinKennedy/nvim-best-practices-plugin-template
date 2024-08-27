@@ -37,7 +37,6 @@ local function _run_hello_world(options)
     picker:find()
 end
 
-
 return telescope.register_extension({
     exports = {
         ["goodnight-moon"] = _run_goodnight_moon,

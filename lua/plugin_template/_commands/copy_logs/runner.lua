@@ -20,10 +20,7 @@ function M.run(path)
     path = path or vlog:get_log_path()
 
     if not path or vim.fn.filereadable(path) ~= 1 then
-        vim.notify(
-            string.format('No "%s" path. Cannot copy the logs.', path),
-            vim.log.levels.ERROR
-        )
+        vim.notify(string.format('No "%s" path. Cannot copy the logs.', path), vim.log.levels.ERROR)
 
         return
     end
@@ -31,12 +28,9 @@ function M.run(path)
     local file = io.open(path, "r")
 
     if not file then
-      vim.notify(
-          string.format('Failed to read "%s" path. Cannot copy the logs.', path),
-          vim.log.levels.ERROR
-      )
+        vim.notify(string.format('Failed to read "%s" path. Cannot copy the logs.', path), vim.log.levels.ERROR)
 
-      return
+        return
     end
 
     local contents = file:read("*a")
@@ -45,10 +39,7 @@ function M.run(path)
 
     vim.fn.setreg("+", contents)
 
-    vim.notify(
-        string.format('Log file "%s" was copied to the clipboard.', path),
-        vim.log.levels.INFO
-    )
+    vim.notify(string.format('Log file "%s" was copied to the clipboard.', path), vim.log.levels.INFO)
 end
 
 return M

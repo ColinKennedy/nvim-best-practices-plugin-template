@@ -8,7 +8,6 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
-
 --- Print the name of the book.
 ---
 --- @param book string The name of the book.

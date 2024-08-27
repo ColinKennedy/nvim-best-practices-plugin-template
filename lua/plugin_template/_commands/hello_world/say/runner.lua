@@ -9,7 +9,6 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
-
 --- Check if `text` is only whitespace.
 ---
 --- @param text string Some words / phrase to check.
@@ -18,7 +17,6 @@ local M = {}
 local function _is_whitespace(text)
     return text:match("^%s*$") == nil
 end
-
 
 --- Remove any phrases from `text` that has no meaningful words.
 ---

@@ -532,10 +532,9 @@ local function _get_remainder_named_argument(input, tree)
 
     local options = tree[#tree]
 
-    if (
+    if
         last.argument_type == argparse.ArgumentType.flag
         and not vim.tbl_contains(_get_flag_arguments(options, last.name))
-    )
     then
         --- @cast last FlagOption
 
@@ -616,7 +615,7 @@ end
 ---
 local function _get_unfinished_named_argument_auto_complete_options(tree, argument)
     if not argument.needs_choice_completion then
-        return {string.format("--%s=", argument.name)}
+        return { string.format("--%s=", argument.name) }
     end
 
     -- TODO: Get these options more intelligently. This section needs to consider

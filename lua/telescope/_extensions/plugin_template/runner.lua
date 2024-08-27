@@ -18,16 +18,8 @@ local telescope_config = require("telescope.config").values
 local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
 local say_runner = require("plugin_template._commands.hello_world.say.runner")
 
-vim.api.nvim_set_hl(
-    0,
-    "PluginTemplateTelescopeEntry",
-    {link="TelescopeResultsNormal", default=true}
-)
-vim.api.nvim_set_hl(
-    0,
-    "PluginTemplateTelescopeSecondary",
-    {link="TelescopeResultsComment", default=true}
-)
+vim.api.nvim_set_hl(0, "PluginTemplateTelescopeEntry", { link = "TelescopeResultsNormal", default = true })
+vim.api.nvim_set_hl(0, "PluginTemplateTelescopeSecondary", { link = "TelescopeResultsComment", default = true })
 
 --- @alias TelescopeCommandOptions table<..., ...>
 
@@ -36,7 +28,6 @@ vim.api.nvim_set_hl(
 --- @param options TelescopeCommandOptions The Telescope UI / layout options.
 ---
 function M.get_goodnight_moon_picker(options)
-
     -- TODO: Make sure this picker actually works. It seems like it doesn't print
     local function _select_book(buffer)
         for _, book in ipairs(M.get_selection(buffer)) do
@@ -62,37 +53,36 @@ function M.get_goodnight_moon_picker(options)
         { "When: The Scientific Secrets of Perfect Timing", "Daniel H. Pinker" },
     }
 
-    local picker = pickers
-        .new(options, {
-            prompt_title = "Choose A Book",
-            finder = finders.new_table({
-                results = books,
-                entry_maker = function(data)
-                    local name, author = unpack(data)
-                    local value = string.format("%s - %s", name, author)
+    local picker = pickers.new(options, {
+        prompt_title = "Choose A Book",
+        finder = finders.new_table({
+            results = books,
+            entry_maker = function(data)
+                local name, author = unpack(data)
+                local value = string.format("%s - %s", name, author)
 
-                    return {
-                        display = function(entry)
-                            return displayer({
-                                { entry.name, "PluginTemplateTelescopeEntry" },
-                                { entry.author, "PluginTemplateTelescopeSecondary" },
-                            })
-                        end,
-                        author = author,
-                        name = name,
-                        value = value,
-                        ordinal = value,
-                    }
-                end,
-            }),
-            previewer = false,
-            sorter = telescope_config.generic_sorter(options),
-            attach_mappings = function()
-                telescope_actions.select_default:replace(_select_book)
-
-                return true
+                return {
+                    display = function(entry)
+                        return displayer({
+                            { entry.name, "PluginTemplateTelescopeEntry" },
+                            { entry.author, "PluginTemplateTelescopeSecondary" },
+                        })
+                    end,
+                    author = author,
+                    name = name,
+                    value = value,
+                    ordinal = value,
+                }
             end,
-        })
+        }),
+        previewer = false,
+        sorter = telescope_config.generic_sorter(options),
+        attach_mappings = function()
+            telescope_actions.select_default:replace(_select_book)
+
+            return true
+        end,
+    })
 
     return picker
 end
@@ -102,7 +92,6 @@ end
 --- @param options TelescopeCommandOptions The Telescope UI / layout options.
 ---
 function M.get_hello_world_picker(options)
-
     local function _select_phrases(buffer)
         local phrases = M.get_selection(buffer)
 
@@ -119,30 +108,29 @@ function M.get_hello_world_picker(options)
     -- TODO: Replace with the configuration
     local phrases = { "Hi there!", "Hello, Sailor!", "What's up, doc?" }
 
-    local picker = pickers
-        .new(options, {
-            prompt_title = "Say Hello",
-            finder = finders.new_table({
-                results = phrases,
-                entry_maker = function(data)
-                    return {
-                        display = function(entry)
-                            return displayer({ entry.value })
-                        end,
-                        name = data,
-                        value = data,
-                        ordinal = data,
-                    }
-                end,
-            }),
-            previewer = false,
-            sorter = telescope_config.generic_sorter(options),
-            attach_mappings = function()
-                telescope_actions.select_default:replace(_select_phrases)
-
-                return true
+    local picker = pickers.new(options, {
+        prompt_title = "Say Hello",
+        finder = finders.new_table({
+            results = phrases,
+            entry_maker = function(data)
+                return {
+                    display = function(entry)
+                        return displayer({ entry.value })
+                    end,
+                    name = data,
+                    value = data,
+                    ordinal = data,
+                }
             end,
-        })
+        }),
+        previewer = false,
+        sorter = telescope_config.generic_sorter(options),
+        attach_mappings = function()
+            telescope_actions.select_default:replace(_select_phrases)
+
+            return true
+        end,
+    })
 
     return picker
 end
@@ -175,6 +163,5 @@ function M.get_selection(buffer)
 
     return {}
 end
-
 
 return M
