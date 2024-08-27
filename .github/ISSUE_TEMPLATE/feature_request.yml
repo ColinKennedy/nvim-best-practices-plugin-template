@@ -6,9 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for suggestion! Depending on your request, the issue may be
-        reposted to https://github.com/nvim-neorocks/nvim-best-practices (which
-        this plugin takes great inspiration). But please feel free to ask here first!
+        Thank you for suggestion! Depending on your request, the issue may be reposted to https://github.com/nvim-neorocks/nvim-best-practices (which this plugin takes great inspiration). But please feel free to ask here first!
   - type: checkboxes
     attributes:
       label: Did you check the documentation?
@@ -21,7 +19,7 @@ body:
       required: true
     attributes:
       label: Is your feature request related to a problem? Please describe.
-      description: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+      description: A clear and concise description of what the problem is. Ex. Wouldn't it be cool if [...] Ex. I'm always frustrated when [...]
   - type: textarea
     validations:
       required: true

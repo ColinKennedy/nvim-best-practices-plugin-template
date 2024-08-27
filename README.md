@@ -13,6 +13,7 @@ A template repository for Neovim plugins.
 - No external dependencies
 - [LuaCATS](https://luals.github.io/wiki/annotations/) annotations and type-hints, everywhere
 - RSS feed support
+- Built-in logging to stdout / files
 - Unittests use the full power of native [busted](https://olivinelabs.com/busted)
 - 100% Lua
 - Integrations

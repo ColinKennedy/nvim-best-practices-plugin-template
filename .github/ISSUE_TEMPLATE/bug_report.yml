@@ -12,14 +12,14 @@ body:
         Usage questions such as ***"How do I...?"*** belong in [Discussions](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/discussions) and will be closed.
   - type: checkboxes
     attributes:
-      label: Did you check docs and existing issues?
-      description: Make sure you checked all of the below before submitting an issue
+      label: Did you read the documentation and check existing issues?
+      description: Make sure you checked and all of the below before submitting an issue
       options:
-        - label: I have read all the nvim-best-practices-plugin-template docs
+        - label: I have read all the [`:help plugin-template`](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/blob/main/doc/my-template-docs.txt) documentation
           required: true
         - label: I have updated the plugin to the latest version before submitting this issue
           required: true
-        - label: I have searched the [existing issues](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/issues) and [closed issues](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/issues?q=is%3Aissue+is%3Aclosed) issues of nvim-best-practices-plugin-template
+        - label: I have searched the [existing issues](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/issues) and [closed issues](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/issues?q=is%3Aissue+is%3Aclosed) issues
           required: true
   - type: input
     attributes:

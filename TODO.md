@@ -4,6 +4,7 @@
 - Make sure the auto-generated documentation looks good
    - Leave notes on how to make it from scratch
 
+- Make sure the documentation auto-generates correctly and the issue templates refer to it correctly
 
 - TODO: Add "TODO: (you)" in various places in the code-base
 - Do existing TODO notes
