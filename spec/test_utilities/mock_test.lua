@@ -43,6 +43,7 @@ function M.silence_all_internal_prints()
     read_runner._print = function(...) end
     say_runner._print = function(...) end
     sleep_runner._print = function(...) end
+    vim.notify = function(...) end
 end
 
 return M

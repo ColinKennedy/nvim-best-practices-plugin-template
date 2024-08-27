@@ -5,6 +5,7 @@
 
 -- TODO: Docstrings
 
+local mock_test = require("test_utilities.mock_test")
 local plugin_template = require("telescope._extensions.plugin_template")
 local runner = require("telescope._extensions.plugin_template.runner")
 local telescope_actions = require("telescope.actions")
@@ -67,8 +68,14 @@ local function _make_telescope_picker(command)
 end
 
 
+local function _initialize_all()
+    _mock_get_selection()
+    mock_test.silence_all_internal_prints()
+end
+
+
 describe("telescope goodnight-moon", function()
-    before_each(_mock_get_selection)
+    before_each(_initialize_all)
     after_each(_restore_get_selection)
 
     it("selects a book", function()
@@ -104,7 +111,7 @@ describe("telescope goodnight-moon", function()
 end)
 
 describe("telescope hello-world", function()
-    before_each(_mock_get_selection)
+    before_each(_initialize_all)
     after_each(_restore_get_selection)
 
     it("selects a phrase", function()
