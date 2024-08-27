@@ -3,11 +3,6 @@
 --- @module 'test_utilities.mock_test'
 ---
 
-local count_sheep_runner = require("plugin_template._commands.goodnight_moon.count_sheep.runner")
-local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
-local say_runner = require("plugin_template._commands.hello_world.say.runner")
-local sleep_runner = require("plugin_template._commands.goodnight_moon.sleep.runner")
-
 local M = {}
 
 local _ORIGINAL_INSPECT = vim.inspect
@@ -39,11 +34,7 @@ end
 
 --- Make it so no existing API calls or commands print text.
 function M.silence_all_internal_prints()
-    count_sheep_runner._print = function(...) end
-    read_runner._print = function(...) end
-    say_runner._print = function(...) end
-    sleep_runner._print = function(...) end
-    vim.notify = function(...) end
+    vim.notify = function(...) end -- luacheck: ignore 212
 end
 
 return M
