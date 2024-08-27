@@ -1,4 +1,3 @@
-- Change internal prints to use vim.notify instead
 - Get all CI stuff to pass
 - Make sure the issue templates are good
 - make sure the lualine configuration color + options work as expected

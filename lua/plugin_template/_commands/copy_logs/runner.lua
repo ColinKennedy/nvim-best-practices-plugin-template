@@ -8,8 +8,6 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
-M._printer = print
-
 --- Copy the log data from the given `path` to the user's clipboard.
 ---
 --- @param path string?

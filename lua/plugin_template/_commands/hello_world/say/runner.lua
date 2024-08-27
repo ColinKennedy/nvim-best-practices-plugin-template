@@ -9,8 +9,6 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
-M._print = print
-
 
 --- Check if `text` is only whitespace.
 ---
@@ -62,7 +60,7 @@ local function _say(phrase, repeat_, style)
     end
 
     for _ = 1, repeat_ do
-        M._print(text)
+        vim.notify(text, vim.log.levels.INFO)
     end
 end
 
@@ -81,12 +79,12 @@ function M.run_say_phrase(phrase, repeat_, style)
     phrase = _filter_missing_strings(phrase)
 
     if vim.tbl_isempty(phrase) then
-        M._print("No phrase was given")
+        vim.notify("No phrase was given", vim.log.levels.INFO)
 
         return
     end
 
-    M._print("Saying phrase")
+    vim.notify("Saying phrase", vim.log.levels.INFO)
 
     _say(phrase, repeat_, style)
 end
@@ -104,14 +102,14 @@ function M.run_say_word(word, repeat_, style)
     vlog.debug("Running hello-world say word.")
 
     if word == "" then
-        M._print("No word was given")
+        vim.notify("No word was given", vim.log.levels.INFO)
 
         return
     end
 
     word = vim.fn.split(word, " ")[1] -- Make sure it's only one word
 
-    M._print("Saying word")
+    vim.notify("Saying word", vim.log.levels.INFO)
 
     _say({ word }, repeat_, style)
 end

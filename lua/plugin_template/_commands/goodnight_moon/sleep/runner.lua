@@ -8,7 +8,6 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
-M._print = print
 
 --- Print zzz each `count`.
 ---
@@ -30,7 +29,7 @@ function M.run(count)
     end
 
     for _ = 1, count do
-        M._print("zzz")
+        vim.notify("zzz", vim.log.levels.INFO)
     end
 end
 

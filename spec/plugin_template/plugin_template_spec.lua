@@ -9,19 +9,11 @@
 
 local api = require("plugin_template.api")
 local configuration = require("plugin_template._core.configuration")
-local count_sheep_runner = require("plugin_template._commands.goodnight_moon.count_sheep.runner")
-local mock_test = require("test_utilities.mock_test")
-local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
-local say_runner = require("plugin_template._commands.hello_world.say.runner")
-local sleep_runner = require("plugin_template._commands.goodnight_moon.sleep.runner")
 
 --- @diagnostic disable: undefined-field
 
 local _DATA = {}
-local _ORIGINAL_COUNT_SHEEP_PRINTER = count_sheep_runner._print
-local _ORIGINAL_READ_PRINTER = read_runner._print
-local _ORIGINAL_SAY_PRINTER = say_runner._print
-local _ORIGINAL_SLEEP_PRINTER = sleep_runner._print
+local _ORIGINAL_NOTIFY = vim.notify
 
 --- Keep track of text that would have been printed. Save it to a variable instead.
 ---
@@ -31,16 +23,21 @@ local function _save_prints(data)
     table.insert(_DATA, data)
 end
 
-describe("hello world api - say phrase/word", function()
-    before_each(function()
-        say_runner._print = _save_prints
-        configuration.initialize_data_if_needed()
-    end)
+--- Mock all functions / states before a unittest runs (call this before each test).
+local function _initialize_all()
+    vim.notify = _save_prints
+    configuration.initialize_data_if_needed()
+end
 
-    after_each(function()
-        say_runner._print = _ORIGINAL_SAY_PRINTER
-        _DATA = {}
-    end)
+--- Reset all functions / states to their previous settings before the test had run.
+local function _reset_all()
+    vim.notify = _ORIGINAL_NOTIFY
+    _DATA = {}
+end
+
+describe("hello world api - say phrase/word", function()
+    before_each(_initialize_all)
+    after_each(_reset_all)
 
     it("runs hello-world with default arguments - 001", function()
         api.run_hello_world_say_phrase({ "" })
@@ -68,15 +65,8 @@ describe("hello world api - say phrase/word", function()
 end)
 
 describe("hello world commands - say phrase/word", function()
-    before_each(function()
-        say_runner._print = _save_prints
-        configuration.initialize_data_if_needed()
-    end)
-
-    after_each(function()
-        say_runner._print = _ORIGINAL_SAY_PRINTER
-        _DATA = {}
-    end)
+    before_each(_initialize_all)
+    after_each(_reset_all)
 
     it("runs hello-world with default arguments", function()
         vim.cmd([[PluginTemplate hello-world say phrase]])
@@ -98,19 +88,8 @@ describe("hello world commands - say phrase/word", function()
 end)
 
 describe("goodnight-moon api", function()
-    before_each(function()
-        count_sheep_runner._print = _save_prints
-        read_runner._print = _save_prints
-        sleep_runner._print = _save_prints
-        configuration.initialize_data_if_needed()
-    end)
-
-    after_each(function()
-        count_sheep_runner._print = _ORIGINAL_COUNT_SHEEP_PRINTER
-        read_runner._print = _ORIGINAL_READ_PRINTER
-        sleep_runner._print = _ORIGINAL_SLEEP_PRINTER
-        _DATA = {}
-    end)
+    before_each(_initialize_all)
+    after_each(_reset_all)
 
     it("runs goodnight-moon count-sheep with all of its arguments", function()
         api.run_goodnight_moon_count_sheep(3)
@@ -132,19 +111,8 @@ describe("goodnight-moon api", function()
 end)
 
 describe("goodnight-moon commands", function()
-    before_each(function()
-        count_sheep_runner._print = _save_prints
-        read_runner._print = _save_prints
-        sleep_runner._print = _save_prints
-        configuration.initialize_data_if_needed()
-    end)
-
-    after_each(function()
-        count_sheep_runner._print = _ORIGINAL_COUNT_SHEEP_PRINTER
-        read_runner._print = _ORIGINAL_READ_PRINTER
-        sleep_runner._print = _ORIGINAL_SLEEP_PRINTER
-        _DATA = {}
-    end)
+    before_each(_initialize_all)
+    after_each(_reset_all)
 
     it("runs goodnight-moon count-sheep with all of its arguments", function()
         vim.cmd([[PluginTemplate goodnight-moon count-sheep 3]])

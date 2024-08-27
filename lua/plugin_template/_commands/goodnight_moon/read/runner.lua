@@ -8,7 +8,6 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
-M._print = print
 
 --- Print the name of the book.
 ---
@@ -19,7 +18,7 @@ function M.run(book)
 
     state.PREVIOUS_COMMAND = "goodnight_moon"
 
-    M._print(string.format("%s: it is a book", book))
+    vim.notify(string.format("%s: it is a book", book), vim.log.levels.INFO)
 end
 
 return M

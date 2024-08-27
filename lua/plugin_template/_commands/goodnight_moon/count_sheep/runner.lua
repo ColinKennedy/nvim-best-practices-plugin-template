@@ -9,7 +9,6 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
-M._print = print
 
 --- Count a sheep for each `count`.
 ---
@@ -27,7 +26,7 @@ function M.run(count)
     end
 
     for index = 1, count do
-        M._print(string.format("%s Sheep", index))
+        vim.notify(string.format("%s Sheep", index), vim.log.levels.INFO)
     end
 end
 
