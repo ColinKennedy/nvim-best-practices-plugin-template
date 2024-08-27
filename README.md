@@ -27,6 +27,7 @@ A template repository for Neovim plugins.
     - [luarocks](https://luarocks.org) auto-release (LUAROCKS_API_KEY secret configuration required)
     - [panvimdoc](https://github.com/kdheepak/panvimdoc) - Documentation auto-generator
 
+
 # Using This Template
 1. Clone this template ![Clone this template](https://github.com/user-attachments/assets/a366825c-aeb1-4b8a-971d-bba7ee3c61d7)
 (Or use `gh repo create your-plugin -p ColinKennedy/nvim-best-practices-plugin-template`)
@@ -38,9 +39,15 @@ TODO: test this command, make sure it works
 find . -type f -print0 | xargs -0 sed -i 's/PluginTemplate/YourPlugin/g ; s/plugin_template/your_plugin/g ; s/plugin-template/your-plugin/g s/nvim-best-practices-plugin-template/your-plugin.nvim/g ; s/ColinKennedy/YourUsername/g'
 ```
 
-3. Remove any features that you don't need (people like integrations, keep them
-if you think you can use them! Adapt these integrations for your plugin)
-    TODO: Add these unittests
+3. Remove any features that you don't need.
+
+In general that means
+- Replacing / removing anything in this file that you don't need or want
+- Anything you remove here should be removed in the `lua/` directory, too
+- Make sure the `plugin/` directory implements the command(s) and mappings that you need
+- plugin-template comes with out-of-box support for Lualine and Telescope and
+  can be removed easily if you want to:
+
     - Removing [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
     ```sh
     rm -rf lua/lualine
@@ -62,7 +69,7 @@ grep --recursive --line-number --word-regexp 'TODO: (you)' | nvim -q - -c "copen
 5. After you're done with the above, delete this section of the README.
 
 # Installation
-<!-- TODO: (you) - Add your dependencies as needed here -->
+<!-- TODO: (you) - Adjust and add your dependencies as needed here -->
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
 ```lua
 {
@@ -147,8 +154,6 @@ require("lualine").setup {
 ## Colors
 This plugin provides two default highlights
 
-TODO: Make sure these work
-
 - PluginTemplateTelescopeEntry
 - PluginTemplateTelescopeSecondary
 
@@ -201,8 +206,7 @@ busted . --tags=simple
 ```
 
 # News
-TODO: Add relative link
-See doc/news.txt for updates.
+See [doc/news.txt](doc/news.txt) for updates.
 
 You can add changes to this plugin by adding this URL to your RSS feed:
 ```
