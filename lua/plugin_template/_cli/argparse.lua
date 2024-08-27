@@ -7,8 +7,6 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
--- TODO: Clean this code up, at some point
-
 --- @enum ArgumentType
 M.ArgumentType = {
     flag = "__flag",
@@ -108,8 +106,6 @@ end
 local function _is_quote(character)
     return character == '"' or character == "'"
 end
-
--- TODO: Consider replacing portions with vim.api.nvim_parse_cmd()
 
 --- Parse for positional arguments, named arguments, and flag arguments.
 ---
@@ -300,9 +296,6 @@ function M.parse_arguments(text)
                     current_argument = true
                     _add_to_output()
                     _reset_all()
-                    -- TODO: We might need this. Not sure. Probably remove this
-                    -- else
-                    --     is_escaping = false -- NOTE: The escaped character was consumed
                 end
             elseif needs_name then
                 _append_to_wip_argument()
@@ -326,7 +319,6 @@ function M.parse_arguments(text)
                     local character_ = current_argument_:sub(index_, index_)
                     start_index = start_index + 1
                     current_name = character_
-                    -- TODO: Gross. Need to make this cleaner
                     physical_index = physical_index + 1
                     _add_to_output()
                     physical_index = physical_index - 1

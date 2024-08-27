@@ -3,8 +3,6 @@
 --- @module 'plugin_template.autocomplete_spec'
 ---
 
--- TODO: Move this to a standalone lua module
-
 local argparse = require("plugin_template._cli.argparse")
 local completion = require("plugin_template._cli.completion")
 local configuration = require("plugin_template._core.configuration")
@@ -98,9 +96,8 @@ describe("simple", function()
         assert.same({ "--repeat=", "--style=" }, completion.get_options(tree, _parse("say phrase --"), 13))
         -- NOTE: Completing the name to a --double-dash named argument
         assert.same({ "--repeat=" }, completion.get_options(tree, _parse("say phrase --r"), 14))
-        -- -- -- TODO: Figure out how to handle this case later
-        -- -- -- NOTE: Completing the =, so people know that this is requires an argument
-        -- -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat"), 19))
+        -- NOTE: Completing the =, so people know that this is requires an argument
+        assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat"), 19))
         -- NOTE: Completing the value of the named argument
         assert.same({
             "--repeat=1",
@@ -204,24 +201,23 @@ describe("named argument", function()
         assert.same({ "--style=" }, completion.get_options(tree, _parse("--styl"), 6))
     end)
 
-    -- -- TODO: Figure out if I'd actually want this. Then implement it if it makes sense to
-    -- it("auto-completes on a partial argument name - 003", function()
-    --     local tree = {
-    --         {
-    --             argument_type=argparse.ArgumentType.named,
-    --             name="style",
-    --             choices={"lowercase", "uppercase"},
-    --         },
-    --     }
-    --
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 1))
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 2))
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 3))
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 4))
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 5))
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 6))
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 7))
-    -- end)
+    it("auto-completes on a partial argument name - 003", function()
+        local tree = {
+            {
+                argument_type=argparse.ArgumentType.named,
+                name="style",
+                choices={"lowercase", "uppercase"},
+            },
+        }
+
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 1))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 2))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 3))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 4))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 5))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 6))
+        assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 7))
+    end)
 
     it("does not auto-complete the name anymore and auto-completes the value", function()
         local tree = {

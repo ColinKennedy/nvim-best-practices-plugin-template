@@ -6,10 +6,16 @@
 local state = require("plugin_template._core.state")
 local vlog = require("plugin_template._vendors.vlog")
 
--- TODO: Docstrings
-
 local M = {}
 
+M._printer = print
+
+--- Copy the log data from the given `path` to the user's clipboard.
+---
+--- @param path string?
+---     A path on-disk to look for logs. If none is given, the default fallback
+---     location is used instead.
+---
 function M.run(path)
     state.PREVIOUS_COMMAND = "copy_logs"
 

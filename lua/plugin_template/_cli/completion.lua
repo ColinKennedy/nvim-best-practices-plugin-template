@@ -224,21 +224,6 @@ local function _get_cursor_offset(input, column)
     return #input.arguments
 end
 
---- Get all of the options starting at `index` which can be used for auto-completion.
----
---- @param tree OptionTree
----     A basic CLI description that answers. 1. What arguments are next 2.
----     What should we return for auto-complete, if anything.
---- @param index number
----     The starting point to look within for auto-completion options.
---- @return CompletionOption[]
----     The options to consider for auto-completion.
----
-local function _get_current_options(tree, index)
-    -- TODO: Make this function real, later
-    return tree[index]
-end
-
 --- Check if `data` is a fully-filled-out argument and also found in `options`.
 ---
 --- @param data ArgparseArgument
@@ -438,7 +423,7 @@ end
 ---
 local function _compute_completion_options(tree, input)
     local tree_index = 1
-    local current_options = _get_current_options(tree, tree_index)
+    local current_options = tree[tree_index]
     local input_count = #input.arguments
 
     for index = 1, input_count do
@@ -463,7 +448,7 @@ local function _compute_completion_options(tree, input)
         if _needs_next_options(current_options) then
             current_options = _trim_exhausted_options(current_options)
             tree_index = tree_index + 1
-            vim.list_extend(current_options, _get_current_options(tree, tree_index) or {})
+            vim.list_extend(current_options, tree[tree_index] or {})
         end
     end
 
@@ -544,7 +529,7 @@ local function _get_remainder_named_argument(input, tree)
         return last
     end
 
-    local options = _get_current_options(tree, #tree)
+    local options = tree[#tree]
 
     if (
         last.argument_type == argparse.ArgumentType.flag
@@ -595,7 +580,14 @@ local function _get_named_option_choices(option, current_value)
     return choices
 end
 
--- TODO: Docstring
+--- Find all named arguments, e.g. `--foo=bar` style arguments.
+---
+--- @param options CompletionOption[]
+---     Some auto-completion options to consider. It might contain flag
+---     / position / named arguments.
+--- @return NamedOption[]
+---     All found arguments, if any.
+---
 local function _get_named_arguments(options)
     local output = {}
 
@@ -668,7 +660,8 @@ local function _get_arguments(argument)
 
     if vim.isarray(argument) then
         if vim.tbl_isempty(argument) then
-            -- TODO: Log error
+            vlog.error("An empty argument was given. Cannot expand for more arguments.")
+
             return {}
         end
 
@@ -696,7 +689,8 @@ local function _get_arguments(argument)
         return { argument }
     end
 
-    -- TODO: Log error
+    vlog.fmt_warning('Unable to parse "%s" for more arguments.', argument)
+
     return {}
 end
 
@@ -719,7 +713,18 @@ local function _is_string_list(items)
     return true
 end
 
--- TODO: Docstring
+--- Suggest an auto-completion function for a named argument's choices.
+---
+--- If a names argument is defined with choices `{"foo", "bar" "fizz"}`, the
+--- returned function will match when a user types `"f"` and suggest `{"foo",
+--- "fizz"}` as auto-completion options.
+---
+--- @param items string[]
+---     All completion options to consider for the function.
+--- @return fun(value: string): string[]
+---     A function that takes the user's current input and auto-completes
+---     remaining values.
+---
 local function _get_startswith_auto_complete_function(items)
     local function _get_choices(current_value)
         local output = {}
@@ -823,13 +828,10 @@ end
 ---     All of the auto-completion options that were found, if any.
 ---
 local function _get_options(tree, input, column)
-    -- TODO: Check every section in this function. Do I need all of these? If
-    -- not remove the code for it
-    --
     tree = _fill_missing_data(tree)
 
     if vim.tbl_isempty(input.arguments) then
-        local options = _get_current_options(tree, 1)
+        local options = tree[1]
 
         return _get_auto_complete_values(options or {})
     end
@@ -845,34 +847,6 @@ local function _get_options(tree, input, column)
     end
 
     local options, tree_index = _compute_completion_options(tree, stripped)
-    -- TODO: Remove this code
-
-    -- if column >= input.arguments[#input.arguments].range.end_column then
-    --     if input.remainder.value == "" then
-    --         -- We must be on the last argument. Let's find out if it is a partial match.
-    --         local matches = _get_exact_matches(last, options)
-    --
-    --         if not vim.tbl_isempty(matches) then
-    --             return {}
-    --         end
-    --     end
-    -- end
-
-    -- -- -- TODO: Finish
-    -- local last = stripped.arguments[#stripped.arguments]
-    -- local matches = _get_exact_matches(last, options or {})
-    --
-    -- if not vim.tbl_isempty(matches) then
-    --     return _get_auto_complete_values(matches)
-    -- end
-
-    -- TODO: Figure out if I actually need this. If not, remove it
-    -- if column > input.arguments[#input.arguments].range.end_column then
-    --     local last = stripped.arguments[#stripped.arguments]
-    --     local next = input.arguments[#stripped.arguments + 1]
-    --
-    --     return _get_auto_complete_values((options or _get_current_options(tree, tree_index)))
-    -- end
 
     if stripped.remainder.value ~= "" then
         return _get_auto_complete_values(options or {})
@@ -884,7 +858,7 @@ local function _get_options(tree, input, column)
         return {}
     end
 
-    local matches = _handle_partial_matches(last, (options or _get_current_options(tree, tree_index) or {}))
+    local matches = _handle_partial_matches(last, (options or tree[tree_index] or {}))
 
     return _get_auto_complete_values(matches)
 end

@@ -21,7 +21,8 @@ function M.run(count)
     state.PREVIOUS_COMMAND = "goodnight_moon"
 
     if count < 1 then
-        -- TODO: Log warning
+        vlog.fmt_warn('Count "%s" cannot be less than 1. Using 1 instead.', count)
+
         count = 1
     end
 

@@ -5,9 +5,6 @@
 
 local say_constant = require("plugin_template._commands.hello_world.say.constant")
 
--- TODO: Make sure that function type-hints behave as expected even when
--- a partial configuration definition is given
-
 --- @class plugin_template.Configuration
 ---     The user's customizations for this plugin.
 --- @field commands plugin_template.ConfigurationCommands?

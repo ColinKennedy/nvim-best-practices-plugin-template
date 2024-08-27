@@ -3,23 +3,26 @@
 --- @module 'plugin_template.lualine_spec'
 ---
 
+local api = require("plugin_template.api")
+local mock_test = require("test_utilities.mock_test")
 local plugin_template = require("lualine.components.plugin_template")
 local state = require("plugin_template._core.state")
-local api = require("plugin_template.api")
 
--- TODO: Docstrings
-
+--- Add the `plugin_template` lualine component (so we can unittest it).
 local function _initialize_lualine()
     plugin_template:init({self = {section="y"}})
 end
 
+--- Enable lualine so we can create lualine component(s) and other various tasks.
 local function _setup_lualine()
     require("lualine").setup()
+
     state.PREVIOUS_COMMAND = nil
+
+    mock_test.silence_all_internal_prints()
 end
 
 describe("default", function()
-    -- TODO: Silence the test prints
     before_each(_setup_lualine)
 
     it("displays nothing if no command has been run yet", function()
@@ -30,7 +33,6 @@ describe("default", function()
 end)
 
 describe("API calls", function()
-    -- TODO: Silence the test prints
     before_each(_setup_lualine)
 
     it("works with copy-logs", function()
@@ -113,7 +115,6 @@ describe("API calls", function()
 end)
 
 describe("Command calls", function()
-    -- TODO: Silence the test prints
     before_each(_setup_lualine)
 
     it("works with copy-logs", function()

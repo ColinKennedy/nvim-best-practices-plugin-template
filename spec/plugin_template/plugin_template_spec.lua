@@ -10,6 +10,7 @@
 local api = require("plugin_template.api")
 local configuration = require("plugin_template._core.configuration")
 local count_sheep_runner = require("plugin_template._commands.goodnight_moon.count_sheep.runner")
+local mock_test = require("test_utilities.mock_test")
 local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
 local say_runner = require("plugin_template._commands.hello_world.say.runner")
 local sleep_runner = require("plugin_template._commands.goodnight_moon.sleep.runner")
@@ -44,19 +45,19 @@ describe("hello world api - say phrase/word", function()
     it("runs hello-world with default arguments", function()
         api.run_hello_world_say_phrase({ "" })
 
-        assert.same({ "" }, _DATA)
+        assert.same({ "No phrase was given" }, _DATA)
     end)
 
     it("runs hello-world say phrase - with all of its arguments", function()
         api.run_hello_world_say_phrase({ "Hello,", "World!" }, 2, "lowercase")
 
-        assert.same({ "hello, world!", "hello, world!" }, _DATA)
+        assert.same({ "Saying phrase", "hello, world!", "hello, world!" }, _DATA)
     end)
 
     it("runs hello-world say word - with all of its arguments", function()
         api.run_hello_world_say_phrase({ "Hi" }, 2, "uppercase")
 
-        assert.same({ "HI", "HI" }, _DATA)
+        assert.same({ "Saying phrase", "HI", "HI" }, _DATA)
     end)
 end)
 
@@ -74,19 +75,19 @@ describe("hello world commands - say phrase/word", function()
     it("runs hello-world with default arguments", function()
         vim.cmd([[PluginTemplate hello-world say phrase]])
 
-        assert.same({ "" }, _DATA)
+        assert.same({ "No phrase was given" }, _DATA)
     end)
 
     it("runs hello-world say phrase - with all of its arguments", function()
         vim.cmd([[PluginTemplate hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase]])
 
-        assert.same({ "hello, world!", "hello, world!" }, _DATA)
+        assert.same({ "Saying phrase", "hello, world!", "hello, world!" }, _DATA)
     end)
 
     it("runs hello-world say word - with all of its arguments", function()
         vim.cmd([[PluginTemplate hello-world say word "Hi" --repeat=2 --style=uppercase]])
 
-        assert.same({ "HI", "HI" }, _DATA)
+        assert.same({ "Saying word", "HI", "HI" }, _DATA)
     end)
 end)
 

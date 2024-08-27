@@ -1,4 +1,6 @@
-- TODO: Add "TODO: (you)" in various places in the code-base Add a doc/news.txt
+- Change internal prints to use vim.notify instead
+
+- TODO: Add "TODO: (you)" in various places in the code-base
 - Add doc/ or a GitHub Wiki
 - make sure the lualine configuration color + options work as expected
 - Do existing TODO notes

@@ -49,7 +49,7 @@ end
 ---
 function M.run_say_phrase(phrase, repeat_, style)
     vlog.debug("Running hello-world say word.")
-    print("Saying phrase")
+    M._print("Saying phrase")
 
     _say(phrase, repeat_, style)
 end
@@ -65,7 +65,7 @@ end
 ---
 function M.run_say_word(word, repeat_, style)
     vlog.debug("Running hello-world say word.")
-    print("Saying word")
+    M._print("Saying word")
 
     word = vim.fn.split(word, " ")[1] -- Make sure it's only one word
     _say({ word }, repeat_, style)
