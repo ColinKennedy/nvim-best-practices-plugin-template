@@ -11,6 +11,8 @@ local plugin_template = require("lualine.components.plugin_template")
 local state = require("plugin_template._core.state")
 
 
+--- @diagnostic disable: undefined-field
+
 --- @return table # The generated Lualine component.
 local function _make_component()
     return plugin_template({self = {section="y"}})

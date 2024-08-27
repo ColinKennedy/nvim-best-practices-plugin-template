@@ -12,6 +12,8 @@ local telescope_actions = require("telescope.actions")
 local telescope_actions_state = require("telescope.actions.state")
 
 
+--- @diagnostic disable: undefined-field
+
 local _ORIGINAL_GET_SELECTION_FUNCTION = runner.get_selection
 local _RESULT = nil
 

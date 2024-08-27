@@ -5,6 +5,12 @@
 
 local say_constant = require("plugin_template._commands.hello_world.say.constant")
 
+--- @alias vim.log.levels.DEBUG number Messages to show to plugin maintainers.
+--- @alias vim.log.levels.ERROR number Unrecovered issues to show to the plugin users.
+--- @alias vim.log.levels.INFO number Informative messages to show to the plugin users.
+--- @alias vim.log.levels.TRACE number Low-level or spammy messages.
+--- @alias vim.log.levels.WARN number An error that was recovered but could be an issue.
+
 --- @class plugin_template.Configuration
 ---     The user's customizations for this plugin.
 --- @field commands plugin_template.ConfigurationCommands?

@@ -21,7 +21,7 @@ local vlog = require("plugin_template._vendors.vlog")
 ---     A --key=value pair. Basically it's a FlagArgument that has an extra value.
 --- @field used number
 ---     The number of times that this option has been used already (0-or-greater value).
---- @field choices (string[] | fun(current_value: string): string[])
+--- @field choices (string[] | fun(current_value: string): string[])?
 ---     Since `NamedOption` requires a name + value, `choices` is used to
 ---     auto-complete its values, starting at `--foo=`.
 --- @field count OptionCount
@@ -281,6 +281,7 @@ end
 ---
 local function _get_argument_name(option)
     if option.argument_type == argparse.ArgumentType.position then
+        --- @cast option PositionOption
         return option.value
     end
 
@@ -536,6 +537,8 @@ local function _get_remainder_named_argument(input, tree)
         and not vim.tbl_contains(_get_flag_arguments(options, last.name))
     )
     then
+        --- @cast last FlagOption
+
         -- NOTE: This happens when the user has written `--foo`. We know from
         -- the tree that this needs to be `--foo={bar, fizz, buzz}` but they
         -- haven't written the full argument name yet.
@@ -543,14 +546,13 @@ local function _get_remainder_named_argument(input, tree)
         -- Instead of assuming that they want to complete the argument choies
         -- of `foo`, we just auto-complete for `foo`.
         --
-        local named_last =_convert_flag_to_named_argument(last)
+        local named_last = _convert_flag_to_named_argument(last)
         local matches = _get_exact_matches(named_last, options, false)
 
         if vim.tbl_isempty(matches) then
             return nil
         end
 
-        named_last.choices = nil
         named_last.needs_choice_completion = false
 
         return named_last
@@ -628,7 +630,7 @@ local function _get_unfinished_named_argument_auto_complete_options(tree, argume
     local output = {}
     local current_value = argument.value
 
-    if current_value == false then
+    if type(current_value) == "boolean" then
         current_value = ""
     end
 
@@ -777,6 +779,7 @@ local function _fill_missing_data(tree)
                 end
 
                 if item.choices and _is_string_list(item.choices) then
+                    --- @diagnostic disable-next-line param-type-mismatch
                     item.choices = _get_startswith_auto_complete_function(item.choices)
                 end
             elseif item.argument_type == argparse.ArgumentType.flag then

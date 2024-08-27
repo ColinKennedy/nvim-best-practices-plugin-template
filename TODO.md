@@ -1,5 +1,4 @@
 - Get all CI stuff to pass
-- Make sure the issue templates are good
 - make sure the lualine configuration color + options work as expected
 - Make sure the auto-generated documentation looks good
    - Leave notes on how to make it from scratch
