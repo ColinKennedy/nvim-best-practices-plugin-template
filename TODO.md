@@ -3,6 +3,12 @@
 - Make sure the auto-generated documentation looks good
    - Leave notes on how to make it from scratch
 
+- Change copy-logs to be async
+
+- Change the tests so that unittests cannot be influenced by a user's personal configuration
+    - vim.env.XDG_CONFIG_HOME = "test/xdg/config/"
+    - vim.env.XDG_STATE_HOME = "test/xdg/local/state/"
+    - vim.env.XDG_DATA_HOME = "test/xdg/local/share/"
 - Make sure the documentation auto-generates correctly and the issue templates refer to it correctly
 
 - TODO: Add "TODO: (you)" in various places in the code-base
