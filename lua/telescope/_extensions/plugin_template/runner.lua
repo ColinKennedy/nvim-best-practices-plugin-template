@@ -15,8 +15,10 @@ local pickers = require("telescope.pickers")
 local telescope_actions = require("telescope.actions")
 local telescope_config = require("telescope.config").values
 
+local configuration = require("plugin_template._core.configuration")
 local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
 local say_runner = require("plugin_template._commands.hello_world.say.runner")
+local tabler = require("plugin_template._core.tabler")
 
 vim.api.nvim_set_hl(0, "PluginTemplateTelescopeEntry", { link = "TelescopeResultsNormal", default = true })
 vim.api.nvim_set_hl(0, "PluginTemplateTelescopeSecondary", { link = "TelescopeResultsComment", default = true })
@@ -45,13 +47,8 @@ function M.get_goodnight_moon_picker(options)
         },
     })
 
-    local books = {
-        { "Guns, Germs, and Steel: The Fates of Human Societies", "Jared M. Diamond" },
-        { "Herodotus Histories", "Herodotus" },
-        { "The Origin of Consciousness in the Breakdown of the Bicameral Mind", "Julian Jaynes" },
-        { "What Every Programmer Should Know About Memory", "Ulrich Drepper" },
-        { "When: The Scientific Secrets of Perfect Timing", "Daniel H. Pinker" },
-    }
+    local books = tabler.get_value(configuration.DATA, {"tools", "telescope", "goodnight_moon"}) or {}
+    books = tabler.reverse_array(books)
 
     local picker = pickers.new(options, {
         prompt_title = "Choose A Book",
@@ -105,8 +102,8 @@ function M.get_hello_world_picker(options)
         items = { { width = 0.8 }, { remaining = true } },
     })
 
-    -- TODO: Replace with the configuration
-    local phrases = { "Hi there!", "Hello, Sailor!", "What's up, doc?" }
+    local phrases = tabler.get_value(configuration.DATA, {"tools", "telescope", "hello_world"}) or {}
+    phrases = tabler.reverse_array(phrases)
 
     local picker = pickers.new(options, {
         prompt_title = "Say Hello",

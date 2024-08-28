@@ -82,7 +82,7 @@ describe("telescope goodnight-moon", function()
         telescope_actions.select_default(buffer)
         _wait_for_result()
 
-        assert.same({ "Guns, Germs, and Steel: The Fates of Human Societies - Jared M. Diamond" }, _RESULT)
+        assert.same({ "Buzz Bee - Cool Person" }, _RESULT)
     end)
 
     it("selects 2+ books", function()
@@ -97,8 +97,8 @@ describe("telescope goodnight-moon", function()
         _wait_for_result()
 
         assert.same({
-            "Guns, Germs, and Steel: The Fates of Human Societies - Jared M. Diamond",
-            "Herodotus Histories - Herodotus",
+            "Buzz Bee - Cool Person",
+            "Fizz Drink - Some Name",
         }, _RESULT)
     end)
 end)
@@ -112,7 +112,7 @@ describe("telescope hello-world", function()
         telescope_actions.select_default(buffer)
         _wait_for_result()
 
-        assert.same({ "Hi there!" }, _RESULT)
+        assert.same({ "What's up, doc?" }, _RESULT)
     end)
 
     it("selects 2+ phrases", function()
@@ -126,6 +126,6 @@ describe("telescope hello-world", function()
         telescope_actions.select_default(buffer)
         _wait_for_result()
 
-        assert.same({ "Hi there!", "Hello, Sailor!" }, _RESULT)
+        assert.same({ "What's up, doc?", "Hello, Sailor!" }, _RESULT)
     end)
 end)

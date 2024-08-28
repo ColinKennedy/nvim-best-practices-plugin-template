@@ -1,4 +1,3 @@
-- make sure the lualine configuration color + options work as expected
 - make sure the telescope configuration color + options work as expected
 - Make sure the auto-generated documentation looks good
    - Leave notes on how to make it from scratch
