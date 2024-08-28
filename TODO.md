@@ -1,4 +1,3 @@
-- make sure the telescope configuration color + options work as expected
 - Make sure the auto-generated documentation looks good
    - Leave notes on how to make it from scratch
 
@@ -8,6 +7,7 @@
     - vim.env.XDG_CONFIG_HOME = "test/xdg/config/"
     - vim.env.XDG_STATE_HOME = "test/xdg/local/state/"
     - vim.env.XDG_DATA_HOME = "test/xdg/local/share/"
+    - https://hiphish.github.io/blog/2024/01/29/testing-neovim-plugins-with-busted/
 - Make sure the documentation auto-generates correctly and the issue templates refer to it correctly
 
 - TODO: Add "TODO: (you)" in various places in the code-base
