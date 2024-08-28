@@ -3,8 +3,6 @@
 --- @module 'plugin_template.telescope_spec'
 ---
 
--- TODO: Docstrings
-
 local mock_test = require("test_utilities.mock_test")
 local plugin_template = require("telescope._extensions.plugin_template")
 local runner = require("telescope._extensions.plugin_template.runner")

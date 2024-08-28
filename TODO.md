@@ -1,4 +1,5 @@
 - make sure the lualine configuration color + options work as expected
+- make sure the telescope configuration color + options work as expected
 - Make sure the auto-generated documentation looks good
    - Leave notes on how to make it from scratch
 
@@ -9,6 +10,9 @@
 
 - Add luarocks auto-release integration
 
+- Make sure the README.md and configuration are correct values
+
+- Add tags to various tests
 - Consider moving the api file to init.lua. As long as it does not auto-import
 
 - Add unittests for telescope

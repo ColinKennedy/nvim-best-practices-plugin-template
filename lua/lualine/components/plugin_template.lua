@@ -53,17 +53,17 @@ function M:init(options)
 
     self._highlight_groups = {
         copy_logs = modules.highlight.create_component_highlight_group(
-            defaults.copy_logs.color or { link = "Question" },
+            { fg = "#333333" },
             "plugin_template_copy_logs",
             self.options
         ),
         goodnight_moon = modules.highlight.create_component_highlight_group(
-            defaults.goodnight_moon.color or { link = "Comment" },
+            { fg = "#FFFFFF" },
             "plugin_template_goodnight_moon",
             self.options
         ),
         hello_world = modules.highlight.create_component_highlight_group(
-            defaults.hello_world.color or { link = "Title" },
+            { fg = "#777777" },
             "plugin_template_hello_world",
             self.options
         ),

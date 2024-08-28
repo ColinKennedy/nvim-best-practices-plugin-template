@@ -16,6 +16,44 @@ local M = {}
 -- NOTE: This file is defer-loaded so it's okay to run this in the global scope
 configuration_.initialize_data_if_needed()
 
+--- @class LualineColorHex
+---     The table that Lualine expects when it sets colors.
+--- @field bg string
+---     The background hex color. e.g. `"#444444"`.
+--- @field fg string
+---     The text hex color. e.g. `"#DD0000"`.
+--- @field gui string
+---     The background hex color. e.g. `"#444444"`.
+
+--- Check if `value` has keys that it should not.
+---
+--- @param value LualineColorHex
+---
+local function _has_extra_color_keys(value)
+    local keys = {"bg", "fg", "gui"}
+
+    for key, _ in pairs(value) do
+        if not vim.tbl_contains(keys, key) then
+            return true
+        end
+    end
+
+    return false
+end
+
+--- Make sure `text` is a HEX code. e.g. `"#D0FF1A"`.
+---
+--- @param text string An expected HEX code.
+--- @return boolean # If `text` matches, return `true`.
+---
+local function _is_hex_color(text)
+    if type(text) ~= "string" then
+        return false
+    end
+
+    return text:match("^#%x%x%x%x%x%x$") ~= nil
+end
+
 --- Check if `data` is a boolean under `key`.
 ---
 --- @param key string The configuration value that we are checking.
@@ -157,13 +195,38 @@ local function _get_lualine_command_issues(command, data)
                     return true
                 end
 
-                if type(value) ~= "table" then
-                    return false
+                local type_ = type(value)
+
+                if type_ == "string" then
+                    -- NOTE: We assume that there is a linkable highlight group
+                    -- with the name of `value` already or one that will exist.
+                    --
+                    return true
                 end
 
-                return true
+                if type_ == "table" then
+                    if value.bg ~= nil and not _is_hex_color(value.bg) then
+                        return false
+                    end
+
+                    if value.fg ~= nil and not _is_hex_color(value.fg) then
+                        return false
+                    end
+
+                    if value.gui ~= nil and type(value.gui) ~= "string" then
+                        return false
+                    end
+
+                    if _has_extra_color_keys(value) then
+                        return false
+                    end
+
+                    return true
+                end
+
+                return false
             end,
-            'a table. e.g. {fg="#000000", bg="#FFFFFF"}, {link="Title"}, etc',
+            'a table. e.g. {fg="#000000", bg="#FFFFFF", gui="effect"}',
         },
     })
 

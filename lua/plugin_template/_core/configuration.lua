@@ -111,10 +111,21 @@ local _DEFAULTS = {
     },
     tools = {
         lualine = {
-            -- TODO: Make sure link actually works. Fix it, if not
-            copy_logs = { color = { link = "Question" }, text = "󰈔 Copy Logs" },
-            goodnight_moon = { color = { link = "Comment" }, text = " Goodnight moon" },
-            hello_world = { color = { link = "Title" }, text = " Hello, World!" },
+            copy_logs = {
+                -- color = { link = "#D3D3D3" },
+                color = "Comment",
+                text = "󰈔 Copy Logs",
+            },
+            goodnight_moon = {
+                -- color = { fg = "#0000FF" },
+                color = "Question",
+                text = " Goodnight moon",
+            },
+            hello_world = {
+                -- color = { fg = "#FFA07A" },
+                color = "Title",
+                text = " Hello, World!",
+            },
         },
         telescope = {
             -- TODO: Finish + make sure to implment this in telescope
