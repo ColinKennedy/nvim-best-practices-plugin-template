@@ -53,7 +53,7 @@ end
 describe("default", function()
     before_each(configuration_.initialize_data_if_needed)
 
-    it("works with an empty configuration", function()
+    it("works with an #empty configuration", function()
         _assert_good({})
         _assert_good()
     end)
@@ -93,35 +93,35 @@ end)
 describe("bad configuration - commands", function()
     before_each(configuration_.initialize_data_if_needed)
 
-    it("happens with a bad type for commands.goodnight_moon.phrase", function()
+    it("happens with a bad type for #commands.goodnight_moon.phrase", function()
         _assert_bad(
             { commands = { goodnight_moon = { read = { phrase = 10 } } } },
             { "commands.goodnight_moon.read.phrase: expected string, got number (10)" }
         )
     end)
 
-    it("happens with a bad type for commands.hello_world.say.repeat", function()
+    it("happens with a bad type for #commands.hello_world.say.repeat", function()
         _assert_bad(
             { commands = { hello_world = { say = { ["repeat"] = "foo" } } } },
             { "commands.hello_world.say.repeat: expected a number (value must be 1-or-more), got foo" }
         )
     end)
 
-    it("happens with a bad value for commands.hello_world.say.repeat", function()
+    it("happens with a bad value for #commands.hello_world.say.repeat", function()
         _assert_bad(
             { commands = { hello_world = { say = { ["repeat"] = -1 } } } },
             { "commands.hello_world.say.repeat: expected a number (value must be 1-or-more), got -1" }
         )
     end)
 
-    it("happens with a bad type for commands.hello_world.say.style", function()
+    it("happens with a bad type for #commands.hello_world.say.style", function()
         _assert_bad(
             { commands = { hello_world = { say = { style = 123 } } } },
             { 'commands.hello_world.say.style: expected "lowercase" or "uppercase", got 123' }
         )
     end)
 
-    it("happens with a bad value for commands.hello_world.say.style", function()
+    it("happens with a bad value for #commands.hello_world.say.style", function()
         _assert_bad(
             { commands = { hello_world = { say = { style = "bad_value" } } } },
             { 'commands.hello_world.say.style: expected "lowercase" or "uppercase", got bad_value' }
@@ -135,11 +135,11 @@ end)
 describe("bad configuration - logging", function()
     before_each(configuration_.initialize_data_if_needed)
 
-    it("happens with a bad value for logging", function()
+    it("happens with a bad value for #logging", function()
         _assert_bad({ logging = false }, { 'logging: expected a table. e.g. { level = "info", ... }, got false' })
     end)
 
-    it("happens with a bad value for logging.level", function()
+    it("happens with a bad value for #logging.level", function()
         _assert_bad({ logging = { level = false } }, {
             "logging.level: expected an enum. "
                 .. 'e.g. "trace" | "debug" | "info" | "warn" | "error" | "fatal", got false',
@@ -151,11 +151,11 @@ describe("bad configuration - logging", function()
         })
     end)
 
-    it("happens with a bad value for logging.use_console", function()
+    it("happens with a bad value for #logging.use_console", function()
         _assert_bad({ logging = { use_console = "asdf" } }, { "logging.use_console: expected a boolean, got asdf" })
     end)
 
-    it("happens with a bad value for logging.use_file", function()
+    it("happens with a bad value for #logging.use_file", function()
         _assert_bad({ logging = { use_file = "asdf" } }, { "logging.use_file: expected a boolean, got asdf" })
     end)
 end)

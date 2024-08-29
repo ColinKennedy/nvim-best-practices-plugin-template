@@ -1,7 +1,10 @@
+- Consider moving the api file to init.lua. As long as it does not auto-import
+
+- The completion is broken
+    - If there's no completion defined, it keeps showing the other commands, which is wrong
+
 - Make sure the auto-generated documentation looks good
    - Leave notes on how to make it from scratch
-
-- Change copy-logs to be async
 
 - Change the tests so that unittests cannot be influenced by a user's personal configuration
     - vim.env.XDG_CONFIG_HOME = "test/xdg/config/"
@@ -16,9 +19,6 @@
 - Add luarocks auto-release integration
 
 - Make sure the README.md and configuration are correct values
-
-- Add tags to various tests
-- Consider moving the api file to init.lua. As long as it does not auto-import
 
 - Add unittests for telescope
  - https://github.com/nvim-lua/plenary.nvim/issues?q=wait+event

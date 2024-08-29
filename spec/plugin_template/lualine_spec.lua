@@ -45,7 +45,7 @@ end)
 describe("API calls", function()
     before_each(_setup_lualine)
 
-    it("works with copy-logs", function()
+    it("works with #copy-logs", function()
         local component = _make_component()
 
         assert.is_nil(component:update_status())
@@ -55,7 +55,7 @@ describe("API calls", function()
         assert.equal("%#lualine_y_plugin_template_copy_logs#󰈔 Copy Logs", component:update_status())
     end)
 
-    it("works with goodnight-moon count-sheep", function()
+    it("works with #goodnight-moon #count-sheep", function()
         local component = _make_component()
 
         assert.is_nil(component:update_status())
@@ -68,7 +68,7 @@ describe("API calls", function()
         )
     end)
 
-    it("works with goodnight-moon read", function()
+    it("works with #goodnight-moon #read", function()
         local component = _make_component()
 
         assert.is_nil(component:update_status())
@@ -81,7 +81,7 @@ describe("API calls", function()
         )
     end)
 
-    it("works with goodnight-moon sleep", function()
+    it("works with #goodnight-moon #sleep", function()
         local component = _make_component()
 
         assert.is_nil(component:update_status())
@@ -94,7 +94,7 @@ describe("API calls", function()
         )
     end)
 
-    it("works with hello-world say phrase", function()
+    it("works with #hello-world #say phrase", function()
         local component = _make_component()
 
         assert.is_nil(component:update_status())
@@ -104,7 +104,7 @@ describe("API calls", function()
         assert.equal("%#lualine_y_plugin_template_hello_world# Hello, World!", component:update_status())
     end)
 
-    it("works with hello-world say word", function()
+    it("works with #hello-world #say word", function()
         local component = _make_component()
 
         assert.is_nil(component:update_status())
@@ -118,7 +118,7 @@ end)
 describe("Command calls", function()
     before_each(_setup_lualine)
 
-    it("works with copy-logs", function()
+    it("works with #copy-logs", function()
         local component = _make_component()
 
         assert.is_nil(component:update_status())
@@ -128,7 +128,7 @@ describe("Command calls", function()
         assert.equal("%#lualine_y_plugin_template_copy_logs#󰈔 Copy Logs", component:update_status())
     end)
 
-    it("works with goodnight-moon count-sheep", function()
+    it("works with #goodnight-moon #count-sheep", function()
         local component = _make_component()
 
         assert.is_nil(component:update_status())
@@ -141,7 +141,7 @@ describe("Command calls", function()
         )
     end)
 
-    it("works with goodnight-moon read", function()
+    it("works with #goodnight-moon #read", function()
         local component = _make_component()
 
         assert.is_nil(component:update_status())
@@ -154,7 +154,7 @@ describe("Command calls", function()
         )
     end)
 
-    it("works with goodnight-moon sleep", function()
+    it("works with #goodnight-moon #sleep", function()
         local component = _make_component()
 
         assert.is_nil(component:update_status())
@@ -167,7 +167,7 @@ describe("Command calls", function()
         )
     end)
 
-    it("works with hello-world say phrase", function()
+    it("works with #hello-world #say phrase", function()
         local component = _make_component()
 
         assert.is_nil(component:update_status())
@@ -177,7 +177,7 @@ describe("Command calls", function()
         assert.equal("%#lualine_y_plugin_template_hello_world# Hello, World!", component:update_status())
     end)
 
-    it("works with hello-world say word", function()
+    it("works with #hello-world #say word", function()
         local component = _make_component()
 
         assert.is_nil(component:update_status())

@@ -167,7 +167,7 @@ describe("named argument", function()
         assert.same({ "--style=" }, completion.get_options(tree, _parse("--"), 2))
     end)
 
-    it("auto-completes on a partial argument name - 001", function()
+    it("auto-completes on a #partial argument name - 001", function()
         local tree = {
             {
                 argument_type = argparse.ArgumentType.named,
@@ -181,7 +181,7 @@ describe("named argument", function()
         assert.same({ "--style=" }, completion.get_options(tree, _parse("--s"), 3))
     end)
 
-    it("auto-completes on a partial argument name - 002", function()
+    it("auto-completes on a #partial argument name - 002", function()
         local tree = {
             {
                 argument_type = argparse.ArgumentType.named,
@@ -198,7 +198,7 @@ describe("named argument", function()
         assert.same({ "--style=" }, completion.get_options(tree, _parse("--styl"), 6))
     end)
 
-    it("auto-completes on a partial argument name - 003", function()
+    it("auto-completes on a #partial argument name - 003", function()
         local tree = {
             {
                 argument_type = argparse.ArgumentType.named,

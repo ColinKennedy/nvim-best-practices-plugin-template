@@ -39,25 +39,25 @@ describe("hello world api - say phrase/word", function()
     before_each(_initialize_all)
     after_each(_reset_all)
 
-    it("runs hello-world with default arguments - 001", function()
+    it("runs #hello-world with default arguments - 001", function()
         api.run_hello_world_say_phrase({ "" })
 
         assert.same({ "No phrase was given" }, _DATA)
     end)
 
-    it("runs hello-world with default arguments - 002", function()
+    it("runs #hello-world with default arguments - 002", function()
         api.run_hello_world_say_phrase({})
 
         assert.same({ "No phrase was given" }, _DATA)
     end)
 
-    it("runs hello-world say phrase - with all of its arguments", function()
+    it("runs #hello-world say phrase - with all of its arguments", function()
         api.run_hello_world_say_phrase({ "Hello,", "World!" }, 2, "lowercase")
 
         assert.same({ "Saying phrase", "hello, world!", "hello, world!" }, _DATA)
     end)
 
-    it("runs hello-world say word - with all of its arguments", function()
+    it("runs #hello-world say word - with all of its arguments", function()
         api.run_hello_world_say_phrase({ "Hi" }, 2, "uppercase")
 
         assert.same({ "Saying phrase", "HI", "HI" }, _DATA)
@@ -68,19 +68,19 @@ describe("hello world commands - say phrase/word", function()
     before_each(_initialize_all)
     after_each(_reset_all)
 
-    it("runs hello-world with default arguments", function()
+    it("runs #hello-world with default arguments", function()
         vim.cmd([[PluginTemplate hello-world say phrase]])
 
         assert.same({ "No phrase was given" }, _DATA)
     end)
 
-    it("runs hello-world say phrase - with all of its arguments", function()
+    it("runs #hello-world say phrase - with all of its arguments", function()
         vim.cmd([[PluginTemplate hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase]])
 
         assert.same({ "Saying phrase", "hello, world!", "hello, world!" }, _DATA)
     end)
 
-    it("runs hello-world say word - with all of its arguments", function()
+    it("runs #hello-world say word - with all of its arguments", function()
         vim.cmd([[PluginTemplate hello-world say word "Hi" --repeat=2 --style=uppercase]])
 
         assert.same({ "Saying word", "HI", "HI" }, _DATA)
@@ -91,19 +91,19 @@ describe("goodnight-moon api", function()
     before_each(_initialize_all)
     after_each(_reset_all)
 
-    it("runs goodnight-moon count-sheep with all of its arguments", function()
+    it("runs #goodnight-moon #count-sheep with all of its arguments", function()
         api.run_goodnight_moon_count_sheep(3)
 
         assert.same({ "1 Sheep", "2 Sheep", "3 Sheep" }, _DATA)
     end)
 
-    it("runs goodnight-moon read with all of its arguments", function()
+    it("runs #goodnight-moon #read with all of its arguments", function()
         api.run_goodnight_moon_read("a good book")
 
         assert.same({ "a good book: it is a book" }, _DATA)
     end)
 
-    it("runs goodnight-moon sleep with all of its arguments", function()
+    it("runs #goodnight-moon #sleep with all of its arguments", function()
         api.run_goodnight_moon_sleep(3)
 
         assert.same({ "zzz", "zzz", "zzz" }, _DATA)
@@ -114,19 +114,19 @@ describe("goodnight-moon commands", function()
     before_each(_initialize_all)
     after_each(_reset_all)
 
-    it("runs goodnight-moon count-sheep with all of its arguments", function()
+    it("runs #goodnight-moon #count-sheep with all of its arguments", function()
         vim.cmd([[PluginTemplate goodnight-moon count-sheep 3]])
 
         assert.same({ "1 Sheep", "2 Sheep", "3 Sheep" }, _DATA)
     end)
 
-    it("runs goodnight-moon read with all of its arguments", function()
+    it("runs #goodnight-moon #read with all of its arguments", function()
         vim.cmd([[PluginTemplate goodnight-moon read "a good book"]])
 
         assert.same({ "a good book: it is a book" }, _DATA)
     end)
 
-    it("runs goodnight-moon sleep with all of its arguments", function()
+    it("runs #goodnight-moon #sleep with all of its arguments", function()
         vim.cmd([[PluginTemplate goodnight-moon sleep -zzz]])
 
         assert.same({ "zzz", "zzz", "zzz" }, _DATA)

@@ -140,7 +140,7 @@ describe("quotes", function()
         }, argparse.parse_arguments('foo "bar fizz" buzz'))
     end)
 
-    it("flags within the quotes", function()
+    it("has #flag within the quotes", function()
         assert.same({
             arguments = {
                 {
@@ -291,7 +291,7 @@ end)
 describe("double-dash flags", function()
     before_each(configuration_.initialize_data_if_needed)
 
-    it("mixed --flag", function()
+    it("mixed #flag", function()
         assert.same({
             arguments = {
                 {
@@ -310,7 +310,7 @@ describe("double-dash flags", function()
         }, argparse.parse_arguments("--foo-bar --fizz"))
     end)
 
-    it("#single --flag", function()
+    it("#single #flag", function()
         assert.same({
             arguments = {
                 {
@@ -335,7 +335,7 @@ describe("double-dash flags", function()
         }, argparse.parse_arguments("--foo"))
     end)
 
-    it("multiple", function()
+    it("multiple #flag", function()
         assert.same({
             arguments = {
                 {
@@ -364,7 +364,7 @@ describe("double-dash flags", function()
         }, argparse.parse_arguments("--foo --bar --fizz --buzz"))
     end)
 
-    it("partial --flag= - single", function()
+    it("partial #named-argument - single", function()
         assert.same({
             arguments = {
                 {
@@ -380,7 +380,7 @@ describe("double-dash flags", function()
         }, argparse.parse_arguments("--foo-bar="))
     end)
 
-    it("full --flag= - multiple", function()
+    it("full #named-argument - multiple", function()
         assert.same({
             arguments = {
                 {
@@ -461,7 +461,7 @@ end)
 describe("double-dash equal-flags", function()
     before_each(configuration_.initialize_data_if_needed)
 
-    it("mixed --flag", function()
+    it("mixed #flag", function()
         assert.same({
             arguments = {
                 {
@@ -480,7 +480,7 @@ describe("double-dash equal-flags", function()
         }, argparse.parse_arguments("--foo-bar --fizz"))
     end)
 
-    it("#single --flag", function()
+    it("#single #flag", function()
         assert.same({
             arguments = {
                 {
@@ -725,7 +725,10 @@ describe("remainder - flags", function()
     end)
 
     it("sees spaces when no arguments are given", function()
-        assert.same({ arguments = {}, text = "    ", remainder = { value = "    " } }, argparse.parse_arguments("    "))
+        assert.same(
+            { arguments = {}, text = "    ", remainder = { value = "    " } },
+            argparse.parse_arguments("    ")
+        )
     end)
 
     it("stores the last space(s) - #multiple", function()
