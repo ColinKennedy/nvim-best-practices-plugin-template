@@ -20,13 +20,6 @@
 
 - Make sure the README.md and configuration are correct values
 
-- Add unittests for telescope
- - https://github.com/nvim-lua/plenary.nvim/issues?q=wait+event
- - https://github.com/nvim-lua/plenary.nvim/issues/424
- - https://github.com/nvim-lua/plenary.nvim/commit/1252cb3344d3a7bf20614dca21e7cf17385eb1de
- - https://github.com/nvim-lua/plenary.nvim/pull/447/files
- - https://github.com/nvim-lua/plenary.nvim/pull/426
-
 Remember what the rockspec file is for
 
 - Write instructions on what people should do when they use the template
