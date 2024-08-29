@@ -96,7 +96,7 @@ vim.api.nvim_create_user_command(_PREFIX, cli_subcommand.make_triager(_SUBCOMMAN
 
 vim.keymap.set("n", "<Plug>(PluginTemplateSayHi)", function()
     local configuration = require("plugin_template._core.configuration")
-    local plugin_template = require("plugin_template.api")
+    local plugin_template = require("plugin_template")
 
     configuration.initialize_data_if_needed()
 

@@ -7,8 +7,8 @@
 --- @module 'plugin_template.plugin_template_spec'
 ---
 
-local api = require("plugin_template.api")
 local configuration = require("plugin_template._core.configuration")
+local plugin_template = require("plugin_template")
 
 --- @diagnostic disable: undefined-field
 
@@ -35,30 +35,30 @@ local function _reset_all()
     _DATA = {}
 end
 
-describe("hello world api - say phrase/word", function()
+describe("hello world API - say phrase/word", function()
     before_each(_initialize_all)
     after_each(_reset_all)
 
     it("runs #hello-world with default arguments - 001", function()
-        api.run_hello_world_say_phrase({ "" })
+        plugin_template.run_hello_world_say_phrase({ "" })
 
         assert.same({ "No phrase was given" }, _DATA)
     end)
 
     it("runs #hello-world with default arguments - 002", function()
-        api.run_hello_world_say_phrase({})
+        plugin_template.run_hello_world_say_phrase({})
 
         assert.same({ "No phrase was given" }, _DATA)
     end)
 
     it("runs #hello-world say phrase - with all of its arguments", function()
-        api.run_hello_world_say_phrase({ "Hello,", "World!" }, 2, "lowercase")
+        plugin_template.run_hello_world_say_phrase({ "Hello,", "World!" }, 2, "lowercase")
 
         assert.same({ "Saying phrase", "hello, world!", "hello, world!" }, _DATA)
     end)
 
     it("runs #hello-world say word - with all of its arguments", function()
-        api.run_hello_world_say_phrase({ "Hi" }, 2, "uppercase")
+        plugin_template.run_hello_world_say_phrase({ "Hi" }, 2, "uppercase")
 
         assert.same({ "Saying phrase", "HI", "HI" }, _DATA)
     end)
@@ -87,24 +87,24 @@ describe("hello world commands - say phrase/word", function()
     end)
 end)
 
-describe("goodnight-moon api", function()
+describe("goodnight-moon API", function()
     before_each(_initialize_all)
     after_each(_reset_all)
 
     it("runs #goodnight-moon #count-sheep with all of its arguments", function()
-        api.run_goodnight_moon_count_sheep(3)
+        plugin_template.run_goodnight_moon_count_sheep(3)
 
         assert.same({ "1 Sheep", "2 Sheep", "3 Sheep" }, _DATA)
     end)
 
     it("runs #goodnight-moon #read with all of its arguments", function()
-        api.run_goodnight_moon_read("a good book")
+        plugin_template.run_goodnight_moon_read("a good book")
 
         assert.same({ "a good book: it is a book" }, _DATA)
     end)
 
     it("runs #goodnight-moon #sleep with all of its arguments", function()
-        api.run_goodnight_moon_sleep(3)
+        plugin_template.run_goodnight_moon_sleep(3)
 
         assert.same({ "zzz", "zzz", "zzz" }, _DATA)
     end)

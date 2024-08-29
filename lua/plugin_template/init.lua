@@ -3,7 +3,7 @@
 --- If a function's signature here changes in some incompatible way, this
 --- package must get a new *major* version.
 ---
---- @module 'plugin_template.api'
+--- @module 'plugin_template'
 ---
 
 local configuration = require("plugin_template._core.configuration")

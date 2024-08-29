@@ -1,5 +1,3 @@
-- Consider moving the api file to init.lua. As long as it does not auto-import
-
 - The completion is broken
     - If there's no completion defined, it keeps showing the other commands, which is wrong
 
@@ -34,6 +32,6 @@ Remember what the rockspec file is for
 
 - Lazy load everything. Make sure Lazy shows it loading really fast
 
-TODO: Add "TODO: (you)" in various places in the code-base
-
 - Remove this file
+
+- Remove the TODO_autocompletion file, too

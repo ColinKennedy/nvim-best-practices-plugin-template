@@ -3,18 +3,18 @@
 --- @module 'plugin_template.lualine_spec'
 ---
 
-local api = require("plugin_template.api")
-local loader = require("lualine.utils.loader")
 local highlight = require("lualine.highlight")
+local loader = require("lualine.utils.loader")
+local lualine_plugin_template = require("lualine.components.plugin_template")
 local mock_test = require("test_utilities.mock_test")
-local plugin_template = require("lualine.components.plugin_template")
+local plugin_template = require("plugin_template")
 local state = require("plugin_template._core.state")
 
 --- @diagnostic disable: undefined-field
 
 --- @return table # The generated Lualine component.
 local function _make_component()
-    return plugin_template({ self = { section = "y" } })
+    return lualine_plugin_template({ self = { section = "y" } })
 end
 
 --- Delete all existing highlight groups and recreate them (so we can keep tests clean).
@@ -50,7 +50,7 @@ describe("API calls", function()
 
         assert.is_nil(component:update_status())
 
-        api.run_copy_logs()
+        plugin_template.run_copy_logs()
 
         assert.equal("%#lualine_y_plugin_template_copy_logs#󰈔 Copy Logs", component:update_status())
     end)
@@ -60,7 +60,7 @@ describe("API calls", function()
 
         assert.is_nil(component:update_status())
 
-        api.run_goodnight_moon_count_sheep(10)
+        plugin_template.run_goodnight_moon_count_sheep(10)
 
         assert.equal(
             "%#lualine_y_plugin_template_goodnight_moon# Goodnight moon",
@@ -73,7 +73,7 @@ describe("API calls", function()
 
         assert.is_nil(component:update_status())
 
-        api.run_goodnight_moon_read("a book")
+        plugin_template.run_goodnight_moon_read("a book")
 
         assert.equal(
             "%#lualine_y_plugin_template_goodnight_moon# Goodnight moon",
@@ -86,7 +86,7 @@ describe("API calls", function()
 
         assert.is_nil(component:update_status())
 
-        api.run_goodnight_moon_sleep()
+        plugin_template.run_goodnight_moon_sleep()
 
         assert.equal(
             "%#lualine_y_plugin_template_goodnight_moon# Goodnight moon",
@@ -99,7 +99,7 @@ describe("API calls", function()
 
         assert.is_nil(component:update_status())
 
-        api.run_hello_world_say_phrase({ "A phrase!" })
+        plugin_template.run_hello_world_say_phrase({ "A phrase!" })
 
         assert.equal("%#lualine_y_plugin_template_hello_world# Hello, World!", component:update_status())
     end)
@@ -109,7 +109,7 @@ describe("API calls", function()
 
         assert.is_nil(component:update_status())
 
-        api.run_hello_world_say_word("some_text_here")
+        plugin_template.run_hello_world_say_word("some_text_here")
 
         assert.equal("%#lualine_y_plugin_template_hello_world# Hello, World!", component:update_status())
     end)
