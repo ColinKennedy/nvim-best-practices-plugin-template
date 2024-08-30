@@ -68,6 +68,7 @@ end
 --- @return function # The generated auto-complete function.
 ---
 function M.make_command_completer(prefix, subcommands)
+
     local function runner(args, text, _)
         local configuration = require("plugin_template._core.configuration")
         configuration.initialize_data_if_needed()
@@ -101,8 +102,8 @@ end
 --- @param subcommands PluginTemplateSubcommands
 ---     All registered commands for `plugin_template` to possibly modify.
 ---
-local function _initialize_missing_values(subcommands)
-    for _, subcommand in ipairs(subcommands) do
+function M.initialize_missing_values(subcommands)
+    for _, subcommand in pairs(subcommands) do
         if not subcommand.complete then
             subcommand.complete = function()
                 return {}
@@ -124,8 +125,6 @@ end
 ---     If the user gives an incorrect subcommand name, an error is displayed instead.
 ---
 function M.make_triager(subcommands)
-    _initialize_missing_values(subcommands)
-
     --- Check for a subcommand and, if found, call its `run` caller field.
     ---
     --- @source `:h lua-guide-commands-create`

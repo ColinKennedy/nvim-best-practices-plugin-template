@@ -17,8 +17,7 @@ local M = {}
 
 configuration.initialize_data_if_needed()
 
--- TODO: (you) - Change this file to whatever you need it to be. These are just
--- some example commands
+-- TODO: (you) - Change this file to whatever you need. These are just examples
 M.run_copy_logs = copy_logs_runner.run
 M.run_hello_world_say_phrase = say_runner.run_say_phrase
 M.run_hello_world_say_word = say_runner.run_say_word

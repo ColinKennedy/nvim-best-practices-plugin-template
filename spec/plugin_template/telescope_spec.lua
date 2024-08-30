@@ -11,11 +11,14 @@ local telescope_actions_state = require("telescope.actions.state")
 
 --- @diagnostic disable: undefined-field
 
--- TODO: Docstrings
 
 local _ORIGINAL_GET_SELECTION_FUNCTION = runner.get_selection
 local _RESULT = nil
 
+--- Tempoarily wrap `runner.get_selection` so we can use it for unittests.
+---
+--- @return fun(caller: fun(_: ...): nil): string[]
+---
 local function _mock_get_selection()
     local function _mock(caller)
         --- @diagnostic disable-next-line: duplicate-set-field
@@ -30,12 +33,22 @@ local function _mock_get_selection()
     return _mock(runner.get_selection)
 end
 
+--- Reset the unittests back to their original values.
 local function _restore_get_selection()
     runner.get_selection = _ORIGINAL_GET_SELECTION_FUNCTION
 
     _RESULT = nil
 end
 
+--- Run Neovim's event loop so that all currently-scheduled function can run.
+---
+--- If you or some other API call `vim.schedule` / `vim.schedule_wrap` and want
+--- to make sure that function runs, call this function.
+---
+--- @param timeout number?
+---     The milliseconds to wait before continuing. If the timeout is exceeded
+---     then we stop waiting for all of the functions to call.
+---
 local function _wait_for_picker_to_initialize(timeout)
     if timeout == nil then
         timeout = 1000
@@ -52,6 +65,12 @@ local function _wait_for_picker_to_initialize(timeout)
     end)
 end
 
+--- Wait for our (mocked) unittest variable to get some data back.
+---
+--- @param timeout number?
+---     The milliseconds to wait before continuing. If the timeout is exceeded
+---     then we stop waiting for all of the functions to call.
+---
 local function _wait_for_result(timeout)
     if timeout == nil then
         timeout = 1000
@@ -62,6 +81,12 @@ local function _wait_for_result(timeout)
     end)
 end
 
+--- Create a Telescope picker for `command` and get the created "prompt" buffer back.
+---
+--- @param command string
+---     A Telescope sub-command. e.g. If the command was `:Telescope
+---     plugin_template foo` then this function would require `"foo"`.
+---
 local function _make_telescope_picker(command)
     plugin_template.exports[command]()
 
@@ -70,6 +95,7 @@ local function _make_telescope_picker(command)
     return vim.api.nvim_get_current_buf()
 end
 
+--- Setup all mocks and get ready for the unittest to run.
 local function _initialize_all()
     _mock_get_selection()
     mock_test.silence_all_internal_prints()

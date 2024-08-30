@@ -58,8 +58,8 @@ In general that means
     - Removing [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
     ```sh
     rm -rf lua/lualine
-    TODO: Add this test
     rm configuration_tools_telescope_spec.lua
+    rm telescope_spec.lua
     ```
 
 4. Search for "TODO: (you)" in all files and fill them out
@@ -78,10 +78,10 @@ grep --recursive --line-number --word-regexp 'TODO: (you)' | nvim -q - -c "copen
 }
 ```
 
-## Configuration
+# Configuration
 
 (These are default values)
-TODO: Make sure this is up to date and works
+
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
 ```lua
 {
@@ -101,20 +101,39 @@ TODO: Make sure this is up to date and works
             },
             tools = {
                 lualine = {
-                    goodnight_moon = { color = { link = "Comment" }, text = " Goodnight moon" },
-                    hello_world = { color = { link = "Title" }, text = " Hello, World!" },
+                    copy_logs = {
+                        color = "Comment",
+                        text = "󰈔 Copy Logs",
+                    },
+                    goodnight_moon = {
+                        color = "Question",
+                        text = " Goodnight moon",
+                    },
+                    hello_world = {
+                        color = "Title",
+                        text = " Hello, World!",
+                    },
                 },
                 telescope = {
-                    -- goodnight_moon = {"Foo Book", "Bar Book Title" },
-                    hello_world = { "Hi there!" },
+                    goodnight_moon = {
+                        { "Foo Book", "Author A" },
+                        { "Bar Book Title", "John Doe" },
+                        { "Fizz Drink", "Some Name" },
+                        { "Buzz Bee", "Cool Person" },
+                    },
+                    hello_world = { "Hi there!", "Hello, Sailor!", "What's up, doc?" },
                 },
-            }
+            },
         }
     end
 }
 ```
 
 ## Lualine
+
+> Note: You can customize lualine colors here or using
+> `vim.g.plugin_template_configuration`. Either way works!
+
 - [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
 ```lua
 require("lualine").setup {
@@ -123,7 +142,7 @@ require("lualine").setup {
             -- ... Your other configuration ...
             {
                 "plugin_template",
-                -- NOTE: These override default values
+                -- NOTE: These will override default values
                 -- display = {
                 --     goodnight_moon = {color={fg="#FFFFFF"}, text="Custom message 1"}},
                 --     hello_world = {color={fg="#333333"}, text="Custom message 2"},
@@ -135,6 +154,10 @@ require("lualine").setup {
 ```
 
 ## Telescope
+
+> Note: You can customize telescope colors here or using
+> `vim.g.plugin_template_configuration`. Either way works!
+
 [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
 ```lua
 {

@@ -30,7 +30,7 @@ vim.api.nvim_set_hl(0, "PluginTemplateTelescopeSecondary", { link = "TelescopeRe
 --- @param options TelescopeCommandOptions The Telescope UI / layout options.
 ---
 function M.get_goodnight_moon_picker(options)
-    -- TODO: Make sure this picker actually works. It seems like it doesn't print
+
     local function _select_book(buffer)
         for _, book in ipairs(M.get_selection(buffer)) do
             read_runner.run(book)

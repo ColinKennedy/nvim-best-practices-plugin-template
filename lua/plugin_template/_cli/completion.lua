@@ -5,6 +5,7 @@
 
 local argparse = require("plugin_template._cli.argparse")
 local argparse_helper = require("plugin_template._cli.argparse_helper")
+local texter = require("plugin_template._core.texter")
 local vlog = require("plugin_template._vendors.vlog")
 
 --- @class FlagOption : FlagArgument
@@ -289,7 +290,8 @@ local function _get_argument_name(option)
         return option.name
     end
 
-    -- TODO: Add error
+    vlog.fmt_error('Unabled to find a label for "%s" option.', option)
+
     return ""
 end
 
@@ -695,25 +697,6 @@ local function _get_arguments(argument)
     return {}
 end
 
---- Check if `items` is a flat array/list of string values.
----
---- @param items ... An array to check.
---- @return boolean # If found, return `true`.
----
-local function _is_string_list(items)
-    if type(items) ~= "table" then
-        return false
-    end
-
-    for _, item in ipairs(items) do
-        if type(item) ~= "string" then
-            return false
-        end
-    end
-
-    return true
-end
-
 --- Suggest an auto-completion function for a named argument's choices.
 ---
 --- If a names argument is defined with choices `{"foo", "bar" "fizz"}`, the
@@ -777,7 +760,7 @@ local function _fill_missing_data(tree)
                     item.required = false
                 end
 
-                if item.choices and _is_string_list(item.choices) then
+                if item.choices and texter.is_string_list(item.choices) then
                     --- @diagnostic disable-next-line param-type-mismatch
                     item.choices = _get_startswith_auto_complete_function(item.choices)
                 end

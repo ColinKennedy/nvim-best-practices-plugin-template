@@ -169,10 +169,6 @@ function M.parse_arguments(text)
         end
 
         if current_argument == true then
-            -- TODO: We assume here that double flags, --foo, do not exist.
-            -- There is only -f or --foo=bar. We should probably allow --foo to
-            -- exist in the future.
-            --
             table.insert(output, {
                 argument_type = M.ArgumentType.flag,
                 name = current_name,

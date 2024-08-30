@@ -17,7 +17,15 @@ local _SUBCOMMANDS = {
         end,
     },
     ["goodnight-moon"] = {
-        -- TODO: Add completion support, later
+        complete = function(data)
+            local argparse = require("plugin_template._cli.argparse")
+            local completion = require("plugin_template._cli.completion")
+
+            local tree = { { "count-sheep", "read", "sleep" } }
+            local arguments = argparse.parse_arguments(data)
+
+            return completion.get_options(tree, arguments, vim.fn.getcmdpos())
+        end,
         run = function(arguments)
             local configuration = require("plugin_template._core.configuration")
             local runner = require("plugin_template._cli.runner")
@@ -32,13 +40,13 @@ local _SUBCOMMANDS = {
             local argparse = require("plugin_template._cli.argparse")
             local completion = require("plugin_template._cli.completion")
             local configuration = require("plugin_template._core.configuration")
+            local constant = require("plugin_template._commands.hello_world.say.constant")
 
             configuration.initialize_data_if_needed()
-            -- TODO: include say/constant.lua later
 
             local tree = {
                 "say",
-                { "phrase", "word" },
+                { constant.Subcommand.phrase, constant.Subcommand.word },
                 {
                     {
                         choices = function(value)
@@ -68,7 +76,10 @@ local _SUBCOMMANDS = {
                     {
                         argument_type = argparse.ArgumentType.named,
                         name = "style",
-                        choices = { "lowercase", "uppercase" },
+                        choices = {
+                            constant.Keyword.lowercase,
+                            constant.Keyword.uppercase,
+                        },
                     },
                 },
             }
@@ -87,6 +98,8 @@ local _SUBCOMMANDS = {
         end,
     },
 }
+
+cli_subcommand.initialize_missing_values(_SUBCOMMANDS)
 
 vim.api.nvim_create_user_command(_PREFIX, cli_subcommand.make_triager(_SUBCOMMANDS), {
     nargs = "+",

@@ -1,9 +1,11 @@
-- Do existing TODO notes
-- The completion is broken
-    - If there's no completion defined, it keeps showing the other commands, which is wrong
+- Make sure the README.md and configuration are correct values
 
 - Make sure the auto-generated documentation looks good
    - Leave notes on how to make it from scratch
+
+- allow for positional choices
+- Create a tree structure for auto-completion
+--style doesn't autocomplete anymore. Fix
 
 - Change the tests so that unittests cannot be influenced by a user's personal configuration
     - vim.env.XDG_CONFIG_HOME = "test/xdg/config/"
@@ -12,13 +14,19 @@
     - https://hiphish.github.io/blog/2024/01/29/testing-neovim-plugins-with-busted/
 - Make sure the documentation auto-generates correctly and the issue templates refer to it correctly
 
+- Add arbitrary-thing support
+    - plugin
+        - run / complete
+    - spec
+    - lualine configuration
+    - Telescope
+    - health
+
 - TODO: Add "TODO: (you)" in various places in the code-base
 
 - Add luarocks auto-release integration
 
 - Document how to do a release
-
-- Make sure the README.md and configuration are correct values
 
 Remember what the rockspec file is for
 

@@ -44,6 +44,10 @@ local tree = { {style}, {style}, }
   - Vendor the argparse in case the user doesn't have it installed
 - Add auto-completion function
 
+-- TODO: We assume here that double flags, --foo, do not exist.
+-- There is only -f or --foo=bar. We should probably allow --foo to
+-- exist in the future.
+--
 
 command-line parser needs to handle this case
 foo bar --thing --thing --thing blah

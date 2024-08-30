@@ -9,6 +9,7 @@
 local configuration_ = require("plugin_template._core.configuration")
 local say_constant = require("plugin_template._commands.hello_world.say.constant")
 local tabler = require("plugin_template._core.tabler")
+local texter = require("plugin_template._core.texter")
 local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
@@ -83,7 +84,7 @@ local function _get_boolean_issue(key, data)
     return message
 end
 
---- Check all "commands" values for completeness.
+--- Check all "commands" values for issues.
 ---
 --- @param data plugin_template.Configuration All of the user's fallback settings.
 --- @return string[] # All found issues, if any.
@@ -237,7 +238,7 @@ local function _get_lualine_command_issues(command, data)
     return output
 end
 
---- Check all "tools.lualine" values for completeness.
+--- Check all "tools.lualine" values for issues.
 ---
 --- @param data plugin_template.Configuration All of the user's fallback settings.
 --- @return string[] # All found issues, if any.
@@ -343,6 +344,97 @@ local function _get_logging_issues(data)
     return output
 end
 
+--- Check all "tools.lualine" values for issues.
+---
+--- @param data plugin_template.Configuration All of the user's fallback settings.
+--- @return string[] # All found issues, if any.
+---
+local function _get_telescope_issues(data)
+    local output = {}
+
+    local telescope = tabler.get_value(data, { "tools", "telescope" })
+
+    local success, message = pcall(vim.validate, {
+        ["tools.telescope"] = {
+            telescope,
+            function(value)
+                if type(value) ~= "table" then
+                    return false
+                end
+
+                return true
+            end,
+            "a table. e.g. { goodnight_moon = {...}, hello_world = {...}}",
+        },
+    })
+
+    if not success then
+        table.insert(output, message)
+
+        return output
+    end
+
+    success, message = pcall(vim.validate, {
+        ["tools.telescope.goodnight_moon"] = {
+            telescope.goodnight_moon,
+            function(value)
+                if value == nil then
+                    return true
+                end
+
+                if type(value) ~= "table" then
+                    return false
+                end
+
+                for _, item in ipairs(value) do
+                    if not texter.is_string_list(item) then
+                        return false
+                    end
+
+                    if #item ~= 2 then
+                        return false
+                    end
+                end
+
+                return true
+            end,
+            'a table. e.g. { {"Book", "Author"} }',
+        },
+    })
+
+    if not success then
+        table.insert(output, message)
+
+        return output
+    end
+
+    success, message = pcall(vim.validate, {
+        ["tools.telescope.hello_world"] = {
+            telescope.hello_world,
+            function(value)
+                if value == nil then
+                    return true
+                end
+
+                if type(value) ~= "table" then
+                    return false
+                end
+
+                return texter.is_string_list(value)
+            end,
+            'a table. e.g. { "Hello", "Hi", ...} }',
+        },
+    })
+
+    if not success then
+        table.insert(output, message)
+
+        return output
+    end
+
+    return output
+end
+
 --- Check `data` for problems and return each of them.
 ---
 --- @param data plugin_template.Configuration? All extra customizations for this plugin.
@@ -366,6 +458,12 @@ function M.get_issues(data)
 
     if lualine ~= nil then
         vim.list_extend(output, _get_lualine_issues(data))
+    end
+
+    local telescope = tabler.get_value(data, { "tools", "telescope" })
+
+    if telescope ~= nil then
+        vim.list_extend(output, _get_telescope_issues(data))
     end
 
     return output
