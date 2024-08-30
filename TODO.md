@@ -1,10 +1,6 @@
-- Make sure the README.md and configuration are correct values
-
 - Make sure the auto-generated documentation looks good
    - Leave notes on how to make it from scratch
 
-- allow for positional choices
-- Create a tree structure for auto-completion
 --style doesn't autocomplete anymore. Fix
 
 - Change the tests so that unittests cannot be influenced by a user's personal configuration

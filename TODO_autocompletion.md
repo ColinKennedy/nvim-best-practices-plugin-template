@@ -6,6 +6,9 @@ local style = {count=3, ...}
 local tree = { {style}, {style}, }
 ```
 
+- allow for positional choices
+- Create a tree structure for auto-completion
+
 - Do existing TODO notes
 - /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/plugin_template/_cli/completion.lua
 
