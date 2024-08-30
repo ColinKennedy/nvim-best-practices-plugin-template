@@ -1,3 +1,4 @@
+- Do existing TODO notes
 - The completion is broken
     - If there's no completion defined, it keeps showing the other commands, which is wrong
 
@@ -12,9 +13,10 @@
 - Make sure the documentation auto-generates correctly and the issue templates refer to it correctly
 
 - TODO: Add "TODO: (you)" in various places in the code-base
-- Do existing TODO notes
 
 - Add luarocks auto-release integration
+
+- Document how to do a release
 
 - Make sure the README.md and configuration are correct values
 
@@ -31,6 +33,8 @@ Remember what the rockspec file is for
  - https://github.com/kdheepak/panvimdoc
 
 - Lazy load everything. Make sure Lazy shows it loading really fast
+
+- Do existing TODO notes
 
 - Remove this file
 

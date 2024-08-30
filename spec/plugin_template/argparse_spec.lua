@@ -725,10 +725,7 @@ describe("remainder - flags", function()
     end)
 
     it("sees spaces when no arguments are given", function()
-        assert.same(
-            { arguments = {}, text = "    ", remainder = { value = "    " } },
-            argparse.parse_arguments("    ")
-        )
+        assert.same({ arguments = {}, text = "    ", remainder = { value = "    " } }, argparse.parse_arguments("    "))
     end)
 
     it("stores the last space(s) - #multiple", function()

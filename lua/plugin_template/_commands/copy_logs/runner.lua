@@ -21,18 +21,18 @@ local M = {}
 --- @param callback fun(result: ReadFileResult): nil Call this once `path` is read.
 ---
 local function _read_file(path, callback)
-    vim.uv.fs_open(path, "r", 438, function(error, handler)  -- NOTE: mode 428 == rw-rw-rw-
-        --- @cast error string
-        assert(not error, error)
+    -- NOTE: mode 428 == rw-rw-rw-
+    vim.uv.fs_open(path, "r", 438, function(error_open, handler)
+        assert(not error_open, error_open)
 
-        vim.uv.fs_fstat(handler, function(error, stat)
-            assert(not error, error)
+        vim.uv.fs_fstat(handler, function(error_stat, stat)
+            assert(not error_stat, error_stat)
 
-            vim.uv.fs_read(handler, stat.size, 0, function(error, data)
-                assert(not error, error)
+            vim.uv.fs_read(handler, stat.size, 0, function(error_read, data)
+                assert(not error_read, error_read)
 
-                vim.uv.fs_close(handler, function(error)
-                    assert(not error, error)
+                vim.uv.fs_close(handler, function(error_close)
+                    assert(not error_close, error_close)
 
                     return callback({ data = data, path = path })
                 end)
@@ -48,7 +48,6 @@ end
 ---     location is used instead.
 ---
 function M.run(path)
-
     --- Modify the user's system clipboard with `result`.
     ---
     --- @param result ReadFileResult The file path + its contents that we read.

@@ -72,7 +72,8 @@ describe("bad configuration - tools.lualine", function()
     end)
 
     it("happens with a bad value for #tools.lualine.goodnight_moon.color - 002", function()
-        local data = configuration_.resolve_data({ tools = { lualine = { goodnight_moon = { color = {bg = false} } } } })
+        local data =
+            configuration_.resolve_data({ tools = { lualine = { goodnight_moon = { color = { bg = false } } } } })
         local issues = health.get_issues(data)
 
         assert.equal(1, #issues)
@@ -87,7 +88,8 @@ describe("bad configuration - tools.lualine", function()
     end)
 
     it("happens with a bad value for #tools.lualine.goodnight_moon.color - 003", function()
-        local data = configuration_.resolve_data({ tools = { lualine = { goodnight_moon = { color = {fg = false} } } } })
+        local data =
+            configuration_.resolve_data({ tools = { lualine = { goodnight_moon = { color = { fg = false } } } } })
         local issues = health.get_issues(data)
 
         assert.equal(1, #issues)
@@ -102,7 +104,8 @@ describe("bad configuration - tools.lualine", function()
     end)
 
     it("happens with a bad value for #tools.lualine.goodnight_moon.color - 004", function()
-        local data = configuration_.resolve_data({ tools = { lualine = { goodnight_moon = { color = {gui = false} } } } })
+        local data =
+            configuration_.resolve_data({ tools = { lualine = { goodnight_moon = { color = { gui = false } } } } })
         local issues = health.get_issues(data)
 
         assert.equal(1, #issues)
@@ -117,7 +120,8 @@ describe("bad configuration - tools.lualine", function()
     end)
 
     it("happens with a bad value for #tools.lualine.goodnight_moon.color - 005", function()
-        local data = configuration_.resolve_data({ tools = { lualine = { goodnight_moon = { color = {bad_key = "ttt"} } } } })
+        local data =
+            configuration_.resolve_data({ tools = { lualine = { goodnight_moon = { color = { bad_key = "ttt" } } } } })
         local issues = health.get_issues(data)
 
         assert.equal(1, #issues)
@@ -168,7 +172,7 @@ describe("bad configuration - tools.lualine", function()
     end)
 
     it("happens with a bad value for #tools.lualine.hello_world.color - 002", function()
-        local data = configuration_.resolve_data({ tools = { lualine = { hello_world = { color = {bg = false} } } } })
+        local data = configuration_.resolve_data({ tools = { lualine = { hello_world = { color = { bg = false } } } } })
         local issues = health.get_issues(data)
 
         assert.equal(1, #issues)
@@ -183,7 +187,7 @@ describe("bad configuration - tools.lualine", function()
     end)
 
     it("happens with a bad value for #tools.lualine.hello_world.color - 003", function()
-        local data = configuration_.resolve_data({ tools = { lualine = { hello_world = { color = {fg = false} } } } })
+        local data = configuration_.resolve_data({ tools = { lualine = { hello_world = { color = { fg = false } } } } })
         local issues = health.get_issues(data)
 
         assert.equal(1, #issues)
@@ -198,7 +202,8 @@ describe("bad configuration - tools.lualine", function()
     end)
 
     it("happens with a bad value for #tools.lualine.hello_world.color - 004", function()
-        local data = configuration_.resolve_data({ tools = { lualine = { hello_world = { color = {gui = false} } } } })
+        local data =
+            configuration_.resolve_data({ tools = { lualine = { hello_world = { color = { gui = false } } } } })
         local issues = health.get_issues(data)
 
         assert.equal(1, #issues)
@@ -213,7 +218,8 @@ describe("bad configuration - tools.lualine", function()
     end)
 
     it("happens with a bad value for #tools.lualine.hello_world.color - 005", function()
-        local data = configuration_.resolve_data({ tools = { lualine = { hello_world = { color = {bad_key = "bbb"} } } } })
+        local data =
+            configuration_.resolve_data({ tools = { lualine = { hello_world = { color = { bad_key = "bbb" } } } } })
         local issues = health.get_issues(data)
 
         assert.equal(1, #issues)

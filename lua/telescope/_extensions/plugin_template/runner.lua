@@ -47,7 +47,7 @@ function M.get_goodnight_moon_picker(options)
         },
     })
 
-    local books = tabler.get_value(configuration.DATA, {"tools", "telescope", "goodnight_moon"}) or {}
+    local books = tabler.get_value(configuration.DATA, { "tools", "telescope", "goodnight_moon" }) or {}
     books = tabler.reverse_array(books)
 
     local picker = pickers.new(options, {
@@ -102,7 +102,7 @@ function M.get_hello_world_picker(options)
         items = { { width = 0.8 }, { remaining = true } },
     })
 
-    local phrases = tabler.get_value(configuration.DATA, {"tools", "telescope", "hello_world"}) or {}
+    local phrases = tabler.get_value(configuration.DATA, { "tools", "telescope", "hello_world" }) or {}
     phrases = tabler.reverse_array(phrases)
 
     local picker = pickers.new(options, {

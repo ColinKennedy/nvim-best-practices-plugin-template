@@ -30,7 +30,7 @@ configuration_.initialize_data_if_needed()
 --- @param value LualineColorHex
 ---
 local function _has_extra_color_keys(value)
-    local keys = {"bg", "fg", "gui"}
+    local keys = { "bg", "fg", "gui" }
 
     for key, _ in pairs(value) do
         if not vim.tbl_contains(keys, key) then

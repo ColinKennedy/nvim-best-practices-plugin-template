@@ -62,10 +62,7 @@ describe("API calls", function()
 
         plugin_template.run_goodnight_moon_count_sheep(10)
 
-        assert.equal(
-            "%#lualine_y_plugin_template_goodnight_moon# Goodnight moon",
-            component:update_status()
-        )
+        assert.equal("%#lualine_y_plugin_template_goodnight_moon# Goodnight moon", component:update_status())
     end)
 
     it("works with #goodnight-moon #read", function()
@@ -75,10 +72,7 @@ describe("API calls", function()
 
         plugin_template.run_goodnight_moon_read("a book")
 
-        assert.equal(
-            "%#lualine_y_plugin_template_goodnight_moon# Goodnight moon",
-            component:update_status()
-        )
+        assert.equal("%#lualine_y_plugin_template_goodnight_moon# Goodnight moon", component:update_status())
     end)
 
     it("works with #goodnight-moon #sleep", function()
@@ -88,10 +82,7 @@ describe("API calls", function()
 
         plugin_template.run_goodnight_moon_sleep()
 
-        assert.equal(
-            "%#lualine_y_plugin_template_goodnight_moon# Goodnight moon",
-            component:update_status()
-        )
+        assert.equal("%#lualine_y_plugin_template_goodnight_moon# Goodnight moon", component:update_status())
     end)
 
     it("works with #hello-world #say phrase", function()
@@ -135,10 +126,7 @@ describe("Command calls", function()
 
         vim.cmd([[PluginTemplate goodnight-moon count-sheep 10]])
 
-        assert.equal(
-            "%#lualine_y_plugin_template_goodnight_moon# Goodnight moon",
-            component:update_status()
-        )
+        assert.equal("%#lualine_y_plugin_template_goodnight_moon# Goodnight moon", component:update_status())
     end)
 
     it("works with #goodnight-moon #read", function()
@@ -148,10 +136,7 @@ describe("Command calls", function()
 
         vim.cmd([[PluginTemplate goodnight-moon read "a book"]])
 
-        assert.equal(
-            "%#lualine_y_plugin_template_goodnight_moon# Goodnight moon",
-            component:update_status()
-        )
+        assert.equal("%#lualine_y_plugin_template_goodnight_moon# Goodnight moon", component:update_status())
     end)
 
     it("works with #goodnight-moon #sleep", function()
@@ -161,10 +146,7 @@ describe("Command calls", function()
 
         vim.cmd([[PluginTemplate goodnight-moon sleep -zzz]])
 
-        assert.equal(
-            "%#lualine_y_plugin_template_goodnight_moon# Goodnight moon",
-            component:update_status()
-        )
+        assert.equal("%#lualine_y_plugin_template_goodnight_moon# Goodnight moon", component:update_status())
     end)
 
     it("works with #hello-world #say phrase", function()

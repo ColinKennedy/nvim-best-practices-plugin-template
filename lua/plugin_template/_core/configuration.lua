@@ -129,10 +129,10 @@ local _DEFAULTS = {
         },
         telescope = {
             goodnight_moon = {
-                {"Foo Book", "Author A"},
-                {"Bar Book Title", "John Doe"},
-                {"Fizz Drink", "Some Name"},
-                {"Buzz Bee", "Cool Person"},
+                { "Foo Book", "Author A" },
+                { "Bar Book Title", "John Doe" },
+                { "Fizz Drink", "Some Name" },
+                { "Buzz Bee", "Cool Person" },
             },
             hello_world = { "Hi there!", "Hello, Sailor!", "What's up, doc?" },
         },
