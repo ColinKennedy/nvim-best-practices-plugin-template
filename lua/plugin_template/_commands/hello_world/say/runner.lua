@@ -1,10 +1,9 @@
 --- The main file that implements `hello-world say` outside of COMMAND mode.
 ---
---- @module 'plugin_template._commands.say.command'
+--- @module 'plugin_template._commands.hello_world.say.runner'
 ---
 
 local constant = require("plugin_template._commands.hello_world.say.constant")
-local state = require("plugin_template._core.state")
 local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
@@ -45,8 +44,6 @@ end
 ---     Control how the text should be shown.
 ---
 local function _say(phrase, repeat_, style)
-    state.PREVIOUS_COMMAND = "hello_world"
-
     repeat_ = repeat_ or 1
     style = style or constant.Keyword.style.lowercase
     local text = vim.fn.join(phrase, " ")

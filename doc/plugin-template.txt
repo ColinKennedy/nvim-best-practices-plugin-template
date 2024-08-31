@@ -15,7 +15,7 @@ Table of Contents                          *plugin-template-table-of-contents*
 6. Tests                                               |plugin-template-tests|
   - Initialization                      |plugin-template-tests-initialization|
   - Running                                    |plugin-template-tests-running|
-7. News                                                 |plugin-template-news|
+7. Tracking Updates                         |plugin-template-tracking-updates|
 8. Other Plugins                               |plugin-template-other-plugins|
 9. Links                                               |plugin-template-links|
 
@@ -285,7 +285,7 @@ Run test based on tags
 
 
 ==============================================================================
-7. News                                                 *plugin-template-news*
+7. Tracking Updates                         *plugin-template-tracking-updates*
 
 See doc/news.txt <doc/news.txt> for updates.
 

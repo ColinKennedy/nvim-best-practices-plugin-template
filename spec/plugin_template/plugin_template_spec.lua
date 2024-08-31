@@ -35,6 +35,48 @@ local function _reset_all()
     _DATA = {}
 end
 
+-- describe("arbitrary-thing API", function()
+--     before_each(_initialize_all)
+--     after_each(_reset_all)
+--
+--     it("runs #arbitrary-thing with default arguments - 001 #asdf", function()
+--         plugin_template.run_arbitrary_thing()
+--     end)
+-- end)
+
+describe("arbitrary-thing API", function()
+    before_each(_initialize_all)
+    after_each(_reset_all)
+
+    it("runs #arbitrary-thing with #default arguments", function()
+        plugin_template.run_arbitrary_thing({})
+
+        assert.same({ "<No text given>" }, _DATA)
+    end)
+
+    it("runs #arbitrary-thing with arguments", function()
+        plugin_template.run_arbitrary_thing({ "v", "t" })
+
+        assert.same({ "v, t" }, _DATA)
+    end)
+end)
+
+describe("arbitrary-thing commands", function()
+    before_each(_initialize_all)
+    after_each(_reset_all)
+
+    it("runs #arbitrary-thing with #default arguments", function()
+        vim.cmd([[PluginTemplate arbitrary-thing]])
+        assert.same({ "<No text given>" }, _DATA)
+    end)
+
+    it("runs #arbitrary-thing with arguments", function()
+        vim.cmd([[PluginTemplate arbitrary-thing -vvv -abc -f]])
+
+        assert.same({ "v, v, v, a, b, c, f" }, _DATA)
+    end)
+end)
+
 describe("hello world API - say phrase/word", function()
     before_each(_initialize_all)
     after_each(_reset_all)

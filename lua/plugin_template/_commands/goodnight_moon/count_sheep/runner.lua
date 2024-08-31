@@ -1,10 +1,9 @@
 --- The main file that implements `goodnight-moon count-sheep` outside of COMMAND mode.
 ---
---- @module 'plugin_template._commands.count_sheep.command'
+--- @module 'plugin_template._commands.goodnight_moon.count_sheep.runner'
 ---
 
 local configuration = require("plugin_template._core.configuration")
-local state = require("plugin_template._core.state")
 local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
@@ -16,7 +15,6 @@ local M = {}
 function M.run(count)
     configuration.initialize_data_if_needed()
     vlog.debug("Running goodnight-moon count-sheep")
-    state.PREVIOUS_COMMAND = "goodnight_moon"
 
     if count < 1 then
         vlog.fmt_warn('Count "%s" cannot be less than 1. Using 1 instead.', count)

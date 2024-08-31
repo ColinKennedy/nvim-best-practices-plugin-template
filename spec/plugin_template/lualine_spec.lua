@@ -8,7 +8,6 @@ local loader = require("lualine.utils.loader")
 local lualine_plugin_template = require("lualine.components.plugin_template")
 local mock_test = require("test_utilities.mock_test")
 local plugin_template = require("plugin_template")
-local state = require("plugin_template._core.state")
 
 --- @diagnostic disable: undefined-field
 
@@ -25,7 +24,7 @@ end
 
 --- Enable lualine so we can create lualine component(s) and other various tasks.
 local function _setup_lualine()
-    state.PREVIOUS_COMMAND = nil
+    lualine_plugin_template.PREVIOUS_COMMAND = nil
 
     mock_test.silence_all_internal_prints()
 
@@ -45,6 +44,16 @@ end)
 describe("API calls", function()
     before_each(_setup_lualine)
 
+    it("works with #arbitrary-thing", function()
+        local component = _make_component()
+
+        assert.is_nil(component:update_status())
+
+        plugin_template.run_arbitrary_thing()
+
+        assert.equal("%#lualine_y_plugin_template_arbitrary_thing# Arbitrary Thing", component:update_status())
+    end)
+
     it("works with #copy-logs", function()
         local component = _make_component()
 
@@ -62,7 +71,7 @@ describe("API calls", function()
 
         plugin_template.run_goodnight_moon_count_sheep(10)
 
-        assert.equal("%#lualine_y_plugin_template_goodnight_moon# Goodnight moon", component:update_status())
+        assert.equal("%#lualine_y_plugin_template_goodnight_moon#⏾ Goodnight moon", component:update_status())
     end)
 
     it("works with #goodnight-moon #read", function()
@@ -72,7 +81,7 @@ describe("API calls", function()
 
         plugin_template.run_goodnight_moon_read("a book")
 
-        assert.equal("%#lualine_y_plugin_template_goodnight_moon# Goodnight moon", component:update_status())
+        assert.equal("%#lualine_y_plugin_template_goodnight_moon#⏾ Goodnight moon", component:update_status())
     end)
 
     it("works with #goodnight-moon #sleep", function()
@@ -82,7 +91,7 @@ describe("API calls", function()
 
         plugin_template.run_goodnight_moon_sleep()
 
-        assert.equal("%#lualine_y_plugin_template_goodnight_moon# Goodnight moon", component:update_status())
+        assert.equal("%#lualine_y_plugin_template_goodnight_moon#⏾ Goodnight moon", component:update_status())
     end)
 
     it("works with #hello-world #say phrase", function()
@@ -109,6 +118,16 @@ end)
 describe("Command calls", function()
     before_each(_setup_lualine)
 
+    it("works with #arbitrary-thing", function()
+        local component = _make_component()
+
+        assert.is_nil(component:update_status())
+
+        vim.cmd([[PluginTemplate arbitrary-thing]])
+
+        assert.equal("%#lualine_y_plugin_template_arbitrary_thing# Arbitrary Thing", component:update_status())
+    end)
+
     it("works with #copy-logs", function()
         local component = _make_component()
 
@@ -126,7 +145,7 @@ describe("Command calls", function()
 
         vim.cmd([[PluginTemplate goodnight-moon count-sheep 10]])
 
-        assert.equal("%#lualine_y_plugin_template_goodnight_moon# Goodnight moon", component:update_status())
+        assert.equal("%#lualine_y_plugin_template_goodnight_moon#⏾ Goodnight moon", component:update_status())
     end)
 
     it("works with #goodnight-moon #read", function()
@@ -136,7 +155,7 @@ describe("Command calls", function()
 
         vim.cmd([[PluginTemplate goodnight-moon read "a book"]])
 
-        assert.equal("%#lualine_y_plugin_template_goodnight_moon# Goodnight moon", component:update_status())
+        assert.equal("%#lualine_y_plugin_template_goodnight_moon#⏾ Goodnight moon", component:update_status())
     end)
 
     it("works with #goodnight-moon #sleep", function()
@@ -146,7 +165,7 @@ describe("Command calls", function()
 
         vim.cmd([[PluginTemplate goodnight-moon sleep -zzz]])
 
-        assert.equal("%#lualine_y_plugin_template_goodnight_moon# Goodnight moon", component:update_status())
+        assert.equal("%#lualine_y_plugin_template_goodnight_moon#⏾ Goodnight moon", component:update_status())
     end)
 
     it("works with #hello-world #say phrase", function()

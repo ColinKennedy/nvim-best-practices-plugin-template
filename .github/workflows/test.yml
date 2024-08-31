@@ -1,6 +1,6 @@
 ---
 on: [push, pull_request]
-name: lint-test
+name: test
 
 jobs:
   test:
@@ -21,7 +21,7 @@ jobs:
         neovim: true
         version: ${{ matrix.neovim }}
     - name: Run tests
-      working-directory: ./neovim_plugin.nvim
+      working-directory: ./neovim_plugin
       run: |
         nvim --version
         make test

@@ -6,6 +6,18 @@ local _PREFIX = "PluginTemplate"
 
 --- @type PluginTemplateSubcommands
 local _SUBCOMMANDS = {
+    ["arbitrary-thing"] = {
+        complete = function(data)
+            local complete = require("plugin_template._commands.arbitrary_thing.complete")
+
+            return complete.complete(data)
+        end,
+        run = function(arguments)
+            local runner = require("plugin_template._cli.runner")
+
+            runner.run_arbitrary_thing(arguments)
+        end,
+    },
     ["copy-logs"] = {
         run = function(arguments)
             local runner = require("plugin_template._cli.runner")

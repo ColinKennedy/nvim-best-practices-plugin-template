@@ -1,6 +1,6 @@
---- Parse `"hello-world say"` from COMMAND mode and run it.
+--- Parse `"hello-world say"` from the COMMAND mode and run it.
 ---
---- @module 'plugin_template._commands.say.cli'
+--- @module 'plugin_template._commands.hello_world.say.command'
 ---
 
 local argparse = require("plugin_template._cli.argparse")
@@ -71,7 +71,7 @@ local function _get_data_details(arguments, configuration)
     return phrases, repeat_, style
 end
 
---- Parse `"hello-world say"` from COMMAND mode and run it.
+--- Parse `"hello-world say"` from the COMMAND mode and run it.
 ---
 --- @param data ArgparseResults All found user data.
 ---

@@ -272,10 +272,15 @@ local function _get_lualine_issues(data)
         return output
     end
 
-    for _, command in ipairs({ "goodnight_moon", "hello_world" }) do
-        local issues = _get_lualine_command_issues(command, tabler.get_value(lualine, { command }))
+    for _, command in ipairs({ "arbitrary_thing", "goodnight_moon", "hello_world" }) do
+        local value = tabler.get_value(lualine, { command })
 
-        vim.list_extend(output, issues)
+        -- NOTE: We have fallback values so it's okay if the value is nil.
+        if value ~= nil then
+            local issues = _get_lualine_command_issues(command, value)
+
+            vim.list_extend(output, issues)
+        end
     end
 
     return output

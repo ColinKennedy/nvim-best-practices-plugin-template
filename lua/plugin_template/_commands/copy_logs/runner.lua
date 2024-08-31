@@ -3,7 +3,6 @@
 --- @module 'plugin_template._commands.copy_logs.runner'
 ---
 
-local state = require("plugin_template._core.state")
 local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
@@ -41,6 +40,16 @@ local function _read_file(path, callback)
     end)
 end
 
+--- Modify the user's system clipboard with `result`.
+---
+--- @param result ReadFileResult The file path + its contents that we read.
+---
+local function _callback(result)
+    vim.fn.setreg("+", result.data)
+
+    vim.notify(string.format('Log file "%s" was copied to the clipboard.', result.path), vim.log.levels.INFO)
+end
+
 --- Copy the log data from the given `path` to the user's clipboard.
 ---
 --- @param path string?
@@ -48,18 +57,6 @@ end
 ---     location is used instead.
 ---
 function M.run(path)
-    --- Modify the user's system clipboard with `result`.
-    ---
-    --- @param result ReadFileResult The file path + its contents that we read.
-    ---
-    local function _callback(result)
-        vim.fn.setreg("+", result.data)
-
-        vim.notify(string.format('Log file "%s" was copied to the clipboard.', result.path), vim.log.levels.INFO)
-    end
-
-    state.PREVIOUS_COMMAND = "copy_logs"
-
     path = path or vlog:get_log_path()
 
     if not path or vim.fn.filereadable(path) ~= 1 then

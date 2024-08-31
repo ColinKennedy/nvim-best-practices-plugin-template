@@ -18,5 +18,4 @@ vim.cmd("runtime plugin/plugin_template.lua")
 
 vim.cmd("runtime plugin/plenary.vim")
 
-
 require("lualine").setup()

@@ -1,13 +1,13 @@
---- Parse `"goodnight-moon count-sheep"` from COMMAND mode and run it.
+--- Parse `"goodnight-moon count-sheep"` from the COMMAND mode and run it.
 ---
---- @module 'plugin_template._commands.count_sheep.cli'
+--- @module 'plugin_template._commands.goodnight_moon.count_sheep.command'
 ---
 
 local count_sheep_runner = require("plugin_template._commands.goodnight_moon.count_sheep.runner")
 
 local M = {}
 
---- Parse `"goodnight-moon count-sheep"` from COMMAND mode and run it.
+--- Parse `"goodnight-moon count-sheep"` from the COMMAND mode and run it.
 ---
 --- @param data ArgparseResults All found user data.
 ---

@@ -1,15 +1,15 @@
-*plugin-template-news.txt* PluginTemplate
+*plugin-template-news.txt*
 
-Notable changes since PluginTemplate 1.0             *plugin-template-news.txt*
+Notable changes since PluginTemplate 1.0
 
 
 ===============================================================================
-NEW FEATURES                                    *plugin-template-news-features*
+NEW FEATURES                                     *plugin-template-new-features*
 
 GENERAL
 
 - 100% Lua
-- [LuaCATS](https://luals.github.io/wiki/annotations/) annotations and type-hints, everywhere
+- LuaCATS <https://luals.github.io/wiki/annotations/> annotations and type-hints, everywhere
 - No external dependencies
 
 CI
@@ -26,7 +26,7 @@ CI
 START UP
 
 - Fast start-up (the plugin is defer-loaded)
-- Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices)
+- Follows nvim-best-practices <https://github.com/nvim-neorocks/nvim-best-practices>
 
 COMMANDS
 
@@ -34,12 +34,12 @@ COMMANDS
 
 TESTS
 
-- Unittests use the full power of native [busted](https://olivinelabs.com/busted)
+- Unittests use the full power of native busted <https://olivinelabs.com/busted>
 
 TOOLS
 
 Integrates with
 
-- [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
-- [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
+- lualine.nvim <https://github.com/nvim-lualine/lualine.nvim>
+- telescope.nvim <https://github.com/nvim-telescope/telescope.nvim>
 - `:checkhealth`

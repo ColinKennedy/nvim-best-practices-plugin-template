@@ -97,6 +97,8 @@ vim.g.loaded_plugin_template = false
 
 M.DATA = {}
 
+-- TODO: (you) Update the settings here to match your plugin's needs
+
 local _DEFAULTS = {
     commands = {
         goodnight_moon = { read = { phrase = "A good book" } },
@@ -111,6 +113,11 @@ local _DEFAULTS = {
     },
     tools = {
         lualine = {
+            arbitrary_thing = {
+                -- color = { link = "#555555" },
+                color = "Visual",
+                text = " Arbitrary Thing",
+            },
             copy_logs = {
                 -- color = { link = "#D3D3D3" },
                 color = "Comment",
@@ -119,7 +126,7 @@ local _DEFAULTS = {
             goodnight_moon = {
                 -- color = { fg = "#0000FF" },
                 color = "Question",
-                text = " Goodnight moon",
+                text = "⏾ Goodnight moon",
             },
             hello_world = {
                 -- color = { fg = "#FFA07A" },

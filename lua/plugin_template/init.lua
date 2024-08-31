@@ -7,6 +7,7 @@
 ---
 
 local configuration = require("plugin_template._core.configuration")
+local arbitrary_thing_runner = require("plugin_template._commands.arbitrary_thing.runner")
 local copy_logs_runner = require("plugin_template._commands.copy_logs.runner")
 local count_sheep_runner = require("plugin_template._commands.goodnight_moon.count_sheep.runner")
 local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
@@ -18,6 +19,7 @@ local M = {}
 configuration.initialize_data_if_needed()
 
 -- TODO: (you) - Change this file to whatever you need. These are just examples
+M.run_arbitrary_thing = arbitrary_thing_runner.run
 M.run_copy_logs = copy_logs_runner.run
 M.run_hello_world_say_phrase = say_runner.run_say_phrase
 M.run_hello_world_say_word = say_runner.run_say_word

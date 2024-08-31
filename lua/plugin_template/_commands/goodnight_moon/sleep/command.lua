@@ -1,6 +1,6 @@
---- Parse `"goodnight-moon sleep"` from COMMAND mode and run it.
+--- Parse `"goodnight-moon sleep"` from the COMMAND mode and run it.
 ---
---- @module 'plugin_template._commands.sleep.cli'
+--- @module 'plugin_template._commands.goodnight_moon.sleep.command'
 ---
 
 local argparse = require("plugin_template._cli.argparse")
@@ -12,7 +12,7 @@ local function _is_z_flag(argument)
     return argument.argument_type == argparse.ArgumentType.flag and argument.name == "z"
 end
 
---- Parse `"goodnight-moon sleep"` from COMMAND mode and run it.
+--- Parse `"goodnight-moon sleep"` from the COMMAND mode and run it.
 ---
 --- @param data ArgparseResults All found user data.
 ---
