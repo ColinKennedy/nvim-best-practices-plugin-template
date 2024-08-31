@@ -41,7 +41,26 @@ local function _get_subcommand_completion(text, prefix, subcommands)
     end
 
     if subcommands[subcommand] and subcommands[subcommand].complete then
-        return subcommands[subcommand].complete(arguments)
+        local result = subcommands[subcommand].complete(arguments)
+
+        if result == nil or vim.islist(result) then
+            if arguments == "" then
+                arguments = "<No arguments>"
+            end
+
+            vim.notify(
+                string.format(
+                    'plugin-template: Subcommand / Arguments "%s / %s" must be a string[]. Got "%s".',
+                    subcommand,
+                    arguments,
+                    vim.inspect(result)
+                )
+            )
+
+            return result
+        end
+
+        return
     end
 
     return nil
@@ -69,6 +88,8 @@ end
 ---
 function M.make_command_completer(prefix, subcommands)
     local function runner(args, text, _)
+        local configuration = require("plugin_template._core.configuration")
+        configuration.initialize_data_if_needed()
         local completion = _get_subcommand_completion(text, prefix, subcommands)
 
         if completion then
@@ -94,6 +115,21 @@ function M.make_command_completer(prefix, subcommands)
     return runner
 end
 
+--- If anything in `subcommands` is missing data, define default value(s) for it.
+---
+--- @param subcommands PluginTemplateSubcommands
+---     All registered commands for `plugin_template` to possibly modify.
+---
+function M.initialize_missing_values(subcommands)
+    for _, subcommand in pairs(subcommands) do
+        if not subcommand.complete then
+            subcommand.complete = function()
+                return {}
+            end
+        end
+    end
+end
+
 --- Wrap the `plugin_template` CLI / API in a way Neovim understands.
 ---
 --- Since `:PluginTemplate` supports multiple sub-commands like `:PluginTemplate
@@ -114,7 +150,9 @@ function M.make_triager(subcommands)
     --- @param opts table
     ---
     local function runner(opts)
+        local configuration = require("plugin_template._core.configuration")
         local argparse = require("plugin_template._cli.argparse")
+        configuration.initialize_data_if_needed()
 
         local subcommand_key = opts.fargs[1]
         local subcommand = subcommands[subcommand_key]

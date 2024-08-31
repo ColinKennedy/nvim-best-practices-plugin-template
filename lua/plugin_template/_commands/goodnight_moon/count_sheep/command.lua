@@ -12,9 +12,14 @@ local M = {}
 --- @param data ArgparseResults All found user data.
 ---
 function M.run(data)
-    local value = data.arguments[1].value
-    --- @cast value string
-    local count = tonumber(value) or 1
+    local argument = data.arguments[1]
+    local count = 1
+
+    if argument then
+        local value = argument.value
+        --- @cast value string
+        count = tonumber(value) or 1
+    end
 
     count_sheep_runner.run(count)
 end

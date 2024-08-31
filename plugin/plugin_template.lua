@@ -6,10 +6,22 @@ local _PREFIX = "PluginTemplate"
 
 --- @type PluginTemplateSubcommands
 local _SUBCOMMANDS = {
+    ["copy-logs"] = {
+        run = function(arguments)
+            local runner = require("plugin_template._cli.runner")
+
+            runner.run_copy_logs(arguments)
+        end,
+    },
     ["goodnight-moon"] = {
         complete = function(data)
-            -- TODO: Add support later
-            return {}
+            local argparse = require("plugin_template._cli.argparse")
+            local completion = require("plugin_template._cli.completion")
+
+            local tree = { ["count-sheep"] = {}, ["read"] = {}, ["sleep"] = {} }
+            local arguments = argparse.parse_arguments(data)
+
+            return completion.get_options(tree, arguments, vim.fn.getcmdpos())
         end,
         run = function(arguments)
             local runner = require("plugin_template._cli.runner")
@@ -19,50 +31,9 @@ local _SUBCOMMANDS = {
     },
     ["hello-world"] = {
         complete = function(data)
-            local argparse = require("plugin_template._cli.argparse")
-            local completion = require("plugin_template._cli.completion")
-            -- TODO: include say/constant.lua later
+            local complete = require("plugin_template._commands.hello_world.complete")
 
-            local tree = {
-                "say",
-                { "phrase", "word" },
-                {
-                    {
-                        choices = function(value)
-                            if value == "" then
-                                value = 0
-                            else
-                                value = tonumber(value)
-
-                                if type(value) ~= "number" then
-                                    return {}
-                                end
-                            end
-
-                            --- @cast value number
-
-                            local output = {}
-
-                            for index = 1, 5 do
-                                table.insert(output, tostring(value + index))
-                            end
-
-                            return output
-                        end,
-                        name = "repeat",
-                        argument_type = argparse.ArgumentType.named,
-                    },
-                    {
-                        argument_type = argparse.ArgumentType.named,
-                        name = "style",
-                        choices = { "lowercase", "uppercase" },
-                    },
-                },
-            }
-
-            local arguments = argparse.parse_arguments(data)
-
-            return completion.get_options(tree, arguments, vim.fn.getcmdpos())
+            return complete.complete(data)
         end,
         run = function(arguments)
             local runner = require("plugin_template._cli.runner")
@@ -72,15 +43,19 @@ local _SUBCOMMANDS = {
     },
 }
 
+cli_subcommand.initialize_missing_values(_SUBCOMMANDS)
+
 vim.api.nvim_create_user_command(_PREFIX, cli_subcommand.make_triager(_SUBCOMMANDS), {
     nargs = "+",
     desc = "PluginTemplate's command API.",
     complete = cli_subcommand.make_command_completer(_PREFIX, _SUBCOMMANDS),
 })
 
--- TODO: Make sure <Plug> works
 vim.keymap.set("n", "<Plug>(PluginTemplateSayHi)", function()
-    local plugin_template = require("plugin_template.api")
+    local configuration = require("plugin_template._core.configuration")
+    local plugin_template = require("plugin_template")
 
-    plugin_template.run_hello_world("Hi!")
+    configuration.initialize_data_if_needed()
+
+    plugin_template.run_hello_world_say_word("Hi!")
 end, { desc = "Say hi to the user." })

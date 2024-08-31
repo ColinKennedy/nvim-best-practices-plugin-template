@@ -9,7 +9,7 @@ local configuration_ = require("plugin_template._core.configuration")
 local constant = require("plugin_template._commands.hello_world.say.constant")
 local say_runner = require("plugin_template._commands.hello_world.say.runner")
 local tabler = require("plugin_template._core.tabler")
-local vlog = require("vendors.vlog")
+local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
@@ -29,14 +29,8 @@ local M = {}
 local function _get_data_details(arguments, configuration)
     local phrases = {}
 
+    --- @type ("lowercase" | "uppercase")?
     local style = tabler.get_value(configuration, { "commands", "hello_world", "say", "style" }) or "lowercase"
-    --- @cast style ("lowercase" | "uppercase")?
-
-    if not style then
-        vlog.fmt_warn('Configuration "%s" has no style.', configuration)
-
-        return {}
-    end
 
     local default_repeat = tabler.get_value(configuration, { "commands", "hello_world", "say", "repeat" }) or 1
     --- @cast default_repeat number
@@ -60,12 +54,19 @@ local function _get_data_details(arguments, configuration)
             end
 
             if argument.name == "style" then
+                --- @diagnostic disable-next-line
                 style = argument.value
             end
         end
     end
 
     repeat_ = repeat_ or default_repeat
+
+    if not style then
+        style = "lowercase"
+    end
+
+    --- @cast style "lowercase" | "uppercase"
 
     return phrases, repeat_, style
 end

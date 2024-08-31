@@ -63,7 +63,8 @@ log.new = function(config, standalone)
 
     obj._is_logging_to_file_enabled = config.use_file
 
-    obj._outfile = string.format("%s/%s.log", vim.api.nvim_call_function("stdpath", { "data" }), config.plugin)
+    obj._outfile =
+        vim.fs.joinpath(vim.api.nvim_call_function("stdpath", { "data" }), string.format("%s.log", config.plugin))
 
     local levels = {}
     for i, v in ipairs(config.modes) do

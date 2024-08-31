@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
     steps:
-    - name: Checkout plugin-name
+    - name: Checkout plugin-template
       uses: actions/checkout@v4
       with:
         repository: ColinKennedy/nvim-best-practices-plugin-template

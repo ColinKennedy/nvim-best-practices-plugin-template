@@ -3,11 +3,9 @@
 --- @module 'plugin_template._cli.argparse'
 ---
 
-local vlog = require("vendors.vlog")
+local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
-
--- TODO: Clean this code up, at some point
 
 --- @enum ArgumentType
 M.ArgumentType = {
@@ -45,7 +43,12 @@ M.ArgumentType = {
 ---     A --key=value pair. Basically it's a FlagArgument that has an extra value.
 --- @field name ...
 ---     The text of the argument. e.g. The `"foo"` part of `"--foo=bar"`.
---- @field value string
+--- @field needs_choice_completion boolean
+---     If `true`, it means that we've typed `"--foo="` and are ready to
+---     auto-complete for `"--foo=bar"`. If `false`, it means we've typed
+---     `"--"`, `"--f"`, `"--fo"`, `"--foo"`, and we are still auto-completing
+---     the name and aren't ready to auto-complete for the choices yet.
+--- @field value string | boolean
 ---     The second-hand side of the argument. e.g. The `"bar"` part of
 ---     `"--foo=bar"`. If the argument is partially written like `"--foo="`
 ---     then this will be an empty string.
@@ -103,8 +106,6 @@ end
 local function _is_quote(character)
     return character == '"' or character == "'"
 end
-
--- TODO: Consider replacing portions with vim.api.nvim_parse_cmd()
 
 --- Parse for positional arguments, named arguments, and flag arguments.
 ---
@@ -168,10 +169,6 @@ function M.parse_arguments(text)
         end
 
         if current_argument == true then
-            -- TODO: We assume here that double flags, --foo, do not exist.
-            -- There is only -f or --foo=bar. We should probably allow --foo to
-            -- exist in the future.
-            --
             table.insert(output, {
                 argument_type = M.ArgumentType.flag,
                 name = current_name,
@@ -181,10 +178,13 @@ function M.parse_arguments(text)
             return
         end
 
+        local needs_choice_completion = needs_value
+
         table.insert(output, {
             argument_type = M.ArgumentType.named,
-            range = range,
+            needs_choice_completion = needs_choice_completion,
             name = current_name,
+            range = range,
             value = current_argument,
         })
     end
@@ -292,9 +292,6 @@ function M.parse_arguments(text)
                     current_argument = true
                     _add_to_output()
                     _reset_all()
-                    -- TODO: We might need this. Not sure. Probably remove this
-                    -- else
-                    --     is_escaping = false -- NOTE: The escaped character was consumed
                 end
             elseif needs_name then
                 _append_to_wip_argument()
@@ -318,7 +315,6 @@ function M.parse_arguments(text)
                     local character_ = current_argument_:sub(index_, index_)
                     start_index = start_index + 1
                     current_name = character_
-                    -- TODO: Gross. Need to make this cleaner
                     physical_index = physical_index + 1
                     _add_to_output()
                     physical_index = physical_index - 1

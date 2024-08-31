@@ -13,6 +13,7 @@ local M = {}
 ---
 function M.run(data)
     local book = data.arguments[1].value
+    --- @cast book string
     read_runner.run(book)
 end
 

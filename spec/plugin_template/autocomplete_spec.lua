@@ -3,8 +3,6 @@
 --- @module 'plugin_template.autocomplete_spec'
 ---
 
--- TODO: Move this to a standalone lua module
-
 local argparse = require("plugin_template._cli.argparse")
 local completion = require("plugin_template._cli.completion")
 local configuration = require("plugin_template._core.configuration")
@@ -13,35 +11,51 @@ local configuration = require("plugin_template._core.configuration")
 
 local _parse = argparse.parse_arguments
 
+--- @return IncompleteOptionTree # Create a (sparse) tree for unittests.
+local function _make_simple_tree()
+    local values = {
+        {
+            choices = function(data)
+                local value = data.text
+
+                if value == "" then
+                    value = 0
+                else
+                    value = tonumber(value)
+
+                    if type(value) ~= "number" then
+                        return {}
+                    end
+                end
+
+                --- @cast value number
+
+                local output = {}
+
+                for index = 1, 5 do
+                    table.insert(output, tostring(value + index))
+                end
+
+                return output
+            end,
+            name = "repeat",
+            argument_type = argparse.ArgumentType.named,
+        },
+        {
+            argument_type = argparse.ArgumentType.named,
+            name = "style",
+            choices = { "lowercase", "uppercase" },
+        },
+    }
+
+    return { say = { phrase = values, word = values } }
+end
+
 describe("default", function()
     before_each(configuration.initialize_data_if_needed)
 
-    it("works even if #empty #simple", function()
-        local tree = {
-            "say",
-            { "phrase", "word" },
-            {
-                {
-                    choices = function(value)
-                        local output = {}
-                        value = value or 0
-
-                        for index = 1, 5 do
-                            table.insert(output, value + index)
-                        end
-
-                        return output
-                    end,
-                    name = "repeat",
-                    argument_type = argparse.ArgumentType.named,
-                },
-                {
-                    argument_type = argparse.ArgumentType.named,
-                    name = "style",
-                    choices = { "lowercase", "uppercase" },
-                },
-            },
-        }
+    it("works even if #simple", function()
+        local tree = _make_simple_tree()
 
         assert.same({ "say" }, completion.get_options(tree, _parse(""), 1))
     end)
@@ -50,37 +64,93 @@ end)
 describe("simple", function()
     before_each(configuration.initialize_data_if_needed)
 
-    it("works with a basic multi-position example", function()
-        local tree = {
-            "say",
-            { "phrase", "word" },
+    it("works with multiple position arguments", function()
+        local tree = _make_simple_tree()
+
+        assert.same({ "phrase", "word" }, completion.get_options(tree, _parse("say "), 4))
+        assert.same({ "--repeat=", "--style=" }, completion.get_options(tree, _parse("say phrase "), 11))
+    end)
+
+    it("works with a basic multi-key example", function()
+        local values = {
             {
-                {
-                    choices = function(value)
-                        if value == "" then
-                            value = 0
-                        else
-                            value = tonumber(value)
+                choices = function(data)
+                    local value = data.text
+
+                    if value == "" then
+                        value = 0
+                    else
+                        value = tonumber(value)
+
+                        if type(value) ~= "number" then
+                            return {}
                         end
+                    end
 
-                        local output = {}
+                    --- @cast value number
 
-                        for index = 1, 5 do
-                            table.insert(output, tostring(value + index))
-                        end
+                    local output = {}
 
-                        return output
-                    end,
-                    name = "repeat",
-                    argument_type = argparse.ArgumentType.named,
-                },
+                    for index = 1, 5 do
+                        table.insert(output, tostring(value + index))
+                    end
+
+                    return output
+                end,
+                name = "repeat",
+                argument_type = argparse.ArgumentType.named,
+            },
+            {
+                argument_type = argparse.ArgumentType.named,
+                name = "style",
+                choices = { "lowercase", "uppercase" },
+            },
+        }
+
+        local tree = { say = { [{ "phrase", "word" }] = values } }
+
+        assert.same({ "--repeat=", "--style=" }, completion.get_options(tree, _parse("say phrase "), 11))
+    end)
+
+    it("works even if there is a named / position argument at the same time - 001", function()
+        local tree = {
+            {
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "style",
                     choices = { "lowercase", "uppercase" },
                 },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "style",
+                },
             },
         }
+
+        assert.same({ "--style=", "style" }, completion.get_options(tree, _parse(""), 1))
+    end)
+
+    it("works even if there is a named / position argument at the same time - 002", function()
+        local tree = {
+            {
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "style",
+                    choices = { "lowercase", "uppercase" },
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "style",
+                },
+            },
+        }
+
+        assert.same({ "style" }, completion.get_options(tree, _parse("sty"), 3))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--sty"), 5))
+    end)
+
+    it("works with a basic multi-position example", function()
+        local tree = _make_simple_tree()
 
         -- NOTE: Simple examples
         assert.same({ "say" }, completion.get_options(tree, _parse("sa"), 2))
@@ -92,11 +162,11 @@ describe("simple", function()
 
         -- NOTE: Beginning a --double-dash named argument, maybe (we don't know yet)
         assert.same({ "--repeat=", "--style=" }, completion.get_options(tree, _parse("say phrase --"), 13))
+
         -- NOTE: Completing the name to a --double-dash named argument
         assert.same({ "--repeat=" }, completion.get_options(tree, _parse("say phrase --r"), 14))
-        -- -- -- TODO: Figure out how to handle this case later
-        -- -- -- NOTE: Completing the =, so people know that this is requires an argument
-        -- -- assert.same({"--repeat="}, completion.get_options(tree, _parse("say phrase --repeat"), 19))
+        -- NOTE: Completing the =, so people know that this is requires an argument
+        assert.same({ "--repeat=" }, completion.get_options(tree, _parse("say phrase --repeat"), 19))
         -- NOTE: Completing the value of the named argument
         assert.same({
             "--repeat=1",
@@ -118,15 +188,12 @@ describe("simple", function()
         -- NOTE: Asking for repeat again will not show the value (because count == 0)
         assert.same({}, completion.get_options(tree, _parse("say phrase --repeat=5 --repe"), 30))
 
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("say phrase --repeat=5 -"), 23))
         assert.same({ "--style=" }, completion.get_options(tree, _parse("say phrase --repeat=5 --"), 24))
 
         assert.same({ "--style=" }, completion.get_options(tree, _parse("say phrase --repeat=5 --s"), 25))
 
-        -- -- TODO: Figure out if I'd actually want this. Then implement it if it makes sense to
-        -- assert.same(
-        --     {"--style="},
-        --     completion.get_options(tree, _parse("say phrase --repeat=5 --style"), 29)
-        -- )
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("say phrase --repeat=5 --style"), 29))
 
         assert.same(
             { "--style=lowercase", "--style=uppercase" },
@@ -144,6 +211,25 @@ end)
 
 describe("named argument", function()
     before_each(configuration.initialize_data_if_needed)
+
+    it("allow named argument as key", function()
+        local tree = {
+            [{
+                argument_type = argparse.ArgumentType.named,
+                name = "style",
+                choices = { "lowercase", "uppercase" },
+            }] = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "style",
+                },
+            },
+        }
+
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--s"), 3))
+        assert.same({ "style" }, completion.get_options(tree, _parse("--style=10 "), 11))
+        assert.same({}, completion.get_options(tree, _parse("sty"), 3))
+    end)
 
     it("auto-completes on the dashes - 001", function()
         local tree = {
@@ -170,7 +256,7 @@ describe("named argument", function()
         assert.same({ "--style=" }, completion.get_options(tree, _parse("--"), 2))
     end)
 
-    it("auto-completes on a partial argument name - 001", function()
+    it("auto-completes on a #partial argument name - 001", function()
         local tree = {
             {
                 argument_type = argparse.ArgumentType.named,
@@ -184,7 +270,7 @@ describe("named argument", function()
         assert.same({ "--style=" }, completion.get_options(tree, _parse("--s"), 3))
     end)
 
-    it("auto-completes on a partial argument name - 002", function()
+    it("auto-completes on a #partial argument name - 002", function()
         local tree = {
             {
                 argument_type = argparse.ArgumentType.named,
@@ -201,31 +287,30 @@ describe("named argument", function()
         assert.same({ "--style=" }, completion.get_options(tree, _parse("--styl"), 6))
     end)
 
-    -- -- TODO: Figure out if I'd actually want this. Then implement it if it makes sense to
-    -- it("auto-completes on a partial argument name - 003", function()
-    --     local tree = {
-    --         {
-    --             argument_type=argparse.ArgumentType.named,
-    --             name="style",
-    --             choices={"lowercase", "uppercase"},
-    --         },
-    --     }
-    --
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 1))
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 2))
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 3))
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 4))
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 5))
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 6))
-    --     assert.same({"--style="}, completion.get_options(tree, _parse("--style"), 7))
-    -- end)
+    it("auto-completes on a #partial argument name - 003", function()
+        local tree = {
+            {
+                argument_type = argparse.ArgumentType.named,
+                name = "style",
+                choices = { "lowercase", "uppercase" },
+            },
+        }
+
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 1))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 2))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 3))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 4))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 5))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 6))
+        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 7))
+    end)
 
     it("does not auto-complete the name anymore and auto-completes the value", function()
         local tree = {
             {
-                choices = function(value)
+                choices = function(data)
                     local output = {}
-                    value = value or 0
+                    local value = data.value or 0
 
                     for index = 1, 5 do
                         table.insert(output, tostring(value + index))
@@ -249,38 +334,7 @@ describe("named argument", function()
     end)
 
     it("should only auto-complete --repeat once", function()
-        local tree = {
-            "say",
-            { "phrase", "word" },
-            {
-                {
-                    choices = function(value)
-                        if value == "" then
-                            value = 0
-                        else
-                            value = tonumber(value)
-                        end
-
-                        --- @cast value number
-
-                        local output = {}
-
-                        for index = 1, 5 do
-                            table.insert(output, tostring(value + index))
-                        end
-
-                        return output
-                    end,
-                    name = "repeat",
-                    argument_type = argparse.ArgumentType.named,
-                },
-                {
-                    argument_type = argparse.ArgumentType.named,
-                    name = "style",
-                    choices = { "lowercase", "uppercase" },
-                },
-            },
-        }
+        local tree = _make_simple_tree()
 
         local data = "hello-world say word --repeat= --repe"
         local arguments = argparse.parse_arguments(data)
@@ -314,21 +368,4 @@ describe("flag argument", function()
         assert.same({}, completion.get_options(tree, _parse("-f"), 1))
         assert.same({}, completion.get_options(tree, _parse("-f"), 2))
     end)
-
-    -- -- TODO: Figure out if I'd actually want this. Then implement it if it makes sense to
-    -- it("auto-completes if there's a another flag that can be used", function()
-    --     local tree = {
-    --         {
-    --             argument_type=argparse.ArgumentType.flag,
-    --             name="f",
-    --         },
-    --         {
-    --             argument_type=argparse.ArgumentType.flag,
-    --             name="a",
-    --         },
-    --     }
-    --
-    --     assert.same({}, completion.get_options(tree, _parse("-f"), 1))
-    --     assert.same({"a"}, completion.get_options(tree, _parse("-f"), 2))
-    -- end)
 end)

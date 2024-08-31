@@ -5,10 +5,6 @@
 
 local M = {}
 
--- NOTE: We temporarily override vim.inspect so we can grab its
--- data for unittesting purposes. For most people using this
--- template, you can remove this text.
---
 local _ORIGINAL_INSPECT = vim.inspect
 local _DATA = nil
 
@@ -34,6 +30,11 @@ end
 --- Restore the previous vim.inspect function.
 function M.reset_mocked_vim_inspect()
     vim.inspect = _ORIGINAL_INSPECT
+end
+
+--- Make it so no existing API calls or commands print text.
+function M.silence_all_internal_prints()
+    vim.notify = function(...) end -- luacheck: ignore 212
 end
 
 return M

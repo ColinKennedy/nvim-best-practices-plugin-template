@@ -7,20 +7,13 @@
 --- @module 'plugin_template.plugin_template_spec'
 ---
 
-local api = require("plugin_template.api")
 local configuration = require("plugin_template._core.configuration")
-local count_sheep_runner = require("plugin_template._commands.goodnight_moon.count_sheep.runner")
-local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
-local say_runner = require("plugin_template._commands.hello_world.say.runner")
-local sleep_runner = require("plugin_template._commands.goodnight_moon.sleep.runner")
+local plugin_template = require("plugin_template")
 
 --- @diagnostic disable: undefined-field
 
 local _DATA = {}
-local _ORIGINAL_COUNT_SHEEP_PRINTER = count_sheep_runner._print
-local _ORIGINAL_READ_PRINTER = read_runner._print
-local _ORIGINAL_SAY_PRINTER = say_runner._print
-local _ORIGINAL_SLEEP_PRINTER = sleep_runner._print
+local _ORIGINAL_NOTIFY = vim.notify
 
 --- Keep track of text that would have been printed. Save it to a variable instead.
 ---
@@ -30,128 +23,110 @@ local function _save_prints(data)
     table.insert(_DATA, data)
 end
 
-describe("hello world api - say phrase/word", function()
-    before_each(function()
-        say_runner._print = _save_prints
-        configuration.initialize_data_if_needed()
+--- Mock all functions / states before a unittest runs (call this before each test).
+local function _initialize_all()
+    vim.notify = _save_prints
+    configuration.initialize_data_if_needed()
+end
+
+--- Reset all functions / states to their previous settings before the test had run.
+local function _reset_all()
+    vim.notify = _ORIGINAL_NOTIFY
+    _DATA = {}
+end
+
+describe("hello world API - say phrase/word", function()
+    before_each(_initialize_all)
+    after_each(_reset_all)
+
+    it("runs #hello-world with default arguments - 001", function()
+        plugin_template.run_hello_world_say_phrase({ "" })
+
+        assert.same({ "No phrase was given" }, _DATA)
     end)
 
-    after_each(function()
-        say_runner._print = _ORIGINAL_SAY_PRINTER
-        _DATA = {}
+    it("runs #hello-world with default arguments - 002", function()
+        plugin_template.run_hello_world_say_phrase({})
+
+        assert.same({ "No phrase was given" }, _DATA)
     end)
 
-    it("runs hello-world with default arguments", function()
-        api.run_hello_world_say_phrase({ "" })
+    it("runs #hello-world say phrase - with all of its arguments", function()
+        plugin_template.run_hello_world_say_phrase({ "Hello,", "World!" }, 2, "lowercase")
 
-        assert.same({ "" }, _DATA)
+        assert.same({ "Saying phrase", "hello, world!", "hello, world!" }, _DATA)
     end)
 
-    it("runs hello-world say phrase - with all of its arguments", function()
-        api.run_hello_world_say_phrase({ "Hello,", "World!" }, 2, "lowercase")
+    it("runs #hello-world say word - with all of its arguments", function()
+        plugin_template.run_hello_world_say_phrase({ "Hi" }, 2, "uppercase")
 
-        assert.same({ "hello, world!", "hello, world!" }, _DATA)
-    end)
-
-    it("runs hello-world say word - with all of its arguments", function()
-        api.run_hello_world_say_phrase({ "Hi" }, 2, "uppercase")
-
-        assert.same({ "HI", "HI" }, _DATA)
+        assert.same({ "Saying phrase", "HI", "HI" }, _DATA)
     end)
 end)
 
 describe("hello world commands - say phrase/word", function()
-    before_each(function()
-        say_runner._print = _save_prints
-        configuration.initialize_data_if_needed()
-    end)
+    before_each(_initialize_all)
+    after_each(_reset_all)
 
-    after_each(function()
-        say_runner._print = _ORIGINAL_SAY_PRINTER
-        _DATA = {}
-    end)
-
-    it("runs hello-world with default arguments", function()
+    it("runs #hello-world with default arguments", function()
         vim.cmd([[PluginTemplate hello-world say phrase]])
 
-        assert.same({ "" }, _DATA)
+        assert.same({ "No phrase was given" }, _DATA)
     end)
 
-    it("runs hello-world say phrase - with all of its arguments", function()
+    it("runs #hello-world say phrase - with all of its arguments", function()
         vim.cmd([[PluginTemplate hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase]])
 
-        assert.same({ "hello, world!", "hello, world!" }, _DATA)
+        assert.same({ "Saying phrase", "hello, world!", "hello, world!" }, _DATA)
     end)
 
-    it("runs hello-world say word - with all of its arguments", function()
+    it("runs #hello-world say word - with all of its arguments", function()
         vim.cmd([[PluginTemplate hello-world say word "Hi" --repeat=2 --style=uppercase]])
 
-        assert.same({ "HI", "HI" }, _DATA)
+        assert.same({ "Saying word", "HI", "HI" }, _DATA)
     end)
 end)
 
-describe("goodnight-moon api", function()
-    before_each(function()
-        count_sheep_runner._print = _save_prints
-        read_runner._print = _save_prints
-        sleep_runner._print = _save_prints
-        configuration.initialize_data_if_needed()
-    end)
+describe("goodnight-moon API", function()
+    before_each(_initialize_all)
+    after_each(_reset_all)
 
-    after_each(function()
-        count_sheep_runner._print = _ORIGINAL_COUNT_SHEEP_PRINTER
-        read_runner._print = _ORIGINAL_READ_PRINTER
-        sleep_runner._print = _ORIGINAL_SLEEP_PRINTER
-        _DATA = {}
-    end)
-
-    it("runs goodnight-moon count-sheep with all of its arguments", function()
-        api.run_goodnight_moon_count_sheep(3)
+    it("runs #goodnight-moon #count-sheep with all of its arguments", function()
+        plugin_template.run_goodnight_moon_count_sheep(3)
 
         assert.same({ "1 Sheep", "2 Sheep", "3 Sheep" }, _DATA)
     end)
 
-    it("runs goodnight-moon read with all of its arguments", function()
-        api.run_goodnight_moon_read("a good book")
+    it("runs #goodnight-moon #read with all of its arguments", function()
+        plugin_template.run_goodnight_moon_read("a good book")
 
         assert.same({ "a good book: it is a book" }, _DATA)
     end)
 
-    it("runs goodnight-moon sleep with all of its arguments", function()
-        api.run_goodnight_moon_sleep(3)
+    it("runs #goodnight-moon #sleep with all of its arguments", function()
+        plugin_template.run_goodnight_moon_sleep(3)
 
         assert.same({ "zzz", "zzz", "zzz" }, _DATA)
     end)
 end)
 
 describe("goodnight-moon commands", function()
-    before_each(function()
-        count_sheep_runner._print = _save_prints
-        read_runner._print = _save_prints
-        sleep_runner._print = _save_prints
-        configuration.initialize_data_if_needed()
-    end)
+    before_each(_initialize_all)
+    after_each(_reset_all)
 
-    after_each(function()
-        count_sheep_runner._print = _ORIGINAL_COUNT_SHEEP_PRINTER
-        read_runner._print = _ORIGINAL_READ_PRINTER
-        sleep_runner._print = _ORIGINAL_SLEEP_PRINTER
-        _DATA = {}
-    end)
-
-    it("runs goodnight-moon count-sheep with all of its arguments", function()
+    it("runs #goodnight-moon #count-sheep with all of its arguments", function()
         vim.cmd([[PluginTemplate goodnight-moon count-sheep 3]])
 
         assert.same({ "1 Sheep", "2 Sheep", "3 Sheep" }, _DATA)
     end)
 
-    it("runs goodnight-moon read with all of its arguments", function()
+    it("runs #goodnight-moon #read with all of its arguments", function()
         vim.cmd([[PluginTemplate goodnight-moon read "a good book"]])
 
         assert.same({ "a good book: it is a book" }, _DATA)
     end)
 
-    it("runs goodnight-moon sleep with all of its arguments", function()
+    it("runs #goodnight-moon #sleep with all of its arguments", function()
         vim.cmd([[PluginTemplate goodnight-moon sleep -zzz]])
 
         assert.same({ "zzz", "zzz", "zzz" }, _DATA)

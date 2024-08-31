@@ -5,7 +5,8 @@
 
 local argparse = require("plugin_template._cli.argparse")
 local argparse_helper = require("plugin_template._cli.argparse_helper")
-local vlog = require("vendors.vlog")
+local texter = require("plugin_template._core.texter")
+local vlog = require("plugin_template._vendors.vlog")
 
 --- @class FlagOption : FlagArgument
 ---     An argument that has a name but no value. It starts with either - or --
@@ -17,11 +18,19 @@ local vlog = require("vendors.vlog")
 --- @field count OptionCount
 ---     The number of times that this option can be used.
 
+--- @class CompletionContext
+---     When an option defines `choices` as a function, this data is the given argument.
+--- @field current_options CompletionOption[]
+---     The auto-completion values that are currently being considered, in total.
+--- @field text string
+---     If the user has already written some value. e.g. `--foo=bar` will be
+---     passed as `"bar"`.
+
 --- @class NamedOption : NamedArgument
 ---     A --key=value pair. Basically it's a FlagArgument that has an extra value.
 --- @field used number
 ---     The number of times that this option has been used already (0-or-greater value).
---- @field choices (string[] | fun(current_value: string): string[])
+--- @field choices (string[] | fun(data: CompletionContext): string[])?
 ---     Since `NamedOption` requires a name + value, `choices` is used to
 ---     auto-complete its values, starting at `--foo=`.
 --- @field count OptionCount
@@ -49,13 +58,14 @@ local vlog = require("vendors.vlog")
 ---     A basic CLI description that answers. 1. What arguments are next 2.
 ---     What should we return for auto-complete, if anything.
 
---- @alias OptionTree CompletionOption[]
+--- @alias OptionTree table<...>
 ---     A basic CLI description that answers. 1. What arguments are next 2.
 ---     What should we return for auto-complete, if anything.
 
---- @alias ArgumentTree ArgparseArgument[]
----     A basic CLI description that answers. 1. What arguments are next 2.
----     What should we return for auto-complete, if anything.
+--- @alias ArgumentTree table<...>
+---     A (incomplete) tree of arguments. This typically includes "What
+---     aruments are next" but cannot answer questions like "What should we
+---     return for auto-complete".
 
 local M = {}
 
@@ -177,10 +187,6 @@ local function _is_partial_match(data, option)
     return false
 end
 
--- local function _is_user_getting_the_next_input_argument(input)
---     return input.remainder.value == " "
--- end
-
 --- Convert options class instances into raw auto-completion text.
 ---
 --- @param options CompletionOption[]
@@ -224,21 +230,6 @@ local function _get_cursor_offset(input, column)
     return #input.arguments
 end
 
---- Get all of the options starting at `index` which can be used for auto-completion.
----
---- @param tree OptionTree
----     A basic CLI description that answers. 1. What arguments are next 2.
----     What should we return for auto-complete, if anything.
---- @param index number
----     The starting point to look within for auto-completion options.
---- @return CompletionOption[]
----     The options to consider for auto-completion.
----
-local function _get_current_options(tree, index)
-    -- TODO: Make this function real, later
-    return tree[index]
-end
-
 --- Check if `data` is a fully-filled-out argument and also found in `options`.
 ---
 --- @param data ArgparseArgument
@@ -269,21 +260,6 @@ local function _get_exact_matches(data, options, require_value)
     return output
 end
 
--- --- Check if `options` has at least one position argument.
--- ---
--- --- @param options ArgparseArgument[]
--- --- @return boolean # Return `true` if there's at least one position argument found.
--- ---
--- local function _has_positional_argument(options)
---     for _, option in ipairs(options) do
---         if option.argument_type == argparse.ArgumentType.position then
---             return true
---         end
---     end
---
---     return false
--- end
-
 --- Find the label name of `option`.
 ---
 --- - --foo = foo
@@ -296,6 +272,7 @@ end
 ---
 local function _get_argument_name(option)
     if option.argument_type == argparse.ArgumentType.position then
+        --- @cast option PositionOption
         return option.value
     end
 
@@ -303,7 +280,8 @@ local function _get_argument_name(option)
         return option.name
     end
 
-    -- TODO: Add error
+    vlog.fmt_error('Unabled to find a label for "%s" option.', option)
+
     return ""
 end
 
@@ -321,24 +299,10 @@ local function _increment_used(all_options, matching_options)
         table.insert(names, _get_argument_name(option))
     end
 
-    local position_found = false
-
     for _, option in ipairs(all_options) do
         if vim.tbl_contains(names, _get_argument_name(option)) then
             if type(option.count) == "number" then
                 option.used = option.used + 1
-
-                if option.argument_type == argparse.ArgumentType.position then
-                    position_found = true
-                end
-            end
-        end
-    end
-
-    if position_found then
-        for _, option in ipairs(all_options) do
-            if option.argument_type == argparse.ArgumentType.position and _has_fixed_count(option) then
-                option.used = option.count
             end
         end
     end
@@ -360,36 +324,6 @@ local function _get_partial_matches(argument, options)
     end
 
     return output
-end
-
--- local function _get_required_options(options)
---     local output = {}
---
---     for _, option in ipairs(options) do
---         if option.required then
---             table.insert(output, option)
---         end
---     end
---
---     return output
--- end
-
---- Find all `options` that match `argument`.
----
---- @param argument ArgparseArgument A partially written user argument.
---- @param options CompletionOption[] The options to consider for auto-completion.
---- @return CompletionOption[] # All options that match part of `argument`.
----
-local function _handle_partial_matches(argument, options)
-    local matches = _get_partial_matches(argument, options)
-
-    if vim.tbl_isempty(matches) then
-        return {}
-    end
-
-    _increment_used(options, matches)
-
-    return matches
 end
 
 --- Check if `options` have been used up (and we are ready to get more options).
@@ -418,56 +352,12 @@ local function _trim_exhausted_options(options)
     local output = {}
 
     for _, option in ipairs(options) do
-        if option.argument_type ~= argparse.ArgumentType.position and not _is_exhausted({ option }) then
+        if not _is_exhausted({ option }) then
             table.insert(output, option)
         end
     end
 
     return output
-end
-
---- @param tree OptionTree
----     A basic CLI description that answers. 1. What arguments are next 2.
----     What should we return for auto-complete, if anything.
---- @param input ArgparseResults
----     The user's parsed text.
---- @return CompletionOption[]?
----     The options to consider for auto-completion.
---- @return number
----     The starting point of the argument "tree" used to gather the options.
----
-local function _compute_completion_options(tree, input)
-    local tree_index = 1
-    local current_options = _get_current_options(tree, tree_index)
-    local input_count = #input.arguments
-
-    for index = 1, input_count do
-        local argument = input.arguments[index]
-        local matches = _get_exact_matches(argument, current_options)
-
-        if vim.tbl_isempty(matches) then
-            if index == input_count then
-                return current_options, tree_index
-            end
-
-            -- NOTE: Something went wrong. The user must've mistyped something.
-            --
-            -- Since we no longer know where we are in the tree, it's not
-            -- a great idea to show any auto-complete so instead show nothing.
-            --
-            return nil, tree_index
-        end
-
-        _increment_used(current_options, matches)
-
-        if _needs_next_options(current_options) then
-            current_options = _trim_exhausted_options(current_options)
-            tree_index = tree_index + 1
-            vim.list_extend(current_options, _get_current_options(tree, tree_index) or {})
-        end
-    end
-
-    return current_options, tree_index
 end
 
 --- Remove the ending `index` options from `input`.
@@ -494,18 +384,83 @@ local function _rstrip_input(input, column)
     return stripped
 end
 
+--- Look within `options` for a flag like `-f` by name.
+---
+--- @param options CompletionOption[]
+---     Some auto-completion options to consider. It might contain flag
+---     / position / named arguments.
+--- @param name string
+---     The argument to search for. e.g. `"f"`.
+--- @return FlagOption[]
+---     All found flags, if any.
+---
+local function _get_flag_arguments(options, name)
+    local output = {}
+
+    for _, option in ipairs(options) do
+        if option.argument_type == argparse.ArgumentType.flag and option.name == name then
+            table.insert(output, name)
+        end
+    end
+
+    return output
+end
+
+--- Change `argument` flag to a named argument.
+---
+--- @param argument FlagArgument An `"--foo"` argument that doesn't expect a value.
+--- @return NamedArgument # An `"--foo=..."` argument that expects a value.
+---
+local function _convert_flag_to_named_argument(argument)
+    local copy = vim.deepcopy(argument)
+    copy.argument_type = argparse.ArgumentType.named
+    copy.needs_choice_completion = false
+
+    return copy
+end
+
 --- If there is one, grab the final argument `--foo=` argument.
 ---
 --- The `--foo=` is "unfinished" because it's missing a value.
 ---
---- @param input ArgparseResults The some argument / completion information.
---- @return ArgparseArgument? # The found named argument, if any.
+--- @param argument ArgparseArgument
+---     The argument to check for a match.
+--- @param options CompletionOption[]
+---     Some auto-completion options to consider. It might contain flag
+---     / position / named arguments.
+--- @return NamedArgument?
+---     The found named argument, if any.
 ---
-local function _get_named_argument_data(input)
-    local last = input.arguments[#input.arguments] or {}
+local function _get_remainder_named_argument(argument, options)
+    if argument.argument_type == argparse.ArgumentType.named then
+        --- @cast argument NamedArgument
 
-    if last.argument_type == argparse.ArgumentType.named then
-        return last
+        return argument
+    end
+
+    if
+        argument.argument_type == argparse.ArgumentType.flag
+        and not vim.tbl_contains(_get_flag_arguments(options, argument.name))
+    then
+        --- @cast argument FlagArgument
+
+        -- NOTE: This happens when the user has written `--foo`. We know from
+        -- the `options` that this needs to be `--foo={bar, fizz, buzz}` but
+        -- they haven't written the full argument name yet.
+        --
+        -- Instead of assuming that they want to complete the argument choies
+        -- of `foo`, we just auto-complete for `foo`.
+        --
+        local named_last = _convert_flag_to_named_argument(argument)
+        local matches = _get_exact_matches(named_last, options, false)
+
+        if vim.tbl_isempty(matches) then
+            return nil
+        end
+
+        named_last.needs_choice_completion = false
+
+        return named_last
     end
 
     return nil
@@ -515,15 +470,16 @@ end
 ---
 --- @param option NamedOption The named option to grab from.
 --- @param current_value string An existing value for the argument, if any.
+--- @param options CompletionOption[] All options that are currently being considered.
 --- @return string[] # The found auto-complete options, if any.
 ---
-local function _get_named_option_choices(option, current_value)
+local function _get_named_option_choices(option, current_value, options)
     if not option.choices then
         return {}
     end
 
     if type(option.choices) == "function" then
-        return option.choices(current_value)
+        return option.choices({ current_options = options, text = current_value })
     end
 
     local choices = option.choices
@@ -532,7 +488,14 @@ local function _get_named_option_choices(option, current_value)
     return choices
 end
 
--- TODO: Docstring
+--- Find all named arguments, e.g. `--foo=bar` style arguments.
+---
+--- @param options CompletionOption[]
+---     Some auto-completion options to consider. It might contain flag
+---     / position / named arguments.
+--- @return NamedOption[]
+---     All found arguments, if any.
+---
 local function _get_named_arguments(options)
     local output = {}
 
@@ -545,36 +508,60 @@ local function _get_named_arguments(options)
     return output
 end
 
+--- Search `options` for a named argument that matches `data`.
+---
+--- @param data NamedArgument | FlagArgument
+---     The unfinished named argument.
+--- @return NamedOption[]
+---     All named argument (e.g. `--foo=bar`) arguments.
+---
+local function _get_matching_unfinished_named_arguments(data, options)
+    local output = {}
+
+    for _, option in ipairs(options) do
+        if
+            data.argument_type == argparse.ArgumentType.named
+            and data.argument_type == option.argument_type
+            and data.name == option.name
+        then
+            table.insert(output, option)
+        end
+    end
+
+    return output
+end
+
 --- Get the auto-completion options for some named argument.
 ---
 --- Important: It's assumed that this named argument doesn't already have
 --- a value or the value is incomplete.
 ---
---- @param tree OptionTree
----     The fully-parsed completion information.
---- @param argument ArgparseArgument
----     The unfinished named argument, if any.
+--- @param options CompletionOption[]
+---     Some auto-completion options to consider. It might contain flag
+---     / position / named arguments.
+--- @param argument NamedArgument
+---     The unfinished named argument.
 --- @return string[]
 ---     The found auto-complete options.
 ---
-local function _get_unfinished_named_argument_auto_complete_options(tree, argument)
-    -- TODO: Get these options more intelligently. This section needs to consider
-    -- flags that are `count="*"` because they could also be options
-    --
-    local options = tree[#tree]
+local function _get_unfinished_named_argument_auto_complete_options(options, argument)
+    if not argument.needs_choice_completion then
+        return { string.format("--%s=", argument.name) }
+    end
+
     options = _get_named_arguments(options)
-    local matches = _get_exact_matches(argument, options, false)
+    local matches = _get_matching_unfinished_named_arguments(argument, options)
     --- @cast matches NamedOption[]
 
     local output = {}
     local current_value = argument.value
 
-    if current_value == false then
+    if type(current_value) == "boolean" then
         current_value = ""
     end
 
     for _, match in ipairs(matches) do
-        for _, value in ipairs(_get_named_option_choices(match, current_value)) do
+        for _, value in ipairs(_get_named_option_choices(match, current_value, options)) do
             if not vim.tbl_contains(output, value) then
                 table.insert(output, string.format("--%s=%s", argument.name, value))
             end
@@ -584,77 +571,21 @@ local function _get_unfinished_named_argument_auto_complete_options(tree, argume
     return output
 end
 
---- Convert `argument` into completion option(s).
+--- Suggest an auto-completion function for a named argument's choices.
 ---
---- @param argument string | string[] | CompletionOption | CompletionOption[]
----     Each argument / option to convert (could be one or several).
---- @return CompletionOption[]
----     The converted options. Even if `argument` was a single item, this
----     function returns a table with at least one element.
+--- If a names argument is defined with choices `{"foo", "bar" "fizz"}`, the
+--- returned function will match when a user types `"f"` and suggest `{"foo",
+--- "fizz"}` as auto-completion options.
 ---
-local function _get_arguments(argument)
-    local type_ = type(argument)
-
-    if type_ == "string" then
-        return argparse.parse_arguments(argument).arguments
-    end
-
-    if vim.isarray(argument) then
-        if vim.tbl_isempty(argument) then
-            -- TODO: Log error
-            return {}
-        end
-
-        local output = {}
-
-        for _, argument_ in ipairs(argument) do
-            local argument_type = type(argument_)
-
-            if argument_type == "string" then
-                for _, parsed_argument in ipairs(argparse.parse_arguments(argument_).arguments) do
-                    table.insert(output, parsed_argument)
-                end
-            elseif argument_type == "table" then
-                -- NOTE: This situation should be very rare. Assume that the
-                -- user knows what they're doing here.
-                --
-                table.insert(output, argument_)
-            end
-        end
-
-        return output
-    end
-
-    if type_ == "table" then
-        return { argument }
-    end
-
-    -- TODO: Log error
-    return {}
-end
-
---- Check if `items` is a flat array/list of string values.
+--- @param items string[]
+---     All completion options to consider for the function.
+--- @return fun(value: string): string[]
+---     A function that takes the user's current input and auto-completes
+---     remaining values.
 ---
---- @param items ... An array to check.
---- @return boolean # If found, return `true`.
----
-local function _is_string_list(items)
-    if type(items) ~= "table" then
-        return false
-    end
-
-    for _, item in ipairs(items) do
-        if type(item) ~= "string" then
-            return false
-        end
-    end
-
-    return true
-end
-
--- TODO: Docstring
 local function _get_startswith_auto_complete_function(items)
-    local function _get_choices(current_value)
+    local function _get_choices(data)
+        local current_value = data.text
         local output = {}
 
         for _, item in ipairs(items) do
@@ -669,6 +600,76 @@ local function _get_startswith_auto_complete_function(items)
     return _get_choices
 end
 
+--- Check if `option` is a `--foo` flag.
+---
+--- @param option ... An argument that might be a `FlagOption`.
+--- @return boolean # If `FlagOption`, return `true`.
+---
+local function _is_flag_option(option)
+    return option.argument_type == argparse.ArgumentType.flag
+end
+
+--- Check if `option` is a `--foo=bar` argument.
+---
+--- @param option ... An argument that might be a `NamedOption`.
+--- @return boolean # If `NamedOption`, return `true`.
+---
+local function _is_named_option(option)
+    return option.argument_type == argparse.ArgumentType.named
+end
+
+--- Check if `option` is a `foo` argument.
+---
+--- @param option ... An argument that might be a `PositionOption`.
+--- @return boolean # If `PositionOption`, return `true`.
+---
+local function _is_position_option(option)
+    return option.argument_type == argparse.ArgumentType.position
+end
+
+--- Check if `option` is a known completion option.
+---
+--- @param option CompletionOption The object to check.
+--- @return boolean # If `option` is an option, return `true`.
+---
+local function _is_option(option)
+    if not option then
+        return false
+    end
+
+    if type(option) ~= "table" then
+        return false
+    end
+
+    return _is_position_option(option) or _is_named_option(option) or _is_flag_option(option)
+end
+
+--- Check if `options` is a list/array of options.
+---
+--- @param options CompletionOption[]
+---     Some auto-completion options to consider.
+--- @return boolean
+---     If `options` is not a list of options (e.g. a dictionary) return `false`.
+---
+local function _is_option_array(options)
+    for _, option in ipairs(options) do
+        if not _is_option(option) then
+            return false
+        end
+    end
+
+    return true
+end
+
+--- Create a pseudo option based on `name`.
+---
+--- @param name string Some value to use for the new option.
+--- @return PositionOption # The generated option.
+---
+local function _make_position_option(name)
+    return { count = 1, used = 0, value = name, argument_type = argparse.ArgumentType.position }
+end
+
 --- Convert `tree` into a completion tree (if it isn't already).
 ---
 --- @param tree IncompleteOptionTree | ArgumentTree
@@ -677,45 +678,209 @@ end
 ---     The fully-parsed completion information.
 ---
 local function _fill_missing_data(tree)
-    tree = vim.deepcopy(tree)
-    --- @cast tree OptionTree
+    local function _make_key(key)
+        if type(key) == "string" then
+            -- NOTE: `key` usually is a string.
+            return { _make_position_option(key) }
+        end
 
-    for index, items in ipairs(tree) do
-        items = _get_arguments(items)
-        tree[index] = items
+        if vim.islist(key) then
+            local output = {}
+
+            for _, key_ in ipairs(key) do
+                vim.list_extend(output, _make_key(key_))
+            end
+
+            return output
+        end
+
+        if _is_option(key) then
+            return { key }
+        end
+
+        return key
     end
 
-    for _, items in ipairs(tree) do
-        for _, item in ipairs(items) do
-            if item.count == nil then
-                item.count = 1
+    local function _expand_option(option)
+        option = vim.deepcopy(option)
+
+        if option.count == nil then
+            option.count = 1
+        end
+
+        if option.used == nil then
+            option.used = 0
+        end
+
+        if option.argument_type == argparse.ArgumentType.position then
+            if option.required == nil then
+                option.required = true
+            end
+        elseif option.argument_type == argparse.ArgumentType.named then
+            if option.required == nil then
+                option.required = false
             end
 
-            if item.used == nil then
-                item.used = 0
+            if option.choices and texter.is_string_list(option.choices) then
+                --- @diagnostic disable-next-line param-type-mismatch
+                option.choices = _get_startswith_auto_complete_function(option.choices)
             end
+        elseif option.argument_type == argparse.ArgumentType.flag then
+            if option.required == nil then
+                option.required = false
+            end
+        end
 
-            if item.argument_type == argparse.ArgumentType.position then
-                if item.required == nil then
-                    item.required = true
-                end
-            elseif item.argument_type == argparse.ArgumentType.named then
-                if item.required == nil then
-                    item.required = false
-                end
+        return option
+    end
 
-                if item.choices and _is_string_list(item.choices) then
-                    item.choices = _get_startswith_auto_complete_function(item.choices)
+    local output = {}
+    local stack = {}
+
+    table.insert(stack, { old = tree, new = output })
+
+    while #stack > 0 do
+        local current = table.remove(stack)
+        local old = current.old
+        local new = current.new
+
+        for key, value in pairs(old) do
+            local new_key = _make_key(key)
+            new[new_key] = {}
+
+            if type(value) == "table" then
+                if _is_option(value) then
+                    new[key] = _expand_option(value)
+                else
+                    table.insert(stack, { old = value, new = new[new_key] })
                 end
-            elseif item.argument_type == argparse.ArgumentType.flag then
-                if item.required == nil then
-                    item.required = false
-                end
+            else
+                new[new_key] = value
             end
         end
     end
 
-    return tree
+    return output
+end
+
+--- Recursively flatten `data` until it is just a list of `CompletionOption[]`.
+---
+--- @param data ... A nested list-of-lists-of-`CompletionOption[]`.
+--- @return CompletionOption[] # The flattened arguments.
+---
+local function _flatten_to_arguments(data)
+    local current = data
+
+    while not _is_option_array(current) do
+        current = vim.iter(current):flatten():totable()
+    end
+
+    return current
+end
+
+--- Either keep `tree` unmodified or flatten it into a single list of options.
+---
+--- @param tree OptionTree The fully-parsed completion information.
+--- @return OptionTree | CompletionOption[] # The options to use in other functions.
+---
+local function _conform_current_options(tree)
+    local keys
+
+    if not vim.islist(tree) then
+        keys = vim.tbl_keys(tree)
+    else
+        keys = tree
+    end
+
+    keys = _flatten_to_arguments(keys)
+    table.sort(keys, function(left, right)
+        return _get_argument_name(left) < _get_argument_name(right)
+    end)
+
+    return keys
+end
+
+--- Get the completion of options for `input` by traversing `tree`.
+---
+--- @param input ArgparseResults
+---     The user's input text to parse.
+--- @param tree OptionTree
+---     A basic CLI description that answers. 1. What arguments are next 2.
+---     What should we return for auto-complete, if anything.
+--- @return OptionTree | CompletionOption[]
+---     The options to use in other functions.
+--- @return boolean
+---     If we stopped the traversal early, return `false`. Otherwise return `true`.
+---
+local function _get_options_from_tree(input, tree)
+    local function _get_name_matches(argument, options)
+        local name = _get_argument_name(argument)
+        local output = {}
+
+        for _, option in ipairs(options) do
+            if name == _get_argument_name(option) and argument.argument_type == option.argument_type then
+                table.insert(output, option)
+            end
+        end
+
+        return output
+    end
+
+    local function _get_key_name_matches(name, all_options)
+        for _, options in ipairs(all_options) do
+            for _, option in ipairs(options) do
+                if name == _get_argument_name(option) then
+                    return options
+                end
+            end
+        end
+
+        return nil
+    end
+
+    local current_tree = tree
+
+    for _, argument in ipairs(input.arguments) do
+        local keys = current_tree
+
+        if vim.islist(keys) then
+            keys = _flatten_to_arguments(keys)
+            -- NOTE: We've reached the end of the tree. So we don't traverse
+            -- down the tree any further and just iterate over what's left.
+            --
+            local matches = _get_name_matches(argument, keys)
+
+            if vim.tbl_isempty(matches) then
+                local output = _conform_current_options(keys)
+
+                return output, false
+            end
+
+            _increment_used(keys, matches)
+        else
+            local name = _get_argument_name(argument)
+            keys = vim.tbl_keys(current_tree)
+            local matches = _get_key_name_matches(name, keys)
+
+            if not matches then
+                local output = _conform_current_options(current_tree)
+
+                return output, false
+            end
+
+            for _, key in ipairs(keys) do
+                _increment_used(key, matches)
+            end
+
+            if _needs_next_options(keys) then
+                current_tree = current_tree[matches]
+            end
+        end
+    end
+
+    local output = _conform_current_options(current_tree)
+
+    return output, true
 end
 
 --- Find the auto-completion results for `input` and `column`, using `tree`.
@@ -756,60 +921,44 @@ end
 ---     All of the auto-completion options that were found, if any.
 ---
 local function _get_options(tree, input, column)
-    -- TODO: Check every section in this function. Do I need all of these?
     tree = _fill_missing_data(tree)
 
+    if vim.tbl_isempty(input.arguments) then
+        if input.remainder.value == "" then
+            local options = _conform_current_options(tree)
+
+            return _get_auto_complete_values(options or {})
+        end
+
+        return {}
+    end
+
     local stripped = _rstrip_input(input, column)
-    local argument = _get_named_argument_data(stripped)
+
+    local last = stripped.arguments[#stripped.arguments]
+    local options, completed = _get_options_from_tree(stripped, tree)
+    local argument = _get_remainder_named_argument(last, options)
 
     if argument and argument.argument_type == argparse.ArgumentType.named then
         if stripped.remainder.value == "" then
             -- The cursor is on the last argument
-            return _get_unfinished_named_argument_auto_complete_options(tree, argument)
+            return _get_unfinished_named_argument_auto_complete_options(options, argument)
         end
     end
 
-    local options, tree_index = _compute_completion_options(tree, stripped)
-    -- TODO: Remove this code
+    options = _trim_exhausted_options(options)
 
-    -- if column >= input.arguments[#input.arguments].range.end_column then
-    --     if input.remainder.value == "" then
-    --         -- We must be on the last argument. Let's find out if it is a partial match.
-    --         local matches = _get_exact_matches(last, options)
-    --
-    --         if not vim.tbl_isempty(matches) then
-    --             return {}
-    --         end
-    --     end
-    -- end
+    if completed then
+        if stripped.remainder.value ~= "" then
+            options = _trim_exhausted_options(options)
 
-    -- -- -- TODO: Finish
-    -- local last = stripped.arguments[#stripped.arguments]
-    -- local matches = _get_exact_matches(last, options or {})
-    --
-    -- if not vim.tbl_isempty(matches) then
-    --     return _get_auto_complete_values(matches)
-    -- end
+            return _get_auto_complete_values(options)
+        end
 
-    -- TODO: Figure out if I actually need this. If not, remove it
-    -- if column > input.arguments[#input.arguments].range.end_column then
-    --     local last = stripped.arguments[#stripped.arguments]
-    --     local next = input.arguments[#stripped.arguments + 1]
-    --
-    --     return _get_auto_complete_values((options or _get_current_options(tree, tree_index)))
-    -- end
-
-    if stripped.remainder.value ~= "" then
-        return _get_auto_complete_values(options or {})
-    end
-
-    local last = stripped.arguments[#stripped.arguments]
-
-    if not last then
         return {}
     end
 
-    local matches = _handle_partial_matches(last, (options or _get_current_options(tree, tree_index) or {}))
+    local matches = _get_partial_matches(last, options)
 
     return _get_auto_complete_values(matches)
 end

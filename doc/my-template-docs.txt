@@ -23,7 +23,7 @@ Via `gh`
     $ gh repo create my-plugin -p ellisonleao/nvim-plugin-template
 <
 
-Viagithub web page:
+Via github web page:
 
 Click on `Use this template`
 

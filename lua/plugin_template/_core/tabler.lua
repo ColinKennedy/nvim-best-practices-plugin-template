@@ -70,4 +70,19 @@ function M.extend(table_, items)
     end
 end
 
+--- Create a copy of `array` with its items in reverse order.
+---
+--- @param array table<...> Some (non-dictionary) items e.g. `{"a", "b", "c"}`.
+--- @return table<...> # The reversed items e.g. `{"c", "b", "a"}`.
+---
+function M.reverse_array(array)
+    local output = {}
+
+    for index = #array, 1, -1 do
+        table.insert(output, array[index])
+    end
+
+    return output
+end
+
 return M

@@ -3,8 +3,6 @@
 --- @module 'plugin_template.argparse_spec'
 ---
 
--- TODO: Consider moving this to a different branch in the repo or move the
--- whole argparse into a different Lua project
 local argparse = require("plugin_template._cli.argparse")
 local configuration_ = require("plugin_template._core.configuration")
 
@@ -142,7 +140,7 @@ describe("quotes", function()
         }, argparse.parse_arguments('foo "bar fizz" buzz'))
     end)
 
-    it("flags within the quotes", function()
+    it("has #flag within the quotes", function()
         assert.same({
             arguments = {
                 {
@@ -293,7 +291,7 @@ end)
 describe("double-dash flags", function()
     before_each(configuration_.initialize_data_if_needed)
 
-    it("mixed --flag", function()
+    it("mixed #flag", function()
         assert.same({
             arguments = {
                 {
@@ -312,7 +310,7 @@ describe("double-dash flags", function()
         }, argparse.parse_arguments("--foo-bar --fizz"))
     end)
 
-    it("#single --flag", function()
+    it("#single #flag", function()
         assert.same({
             arguments = {
                 {
@@ -337,7 +335,7 @@ describe("double-dash flags", function()
         }, argparse.parse_arguments("--foo"))
     end)
 
-    it("multiple", function()
+    it("multiple #flag", function()
         assert.same({
             arguments = {
                 {
@@ -366,14 +364,15 @@ describe("double-dash flags", function()
         }, argparse.parse_arguments("--foo --bar --fizz --buzz"))
     end)
 
-    it("partial --flag= - single", function()
+    it("partial #named-argument - single", function()
         assert.same({
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "foo-bar",
-                    value = false,
+                    needs_choice_completion = true,
                     range = { start_column = 1, end_column = 10 },
+                    value = false,
                 },
             },
             text = "--foo-bar=",
@@ -381,40 +380,42 @@ describe("double-dash flags", function()
         }, argparse.parse_arguments("--foo-bar="))
     end)
 
-    it("full --flag= - multiple", function()
+    it("full #named-argument - multiple", function()
         assert.same({
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    value = "hello-world",
                     range = { start_column = 1, end_column = 11 },
+                    value = "hello-world",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    value = "say",
                     range = { start_column = 13, end_column = 15 },
+                    value = "say",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    value = "word",
                     range = { start_column = 17, end_column = 20 },
+                    value = "word",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    value = "Hi",
                     range = { start_column = 22, end_column = 25 },
+                    value = "Hi",
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "repeat",
-                    value = "2",
+                    needs_choice_completion = true,
                     range = { start_column = 27, end_column = 36 },
+                    value = "2",
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "style",
-                    value = "uppercase",
+                    needs_choice_completion = true,
                     range = { start_column = 38, end_column = 54 },
+                    value = "uppercase",
                 },
             },
             remainder = { value = "" },
@@ -427,8 +428,9 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "foo-bar",
-                    value = false,
+                    needs_choice_completion = true,
                     range = { start_column = 1, end_column = 10 },
+                    value = false,
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
@@ -438,14 +440,16 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "fizz-buzz",
-                    value = false,
+                    needs_choice_completion = true,
                     range = { start_column = 17, end_column = 28 },
+                    value = false,
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "one-more",
-                    value = false,
+                    needs_choice_completion = true,
                     range = { start_column = 30, end_column = 40 },
+                    value = false,
                 },
             },
             remainder = { value = "" },
@@ -457,7 +461,7 @@ end)
 describe("double-dash equal-flags", function()
     before_each(configuration_.initialize_data_if_needed)
 
-    it("mixed --flag", function()
+    it("mixed #flag", function()
         assert.same({
             arguments = {
                 {
@@ -476,7 +480,7 @@ describe("double-dash equal-flags", function()
         }, argparse.parse_arguments("--foo-bar --fizz"))
     end)
 
-    it("#single --flag", function()
+    it("#single #flag", function()
         assert.same({
             arguments = {
                 {
@@ -507,12 +511,14 @@ describe("double-dash equal-flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "foo",
+                    needs_choice_completion = true,
                     range = { start_column = 1, end_column = 12 },
                     value = "text",
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "bar",
+                    needs_choice_completion = true,
                     range = { start_column = 14, end_column = 31 },
                     value = "some thing",
                 },
@@ -524,6 +530,7 @@ describe("double-dash equal-flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "buzz",
+                    needs_choice_completion = true,
                     range = { start_column = 40, end_column = 52 },
                     value = "blah",
                 },

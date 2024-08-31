@@ -5,8 +5,11 @@
 
 local say_constant = require("plugin_template._commands.hello_world.say.constant")
 
--- TODO: Make sure that function type-hints behave as expected even when
--- a partial configuration definition is given
+--- @alias vim.log.levels.DEBUG number Messages to show to plugin maintainers.
+--- @alias vim.log.levels.ERROR number Unrecovered issues to show to the plugin users.
+--- @alias vim.log.levels.INFO number Informative messages to show to the plugin users.
+--- @alias vim.log.levels.TRACE number Low-level or spammy messages.
+--- @alias vim.log.levels.WARN number An error that was recovered but could be an issue.
 
 --- @class plugin_template.Configuration
 ---     The user's customizations for this plugin.
@@ -31,7 +34,18 @@ local say_constant = require("plugin_template._commands.hello_world.say.constant
 
 --- @class plugin_template.LoggingConfiguration
 ---     Control whether or not logging is printed to the console or to disk.
---- @field level ("trace" | "debug" | "info" | "warn" | "error" | "fatal" | vim.log.levels.DEBUG | vim.log.levels.ERROR | vim.log.levels.INFO | vim.log.levels.TRACE | vim.log.levels.WARN)?
+--- @field level (
+---     | "trace"
+---     | "debug"
+---     | "info"
+---     | "warn"
+---     | "error"
+---     | "fatal"
+---     | vim.log.levels.DEBUG
+---     | vim.log.levels.ERROR
+---     | vim.log.levels.INFO
+---     | vim.log.levels.TRACE
+---     | vim.log.levels.WARN)?
 ---     Any messages above this level will be logged.
 --- @field use_console boolean?
 ---     Should print the output to neovim while running. Warning: This is very
@@ -74,7 +88,7 @@ local say_constant = require("plugin_template._commands.hello_world.say.constant
 --- @field prefix string?
 ---     The text to display in lualine.
 
-local vlog = require("vendors.vlog")
+local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
@@ -97,14 +111,30 @@ local _DEFAULTS = {
     },
     tools = {
         lualine = {
-            -- TODO: Make sure link actually works. Fix it, if not
-            goodnight_moon = { color = { link = "Comment" }, text = " Goodnight moon" },
-            hello_world = { color = { link = "Title" }, text = " Hello, World!" },
+            copy_logs = {
+                -- color = { link = "#D3D3D3" },
+                color = "Comment",
+                text = "󰈔 Copy Logs",
+            },
+            goodnight_moon = {
+                -- color = { fg = "#0000FF" },
+                color = "Question",
+                text = " Goodnight moon",
+            },
+            hello_world = {
+                -- color = { fg = "#FFA07A" },
+                color = "Title",
+                text = " Hello, World!",
+            },
         },
         telescope = {
-            -- NOTE: Cusomize
-            -- goodnight_moon = {"Foo Book", "Bar Book Title" },
-            hello_world = { "Hi there!" },
+            goodnight_moon = {
+                { "Foo Book", "Author A" },
+                { "Bar Book Title", "John Doe" },
+                { "Fizz Drink", "Some Name" },
+                { "Buzz Bee", "Cool Person" },
+            },
+            hello_world = { "Hi there!", "Hello, Sailor!", "What's up, doc?" },
         },
     },
 }
