@@ -6,24 +6,31 @@
 -- TODO: Consider moving this to a different branch in the repo or move the
 -- whole argparse into a different Lua project
 local argparse = require("plugin_template._cli.argparse")
+local configuration_ = require("plugin_template._core.configuration")
+
+--- @diagnostic disable: undefined-field
 
 describe("default", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("works even if #empty #simple", function()
-        assert.same({ arguments = {}, text="", remainder = { value = "" } }, argparse.parse_arguments(""))
+        assert.same({ arguments = {}, text = "", remainder = { value = "" } }, argparse.parse_arguments(""))
     end)
 end)
 
 describe("positional arguments", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("#simple #single argument", function()
         assert.same({
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=1, end_column=3},
+                    range = { start_column = 1, end_column = 3 },
                     value = "foo",
                 },
             },
-            text="foo",
+            text = "foo",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo"))
     end)
@@ -33,16 +40,16 @@ describe("positional arguments", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=1, end_column=3},
+                    range = { start_column = 1, end_column = 3 },
                     value = "foo",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=5, end_column=7},
+                    range = { start_column = 5, end_column = 7 },
                     value = "bar",
                 },
             },
-            text="foo bar",
+            text = "foo bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo bar"))
     end)
@@ -52,11 +59,11 @@ describe("positional arguments", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=1, end_column=4},
+                    range = { start_column = 1, end_column = 4 },
                     value = "foo ",
                 },
             },
-            text="foo\\ ",
+            text = "foo\\ ",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\ "))
     end)
@@ -66,69 +73,71 @@ describe("positional arguments", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=1, end_column=7},
+                    range = { start_column = 1, end_column = 7 },
                     value = "foo bar",
                 },
             },
-            text="foo\\ bar",
+            text = "foo\\ bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\ bar"))
     end)
 end)
 
 describe("quotes", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("#quoted #position arguments", function()
         assert.same({
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=1, end_column=3},
+                    range = { start_column = 1, end_column = 3 },
                     value = "foo",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=5, end_column=19},
+                    range = { start_column = 5, end_column = 19 },
                     value = "bar fizz buzz",
                 },
             },
-            text='foo "bar fizz buzz"',
+            text = 'foo "bar fizz buzz"',
             remainder = { value = "" },
         }, argparse.parse_arguments('foo "bar fizz buzz"'))
         assert.same({
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=1, end_column=15},
+                    range = { start_column = 1, end_column = 15 },
                     value = "bar fizz buzz",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=17, end_column=19},
+                    range = { start_column = 17, end_column = 19 },
                     value = "foo",
                 },
             },
-            text='"bar fizz buzz" foo',
+            text = '"bar fizz buzz" foo',
             remainder = { value = "" },
         }, argparse.parse_arguments('"bar fizz buzz" foo'))
         assert.same({
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=1, end_column=3},
+                    range = { start_column = 1, end_column = 3 },
                     value = "foo",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=5, end_column=14},
+                    range = { start_column = 5, end_column = 14 },
                     value = "bar fizz",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=16, end_column=19},
+                    range = { start_column = 16, end_column = 19 },
                     value = "buzz",
                 },
             },
-            text='foo "bar fizz" buzz',
+            text = 'foo "bar fizz" buzz',
             remainder = { value = "" },
         }, argparse.parse_arguments('foo "bar fizz" buzz'))
     end)
@@ -138,16 +147,16 @@ describe("quotes", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=1, end_column=3},
+                    range = { start_column = 1, end_column = 3 },
                     value = "foo",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=5, end_column=19},
+                    range = { start_column = 5, end_column = 19 },
                     value = "bar -f --fizz",
                 },
             },
-            text="foo 'bar -f --fizz'",
+            text = "foo 'bar -f --fizz'",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo 'bar -f --fizz'"))
     end)
@@ -157,16 +166,16 @@ describe("quotes", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=1, end_column=3},
+                    range = { start_column = 1, end_column = 3 },
                     value = "foo",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=5, end_column=7},
+                    range = { start_column = 5, end_column = 7 },
                     value = "bar",
                 },
             },
-            text="foo bar",
+            text = "foo bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo bar"))
     end)
@@ -177,10 +186,10 @@ describe("quotes", function()
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "foo ",
-                    range = {start_column=1, end_column=4},
+                    range = { start_column = 1, end_column = 4 },
                 },
             },
-            text="foo\\ ",
+            text = "foo\\ ",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\ "))
     end)
@@ -191,10 +200,10 @@ describe("quotes", function()
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "foo bar",
-                    range = {start_column=1, end_column=7},
+                    range = { start_column = 1, end_column = 7 },
                 },
             },
-            text="foo\\ bar",
+            text = "foo\\ bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\ bar"))
     end)
@@ -205,15 +214,15 @@ describe("quotes", function()
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "foo\\",
-                    range = {start_column=1, end_column=4},
+                    range = { start_column = 1, end_column = 4 },
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "bar",
-                    range = {start_column=6, end_column=8},
+                    range = { start_column = 6, end_column = 8 },
                 },
             },
-            text="foo\\\\ bar",
+            text = "foo\\\\ bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\\\ bar"))
     end)
@@ -224,15 +233,15 @@ describe("quotes", function()
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "foo\\",
-                    range = {start_column=1, end_column=4},
+                    range = { start_column = 1, end_column = 4 },
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "b\\ar",
-                    range = {start_column=6, end_column=9},
+                    range = { start_column = 6, end_column = 9 },
                 },
             },
-            text="foo\\\\ b\\\\ar",
+            text = "foo\\\\ b\\\\ar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\\\ b\\\\ar"))
     end)
@@ -243,10 +252,10 @@ describe("quotes", function()
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "foo\\ bar",
-                    range = {start_column=1, end_column=8},
+                    range = { start_column = 1, end_column = 8 },
                 },
             },
-            text="foo\\\\\\ bar",
+            text = "foo\\\\\\ bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\\\\\ bar"))
     end)
@@ -257,46 +266,48 @@ describe("quotes", function()
                 {
                     argument_type = argparse.ArgumentType.position,
                     value = "foo\\",
-                    range = {start_column=1, end_column=4},
+                    range = { start_column = 1, end_column = 4 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = {start_column=6, end_column=9},
+                    range = { start_column = 6, end_column = 9 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = {start_column=7, end_column=9},
+                    range = { start_column = 7, end_column = 9 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = {start_column=8, end_column=9},
+                    range = { start_column = 8, end_column = 9 },
                 },
             },
-            text="foo\\\\ -zzz",
+            text = "foo\\\\ -zzz",
             remainder = { value = "" },
         }, argparse.parse_arguments("foo\\\\ -zzz"))
     end)
 end)
 
 describe("double-dash flags", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("mixed --flag", function()
         assert.same({
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo-bar",
-                    range = {start_column=1, end_column=9},
+                    range = { start_column = 1, end_column = 9 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "fizz",
-                    range = {start_column=11, end_column=16},
+                    range = { start_column = 11, end_column = 16 },
                 },
             },
-            text="--foo-bar --fizz",
+            text = "--foo-bar --fizz",
             remainder = { value = "" },
         }, argparse.parse_arguments("--foo-bar --fizz"))
     end)
@@ -307,10 +318,10 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo-bar",
-                    range = {start_column=1, end_column=9},
+                    range = { start_column = 1, end_column = 9 },
                 },
             },
-            text="--foo-bar",
+            text = "--foo-bar",
             remainder = { value = "" },
         }, argparse.parse_arguments("--foo-bar"))
         assert.same({
@@ -318,10 +329,10 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo",
-                    range = {start_column=1, end_column=5},
+                    range = { start_column = 1, end_column = 5 },
                 },
             },
-            text="--foo",
+            text = "--foo",
             remainder = { value = "" },
         }, argparse.parse_arguments("--foo"))
     end)
@@ -332,143 +343,136 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo",
-                    range = {start_column=1, end_column=5},
+                    range = { start_column = 1, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "bar",
-                    range = {start_column=7, end_column=11},
+                    range = { start_column = 7, end_column = 11 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "fizz",
-                    range = {start_column=13, end_column=18},
+                    range = { start_column = 13, end_column = 18 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "buzz",
-                    range = {start_column=20, end_column=25},
+                    range = { start_column = 20, end_column = 25 },
                 },
             },
             remainder = { value = "" },
-            text="--foo --bar --fizz --buzz",
+            text = "--foo --bar --fizz --buzz",
         }, argparse.parse_arguments("--foo --bar --fizz --buzz"))
     end)
 
     it("partial --flag= - single", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.named,
-                        name="foo-bar",
-                        value = false,
-                        range={start_column=1, end_column=10},
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "foo-bar",
+                    value = false,
+                    range = { start_column = 1, end_column = 10 },
                 },
-                text = "--foo-bar=",
-                remainder = {value=""},
             },
-            argparse.parse_arguments("--foo-bar=")
-        )
+            text = "--foo-bar=",
+            remainder = { value = "" },
+        }, argparse.parse_arguments("--foo-bar="))
     end)
 
     it("full --flag= - multiple", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        value = "hello-world",
-                        range={start_column=1, end_column=11},
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        value = "say",
-                        range={start_column=13, end_column=15},
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        value = "word",
-                        range={start_column=17, end_column=20},
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        value = 'Hi',
-                        range={start_column=22, end_column=25},
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.named,
-                        name = "repeat",
-                        value = "2",
-                        range={start_column=27, end_column=36},
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.named,
-                        name = "style",
-                        value = "uppercase",
-                        range={start_column=38, end_column=54},
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "hello-world",
+                    range = { start_column = 1, end_column = 11 },
                 },
-                remainder = {value=""},
-                text='hello-world say word "Hi" --repeat=2 --style=uppercase',
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "say",
+                    range = { start_column = 13, end_column = 15 },
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "word",
+                    range = { start_column = 17, end_column = 20 },
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    value = "Hi",
+                    range = { start_column = 22, end_column = 25 },
+                },
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "repeat",
+                    value = "2",
+                    range = { start_column = 27, end_column = 36 },
+                },
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "style",
+                    value = "uppercase",
+                    range = { start_column = 38, end_column = 54 },
+                },
             },
-            argparse.parse_arguments('hello-world say word "Hi" --repeat=2 --style=uppercase')
-        )
+            remainder = { value = "" },
+            text = 'hello-world say word "Hi" --repeat=2 --style=uppercase',
+        }, argparse.parse_arguments('hello-world say word "Hi" --repeat=2 --style=uppercase'))
     end)
     it("partial --flag= - multiple", function()
-        assert.same(
-            {
-                arguments = {
-                    {
-                        argument_type=argparse.ArgumentType.named,
-                        name="foo-bar",
-                        value = false,
-                        range={start_column=1, end_column=10},
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.position,
-                        range={start_column=12, end_column=15},
-                        value="blah",
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.named,
-                        name="fizz-buzz",
-                        value = false,
-                        range={start_column=17, end_column=28},
-                    },
-                    {
-                        argument_type=argparse.ArgumentType.named,
-                        name="one-more",
-                        value = false,
-                        range={start_column=30, end_column=40},
-                    },
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "foo-bar",
+                    value = false,
+                    range = { start_column = 1, end_column = 10 },
                 },
-                remainder = {value=""},
-                text="--foo-bar= blah --fizz-buzz= --one-more=",
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = { start_column = 12, end_column = 15 },
+                    value = "blah",
+                },
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "fizz-buzz",
+                    value = false,
+                    range = { start_column = 17, end_column = 28 },
+                },
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "one-more",
+                    value = false,
+                    range = { start_column = 30, end_column = 40 },
+                },
             },
-            argparse.parse_arguments("--foo-bar= blah --fizz-buzz= --one-more=")
-        )
+            remainder = { value = "" },
+            text = "--foo-bar= blah --fizz-buzz= --one-more=",
+        }, argparse.parse_arguments("--foo-bar= blah --fizz-buzz= --one-more="))
     end)
 end)
 
 describe("double-dash equal-flags", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("mixed --flag", function()
         assert.same({
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo-bar",
-                    range = {start_column=1, end_column=9},
+                    range = { start_column = 1, end_column = 9 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "fizz",
-                    range = {start_column=11, end_column=16},
+                    range = { start_column = 11, end_column = 16 },
                 },
             },
             remainder = { value = "" },
-            text="--foo-bar --fizz",
+            text = "--foo-bar --fizz",
         }, argparse.parse_arguments("--foo-bar --fizz"))
     end)
 
@@ -478,22 +482,22 @@ describe("double-dash equal-flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo-bar",
-                    range = {start_column=1, end_column=9},
+                    range = { start_column = 1, end_column = 9 },
                 },
             },
             remainder = { value = "" },
-            text="--foo-bar",
+            text = "--foo-bar",
         }, argparse.parse_arguments("--foo-bar"))
         assert.same({
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "foo",
-                    range = {start_column=1, end_column=5},
+                    range = { start_column = 1, end_column = 5 },
                 },
             },
             remainder = { value = "" },
-            text="--foo",
+            text = "--foo",
         }, argparse.parse_arguments("--foo"))
     end)
 
@@ -503,47 +507,47 @@ describe("double-dash equal-flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "foo",
-                    range = {start_column=1, end_column=12},
+                    range = { start_column = 1, end_column = 12 },
                     value = "text",
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "bar",
-                    range = {start_column=14, end_column=31},
+                    range = { start_column = 14, end_column = 31 },
                     value = "some thing",
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "fizz",
-                    range = {start_column=33, end_column=38},
+                    range = { start_column = 33, end_column = 38 },
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "buzz",
-                    range = {start_column=40, end_column=52},
+                    range = { start_column = 40, end_column = 52 },
                     value = "blah",
                 },
             },
             remainder = { value = "" },
-            text="--foo='text' --bar=\"some thing\" --fizz --buzz='blah'",
-        }, argparse.parse_arguments(
-            "--foo='text' --bar=\"some thing\" --fizz --buzz='blah'"
-        ))
+            text = "--foo='text' --bar=\"some thing\" --fizz --buzz='blah'",
+        }, argparse.parse_arguments("--foo='text' --bar=\"some thing\" --fizz --buzz='blah'"))
     end)
 end)
 
 describe("single-dash flags", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("#single", function()
         assert.same({
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = {start_column=1, end_column=2},
+                    range = { start_column = 1, end_column = 2 },
                 },
             },
             remainder = { value = "" },
-            text="-f",
+            text = "-f",
         }, argparse.parse_arguments("-f"))
     end)
 
@@ -553,20 +557,20 @@ describe("single-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = {start_column=1, end_column=4},
+                    range = { start_column = 1, end_column = 4 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = {start_column=2, end_column=4},
+                    range = { start_column = 2, end_column = 4 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = {start_column=3, end_column=4},
+                    range = { start_column = 3, end_column = 4 },
                 },
             },
-            text="-fbz",
+            text = "-fbz",
             remainder = { value = "" },
         }, argparse.parse_arguments("-fbz"))
     end)
@@ -577,36 +581,38 @@ describe("single-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = {start_column=1, end_column=2},
+                    range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = {start_column=4, end_column=5},
+                    range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = {start_column=7, end_column=8},
+                    range = { start_column = 7, end_column = 8 },
                 },
             },
-            text="-f -b -z",
+            text = "-f -b -z",
             remainder = { value = "" },
         }, argparse.parse_arguments("-f -b -z"))
     end)
 end)
 
 describe("remainder - positions", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("keeps track of single position text", function()
         assert.same({
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=1, end_column=3},
+                    range = { start_column = 1, end_column = 3 },
                     value = "foo",
                 },
             },
-            text="foo ",
+            text = "foo ",
             remainder = { value = " " },
         }, argparse.parse_arguments("foo "))
     end)
@@ -616,42 +622,44 @@ describe("remainder - positions", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=1, end_column=3},
+                    range = { start_column = 1, end_column = 3 },
                     value = "foo",
                 },
                 {
                     argument_type = argparse.ArgumentType.position,
-                    range = {start_column=5, end_column=7},
+                    range = { start_column = 5, end_column = 7 },
                     value = "bar",
                 },
             },
-            text="foo bar  ",
+            text = "foo bar  ",
             remainder = { value = "  " },
         }, argparse.parse_arguments("foo bar  "))
     end)
 end)
 
 describe("remainder - flags", function()
+    before_each(configuration_.initialize_data_if_needed)
+
     it("keeps track of flag text - 001", function()
         assert.same({
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = {start_column=1, end_column=2},
+                    range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = {start_column=4, end_column=5},
+                    range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = {start_column=7, end_column=8},
+                    range = { start_column = 7, end_column = 8 },
                 },
             },
-            text="-f -b -z -",
+            text = "-f -b -z -",
             remainder = { value = " -" },
         }, argparse.parse_arguments("-f -b -z -"))
     end)
@@ -662,20 +670,20 @@ describe("remainder - flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = {start_column=1, end_column=2},
+                    range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = {start_column=4, end_column=5},
+                    range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = {start_column=7, end_column=8},
+                    range = { start_column = 7, end_column = 8 },
                 },
             },
-            text="-f -b -z --",
+            text = "-f -b -z --",
             remainder = { value = " --" },
         }, argparse.parse_arguments("-f -b -z --"))
     end)
@@ -686,25 +694,25 @@ describe("remainder - flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = {start_column=1, end_column=2},
+                    range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = {start_column=4, end_column=5},
+                    range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = {start_column=7, end_column=8},
+                    range = { start_column = 7, end_column = 8 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "r",
-                    range = {start_column=10, end_column=12},
+                    range = { start_column = 10, end_column = 12 },
                 },
             },
-            text="-f -b -z --r",
+            text = "-f -b -z --r",
             remainder = { value = "" },
         }, argparse.parse_arguments("-f -b -z --r"))
     end)
@@ -719,20 +727,20 @@ describe("remainder - flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = {start_column=1, end_column=2},
+                    range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = {start_column=4, end_column=5},
+                    range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = {start_column=7, end_column=8},
+                    range = { start_column = 7, end_column = 8 },
                 },
             },
-            text="-f -b -z  ",
+            text = "-f -b -z  ",
             remainder = { value = "  " },
         }, argparse.parse_arguments("-f -b -z  "))
     end)
@@ -743,20 +751,20 @@ describe("remainder - flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = {start_column=1, end_column=2},
+                    range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = {start_column=4, end_column=5},
+                    range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = {start_column=7, end_column=8},
+                    range = { start_column = 7, end_column = 8 },
                 },
             },
-            text="-f -b -z ",
+            text = "-f -b -z ",
             remainder = { value = " " },
         }, argparse.parse_arguments("-f -b -z "))
     end)
@@ -767,30 +775,30 @@ describe("remainder - flags", function()
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "f",
-                    range = {start_column=1, end_column=2},
+                    range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "b",
-                    range = {start_column=4, end_column=5},
+                    range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "x",
-                    range = {start_column=7, end_column=10},
+                    range = { start_column = 7, end_column = 10 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "y",
-                    range = {start_column=8, end_column=10},
+                    range = { start_column = 8, end_column = 10 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
                     name = "z",
-                    range = {start_column=9, end_column=10},
+                    range = { start_column = 9, end_column = 10 },
                 },
             },
-            text="-f -b -xyz ",
+            text = "-f -b -xyz ",
             remainder = { value = " " },
         }, argparse.parse_arguments("-f -b -xyz "))
     end)

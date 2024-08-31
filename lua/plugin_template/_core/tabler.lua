@@ -30,7 +30,7 @@ end
 
 --- Access the attribute(s) within `data` from `items`.
 ---
---- @param data table<...> Some nested data to query. e.g. `{a={b={c=true}}}`.
+--- @param data ... Some nested data to query. e.g. `{a={b={c=true}}}`.
 --- @param items string[] Some attributes to query. e.g. `{"a", "b", "c"}`.
 --- @return ...? # The found value, if any.
 ---

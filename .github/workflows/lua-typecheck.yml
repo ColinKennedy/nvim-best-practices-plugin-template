@@ -3,31 +3,17 @@ on: [pull_request]
 name: lint
 
 jobs:
-  typecheck:
-    name: Type Check Code Base
-    runs-on: ubuntu-latest
-
+  type_check:
+    name: Luacheck
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Checkout dependency neodev # Get neodev and neovim/runtime for builtin types
-        uses: actions/checkout@v3
-        with:
-          repository: "folke/neodev.nvim"
-          path: "deps/neodev.nvim"
+      - name: Prepare
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y luarocks
+          sudo luarocks install llscheck
 
-      - name: Checkout Neovim for type annotations
-        uses: actions/checkout@v3
-        with:
-          repository: "neovim/neovim"
-          path: "deps/neovim"
-
-      - name: Type Check Code Base
-        uses: mrcjkb/lua-typecheck-action@v0
-        with:
-          configpath: ".github/workflows/.luarc.json"
-          directories: |
-           lua
-           plugin
-           spec
+      - name: Lint
+        run: make llscheck

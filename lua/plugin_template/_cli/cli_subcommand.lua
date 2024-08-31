@@ -5,6 +5,15 @@
 
 local M = {}
 
+--- @class PluginTemplateSubcommand
+---     A Python subparser's definition.
+--- @field run fun(data: string[], options: table?): nil
+---     The function to run when the subcommand is called.
+--- @field complete? fun(data: string): string[]
+---     Command completions callback, the `data` are  the lead of the subcommand's arguments
+
+--- @alias PluginTemplateSubcommands table<string, PluginTemplateSubcommand>
+
 --- Check if `full` contains `prefix` + whitespace.
 ---
 --- @param full string Some full text like `"PluginTemplate blah"`.
@@ -111,10 +120,7 @@ function M.make_triager(subcommands)
         local subcommand = subcommands[subcommand_key]
 
         if not subcommand then
-            vim.notify(
-                "PluginTemplate: Unknown command: " .. subcommand_key,
-                vim.log.levels.ERROR
-            )
+            vim.notify("PluginTemplate: Unknown command: " .. subcommand_key, vim.log.levels.ERROR)
 
             return
         end

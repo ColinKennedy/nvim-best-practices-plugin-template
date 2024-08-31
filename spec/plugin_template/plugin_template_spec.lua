@@ -8,45 +8,53 @@
 ---
 
 local api = require("plugin_template.api")
-local count_sheep_command = require("plugin_template._commands.goodnight_moon.count_sheep.command")
-local read_command = require("plugin_template._commands.hello_world.read.command")
-local say_command = require("plugin_template._commands.goodnight_moon.say.command")
-local sleep_command = require("plugin_template._commands.goodnight_moon.sleep.command")
+local configuration = require("plugin_template._core.configuration")
+local count_sheep_runner = require("plugin_template._commands.goodnight_moon.count_sheep.runner")
+local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
+local say_runner = require("plugin_template._commands.hello_world.say.runner")
+local sleep_runner = require("plugin_template._commands.goodnight_moon.sleep.runner")
+
+--- @diagnostic disable: undefined-field
 
 local _DATA = {}
-local _ORIGINAL_COUNT_SHEEP_PRINTER = count_sheep_command._print
-local _ORIGINAL_READ_PRINTER = read_command._print
-local _ORIGINAL_SAY_PRINTER = say_command._print
-local _ORIGINAL_SLEEP_PRINTER = sleep_command._print
+local _ORIGINAL_COUNT_SHEEP_PRINTER = count_sheep_runner._print
+local _ORIGINAL_READ_PRINTER = read_runner._print
+local _ORIGINAL_SAY_PRINTER = say_runner._print
+local _ORIGINAL_SLEEP_PRINTER = sleep_runner._print
 
+--- Keep track of text that would have been printed. Save it to a variable instead.
+---
+--- @param data string Some text to print to stdout.
+---
 local function _save_prints(data)
     table.insert(_DATA, data)
 end
 
 describe("hello world api - say phrase/word", function()
     before_each(function()
-        say_command._print = _save_prints
+        say_runner._print = _save_prints
+        configuration.initialize_data_if_needed()
     end)
 
     after_each(function()
-        say_command._print = _ORIGINAL_SAY_PRINTER
+        say_runner._print = _ORIGINAL_SAY_PRINTER
         _DATA = {}
     end)
 
     it("runs hello-world with default arguments", function()
-        api.run_hello_world_say_phrase({""})
+        api.run_hello_world_say_phrase({ "" })
 
         assert.same({ "" }, _DATA)
     end)
 
     it("runs hello-world say phrase - with all of its arguments", function()
-        api.run_hello_world_say_phrase({"Hello,", "World!"}, 2, "lowercase")
+        api.run_hello_world_say_phrase({ "Hello,", "World!" }, 2, "lowercase")
 
         assert.same({ "hello, world!", "hello, world!" }, _DATA)
     end)
 
     it("runs hello-world say word - with all of its arguments", function()
-        api.run_hello_world_say_phrase({"Hi"}, 2, "uppercase")
+        api.run_hello_world_say_phrase({ "Hi" }, 2, "uppercase")
 
         assert.same({ "HI", "HI" }, _DATA)
     end)
@@ -54,11 +62,12 @@ end)
 
 describe("hello world commands - say phrase/word", function()
     before_each(function()
-        say_command._print = _save_prints
+        say_runner._print = _save_prints
+        configuration.initialize_data_if_needed()
     end)
 
     after_each(function()
-        say_command._print = _ORIGINAL_SAY_PRINTER
+        say_runner._print = _ORIGINAL_SAY_PRINTER
         _DATA = {}
     end)
 
@@ -83,15 +92,16 @@ end)
 
 describe("goodnight-moon api", function()
     before_each(function()
-        count_sheep_command._print = _save_prints
-        read_command._print = _save_prints
-        sleep_command._print = _save_prints
+        count_sheep_runner._print = _save_prints
+        read_runner._print = _save_prints
+        sleep_runner._print = _save_prints
+        configuration.initialize_data_if_needed()
     end)
 
     after_each(function()
-        count_sheep_command._print = _ORIGINAL_COUNT_SHEEP_PRINTER
-        read_command._print = _ORIGINAL_READ_PRINTER
-        sleep_command._print = _ORIGINAL_SLEEP_PRINTER
+        count_sheep_runner._print = _ORIGINAL_COUNT_SHEEP_PRINTER
+        read_runner._print = _ORIGINAL_READ_PRINTER
+        sleep_runner._print = _ORIGINAL_SLEEP_PRINTER
         _DATA = {}
     end)
 
@@ -116,32 +126,33 @@ end)
 
 describe("goodnight-moon commands", function()
     before_each(function()
-        count_sheep_command._print = _save_prints
-        read_command._print = _save_prints
-        sleep_command._print = _save_prints
+        count_sheep_runner._print = _save_prints
+        read_runner._print = _save_prints
+        sleep_runner._print = _save_prints
+        configuration.initialize_data_if_needed()
     end)
 
     after_each(function()
-        count_sheep_command._print = _ORIGINAL_COUNT_SHEEP_PRINTER
-        read_command._print = _ORIGINAL_READ_PRINTER
-        sleep_command._print = _ORIGINAL_SLEEP_PRINTER
+        count_sheep_runner._print = _ORIGINAL_COUNT_SHEEP_PRINTER
+        read_runner._print = _ORIGINAL_READ_PRINTER
+        sleep_runner._print = _ORIGINAL_SLEEP_PRINTER
         _DATA = {}
     end)
 
     it("runs goodnight-moon count-sheep with all of its arguments", function()
-        vim.cmd[[PluginTemplate goodnight-moon count-sheep 3]]
+        vim.cmd([[PluginTemplate goodnight-moon count-sheep 3]])
 
         assert.same({ "1 Sheep", "2 Sheep", "3 Sheep" }, _DATA)
     end)
 
     it("runs goodnight-moon read with all of its arguments", function()
-        vim.cmd[[PluginTemplate goodnight-moon read "a good book"]]
+        vim.cmd([[PluginTemplate goodnight-moon read "a good book"]])
 
         assert.same({ "a good book: it is a book" }, _DATA)
     end)
 
     it("runs goodnight-moon sleep with all of its arguments", function()
-        vim.cmd[[PluginTemplate goodnight-moon sleep -zzz]]
+        vim.cmd([[PluginTemplate goodnight-moon sleep -zzz]])
 
         assert.same({ "zzz", "zzz", "zzz" }, _DATA)
     end)

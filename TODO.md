@@ -1,16 +1,23 @@
-- Make sure the issue templates are good
+- Finish up the README
 
-- Change lua types to be dotted. Maybe.
+- Make sure the issue templates are good
+ - https://github.com/folke/which-key.nvim/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml&title=bug%3A+
+ - https://github.com/folke/which-key.nvim/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.yml&title=feature%3A+
+
+- make sure the lualine configuration color + options work as expected
+
+- template - Add explanation on how to get the logs from a file, easily
+
+https://github.com/nvim-neorocks/nvim-best-practices/commits/master/runtime/doc/news.txt.atom
+https://github.com/neovim/neovim/commits/master/runtime/doc/news.txt.atom
+https://github.com/neovim/neovim/blob/master/.github/workflows/lintcommit.yml
+https://github.com/neovim/neovim/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml
+https://github.com/folke/which-key.nvim/blob/main/.github/ISSUE_TEMPLATE/config.yml
+
+
+https://github.com/neovim/neovim/blob/master/.github/workflows/news.yml
 
 - Add luarocks auto-release integration
-
-- https://github.com/marketplace/actions/lua-typecheck-action
-- https://github.com/jeffzi/llscheck
-- https://github.com/mpeterv/luacheck
-
-
-- https://github.com/lua-fmt/lua-fmt
-- https://github.com/Koihik/LuaFormatter
 
 
 
@@ -64,6 +71,9 @@ local tree = { {style}, {style}, }
  - Move to a luarocks module and include it here
   - Vendor the argparse in case the user doesn't have it installed
 - Add auto-completion function
+
+
+
 
 
 - Add doc/ or a GitHub Wiki

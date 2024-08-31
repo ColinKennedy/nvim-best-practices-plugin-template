@@ -1,7 +1,13 @@
-.PHONY: luacheck stylua test
+.PHONY: llscheck luacheck stylua test
+
+llscheck:
+	llscheck --configpath .luarc.json .
 
 luacheck:
 	luacheck lua plugin spec
+
+stylua:
+	stylua lua plugin spec
 
 test:
 	eval $(luarocks path --lua-version 5.1 --bin)
