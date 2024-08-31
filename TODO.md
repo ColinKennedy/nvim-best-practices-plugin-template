@@ -1,10 +1,64 @@
-- Make sure repeat + style does something
+- Make sure the issue templates are good
 
-- Fix the configuration typehints
+- Change lua types to be dotted. Maybe.
+
+- Add luarocks auto-release integration
+
+- https://github.com/marketplace/actions/lua-typecheck-action
+- https://github.com/jeffzi/llscheck
+- https://github.com/mpeterv/luacheck
 
 
-- Add auto-complete unittests
+- https://github.com/lua-fmt/lua-fmt
+- https://github.com/Koihik/LuaFormatter
 
+
+
+- When there's no arguments written yet, auto-complete the first thing(s)
+- Add unittest to make sure that an optional, repeatable --flag / --named=arg can be used in multiple places. e.g.
+
+```lua
+local style = {count=3, ...}
+local tree = { {style}, {style}, }
+```
+
+- Do existing TODO notes
+- /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/plugin_template/_cli/completion.lua
+
+- Try one more time to get completion working
+ - Add unitests for different cursor positions along the completion results
+  - positional argument
+   - before argument
+   - in argument
+   - after argument (no space)
+   - after argument (space)
+  - named argument
+   - before argument
+   - in argument
+   - after argument (no space)
+   - after argument (space)
+  - flag
+   - before argument
+   - in argument
+   - after argument (no space)
+   - after argument (space)
+  - named argument choices
+   - Make sure it works when cursor is in the middle of a command string
+ - required flag / named arguments
+ - Make sure cursor position works with named arguments as expected
+ - Allow "any" argument somehow
+
+- Add unittests for failed stuff (bad commands with incorrect arguments)
+ - command running
+ - auto-complete
+
+- Make sure as much as possible is defer evaluated
+ - Does Lua import parent init.lua files?
+
+- autocomplete notes
+ - when nothing is written, show the auto-complete
+
+- Re-enable the other unittests
 
 - Add argparse solution
  - Move to a luarocks module and include it here
@@ -12,112 +66,26 @@
 - Add auto-completion function
 
 
-- replace all plugin-template with plugin-name instead
-- replace all plugin_template with plugin_name instead
-- replace all PluginTemplate with PluginName instead
-
-- argparse - allow repeated flags, maybe?
-- Make sure named auto-complete works not just for keys but also for values
-
-- Add luarocks auto-release integration
-
-- https://github.com/marketplace/actions/lua-typecheck-action
-- https://github.com/marketplace/actions/lua-typecheck-action
-- https://github.com/jeffzi/llscheck
-- https://github.com/mpeterv/luacheck
-
-- Add unittests for the auto-complete
-
-
 - Add doc/ or a GitHub Wiki
     - Explain the folder structure
 
-
-- Add `<Plug>` options
-- Add Lua API functions
-
-- https://github.com/lua-fmt/lua-fmt
-- https://github.com/Koihik/LuaFormatter
-
-- Integrations
- - Telescope
- - Lualine
-
-- Add internal unittests
-
 - Write instructions on what people should do when they use the template
-- Make sure the issue templates are good
 
 - Blow away all of the commits. Clean it up
 
-- auto-complete behavior
- - argument order
-  - default
-   - positional then flags then double flags then named flags
-   - positional then (flags or double flags or named flags, any order)
-   - positional in any order flags or double flags or named flags, any order
-   - positional in any order but cannot be intermixed with the other flags
- - arguments repetition
-   - exactly 1 / exactly 2 / etc
-   - 0-or-more
-   - repeatable
 
-
-{
-  argument_order = {
-    overall_order = {
-      positional,
-      {named, single_flag, double_flag},
-    },
-    -- If not defined or empty table, then positionals can be in any order
-    -- If a positional is unspecified (but others are) assume any order
-    --
-    -- positional order needs to validate each item so there's not accidental duplicates
-    --
-    positional_order = {
-      {before, after, thing},
-      {another, {multiple, choice, allowed, here}},
-    }
-  }
-}
-
-- can use the named arguments exactly once
-{
-  repetition_behavior = {named_arguments = {repeat = 1, style = 1}},
-}
-
-
-- can use the named arguments exactly once
-{
-  repetition_behavior = {named_arguments = {repeat = 1, style = 1}},
-}
+command-line parser needs to handle this case
+foo bar --thing --thing --thing blah
+ - Where blah is after --thing, which is count="*"
 
 ## Checklist
-
---- ...leverage LuaCATS annotations, along with lua-language-server to catch potential bugs in your CI before your plugin's users do.
---- ...gather subcommands under scoped commands and implement completions for each subcommand.
-
-- ...provide :h <Plug> mappings to allow users to define their own keymaps.
-
-
-- Cleanly separate configuration and initialization.
-- Automatically initialize your plugin (smartly), with minimal impact on startup time (see the next section).
-
-- ...think carefully about when which parts of your plugin need to be loaded.
- - Make sure plugin logic initializes once, lazy-loaded
-- ...validate configs.
-
-- ...provide health checks in lua/{plugin}/health.lua.
-
-- ...use SemVer to properly communicate bug fixes, new features, and breaking changes.
 
 - ...provide vimdoc, so that users can read your plugin's documentation in Neovim, by entering :h {plugin}.
  - https://github.com/kdheepak/panvimdoc
 
---- ...automate testing as much as you can.
---- ...use busted for testing, which is a lot more powerful.
-
-- For example, it might be useful to add a telescope.nvim extension or a lualine component.
-
-- Add unittests for failed stuff (bad commands)
 - Lazy load everything. Make sure Lazy shows it loading really fast
+
+- Change the template to an auto-generator to describe what you want to use?
+
+ - Move the argparse + autocomplete stuff to its own lua package
+ - Include the lua package + vendorize it here

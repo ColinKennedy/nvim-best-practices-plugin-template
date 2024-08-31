@@ -45,17 +45,17 @@ PLUGIN STRUCTURE ~
 >
     .
     ├── lua
-    │   ├── plugin_name
+    │   ├── plugin_template
     │   │   └── module.lua
-    │   └── plugin_name.lua
+    │   └── plugin_template.lua
     ├── Makefile
     ├── plugin
-    │   └── plugin_name.lua
+    │   └── plugin_template.lua
     ├── README.md
     ├── tests
     │   ├── minimal_init.lua
-    │   └── plugin_name
-    │       └── plugin_name_spec.lua
+    │   └── plugin_template
+    │       └── plugin_template_spec.lua
 <
 
 ==============================================================================

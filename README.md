@@ -1,10 +1,9 @@
-TODO: vim.g.plugin_name_configuration or {}
-TODO: Add unittests for the configuration
-
 TODO: Add this
 - Update the README.md
 - Update Makefile with more options
 
+
+TODO: Show how to do lualine via code
 
 
 # A Neovim Plugin Template
@@ -13,6 +12,37 @@ TODO: Add this
 ![Lua](https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua)
 
 A template repository for Neovim plugins.
+
+lualine
+```lua
+{
+    display = {color="TODO", text="Some text"}
+}
+-- {"plugin_template"}
+{
+    "plugin_template",
+    display = {
+        goodnight_moon = {color={fg="#FFFFFF"}, text="AAAA"},
+        hello_world = {color={fg="#333333"}, text="TTTT"},
+    },
+},
+```
+
+Telescope
+```lua
+require("telescope").load_extension("plugin_template")
+```
+
+
+TODO
+```lua
+{
+    'ColinKennedy/nvim-best-practices-plugin-template',
+    -- cmd = "PluginTemplate",
+    config = false,
+    directory = "/home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template",
+}
+```
 
 
 ## Features and structure
@@ -35,17 +65,19 @@ TODO: Finish these
 
 ```vim
 " A typical subcommand
-:PluginName hello-world say phrase "Hello, World!"
-:PluginName hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase
+:PluginTemplate hello-world say phrase "Hello, World!" " How are you?"
+:PluginTemplate hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase
 
 " An example of a flag this repeatable and 3 flags, -a, -b, -c, as one dash
-:PluginName hello-world arbitrary-thing -vvv -abc -f
+:PluginTemplate hello-world arbitrary-thing -vvv -abc -f
 
 " Separate commands with completely separate, flexible APIs
-:PluginName goodnight-moon read "a book"
-:PluginName goodnight-moon count-sheep 42
-:PluginName goodnight-moon sleep -zzz
+:PluginTemplate goodnight-moon count-sheep 42
+:PluginTemplate goodnight-moon read "a book"
+:PluginTemplate goodnight-moon sleep -zzz
 ```
+
+TODO: Make sure people know that api.lua is anything they'd like it to be
 
 
 ## Using it
@@ -66,7 +98,7 @@ Click on `Use this template`
 TODO: Explain how to immediately make this template your own
 
 ```sh
-find -name "*.lua" -type f | xargs sed -i 's/plugin_name/your_plugin/g ; s/PluginName/YourPlugin/g'
+find -name "*.lua" -type f | xargs sed -i 's/plugin_template/your_plugin/g ; s/PluginTemplate/YourPlugin/g'
 ```
 
 
