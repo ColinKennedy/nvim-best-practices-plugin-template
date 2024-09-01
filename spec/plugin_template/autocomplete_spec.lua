@@ -281,6 +281,78 @@ describe("simple", function()
         assert.same({ "bots", "botz" }, parser:get_completion("bot"))
     end)
 
+    it("works when two positions start with the same text", function()
+        local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
+        local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
+        local bottle = subparsers:add_parser({ name = "bottle", help = "Something." })
+        local bottle_subparsers = bottle:add_subparsers({ destination = "bottle", help = "Test." })
+        local bottles = subparsers:add_parser({ name = "bottles", help = "Somethings." })
+        bottles:add_parameter({ name = "bar", help = "Any text allowed here." })
+
+        bottle_subparsers:add_parser({ name = "foo", choices = { "foo" }, help = "Print stuff to the terminal." })
+
+        local bottlez = subparsers:add_parser({ name = "bottlez", destination = "weird_name", help = "Test." })
+        local bottlez_subparsers = bottlez:add_subparsers({ destination = "bottlez", help = "Test." })
+        bottlez_subparsers:add_parser({ name = "fizz", help = "Fizzy drink." })
+
+        assert.same({ "bottle", "bottles", "bottlez" }, parser:get_completion("bottle"))
+        assert.same({ "bottles" }, parser:get_completion("bottles"))
+        assert.same({ "bottlez" }, parser:get_completion("bottlez"))
+        assert.same({ "foo", "--help" }, parser:get_completion("bottle "))
+        assert.same({ "--help" }, parser:get_completion("bottles "))
+        assert.same({ "fizz", "--help" }, parser:get_completion("bottlez "))
+    end)
+
+    it("works when two positions start with the same text - 002", function()
+        local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test." })
+        local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
+        local bottle = subparsers:add_parser({ name = "bottle", help = "Something." })
+        local bottle_subparsers = bottle:add_subparsers({ destination = "bottle", help = "Test." })
+        local bottles = subparsers:add_parser({ name = "bottles", help = "Somethings." })
+        bottles:add_parameter({ name = "bar", help = "Any text allowed here." })
+
+        bottle_subparsers:add_parser({ name = "foo", choices = { "foo" }, help = "Print stuff to the terminal." })
+
+        local bottlez = subparsers:add_parser({ name = "bottlez", destination = "weird_name", help = "Test." })
+        local bottlez_subparsers = bottlez:add_subparsers({ destination = "bottlez", help = "Test." })
+        bottlez_subparsers:add_parser({ name = "fizz", help = "Fizzy drink." })
+
+        parser:add_parameter({ name = "bottle", help = "Something." })
+
+        -- IMPORTANT: This is a rare case where a required parameter is in
+        -- `top_test` but a subparser has the same name. We prefer the current
+        -- parser in this case which means preferring the required parameter.
+        -- So instead of auto-completing like `"bottle"` is a partial name of
+        -- some subparsers, we treat it as a parameter.
+        --
+        assert.same({}, parser:get_completion("bottle"))
+    end)
+
+    it("works when two positions start with the same text - 003", function()
+        local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test." })
+        local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
+        local bottle = subparsers:add_parser({ name = "bottle", help = "Something." })
+        local bottle_subparsers = bottle:add_subparsers({ destination = "bottle", help = "Test." })
+        local bottles = subparsers:add_parser({ name = "bottles", help = "Somethings." })
+        bottles:add_parameter({ name = "bar", help = "Any text allowed here." })
+
+        bottle_subparsers:add_parser({ name = "foo", choices = { "foo" }, help = "Print stuff to the terminal." })
+
+        local bottlez = subparsers:add_parser({ name = "bottlez", destination = "weird_name", help = "Test." })
+        local bottlez_subparsers = bottlez:add_subparsers({ destination = "bottlez", help = "Test." })
+        bottlez_subparsers:add_parser({ name = "fizz", help = "Fizzy drink." })
+
+        parser:add_parameter({ name = "bottle", choices = { "bots", "botz" }, help = "Something." })
+
+        -- IMPORTANT: This is a rare case where a required parameter is in
+        -- `top_test` but a subparser has the same name. We prefer the current
+        -- parser in this case which means preferring the required parameter.
+        -- So instead of auto-completing like `"bottle"` is a partial name of
+        -- some subparsers, we treat it as a parameter.
+        --
+        assert.same({ "bots", "botz" }, parser:get_completion("bot"))
+    end)
+
     it("works with a basic multi-key example", function()
         local parser = _make_simple_parser()
 
@@ -733,6 +805,121 @@ describe("* count", function()
 end)
 
 describe("dynamic argument", function()
+    it("works even if matches use spaces", function()
+        local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test" })
+        local subparsers = parser:add_subparsers({ destination = "commands", help = "All main commands." })
+        local say_parser = subparsers:add_parser({ name = "say", help = "Say something." })
+        local inner_subparsers = say_parser:add_subparsers({ destination = "thing_subparsers", help = "Test." })
+
+        local dynamic = inner_subparsers:add_parser({
+            name = "dynamic_thing",
+            choices = function()
+                return { "item with spaces", "cc", "zzz", "lazers" }
+            end,
+            help = "Test.",
+        })
+
+        local inner_dynamic = dynamic:add_subparsers({ name = "inner_dynamic_thing", help = "Test." })
+        local different = inner_dynamic:add_parser({ name = "different", help = "Test." })
+        different:add_parameter({
+            name = "last",
+            choices = function()
+                return { "branch", "here" }
+            end,
+            help = "Test.",
+        })
+
+        assert.same({ "item with spaces" }, parser:get_completion('say "item "'))
+        assert.same({ "branch" }, parser:get_completion('say "item with spaces" different b'))
+    end)
+
+    it("works with positional arguments", function()
+        local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test" })
+        local subparsers = parser:add_subparsers({ destination = "commands", help = "All main commands." })
+        local say_parser = subparsers:add_parser({ name = "say", help = "Say something." })
+        say_parser:add_parameter({
+            name = "thing",
+            choices = function()
+                return { "a", "bb", "asteroid", "tt" }
+            end,
+            help = "Choices that come from a function.",
+        })
+        local inner_subparsers = say_parser:add_subparsers({ destination = "thing_subparsers", help = "Test." })
+        local thing = inner_subparsers:add_parser({ name = "thing_parser", help = "Inner thing." })
+        thing:add_parameter({ name = "last_thing", choices = { "another", "last" }, help = "Test." })
+
+        local dynamic = inner_subparsers:add_parser({
+            name = "dynamic_thing",
+            choices = function()
+                return { "ab", "cc", "zzz", "lazers" }
+            end,
+            help = "Test.",
+        })
+        local inner_dynamic = dynamic:add_subparsers({ name = "inner_dynamic_thing", help = "Test." })
+        local different = inner_dynamic:add_parser({ name = "different", help = "Test." })
+        different:add_parameter({
+            name = "last",
+            choices = function()
+                return { "branch", "here" }
+            end,
+            help = "Test.",
+        })
+
+        -- NOTE: We don't complete the next subparsers because required
+        -- parameter(s) from the `say` subparser have no been satisfied yet.
+        --
+        assert.same({ "a", "asteroid", "bb", "tt", "--help" }, parser:get_completion("say "))
+        -- IMPORTANT: Notice we do not include `ab` in the completion because
+        -- the `thing` argument is required and must be satisfied first before
+        -- we can continue to the subparser.
+        --
+        assert.same({ "a", "asteroid" }, parser:get_completion("say a"))
+        assert.same({ "ab", "cc", "lazers", "thing_parser", "zzz", "--help" }, parser:get_completion("say a "))
+        assert.same({ "ab", "cc", "lazers", "thing_parser", "zzz", "--help" }, parser:get_completion("say tt "))
+        assert.same({ "another", "last", "--help" }, parser:get_completion("say a thing_parser "))
+
+        assert.same({ "different", "--help" }, parser:get_completion("say ab "))
+        assert.same({ "branch", "here", "--help" }, parser:get_completion("say ab different "))
+    end)
+end)
+
+describe("numbered count - named argument", function()
+    it("works with count = 2", function()
+        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2, help = "Test." })
+
+        assert.same({ "--foo=" }, parser:get_completion("--fo"))
+        assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, parser:get_completion("--foo="))
+        assert.same({ "--foo=", "--help" }, parser:get_completion("--foo=bar "))
+        assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, parser:get_completion("--foo=bar --foo="))
+        assert.same({ "--help" }, parser:get_completion("--foo=bar --foo=bar "))
+    end)
+end)
+
+describe("* count", function()
+    describe("simple", function()
+        it("works with position arguments", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ name = "thing", choices = { "foo" }, count = "*", help = "Test." })
+
+            assert.same({ "foo", "--help" }, parser:get_completion(""))
+            assert.same({ "foo" }, parser:get_completion("fo"))
+            assert.same({ "foo" }, parser:get_completion("foo"))
+            assert.same({ "foo", "--help" }, parser:get_completion("foo "))
+            assert.same({ "foo" }, parser:get_completion("foo fo"))
+            assert.same({ "foo" }, parser:get_completion("foo foo"))
+            assert.same({ "foo", "--help" }, parser:get_completion("foo foo "))
+            assert.same({ "foo" }, parser:get_completion("foo foo foo"))
+            assert.same({ "foo", "--help" }, parser:get_completion("foo foo foo "))
+        end)
+    end)
+end)
+
+describe("dynamic argument", function()
+    it("skips if no matches were found", function()
+        -- TODO: Add
+    end)
+
     it("works even if matches use spaces", function()
         local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test" })
         local subparsers = parser:add_subparsers({ destination = "commands", help = "All main commands." })

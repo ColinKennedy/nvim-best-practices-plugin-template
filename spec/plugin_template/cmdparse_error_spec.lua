@@ -72,7 +72,7 @@ describe("bad definition input", function()
             assert.equal('Parameter "--foo" cannot use action "store_true" and nargs at the same time.', result)
         end)
 
-        it("errors if you define a position parameter + action store_true #asdf", function()
+        it("errors if you define a position parameter + action store_true", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
             local success, result = pcall(function()

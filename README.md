@@ -16,7 +16,7 @@ A template repository for Neovim plugins.
 
 # Features
 - Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices)
-- Fast start-up (the plugin is super defer-loaded. < 1 ms guarantee)
+- Fast start-up (~1 ms)
 - Auto-release to [luarocks](https://luarocks.org)
 - Automated user documentation (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
 - Automated API documentation (using [mini.doc](https://github.com/echasnovski/mini.doc))
@@ -29,6 +29,9 @@ A template repository for Neovim plugins.
 - [RSS feed support](tracking-updates)
 - Built-in logging to stdout / files
 - Unittests use the full power of native [busted](https://olivinelabs.com/busted)
+- Automated testing matrix supports 6 Neovim/OS combinations
+    - neovim: `[v0.10.0, stable, nightly]`
+    - os: `[ubuntu-latest, macos-latest]`
 - 100% Lua
 - Uses [Semantic Versioning](https://semver.org)
 - Integrations

@@ -84,13 +84,43 @@ describe("default", function()
     end)
 end)
 
+describe("bad configuration - cmdparse", function()
+    it("happens with a bad type for #cmdparse.auto_complete.display.help_flag", function()
+        _assert_bad({
+            cmdparse = { auto_complete = { display = { help_flag = "aaa" } } },
+        }, { "cmdparse.auto_complete.display.help_flag: expected boolean, got string" })
+
+        _assert_bad({
+            cmdparse = { auto_complete = { display = 123 } },
+        }, { "cmdparse.auto_complete.display: expected table, got number" })
+
+        _assert_bad({ cmdparse = { auto_complete = "bnb" } }, { "cmdparse.auto_complete: expected table, got string" })
+
+        _assert_bad({ cmdparse = 123 }, { "cmdparse: expected table, got number" })
+    end)
+
+    it("works with an #empty configuration", function()
+        _assert_good({
+            cmdparse = { auto_complete = { display = { help_flag = true } } },
+        })
+
+        _assert_good({
+            cmdparse = { auto_complete = { display = { help_flag = false } } },
+        })
+
+        _assert_good({
+            cmdparse = { auto_complete = { display = { help_flag = nil } } },
+        })
+    end)
+end)
+
 ---@diagnostic disable: assign-type-mismatch
 ---@diagnostic disable: missing-fields
 describe("bad configuration - commands", function()
     it("happens with a bad type for #commands.goodnight_moon.phrase", function()
         _assert_bad(
             { commands = { goodnight_moon = { read = { phrase = 10 } } } },
-            { "commands.goodnight_moon.read.phrase: expected string, got number (10)" }
+            { "commands.goodnight_moon.read.phrase: expected string, got number" }
         )
     end)
 
@@ -144,11 +174,11 @@ describe("bad configuration - logging", function()
     end)
 
     it("happens with a bad value for #logging.use_console", function()
-        _assert_bad({ logging = { use_console = "asdf" } }, { "logging.use_console: expected a boolean, got asdf" })
+        _assert_bad({ logging = { use_console = "aaa" } }, { "logging.use_console: expected a boolean, got aaa" })
     end)
 
     it("happens with a bad value for #logging.use_file", function()
-        _assert_bad({ logging = { use_file = "asdf" } }, { "logging.use_file: expected a boolean, got asdf" })
+        _assert_bad({ logging = { use_file = "aaa" } }, { "logging.use_file: expected a boolean, got aaa" })
     end)
 end)
 ---@diagnostic enable: assign-type-mismatch
@@ -171,11 +201,11 @@ describe("health.check", function()
         health.check({
             commands = {
                 goodnight_moon = { read = { phrase = 123 } },
-                hello_world = { say = { ["repeat"] = "asdf", style = 789 } },
+                hello_world = { say = { ["repeat"] = "aaa", style = 789 } },
             },
             logging = {
                 level = false,
-                use_console = "asdf",
+                use_console = "aaa",
                 use_file = "fdas",
             },
             tools = {
@@ -190,11 +220,11 @@ describe("health.check", function()
         local issues = tabler.get_slice(found, 1, #found - 1)
 
         assert.same({
-            "commands.goodnight_moon.read.phrase: expected string, got number (123)",
-            "commands.hello_world.say.repeat: expected a number (value must be 1-or-more), got asdf",
+            "commands.goodnight_moon.read.phrase: expected string, got number",
+            "commands.hello_world.say.repeat: expected a number (value must be 1-or-more), got aaa",
             'commands.hello_world.say.style: expected "lowercase" or "uppercase", got 789',
             'logging.level: expected an enum. e.g. "trace" | "debug" | "info" | "warn" | "error" | "fatal", got false',
-            "logging.use_console: expected a boolean, got asdf",
+            "logging.use_console: expected a boolean, got aaa",
             "logging.use_file: expected a boolean, got fdas",
             'tools.lualine.goodnight_moon: expected a table. e.g. { text="some text here" }, got false',
         }, issues)
