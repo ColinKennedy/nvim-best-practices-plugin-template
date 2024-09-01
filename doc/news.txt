@@ -1,6 +1,6 @@
 *plugin-template-news.txt*
 
-Notable changes since PluginTemplate 1.0
+Notable changes since PluginTemplate 0.1
 
 
 ===============================================================================
