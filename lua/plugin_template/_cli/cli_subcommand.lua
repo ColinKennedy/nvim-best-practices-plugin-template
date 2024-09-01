@@ -3,8 +3,6 @@
 ---@module 'plugin_template._cli.cli_subcommand'
 ---
 
-local help_message = require("plugin_template._cli.cmdparse.help_message")
-
 local M = {}
 
 ---@class argparse.SubcommandRunnerOptions
@@ -261,16 +259,14 @@ end
 ---
 function M.make_parser_completer(parser_creator)
     local function runner(_, all_text, _)
+        local configuration = require("plugin_template._core.configuration")
+        configuration.initialize_data_if_needed()
+
         local parser = parser_creator()
         local column = vim.fn.getcmdpos()
 
         return parser:get_completion(all_text, column)
     end
-
-    -- NOTE: Initialize only once
-    local configuration = require("plugin_template._core.configuration")
-
-    configuration.initialize_data_if_needed()
 
     return runner
 end
@@ -285,6 +281,7 @@ function M.make_subcommand_completer(prefix, subcommands)
     local function runner(latest_text, all_text, _)
         local configuration = require("plugin_template._core.configuration")
         configuration.initialize_data_if_needed()
+
         local completion = _get_subcommand_completion(all_text, prefix, subcommands)
 
         if completion then
@@ -381,6 +378,11 @@ function M.make_subcommand_triager(subcommands)
     ---@param opts argparse.SubcommandRunnerOptions The parsed user options.
     ---
     local function runner(opts)
+        local configuration = require("plugin_template._core.configuration")
+        configuration.initialize_data_if_needed()
+
+        local help_message = require("plugin_template._cli.cmdparse.help_message")
+
         local success, result = pcall(function()
             _runner(opts)
         end)
@@ -397,11 +399,6 @@ function M.make_subcommand_triager(subcommands)
             error(result)
         end
     end
-
-    -- NOTE: Initialize only once
-    local configuration = require("plugin_template._core.configuration")
-
-    configuration.initialize_data_if_needed()
 
     return runner
 end

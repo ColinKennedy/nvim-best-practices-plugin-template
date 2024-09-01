@@ -1,22 +1,17 @@
-# 🚧 Under Construction 🚧
-
-This repository doesn't have all GitHub CI actions working yet but is available
-as an early preview. We will update docs/news.txt once it's ready.
-
-Add https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom
-to your RSS feed so you don't miss it!
-
 # A Neovim Plugin Template
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ColinKennedy/nvim-best-practices-plugin-template/test.yml?branch=main&style=for-the-badge)
-![Lua](https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua)
+| <!-- -->     | <!-- -->                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Build Status | [![Unittests](https://img.shields.io/github/actions/workflow/status/ColinKennedy/nvim-best-practices-plugin-template/test.yml?branch=fix_todo_notes_005&style=for-the-badge&label=Unittests)](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/actions/workflows/test.yml)  [![Documentation](https://img.shields.io/github/actions/workflow/status/ColinKennedy/nvim-best-practices-plugin-template/documentation.yml?branch=fix_todo_notes_005&style=for-the-badge&label=Documentation)](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/actions/workflows/documentation.yml)  [![Luacheck](https://img.shields.io/github/actions/workflow/status/ColinKennedy/nvim-best-practices-plugin-template/luacheck.yml?branch=fix_todo_notes_005&style=for-the-badge&label=Luacheck)](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/actions/workflows/luacheck.yml)  [![Stylua](https://img.shields.io/github/actions/workflow/status/ColinKennedy/nvim-best-practices-plugin-template/stylua.yml?branch=fix_todo_notes_005&style=for-the-badge&label=Stylua)](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/actions/workflows/stylua.yml)    |
+| License      | ![License-MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Social       | [![RSS](https://img.shields.io/badge/rss-F88900?style=for-the-badge&logo=rss&logoColor=white)](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom )                                                                                                                                                          |
 
-A template repository for Neovim plugins.
+A template repository used to create Neovim plugins.
 
 
 # Features
 - Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices)
-- Fast start-up (the plugin is super defer-loaded. < 1 ms guarantee)
+- Fast start-up (~1 ms)
 - Auto-release to [luarocks](https://luarocks.org)
 - Automated user documentation (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
 - Automated API documentation (using [mini.doc](https://github.com/echasnovski/mini.doc))
@@ -29,6 +24,9 @@ A template repository for Neovim plugins.
 - [RSS feed support](tracking-updates)
 - Built-in logging to stdout / files
 - Unittests use the full power of native [busted](https://olivinelabs.com/busted)
+- Automated testing matrix supports 6 Neovim/OS combinations
+    - neovim: `[v0.10.0, stable, nightly]`
+    - os: `[ubuntu-latest, macos-latest]`
 - 100% Lua
 - Uses [Semantic Versioning](https://semver.org)
 - Integrations

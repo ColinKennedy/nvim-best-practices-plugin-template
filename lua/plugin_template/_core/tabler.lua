@@ -38,12 +38,23 @@ end
 ---
 function M.get_value(data, items)
     local current = data
+    local found = {}
+    local count = #items
 
-    for _, item in ipairs(items) do
+    for index = 1, count do
+        local item = items[index]
         current = current[item]
 
         if current == nil then
             return nil
+        end
+
+        table.insert(found, item)
+
+        local type_ = type(current)
+
+        if index < count and type_ ~= "table" then
+            error(string.format("%s: expected table, got %s", vim.fn.join(found, "."), type_), 0)
         end
     end
 
