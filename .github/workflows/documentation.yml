@@ -1,0 +1,43 @@
+on:
+  push:
+    branches:
+      - main
+name: documentation
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: panvimdoc
+        uses: kdheepak/panvimdoc@main
+        with:
+          vimdoc: plugin-template
+          version: "Neovim >= 0.8.0"
+          demojify: true
+          treesitter: true
+      - name: Push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "auto-generate vimdoc"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+  tags:
+    runs-on: ubuntu-latest
+    - uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: stable
+      - name: Generate tags and exit
+        run: |
+          nvim -c 'helptags doc' -c 'quit'
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+      - name: Commit and push changes
+        run: |
+          git add doc/tags
+          git commit -m "Auto-generated vimtags by GitHub Actions"
+          git push

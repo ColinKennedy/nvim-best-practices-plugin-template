@@ -1,0 +1,19 @@
+---
+on: [pull_request]
+name: llscheck
+
+jobs:
+  llscheck:
+    name: llscheck
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y luarocks
+          sudo luarocks install llscheck
+
+      - name: Lint
+        run: make llscheck
