@@ -1,0 +1,17 @@
+# Reference: https://github.com/ellisonleao/nvim-plugin-template/blob/922c0d5249076416c5d84e7c0504f1154225a7ab/.github/workflows/release.yml
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  luarocks-upload:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: LuaRocks Upload
+        uses: nvim-neorocks/luarocks-tag-release@v4
+        env:
+          LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}

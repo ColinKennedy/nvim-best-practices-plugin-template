@@ -1,0 +1,92 @@
+==============================================================================
+------------------------------------------------------------------------------
+All function(s) that can be called externally by other Lua modules.
+
+If a function's signature here changes in some incompatible way, this
+package must get a new **major** version.
+
+------------------------------------------------------------------------------
+                                         *plugin_template.run_arbitrary_thing()*
+
+`run_arbitrary_thing`({names})
+
+Print the `names`.
+
+Parameters ~
+    {names} `(string[]?)` Some text to print out. e.g. `{"a", "b", "c"}`.
+
+------------------------------------------------------------------------------
+                                               *plugin_template.run_copy_logs()*
+
+`run_copy_logs`({path})
+
+Copy the log data from the given `path` to the user's clipboard.
+
+Parameters ~
+    {path} `(string?)`
+       A path on-disk to look for logs. If none is given, the default fallback
+       location is used instead.
+
+------------------------------------------------------------------------------
+                                  *plugin_template.run_hello_world_say_phrase()*
+
+`run_hello_world_say_phrase`({phrase}, {repeat_}, {style})
+
+Print `phrase` according to the other options.
+
+Parameters ~
+    {phrase} `(string[])`
+       The text to say.
+    {repeat_} `(number?)`
+       A 1-or-more value. The number of times to print `word`.
+    {style} `(string?)`
+       Control how the text should be shown.
+
+------------------------------------------------------------------------------
+                                    *plugin_template.run_hello_world_say_word()*
+
+`run_hello_world_say_word`({word}, {repeat_}, {style})
+
+Print `phrase` according to the other options.
+
+Parameters ~
+    {word} `(string)`
+       The text to say.
+    {repeat_} `(number?)`
+       A 1-or-more value. The number of times to print `word`.
+    {style} `(string?)`
+       Control how the text should be shown.
+
+------------------------------------------------------------------------------
+                              *plugin_template.run_goodnight_moon_count_sheep()*
+
+`run_goodnight_moon_count_sheep`({count})
+
+Count a sheep for each `count`.
+
+Parameters ~
+    {count} `(number)` Prints 1 sheep per `count`. A value that is 1-or-greater.
+
+------------------------------------------------------------------------------
+                                     *plugin_template.run_goodnight_moon_read()*
+
+`run_goodnight_moon_read`({book})
+
+Print the name of the book.
+
+Parameters ~
+    {book} `(string)` The name of the book.
+
+------------------------------------------------------------------------------
+                                    *plugin_template.run_goodnight_moon_sleep()*
+
+`run_goodnight_moon_sleep`({count})
+
+Print Zzz each `count`.
+
+Parameters ~
+    {count} `(number?)` Prints 1 Zzz per `count`. A value that is 1-or-greater.
+
+WARNING: This file is auto-generated. Do not edit it!
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

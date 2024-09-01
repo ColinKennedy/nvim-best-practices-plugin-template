@@ -1,0 +1,45 @@
+name: test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+    - main
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        neovim: [v0.10.0, stable, nightly]
+
+    runs-on: ${{ matrix.os }}
+    name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
+
+    steps:
+    - uses: actions/checkout@master
+
+    - uses: leafo/gh-actions-lua@v10
+      with:
+        # Neovim is compiled with LuaJIT so we might as well match. But it
+        # doesn't look like we can match it exactly.
+        #
+        # Reference:
+        #    https://github.com/leafo/gh-actions-lua/issues/49#issuecomment-2295071198
+        #
+        luaVersion: "luajit-openresty"
+
+    - uses: leafo/gh-actions-luarocks@v4
+
+    - uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: ${{ matrix.neovim }}
+
+    - name: build
+      run: |
+        luarocks test plugin-template-scm-1.rockspec --prepare
+
+    - name: test
+      run: |
+        luarocks test --test-type busted

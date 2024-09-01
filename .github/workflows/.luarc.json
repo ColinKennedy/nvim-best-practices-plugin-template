@@ -1,0 +1,12 @@
+{
+    "Lua.diagnostics.libraryFiles": "Disable",
+    "Lua.workspace.checkThirdParty": "Disable",
+    "Lua.workspace.library": [
+        "/home/runner/work/nvim-best-practices-plugin-template/nvim-best-practices-plugin-template/.dependencies/neovim/runtime/lua",
+        "/home/runner/work/nvim-best-practices-plugin-template/nvim-best-practices-plugin-template/.dependencies/neodev.nvim/types/stable",
+        "/home/runner/work/nvim-best-practices-plugin-template/nvim-best-practices-plugin-template/.dependencies/busted/library",
+        "/home/runner/work/nvim-best-practices-plugin-template/nvim-best-practices-plugin-template/.dependencies/luassert/library"
+    ],
+    "runtime.version": "LuaJIT",
+    "workspace.checkThirdParty": "Disable"
+}

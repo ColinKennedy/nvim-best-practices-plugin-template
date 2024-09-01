@@ -1,0 +1,10 @@
+{
+    "diagnostics.globals": [
+        "vim"
+    ],
+    "diagnostics.libraryFiles": "Disable",
+    "runtime.version": "LuaJIT",
+    "workspace.checkThirdParty": "Disable",
+    "workspace.library": ["$PWD/.dependencies"]
+}
+

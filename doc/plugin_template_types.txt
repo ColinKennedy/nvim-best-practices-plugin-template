@@ -1,0 +1,127 @@
+==============================================================================
+------------------------------------------------------------------------------
+A collection of types to be included / used in other Lua files.
+
+These types are either required by the Lua API or required for the normal
+operation of this Lua plugin.
+
+------------------------------------------------------------------------------
+*plugin_template.Configuration*
+   The user's customizations for this plugin.
+
+Fields ~
+    {cmdparse} plugin_template.ConfigurationCmdparse?
+       All settings that control the command mode tools (parsing, auto-complete, etc).
+    {commands} plugin_template.ConfigurationCommands?
+       Customize the fallback behavior of all `:PluginTemplate` commands.
+    {logging} plugin_template.LoggingConfiguration?
+       Control how and which logs print to file / Neovim.
+    {tools} plugin_template.ConfigurationTools?
+       Optional third-party tool integrations.
+
+------------------------------------------------------------------------------
+*plugin_template.ConfigurationCmdparse*
+   All settings that control the command mode tools (parsing, auto-complete, etc).
+
+Fields ~
+    {auto_complete} plugin_template.ConfigurationCmdparseAutoComplete
+       The settings that control what happens during auto-completion.
+
+------------------------------------------------------------------------------
+*plugin_template.ConfigurationCmdparseAutoComplete*
+   The settings that control what happens during auto-completion.
+
+Fields ~
+    {display} {help_flag: `(boolean})`
+       help_flag = Show / Hide the --help flag during auto-completion.
+
+------------------------------------------------------------------------------
+*plugin_template.ConfigurationCommands*
+   Customize the fallback behavior of all `:PluginTemplate` commands.
+
+Fields ~
+    {goodnight_moon} plugin_template.ConfigurationGoodnightMoon?
+       The default values when a user calls `:PluginTemplate goodnight-moon`.
+    {hello_world} plugin_template.ConfigurationHelloWorld?
+       The default values when a user calls `:PluginTemplate hello-world`.
+
+------------------------------------------------------------------------------
+*plugin_template.ConfigurationGoodnightMoon*
+   The default values when a user calls `:PluginTemplate goodnight-moon`.
+
+Fields ~
+    {read} plugin_template.ConfigurationGoodnightMoonRead?
+       The default values when a user calls `:PluginTemplate goodnight-moon read`.
+
+------------------------------------------------------------------------------
+*plugin_template.LoggingConfiguration*
+   Control whether or not logging is printed to the console or to disk.
+
+Fields ~
+    {level} (
+       | "trace"
+       | "debug"
+       | "info"
+       | "warn" | "error"
+       | "fatal"
+       | vim.log.levels.DEBUG
+       | vim.log.levels.ERROR
+       | vim.log.levels.INFO
+       | vim.log.levels.TRACE
+       | vim.log.levels.WARN)?
+       Any messages above this level will be logged.
+    {use_console} `(boolean?)`
+       Should print the output to neovim while running. Warning: This is very
+       spammy. You probably don't want to enable this unless you have to.
+    {use_file} `(boolean?)`
+       Should write to a file.
+
+------------------------------------------------------------------------------
+*plugin_template.ConfigurationGoodnightMoonRead*
+   The default values when a user calls `:PluginTemplate goodnight-moon read`.
+
+Fields ~
+    {phrase} `(string)`
+       The book to read if no book is given by the user.
+
+------------------------------------------------------------------------------
+*plugin_template.ConfigurationHelloWorld*
+   The default values when a user calls `:PluginTemplate hello-world`.
+
+Fields ~
+    {say} plugin_template.ConfigurationHelloWorldSay?
+       The default values when a user calls `:PluginTemplate hello-world say`.
+
+------------------------------------------------------------------------------
+*plugin_template.ConfigurationHelloWorldSay*
+   The default values when a user calls `:PluginTemplate hello-world say`.
+
+Fields ~
+    {repeat} `(number)`
+       A 1-or-more value. When 1, the phrase is said once. When 2+, the phrase
+       is repeated that many times.
+    {style} "lowercase" | "uppercase"
+       Control how the text is displayed. e.g. "uppercase" changes "hello" to "HELLO".
+
+------------------------------------------------------------------------------
+*plugin_template.ConfigurationTools*
+   Optional third-party tool integrations.
+
+Fields ~
+    {lualine} plugin_template.ConfigurationToolsLualine?
+       A Vim statusline replacement that will show the command that the user just ran.
+
+------------------------------------------------------------------------------
+*plugin_template.ConfigurationToolsLualineData*
+   The display values that will be used when a specific `plugin_template`
+   command runs.
+
+Fields ~
+    {color} vim.api.keyset.highlight?
+       The foreground/background color to use for the Lualine status.
+    {prefix} `(string?)`
+       The text to display in lualine.
+
+WARNING: This file is auto-generated. Do not edit it!
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
