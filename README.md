@@ -43,99 +43,8 @@ A template repository for Neovim plugins.
 
 
 # Using This Template
-1. Clone this template ![Clone this template](https://github.com/user-attachments/assets/dbcea52c-e1e4-4aef-a9b8-ac5d7405f7ca)
-(Or use `gh repo create nvim-best-practices-plugin-template -p ColinKennedy/nvim-best-practices-plugin-template`)
-
-2. Enable GitHub repository permissions for various features
-
-    - For auto-releases to LuaRocks, see [Releases](#releases)
-    - For documentation auto-generation, see [Documentation](#documentation)
-
-3. Replace all instances of the name of this plugin with your desired named
-
-```sh
-# Rename all files
-git mv lua/plugin_template lua/your_plugin
-git mv lua/telescope/_extensions/plugin_template lua/telescope/_extensions/your_plugin
-git mv spec/plugin_template spec/your_plugin
-find $PWD -type f | grep -v .git/ | xargs -I{} sh -c "rename --filename 's/nvim-best-practices-plugin-template/your-plugin.nvim/g ; s/plugin-template/your-plugin/ ; s/PluginTemplate/YourPlugin/ ; s/plugin_template/your_plugin/ ; s/ColinKennedy/YourUsername/' {}"
-
-# Rename all file contents
-find . -type f | grep -v .git/ | xargs sed -i 's/nvim-best-practices-plugin-template/your-plugin.nvim/g ; s/plugin-template/your-plugin/ ; s/PluginTemplate/YourPlugin/ ; s/plugin_template/your_plugin/ ; s/ColinKennedy/YourUsername/'
-```
-
-4. Remove any features that you don't need.
-
-In general that means
-
-- Replacing / removing anything in this file that you don't need or want
-- Anything you remove here should be removed in the `lua/` directory, too
-- Make sure the `plugin/` directory implements the command(s) and mappings that you need
-- Remove plugin integrations if you don't want them:
-
-- Removing [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) (if you don't want it)
-```sh
-rm -rf lua/lualine
-rm configuration_tools_lualine_spec.lua
-rm lualine_spec.lua
-```
-- Removing [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) (if you don't want it)
-```sh
-rm -rf lua/telescope
-rm configuration_tools_telescope_spec.lua
-rm telescope_spec.lua
-```
-
-- Removing the built-in commands (if you don't want them):
-
-```sh
-rm -rf lua/plugin_template/_commands
-```
-
-5. Search for "TODO: (you)" in all files and fill them out
-```sh
-grep --recursive --line-number --word-regexp 'TODO: (you)' | nvim -q - -c "copen"
-```
-
-6. Add your plugin needs (commands, unittests, etc). Make sure tests pass (See
-   `Tests`, below)
-
-7. After you're done with the above, delete this section of the README.
-
-
-## Releases
-To enable automatic uploads to [LuaRocks](https://luarocks.org), you must:
-
-1. Create a [LuaRocks API key](https://luarocks.org/settings/api-keys)
-2. Add the secret API key to your GitHub actions (see below)
-![image](https://github.com/user-attachments/assets/a0cadfa2-50e0-467e-99ea-55b4061e851e)
-3. Add a new git tag and push the tag to the default (main) branch.
-
-Example:
-
-```sh
-git checkout main
-git tag -a v1.2.3 -m "Added an important bug fix"
-git push --tags
-```
-
-[release.yml](.github/workflows/release.yml) will then make a release for you.
-
-
-## Documentation
-This template can auto-generate its own documentation and Vimtags. This is
-controlled by the [documentation.yml](.github/workflows/documentation.yml) file.
-
-For this feature to work, the GitHub workflow must have write access to the repository. To enable it:
-
-- Click the Settings tab
-- (Under the "Code and automation" section) Press "Actions" > "General"
-- (In the new page) (Under "Workflow permissions") Press "Read and write permissions"
-
-![image](https://github.com/user-attachments/assets/2eab9eaf-1696-4b32-be95-c891c2cc6adc)
-
-You can also disable this feature by removing
-[documentation.yml](.github/workflows/documentation.yml).
+1. Follow the instructions on this page: https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/Using-This-Template
+2. Once you're done, remove this section (the rest of this README.md file) should be kept
 
 
 # Installation
@@ -144,6 +53,8 @@ You can also disable this feature by removing
 ```lua
 {
     "ColinKennedy/nvim-best-practices-plugin-template",
+    -- TODO: (you) - Add this in once you have your first release
+    -- version = "1.*",
 }
 ```
 
@@ -171,6 +82,10 @@ You can also disable this feature by removing
             },
             tools = {
                 lualine = {
+                    arbitrary_thing = {
+                        color = "Visual",
+                        text = " Arbitrary Thing",
+                    },
                     copy_logs = {
                         color = "Comment",
                         text = "󰈔 Copy Logs",
