@@ -16,20 +16,23 @@ local M = {}
 --- - -f = f
 --- - foo = foo
 ---
---- @param option ArgparseArgument Some argument / option to query.
+--- @param argument ArgparseArgument Some argument / option to query.
 --- @return string # The found name.
 ---
-local function _get_argument_name(option)
-    if option.argument_type == argparse.ArgumentType.position then
-        --- @cast option PositionOption
-        return option.value
+local function _get_argument_name(argument)
+    if argument.argument_type == argparse.ArgumentType.position then
+        --- @cast argument PositionArgument
+        return argument.value
     end
 
-    if option.argument_type == argparse.ArgumentType.flag or option.argument_type == argparse.ArgumentType.named then
-        return option.name
+    if
+        argument.argument_type == argparse.ArgumentType.flag
+        or argument.argument_type == argparse.ArgumentType.named
+    then
+        return argument.name
     end
 
-    vlog.fmt_error('Unabled to find a label for "%s" option.', option)
+    vlog.fmt_error('Unabled to find a label for "%s" argument.', argument)
 
     return ""
 end

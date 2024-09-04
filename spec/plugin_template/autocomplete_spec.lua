@@ -38,10 +38,10 @@ local function _make_simple_tree()
                 return output
             end,
             name = "repeat",
-            argument_type = argparse.ArgumentType.named,
+            option_type = completion.OptionType.named,
         },
         {
-            argument_type = argparse.ArgumentType.named,
+            option_type = completion.OptionType.named,
             name = "style",
             choices = { "lowercase", "uppercase" },
         },
@@ -64,6 +64,13 @@ describe("simple", function()
 
         assert.same({ "phrase", "word" }, completion.get_options(tree, _parse("say "), 4))
         assert.same({ "--repeat=", "--style=" }, completion.get_options(tree, _parse("say phrase "), 11))
+    end)
+
+    it("works when two positions start with the same text", function()
+        local tree = { bottle = { "foo" }, bottles = { "bar" } }
+
+        assert.same({ "bottle", "bottles" }, completion.get_options(tree, _parse("bottle"), 6))
+        assert.same({ "foo" }, completion.get_options(tree, _parse("bottle "), 7))
     end)
 
     it("works with a basic multi-key example", function()
@@ -93,10 +100,10 @@ describe("simple", function()
                     return output
                 end,
                 name = "repeat",
-                argument_type = argparse.ArgumentType.named,
+                option_type = completion.OptionType.named,
             },
             {
-                argument_type = argparse.ArgumentType.named,
+                option_type = completion.OptionType.named,
                 name = "style",
                 choices = { "lowercase", "uppercase" },
             },
@@ -111,12 +118,12 @@ describe("simple", function()
         local tree = {
             {
                 {
-                    argument_type = argparse.ArgumentType.named,
+                    option_type = completion.OptionType.named,
                     name = "style",
                     choices = { "lowercase", "uppercase" },
                 },
                 {
-                    argument_type = argparse.ArgumentType.position,
+                    option_type = completion.OptionType.position,
                     value = "style",
                 },
             },
@@ -129,12 +136,12 @@ describe("simple", function()
         local tree = {
             {
                 {
-                    argument_type = argparse.ArgumentType.named,
+                    option_type = completion.OptionType.named,
                     name = "style",
                     choices = { "lowercase", "uppercase" },
                 },
                 {
-                    argument_type = argparse.ArgumentType.position,
+                    option_type = completion.OptionType.position,
                     value = "style",
                 },
             },
@@ -149,10 +156,10 @@ describe("simple", function()
 
         -- NOTE: Simple examples
         assert.same({ "say" }, completion.get_options(tree, _parse("sa"), 2))
-        assert.same({}, completion.get_options(tree, _parse("say"), 3))
+        assert.same({ "say" }, completion.get_options(tree, _parse("say"), 3))
         assert.same({ "phrase", "word" }, completion.get_options(tree, _parse("say "), 4))
         assert.same({ "phrase" }, completion.get_options(tree, _parse("say p"), 5))
-        assert.same({}, completion.get_options(tree, _parse("say phrase"), 10))
+        assert.same({ "phrase" }, completion.get_options(tree, _parse("say phrase"), 10))
         assert.same({ "--repeat=", "--style=" }, completion.get_options(tree, _parse("say phrase "), 11))
 
         -- NOTE: Beginning a --double-dash named argument, maybe (we don't know yet)
@@ -208,12 +215,12 @@ describe("named argument", function()
     it("allow named argument as key", function()
         local tree = {
             [{
-                argument_type = argparse.ArgumentType.named,
+                option_type = completion.OptionType.named,
                 name = "style",
                 choices = { "lowercase", "uppercase" },
             }] = {
                 {
-                    argument_type = argparse.ArgumentType.position,
+                    option_type = completion.OptionType.position,
                     value = "style",
                 },
             },
@@ -227,7 +234,7 @@ describe("named argument", function()
     it("auto-completes on the dashes - 001", function()
         local tree = {
             {
-                argument_type = argparse.ArgumentType.named,
+                option_type = completion.OptionType.named,
                 name = "style",
                 choices = { "lowercase", "uppercase" },
             },
@@ -239,7 +246,7 @@ describe("named argument", function()
     it("auto-completes on the dashes - 002", function()
         local tree = {
             {
-                argument_type = argparse.ArgumentType.named,
+                option_type = completion.OptionType.named,
                 name = "style",
                 choices = { "lowercase", "uppercase" },
             },
@@ -252,7 +259,7 @@ describe("named argument", function()
     it("auto-completes on a #partial argument name - 001", function()
         local tree = {
             {
-                argument_type = argparse.ArgumentType.named,
+                option_type = completion.OptionType.named,
                 name = "style",
                 choices = { "lowercase", "uppercase" },
             },
@@ -266,7 +273,7 @@ describe("named argument", function()
     it("auto-completes on a #partial argument name - 002", function()
         local tree = {
             {
-                argument_type = argparse.ArgumentType.named,
+                option_type = completion.OptionType.named,
                 name = "style",
                 choices = { "lowercase", "uppercase" },
             },
@@ -283,7 +290,7 @@ describe("named argument", function()
     it("auto-completes on a #partial argument name - 003", function()
         local tree = {
             {
-                argument_type = argparse.ArgumentType.named,
+                option_type = completion.OptionType.named,
                 name = "style",
                 choices = { "lowercase", "uppercase" },
             },
@@ -312,7 +319,7 @@ describe("named argument", function()
                     return output
                 end,
                 name = "repeat",
-                argument_type = argparse.ArgumentType.named,
+                option_type = completion.OptionType.named,
             },
         }
 
@@ -340,7 +347,7 @@ describe("flag argument", function()
     it("auto-completes on the dash", function()
         local tree = {
             {
-                argument_type = argparse.ArgumentType.flag,
+                option_type = completion.OptionType.flag,
                 name = "f",
             },
         }
@@ -351,7 +358,7 @@ describe("flag argument", function()
     it("does not auto-complete if at the end of the flag", function()
         local tree = {
             {
-                argument_type = argparse.ArgumentType.flag,
+                option_type = completion.OptionType.flag,
                 name = "f",
             },
         }
@@ -365,7 +372,7 @@ describe("numbered count - named argument", function()
     it("works with count = 2", function()
         local tree = {
             {
-                argument_type = argparse.ArgumentType.named,
+                option_type = completion.OptionType.named,
                 name = "foo",
                 choices = { "bar", "fizz", "buzz" },
                 count = 2,
@@ -387,7 +394,7 @@ describe("numbered count - named argument", function()
     it("works with count = 2", function()
         local tree = {
             {
-                argument_type = argparse.ArgumentType.named,
+                option_type = completion.OptionType.named,
                 name = "foo",
                 choices = { "bar", "fizz", "buzz" },
                 count = 2,

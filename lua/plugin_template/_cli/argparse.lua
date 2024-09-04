@@ -9,6 +9,7 @@ local M = {}
 
 --- @enum ArgumentType
 M.ArgumentType = {
+    dynamic = "__dynamic",
     flag = "__flag",
     named = "__named",
     position = "__position",
@@ -41,7 +42,7 @@ M.ArgumentType = {
 
 --- @class NamedArgument : BaseArgument
 ---     A --key=value pair. Basically it's a FlagArgument that has an extra value.
---- @field name ...
+--- @field name string
 ---     The text of the argument. e.g. The `"foo"` part of `"--foo=bar"`.
 --- @field needs_choice_completion boolean
 ---     If `true`, it means that we've typed `"--foo="` and are ready to
