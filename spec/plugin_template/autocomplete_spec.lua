@@ -5,7 +5,6 @@
 
 local argparse = require("plugin_template._cli.argparse")
 local completion = require("plugin_template._cli.completion")
-local configuration = require("plugin_template._core.configuration")
 
 --- @diagnostic disable: undefined-field
 
@@ -52,8 +51,6 @@ local function _make_simple_tree()
 end
 
 describe("default", function()
-    before_each(configuration.initialize_data_if_needed)
-
     it("works even if #simple", function()
         local tree = _make_simple_tree()
 
@@ -62,8 +59,6 @@ describe("default", function()
 end)
 
 describe("simple", function()
-    before_each(configuration.initialize_data_if_needed)
-
     it("works with multiple position arguments", function()
         local tree = _make_simple_tree()
 
@@ -210,8 +205,6 @@ describe("simple", function()
 end)
 
 describe("named argument", function()
-    before_each(configuration.initialize_data_if_needed)
-
     it("allow named argument as key", function()
         local tree = {
             [{
@@ -344,8 +337,6 @@ describe("named argument", function()
 end)
 
 describe("flag argument", function()
-    before_each(configuration.initialize_data_if_needed)
-
     it("auto-completes on the dash", function()
         local tree = {
             {
@@ -367,5 +358,49 @@ describe("flag argument", function()
 
         assert.same({}, completion.get_options(tree, _parse("-f"), 1))
         assert.same({}, completion.get_options(tree, _parse("-f"), 2))
+    end)
+end)
+
+describe("numbered count - named argument", function()
+    it("works with count = 2", function()
+        local tree = {
+            {
+                argument_type = argparse.ArgumentType.named,
+                name = "foo",
+                choices = { "bar", "fizz", "buzz" },
+                count = 2,
+            },
+        }
+
+        assert.same({ "--foo=" }, completion.get_options(tree, _parse("--fo"), 4))
+        assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, completion.get_options(tree, _parse("--foo="), 6))
+        assert.same({ "--foo=" }, completion.get_options(tree, _parse("--foo=bar "), 10))
+        assert.same(
+            { "--foo=bar", "--foo=fizz", "--foo=buzz" },
+            completion.get_options(tree, _parse("--foo=bar --foo="), 16)
+        )
+        assert.same({}, completion.get_options(tree, _parse("--foo=bar --foo=bar "), 20))
+    end)
+end)
+
+describe("numbered count - named argument", function()
+    it("works with count = 2", function()
+        local tree = {
+            {
+                argument_type = argparse.ArgumentType.named,
+                name = "foo",
+                choices = { "bar", "fizz", "buzz" },
+                count = 2,
+            },
+        }
+
+        assert.same({ "--foo=" }, completion.get_options(tree, _parse("--fo"), 4))
+        assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, completion.get_options(tree, _parse("--foo="), 6))
+        assert.same({ "--foo=" }, completion.get_options(tree, _parse("--foo=bar "), 10))
+        assert.same(
+            { "--foo=bar", "--foo=fizz", "--foo=buzz" },
+            completion.get_options(tree, _parse("--foo=bar --foo="), 16)
+        )
+        assert.same({}, completion.get_options(tree, _parse("--foo=bar --foo=bar "), 20))
     end)
 end)

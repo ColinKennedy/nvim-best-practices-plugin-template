@@ -7,7 +7,6 @@
 --- @module 'plugin_template.plugin_template_spec'
 ---
 
-local configuration = require("plugin_template._core.configuration")
 local plugin_template = require("plugin_template")
 
 --- @diagnostic disable: undefined-field
@@ -26,7 +25,6 @@ end
 --- Mock all functions / states before a unittest runs (call this before each test).
 local function _initialize_all()
     vim.notify = _save_prints
-    configuration.initialize_data_if_needed()
 end
 
 --- Reset all functions / states to their previous settings before the test had run.

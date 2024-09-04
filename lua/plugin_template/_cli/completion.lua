@@ -69,6 +69,14 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
+--- @enum OptionType
+M.OptionType = {
+    dynamic = "__dynamic",
+    flag = argparse.ArgumentType.flag,
+    named = argparse.ArgumentType.named,
+    position = argparse.ArgumentType.position,
+}
+
 --- @param option CompletionOption
 --- @return boolean
 local function _has_fixed_count(option)
@@ -150,7 +158,7 @@ local function _is_partial_match_named_argument(data, option)
 
     if
         data.argument_type == argparse.ArgumentType.flag
-        and option.argument_type == argparse.ArgumentType.named
+        and option.argument_type == M.OptionType.named
         and not _is_exhausted({ option })
         and option.name ~= data.name
         and vim.startswith(option.name, data.name)
@@ -198,11 +206,11 @@ local function _get_auto_complete_values(options)
     local output = {}
 
     for _, option in ipairs(options) do
-        if option.argument_type == argparse.ArgumentType.position then
+        if option.argument_type == M.OptionType.position then
             table.insert(output, option.value)
-        elseif option.argument_type == argparse.ArgumentType.flag then
+        elseif option.argument_type == M.OptionType.flag then
             table.insert(output, "-" .. option.name)
-        elseif option.argument_type == argparse.ArgumentType.named then
+        elseif option.argument_type == M.OptionType.named then
             table.insert(output, "--" .. option.name .. "=")
         end
     end
@@ -271,12 +279,12 @@ end
 --- @return string # The found name.
 ---
 local function _get_argument_name(option)
-    if option.argument_type == argparse.ArgumentType.position then
+    if option.argument_type == M.OptionType.position then
         --- @cast option PositionOption
         return option.value
     end
 
-    if option.argument_type == argparse.ArgumentType.flag or option.argument_type == argparse.ArgumentType.named then
+    if option.argument_type == M.OptionType.flag or option.argument_type == M.OptionType.named then
         return option.name
     end
 
@@ -398,7 +406,7 @@ local function _get_flag_arguments(options, name)
     local output = {}
 
     for _, option in ipairs(options) do
-        if option.argument_type == argparse.ArgumentType.flag and option.name == name then
+        if option.argument_type == M.OptionType.flag and option.name == name then
             table.insert(output, name)
         end
     end
@@ -500,7 +508,7 @@ local function _get_named_arguments(options)
     local output = {}
 
     for _, option in ipairs(options) do
-        if option.argument_type == argparse.ArgumentType.named then
+        if option.argument_type == M.OptionType.named then
             table.insert(output, option)
         end
     end
@@ -606,7 +614,7 @@ end
 --- @return boolean # If `FlagOption`, return `true`.
 ---
 local function _is_flag_option(option)
-    return option.argument_type == argparse.ArgumentType.flag
+    return option.argument_type == M.OptionType.flag
 end
 
 --- Check if `option` is a `--foo=bar` argument.
@@ -615,7 +623,7 @@ end
 --- @return boolean # If `NamedOption`, return `true`.
 ---
 local function _is_named_option(option)
-    return option.argument_type == argparse.ArgumentType.named
+    return option.argument_type == M.OptionType.named
 end
 
 --- Check if `option` is a `foo` argument.
@@ -624,7 +632,7 @@ end
 --- @return boolean # If `PositionOption`, return `true`.
 ---
 local function _is_position_option(option)
-    return option.argument_type == argparse.ArgumentType.position
+    return option.argument_type == M.OptionType.position
 end
 
 --- Check if `option` is a known completion option.
@@ -667,7 +675,7 @@ end
 --- @return PositionOption # The generated option.
 ---
 local function _make_position_option(name)
-    return { count = 1, used = 0, value = name, argument_type = argparse.ArgumentType.position }
+    return { count = 1, used = 0, value = name, argument_type = M.OptionType.position }
 end
 
 --- Convert `tree` into a completion tree (if it isn't already).
@@ -712,11 +720,11 @@ local function _fill_missing_data(tree)
             option.used = 0
         end
 
-        if option.argument_type == argparse.ArgumentType.position then
+        if option.argument_type == M.OptionType.position then
             if option.required == nil then
                 option.required = true
             end
-        elseif option.argument_type == argparse.ArgumentType.named then
+        elseif option.argument_type == M.OptionType.named then
             if option.required == nil then
                 option.required = false
             end
@@ -725,7 +733,7 @@ local function _fill_missing_data(tree)
                 --- @diagnostic disable-next-line param-type-mismatch
                 option.choices = _get_startswith_auto_complete_function(option.choices)
             end
-        elseif option.argument_type == argparse.ArgumentType.flag then
+        elseif option.argument_type == M.OptionType.flag then
             if option.required == nil then
                 option.required = false
             end

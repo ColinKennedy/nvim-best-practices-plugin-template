@@ -51,8 +51,6 @@ local function _assert_good(data)
 end
 
 describe("default", function()
-    before_each(configuration_.initialize_data_if_needed)
-
     it("works with an #empty configuration", function()
         _assert_good({})
         _assert_good()
@@ -91,8 +89,6 @@ end)
 --- @diagnostic disable: assign-type-mismatch
 --- @diagnostic disable: missing-fields
 describe("bad configuration - commands", function()
-    before_each(configuration_.initialize_data_if_needed)
-
     it("happens with a bad type for #commands.goodnight_moon.phrase", function()
         _assert_bad(
             { commands = { goodnight_moon = { read = { phrase = 10 } } } },
@@ -133,8 +129,6 @@ end)
 
 --- @diagnostic disable: assign-type-mismatch
 describe("bad configuration - logging", function()
-    before_each(configuration_.initialize_data_if_needed)
-
     it("happens with a bad value for #logging", function()
         _assert_bad({ logging = false }, { 'logging: expected a table. e.g. { level = "info", ... }, got false' })
     end)
@@ -164,7 +158,6 @@ end)
 --- @diagnostic disable: assign-type-mismatch
 describe("health.check", function()
     before_each(function()
-        configuration_.initialize_data_if_needed()
         mock_vim.mock_vim_health()
     end)
     after_each(mock_vim.reset_mocked_vim_health)
