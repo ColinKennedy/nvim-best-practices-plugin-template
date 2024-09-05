@@ -561,14 +561,79 @@ end)
 
 describe("dynamic argument", function()
     it("skips if no matches were found", function()
-        -- TODO: Add
+        local tree = {
+            say = {
+                [{
+                    option_type = argparse.ArgumentType.dynamic,
+                    choices = function()
+                        return { "a", "bb", "asteroid", "tt" }
+                    end,
+                }] = { thing = { "another", "last" } },
+                [{
+                    option_type = argparse.ArgumentType.dynamic,
+                    choices = function()
+                        return { "ab", "cc", "zzz", "lazers" }
+                    end,
+                }] = { different = { "branch", "here" } },
+            },
+        }
+
+        assert.same({}, completion.get_options(tree, _parse("say qqqqqqq"), 11))
+    end)
+
+    it("uses the current text to adjust the choices, dynamically", function()
+        local tree = {
+            say = {
+                [{
+                    option_type = argparse.ArgumentType.dynamic,
+                    choices = function(data)
+                        if data.text == "bbb" then
+                            return {"tttt"}
+                        end
+
+                        return {"bbbb"}
+                    end,
+                }] = { thing = { "another", "last" } },
+                [{
+                    option_type = argparse.ArgumentType.dynamic,
+                    choices = function()
+                        return { "ab", "cc", "zzz", "lazers" }
+                    end,
+                }] = { different = { "branch", "here" } },
+            },
+        }
+
+        assert.same({"bbbb"}, completion.get_options(tree, _parse("say bb"), 6))
+        assert.same({"tttt"}, completion.get_options(tree, _parse("say bbb"), 7))
+        assert.same({"bbbb"}, completion.get_options(tree, _parse("say bbbb"), 8))
+        assert.same({"thing"}, completion.get_options(tree, _parse("say bbbb "), 9))
     end)
 
     it("works even if matches use spaces", function()
-        -- TODO: The user's argument should be in quotes, basically
+        local tree = {
+            say = {
+                [{
+                    option_type = argparse.ArgumentType.dynamic,
+                    choices = function()
+                        return { "a b c", "aaa something ccczzz", "tt" }
+                    end,
+                }] = { thing = { "another", "last" } },
+                [{
+                    option_type = argparse.ArgumentType.dynamic,
+                    choices = function()
+                        return { "ab", "cc", "zzz", "lazers" }
+                    end,
+                }] = { different = { "branch", "here" } },
+            },
+        }
+
+        assert.same(
+            {"a b c", "aaa something ccczzz", "ab"},
+            completion.get_options(tree, _parse("say a"), 5)
+        )
     end)
 
-    it("works with positional arguments #asdf", function()
+    it("works with positional arguments", function()
         local tree = {
             say = {
                 [{
