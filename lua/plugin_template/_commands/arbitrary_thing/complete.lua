@@ -9,26 +9,26 @@ local completion = require("plugin_template._cli.completion")
 local _TREE = {
     {
         {
-            argument_type = argparse.ArgumentType.flag,
+            option_type = argparse.ArgumentType.flag,
             count = "*",
             name = "f",
         },
 
         {
-            argument_type = argparse.ArgumentType.flag,
+            option_type = argparse.ArgumentType.flag,
             name = "a",
         },
         {
-            argument_type = argparse.ArgumentType.flag,
+            option_type = argparse.ArgumentType.flag,
             name = "b",
         },
         {
-            argument_type = argparse.ArgumentType.flag,
+            option_type = argparse.ArgumentType.flag,
             name = "c",
         },
 
         {
-            argument_type = argparse.ArgumentType.flag,
+            option_type = argparse.ArgumentType.flag,
             count = "*",
             name = "v",
         },

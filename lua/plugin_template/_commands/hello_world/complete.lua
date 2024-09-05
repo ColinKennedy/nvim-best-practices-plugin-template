@@ -35,10 +35,10 @@ local _TAIL_ARGUMENTS = {
             return output
         end,
         name = "repeat",
-        argument_type = argparse.ArgumentType.named,
+        option_type = argparse.ArgumentType.named,
     },
     {
-        argument_type = argparse.ArgumentType.named,
+        option_type = argparse.ArgumentType.named,
         name = "style",
         choices = {
             constant.Keyword.style.lowercase,
@@ -65,6 +65,14 @@ function M.complete(data)
     local arguments = argparse.parse_arguments(data)
 
     return completion.get_options(_TREE, arguments, vim.fn.getcmdpos())
+end
+
+--- Check if `arguments` is a valid `hello-world` command.
+---
+--- @param arguments ArgparseResults The user's command, parsed into separate text.
+---
+function M.validate(arguments)
+    return completion.validate_options(_TREE, arguments)
 end
 
 return M

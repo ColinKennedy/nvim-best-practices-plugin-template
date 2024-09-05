@@ -411,3 +411,113 @@ describe("numbered count - named argument", function()
         assert.same({}, completion.get_options(tree, _parse("--foo=bar --foo=bar "), 20))
     end)
 end)
+
+
+describe("validate arguments", function()
+    it("does not error if there is no text and all arguments are optional", function()
+        local tree = {
+            {
+                option_type = argparse.ArgumentType.position,
+                required = false,
+                name = "foo",
+            },
+        }
+
+        assert.same(
+            { success=true, messages={} },
+            completion.validate_options(tree, _parse(""))
+        )
+    end)
+
+    it("errors if there is no text and at least one argument is required", function()
+        local tree = {
+            {
+                option_type = argparse.ArgumentType.position,
+                required = true,
+                name = "foo",
+            },
+        }
+
+        assert.same(
+            { success=false, messages={"Arguments cannot be empty."} },
+            completion.validate_options(tree, _parse(""))
+        )
+    end)
+
+    it("errors if a named argument is not given a value", function()
+        local tree = {
+            {
+                option_type = argparse.ArgumentType.named,
+                name = "foo",
+            },
+        }
+
+        assert.same(
+            { success=false, messages={'Named argument "foo" needs a value.'} },
+            completion.validate_options(tree, _parse("--foo="))
+        )
+    end)
+
+    it("errors if a named argument in the middle of parse that is not given a value", function()
+        local tree = {
+            foo = {
+                [{
+                    option_type = argparse.ArgumentType.named,
+                    name = "bar",
+                }] = {
+                    {
+                        option_type = argparse.ArgumentType.named,
+                        name = "fizz",
+                    },
+                    {
+                        option_type = argparse.ArgumentType.named,
+                        name = "thing",
+                    },
+                }
+            }
+        }
+
+        assert.same(
+            { success=false, messages={'Named argument "bar" needs a value.'} },
+            completion.validate_options(tree, _parse("foo --bar= --fizz=123"))
+        )
+    end)
+
+    it("errors if a position argument in the middle of parse that is not given a value", function()
+        local tree = {
+            foo = {
+                another = {"blah"},
+                bar = {
+                    {
+                        option_type = argparse.ArgumentType.named,
+                        name = "fizz",
+                    }
+                },
+            }
+        }
+
+        assert.same(
+            { success=false, messages={'Missing argument. Need one of: "another, bar".'} },
+            completion.validate_options(tree, _parse("foo --fizz "))
+        )
+    end)
+
+    it("errors if a position argument at the end of a parse that is not given a value", function()
+        local tree = {
+            foo = {
+                another = {"blah"},
+                bar = {
+                    {
+                        option_type = argparse.ArgumentType.named,
+                        name = "fizz",
+                    }
+                },
+            }
+        }
+
+        assert.same(
+            { success=false, messages={'Missing argument. Need one of: "blah".'} },
+            completion.validate_options(tree, _parse("foo another "))
+        )
+    end)
+end)

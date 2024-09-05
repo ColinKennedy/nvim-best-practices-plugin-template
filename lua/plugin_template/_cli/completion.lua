@@ -84,6 +84,15 @@ local vlog = require("plugin_template._vendors.vlog")
 ---     aruments are next" but cannot answer questions like "What should we
 ---     return for auto-complete".
 
+
+--- @class OptionValidationResult
+---     All of the validation details. Did validation succeed? Fail? If failed, why?
+--- @field success boolean
+---     If validation failed, `success` is `false`.
+--- @field messages string[]
+---     If validation failed, this shows all of the error messages. Otherwise
+---     `messages` is empty.
+
 local M = {}
 
 --- @enum OptionType
@@ -104,6 +113,21 @@ end
 --- @return boolean
 local function _has_uses_left(option)
     return option.used < option.count
+end
+
+--- Check if `options` needs to be included in the user's arguments.
+---
+--- @param options CompletionOption[] All auto-complete options.
+--- @return boolean # If any `options` is required, return `true`.
+---
+local function _has_required_option(options)
+    for _, option in ipairs(options) do
+        if option.required then
+            return true
+        end
+    end
+
+    return false
 end
 
 --- Check if `options` has any count-enabled arguments that still have usages left.
@@ -975,8 +999,32 @@ end
 ---     The options to use in other functions.
 --- @return boolean
 ---     If we stopped the traversal early, return `false`. Otherwise return `true`.
+--- @return ArgparseArgument
+---     The last argument that was processed.
 ---
 local function _get_options_from_tree(input, tree)
+
+    local function _filter_named_arguments_with_missing_values(argument, options)
+        if argument.value and argument.value ~= "" then
+            return options
+        end
+
+        local name = _get_argument_name(argument)
+        local output = {}
+
+        for _, option in ipairs(options) do
+            if option.option_type == M.OptionType.named then
+                if name ~= option.name then
+                    table.insert(output, option)
+                end
+            else
+                table.insert(output, option)
+            end
+        end
+
+        return output
+    end
+
     local current_tree = tree
     local total = #input.text
 
@@ -988,7 +1036,7 @@ local function _get_options_from_tree(input, tree)
             --
             -- Because of #2, we need to immediately return.
             --
-            return current_tree, true
+            return current_tree, true, argument
         end
 
         local keys = current_tree
@@ -1001,7 +1049,7 @@ local function _get_options_from_tree(input, tree)
             local matches = _get_name_matches(argument, keys)
 
             if vim.tbl_isempty(matches) then
-                return keys, false
+                return keys, false, argument
             end
 
             _increment_used(keys, matches)
@@ -1009,9 +1057,13 @@ local function _get_options_from_tree(input, tree)
             local name = _get_argument_name(argument)
             keys = vim.tbl_keys(current_tree)
             local matches = _get_option_matches(name, keys)
+            local valid_matches = _filter_named_arguments_with_missing_values(
+                argument,
+                matches or {}
+            )
 
-            if not matches then
-                return current_tree, false
+            if vim.tbl_isempty(valid_matches) then
+                return current_tree, false, argument
             end
 
             for _, key in ipairs(keys) do
@@ -1024,7 +1076,7 @@ local function _get_options_from_tree(input, tree)
         end
     end
 
-    return current_tree, true
+    return current_tree, true, input.arguments[#input.arguments]
 end
 
 --- Find all `options` that either exactly  or partially match `data`.
@@ -1122,7 +1174,8 @@ local function _get_options(tree, input, column)
     local stripped = _rstrip_input(input, column)
 
     local last = stripped.arguments[#stripped.arguments]
-    local subtree, completed = _get_options_from_tree(stripped, tree)
+    -- TODO: Consider checking the `argument`
+    local subtree, completed, _ = _get_options_from_tree(stripped, tree)
     local options = _conform_current_options(subtree)
     local argument = _get_remainder_named_argument(last, options)
 
@@ -1176,6 +1229,65 @@ function M.get_options(tree, input, column)
     vlog.fmt_debug('Got "%s" auto-completion results.', results)
 
     return results
+end
+
+--- Check if `input` satisfies the expected `tree`.
+---
+--- @param tree IncompleteOptionTree | ArgumentTree
+---     A basic CLI description that answers. 1. What arguments are next 2.
+---     What should we return for auto-complete, if anything.
+--- @param input ArgparseResults
+---     The user's parsed text.
+--- @return OptionValidationResult
+---     All of the validation details. Did validation succeed? Fail? If failed, why?
+---
+function M.validate_options(tree, input)
+    local function _get_validation_messages(argument)
+        if argument and argument.argument_type == argparse.ArgumentType.named then
+            --- @cast argument NamedArgument
+
+            if not argument.value or argument.value == "" then
+                return {
+                    string.format('Named argument "%s" needs a value.', argument.name)
+                }
+            end
+        end
+
+        return {}
+    end
+
+    tree = _fill_missing_data(tree)
+
+    if vim.tbl_isempty(input.arguments) then
+        if _has_required_option(_conform_current_options(tree)) then
+            return { success=false, messages={"Arguments cannot be empty."} }
+        end
+
+        return { success=true, messages={} }
+    end
+
+    local subtree, _, argument = _get_options_from_tree(input, tree)
+
+    local messages = _get_validation_messages(argument)
+
+    if not vim.tbl_isempty(messages) then
+        return {success=false, messages=messages}
+    end
+
+    local options = _conform_current_options(subtree)
+    options = _trim_exhausted_options(options)
+
+    if vim.tbl_isempty(options) then
+        return { success=true, messages={} }
+    end
+
+    local labels = _get_auto_complete_values(options)
+
+    messages = {
+        string.format('Missing argument. Need one of: "%s".', vim.fn.join(labels, ", ")),
+    }
+
+    return { success=false, messages=messages }
 end
 
 return M
