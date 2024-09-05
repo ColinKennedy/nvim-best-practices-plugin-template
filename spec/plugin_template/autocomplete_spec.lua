@@ -412,7 +412,6 @@ describe("numbered count - named argument", function()
     end)
 end)
 
-
 describe("validate arguments", function()
     it("does not error if there is no text and all arguments are optional", function()
         local tree = {
@@ -423,10 +422,7 @@ describe("validate arguments", function()
             },
         }
 
-        assert.same(
-            { success=true, messages={} },
-            completion.validate_options(tree, _parse(""))
-        )
+        assert.same({ success = true, messages = {} }, completion.validate_options(tree, _parse("")))
     end)
 
     it("errors if there is no text and at least one argument is required", function()
@@ -439,7 +435,7 @@ describe("validate arguments", function()
         }
 
         assert.same(
-            { success=false, messages={"Arguments cannot be empty."} },
+            { success = false, messages = { "Arguments cannot be empty." } },
             completion.validate_options(tree, _parse(""))
         )
     end)
@@ -453,7 +449,7 @@ describe("validate arguments", function()
         }
 
         assert.same(
-            { success=false, messages={'Named argument "foo" needs a value.'} },
+            { success = false, messages = { 'Named argument "foo" needs a value.' } },
             completion.validate_options(tree, _parse("--foo="))
         )
     end)
@@ -473,12 +469,12 @@ describe("validate arguments", function()
                         option_type = argparse.ArgumentType.named,
                         name = "thing",
                     },
-                }
-            }
+                },
+            },
         }
 
         assert.same(
-            { success=false, messages={'Named argument "bar" needs a value.'} },
+            { success = false, messages = { 'Named argument "bar" needs a value.' } },
             completion.validate_options(tree, _parse("foo --bar= --fizz=123"))
         )
     end)
@@ -486,18 +482,18 @@ describe("validate arguments", function()
     it("errors if a position argument in the middle of parse that is not given a value", function()
         local tree = {
             foo = {
-                another = {"blah"},
+                another = { "blah" },
                 bar = {
                     {
                         option_type = argparse.ArgumentType.named,
                         name = "fizz",
-                    }
+                    },
                 },
-            }
+            },
         }
 
         assert.same(
-            { success=false, messages={'Missing argument. Need one of: "another, bar".'} },
+            { success = false, messages = { 'Missing argument. Need one of: "another, bar".' } },
             completion.validate_options(tree, _parse("foo --fizz "))
         )
     end)
@@ -505,19 +501,60 @@ describe("validate arguments", function()
     it("errors if a position argument at the end of a parse that is not given a value", function()
         local tree = {
             foo = {
-                another = {"blah"},
+                another = { "blah" },
                 bar = {
                     {
                         option_type = argparse.ArgumentType.named,
                         name = "fizz",
-                    }
+                    },
                 },
-            }
+            },
         }
 
         assert.same(
-            { success=false, messages={'Missing argument. Need one of: "blah".'} },
+            { success = false, messages = { 'Missing argument. Need one of: "blah".' } },
             completion.validate_options(tree, _parse("foo another "))
         )
+    end)
+end)
+
+describe("* count", function()
+    describe("simple", function()
+        it("works with position arguments", function()
+            local tree = {
+                {
+                    count = "*",
+                    value = "foo",
+                    option_type = argparse.ArgumentType.position,
+                },
+            }
+
+            assert.same({ "foo" }, completion.get_options(tree, _parse(""), 1))
+            assert.same({ "foo" }, completion.get_options(tree, _parse("fo"), 2))
+            assert.same({ "foo" }, completion.get_options(tree, _parse("foo"), 3))
+            assert.same({ "foo" }, completion.get_options(tree, _parse("foo "), 4))
+            assert.same({ "foo" }, completion.get_options(tree, _parse("foo fo"), 6))
+        end)
+
+        -- TODO: Consider adding this feature later
+        -- it("works in the middle of other arguments", function()
+        --     local tree = {
+        --         foo = {
+        --             [
+        --                 {
+        --                     count = "*",
+        --                     name = "bar",
+        --                     option_type = argparse.ArgumentType.position,
+        --                 }
+        --             ] = {"thing", "last"},
+        --         }
+        --     }
+        --
+        --     assert.same({ "foo" }, completion.get_options(tree, _parse(""), 1))
+        --     assert.same({ "foo" }, completion.get_options(tree, _parse("fo"), 2))
+        --     assert.same({ "foo" }, completion.get_options(tree, _parse("foo"), 3))
+        --     assert.same({ "foo", "last", "thing" }, completion.get_options(tree, _parse("foo "), 4))
+        --     assert.same({ "thing" }, completion.get_options(tree, _parse("foo thi"), 7))
+        -- end)
     end)
 end)

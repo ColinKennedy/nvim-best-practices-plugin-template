@@ -32,7 +32,7 @@ local vlog = require("plugin_template._vendors.vlog")
 --- @field choices fun(data: CompletionContext): string[]
 ---     Since `NamedOption` requires a name + value, `choices` is used to
 ---     auto-complete its values, starting at `--foo=`.
---- @field option_type "__flag"
+--- @field option_type "__dynamic"
 ---     This class's type.
 
 --- @class FlagOption : BaseOption
@@ -84,7 +84,6 @@ local vlog = require("plugin_template._vendors.vlog")
 ---     aruments are next" but cannot answer questions like "What should we
 ---     return for auto-complete".
 
-
 --- @class OptionValidationResult
 ---     All of the validation details. Did validation succeed? Fail? If failed, why?
 --- @field success boolean
@@ -94,6 +93,8 @@ local vlog = require("plugin_template._vendors.vlog")
 ---     `messages` is empty.
 
 local M = {}
+
+local _ANY_COUNT = "*"
 
 --- @enum OptionType
 M.OptionType = {
@@ -414,7 +415,7 @@ end
 ---     `"--foo"`, `"--foo=bar"`, or `"foo"`.
 --- @param all_options CompletionOption[][]
 ---     Each group of options to consider for matching.
---- return CompletionOption[]?
+--- @return CompletionOption[]?
 ---     All found matches, if any.
 ---
 local function _get_option_matches(text, all_options)
@@ -865,6 +866,15 @@ local function _fill_missing_data(tree)
             option.count = 1
         end
 
+        if option.count == _ANY_COUNT then
+            -- NOTE: This is a bit of a hack. Instead of adding checks for
+            -- `_ANY_COUNT` everywhere, we just set the count very high so that
+            -- the option is unlikely to ever expire. We'll keep this hack as
+            -- long as unittests say the feature works.
+            --
+            option.count = 1000000000
+        end
+
         if option.used == nil then
             option.used = 0
         end
@@ -1003,7 +1013,6 @@ end
 ---     The last argument that was processed.
 ---
 local function _get_options_from_tree(input, tree)
-
     local function _filter_named_arguments_with_missing_values(argument, options)
         if argument.value and argument.value ~= "" then
             return options
@@ -1057,17 +1066,14 @@ local function _get_options_from_tree(input, tree)
             local name = _get_argument_name(argument)
             keys = vim.tbl_keys(current_tree)
             local matches = _get_option_matches(name, keys)
-            local valid_matches = _filter_named_arguments_with_missing_values(
-                argument,
-                matches or {}
-            )
+            local valid_matches = _filter_named_arguments_with_missing_values(argument, matches or {})
 
             if vim.tbl_isempty(valid_matches) then
                 return current_tree, false, argument
             end
 
             for _, key in ipairs(keys) do
-                _increment_used(key, matches)
+                _increment_used(key, matches or {})
             end
 
             if _needs_next_options(keys) then
@@ -1248,7 +1254,7 @@ function M.validate_options(tree, input)
 
             if not argument.value or argument.value == "" then
                 return {
-                    string.format('Named argument "%s" needs a value.', argument.name)
+                    string.format('Named argument "%s" needs a value.', argument.name),
                 }
             end
         end
@@ -1260,10 +1266,10 @@ function M.validate_options(tree, input)
 
     if vim.tbl_isempty(input.arguments) then
         if _has_required_option(_conform_current_options(tree)) then
-            return { success=false, messages={"Arguments cannot be empty."} }
+            return { success = false, messages = { "Arguments cannot be empty." } }
         end
 
-        return { success=true, messages={} }
+        return { success = true, messages = {} }
     end
 
     local subtree, _, argument = _get_options_from_tree(input, tree)
@@ -1271,14 +1277,14 @@ function M.validate_options(tree, input)
     local messages = _get_validation_messages(argument)
 
     if not vim.tbl_isempty(messages) then
-        return {success=false, messages=messages}
+        return { success = false, messages = messages }
     end
 
     local options = _conform_current_options(subtree)
     options = _trim_exhausted_options(options)
 
     if vim.tbl_isempty(options) then
-        return { success=true, messages={} }
+        return { success = true, messages = {} }
     end
 
     local labels = _get_auto_complete_values(options)
@@ -1287,7 +1293,7 @@ function M.validate_options(tree, input)
         string.format('Missing argument. Need one of: "%s".', vim.fn.join(labels, ", ")),
     }
 
-    return { success=false, messages=messages }
+    return { success = false, messages = messages }
 end
 
 return M

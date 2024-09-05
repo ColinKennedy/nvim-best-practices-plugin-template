@@ -18,7 +18,7 @@ local _STARTING_GOODNIGHT_MOON_COMMANDS = {
     sleep = sleep_command.run,
 }
 local _STARTING_HELLO_WORLD_COMMANDS = {
-    say = { run = say_command.run_say, validate = hello_world_complete.validate }
+    say = { run = say_command.run_say, validate = hello_world_complete.validate },
 }
 
 local M = {}
