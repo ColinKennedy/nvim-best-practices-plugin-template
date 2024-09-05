@@ -215,6 +215,34 @@ local function _is_partial_match_named_argument(data, option)
     return false
 end
 
+--- Find the label name of `option`.
+---
+--- - --foo = foo
+--- - --foo=bar = foo
+--- - -f = f
+--- - foo = foo
+---
+--- @param argument ArgparseArgument Some argument / option to query.
+--- @return string # The found name.
+---
+local function _get_argument_name(argument)
+    if argument.argument_type == M.OptionType.position then
+        --- @cast argument PositionArgument
+        return argument.value
+    end
+
+    if
+        argument.argument_type == argparse.ArgumentType.flag
+        or argument.argument_type == argparse.ArgumentType.named
+    then
+        return argument.name
+    end
+
+    vlog.fmt_error('Unabled to find a label for "%s" argument.', argument)
+
+    return ""
+end
+
 --- Find all `options` that match `argument`.
 ---
 --- @param data ArgparseArgument A partially written user argument.
@@ -233,6 +261,21 @@ local function _is_partial_match(data, option)
     if _is_partial_match_named_argument(data, option) then
         return true
     end
+
+    -- if option.option_type == M.OptionType.dynamic then
+    --     local name = _get_argument_name(data)
+    --
+    --     if name == "" then
+    --         -- NOTE: Prevent an unknown name from accidentally matching every choice.
+    --         return false
+    --     end
+    --
+    --     for _, choice in ipairs(option.choices()) do
+    --         if vim.startswith(choice, name) then
+    --             return true
+    --         end
+    --     end
+    -- end
 
     return false
 end
@@ -287,13 +330,21 @@ local function _get_auto_complete_values(options)
         elseif option.option_type == M.OptionType.named then
             table.insert(output, "--" .. option.name .. "=")
         elseif option.option_type == M.OptionType.dynamic then
-            vim.list_extend(
-                output,
-                option.choices(
-                    -- TODO: Consider adding text here
-                    { current_options = options, text = "" }
-                )
-            )
+            -- TODO: Add argument to the choices
+            vim.list_extend(output, option.choices())
+            -- local choices = {}
+            --
+            -- if not name then
+            --     choices = option.choices()
+            -- else
+            --     for _, choice in ipairs(option.choices()) do
+            --         if vim.startswith(choice, name) then
+            --             table.insert(choices, choice)
+            --         end
+            --     end
+            -- end
+            --
+            -- vim.list_extend(output, choices)
         end
     end
 
@@ -352,34 +403,6 @@ local function _get_exact_matches(data, options, require_value)
     end
 
     return output
-end
-
---- Find the label name of `option`.
----
---- - --foo = foo
---- - --foo=bar = foo
---- - -f = f
---- - foo = foo
----
---- @param argument ArgparseArgument Some argument / option to query.
---- @return string # The found name.
----
-local function _get_argument_name(argument)
-    if argument.argument_type == M.OptionType.position then
-        --- @cast argument PositionArgument
-        return argument.value
-    end
-
-    if
-        argument.argument_type == argparse.ArgumentType.flag
-        or argument.argument_type == argparse.ArgumentType.named
-    then
-        return argument.name
-    end
-
-    vlog.fmt_error('Unabled to find a label for "%s" argument.', argument)
-
-    return ""
 end
 
 --- Get the readable label of `option`, if it has one.
