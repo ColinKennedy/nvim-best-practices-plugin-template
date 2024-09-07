@@ -64,13 +64,6 @@ function M.run_hello_world(data)
     local command = _STARTING_HELLO_WORLD_COMMANDS[data.arguments[2].value]
     data = argparse_helper.lstrip_arguments(data, 3)
 
-    -- TODO: Add support for this later
-    -- local success, message = command.validate(data)
-    --
-    -- if not success then
-    --     error(message)
-    -- end
-
     command.run(data)
 end
 

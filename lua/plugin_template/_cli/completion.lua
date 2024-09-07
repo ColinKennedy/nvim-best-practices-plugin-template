@@ -28,8 +28,7 @@ local vlog = require("plugin_template._vendors.vlog")
 --- @class DynamicOption : BaseOption
 ---     An argument that has a name but no value. It starts with either - or --
 ---     Examples: `-f` or `--foo` or `--foo-bar`
--- TODO: Make this argument optional later
---- @field choices fun(data: CompletionContext): string[]
+--- @field choices fun(data: CompletionContext?): string[]
 ---     Since `NamedOption` requires a name + value, `choices` is used to
 ---     auto-complete its values, starting at `--foo=`.
 --- @field option_type "__dynamic"
@@ -263,12 +262,15 @@ local function _is_similar_option(left, right)
         return left.choices == right.choices
     end
 
-    -- TODO: Add warning log
+    vlog.warn(
+        'Got "%s / %s" left / right values. We are not sure how to parse them.',
+        vim.inspect(left),
+        vim.inspect(right)
+    )
 
     return false
 end
 
--- TODO: Delete this function. It no longer works as intended
 --- Convert options class instances into raw auto-completion text.
 ---
 --- @param options CompletionOption[]
@@ -276,7 +278,7 @@ end
 --- @return string[]
 ---     The found auto-completion text.
 ---
-local function _get_auto_complete_values(options)
+local function _get_auto_complete_values(options, text)
     local output = {}
 
     for _, option in ipairs(options) do
@@ -290,8 +292,7 @@ local function _get_auto_complete_values(options)
             vim.list_extend(
                 output,
                 option.choices(
-                    -- TODO: Consider adding text here
-                    { current_options = options, text = "" }
+                    { current_options = options, text = text }
                 )
             )
         end
@@ -424,8 +425,7 @@ local function _get_option_matches(text, all_options)
             if text == _get_option_name(option) then
                 return options
             elseif option.option_type == M.OptionType.dynamic then
-                -- TODO: Consider adding text here
-                local choices = option.choices({ current_options = options, text = "" })
+                local choices = option.choices({ current_options = options, text = text })
 
                 if vim.tbl_contains(choices, text) then
                     return options
@@ -1098,12 +1098,11 @@ local function _get_exact_or_partial_matches(data, options)
 
     for _, option in ipairs(options) do
         if _is_exact_match(data, option) then
-            vim.list_extend(output, _get_auto_complete_values({ option }))
+            vim.list_extend(output, _get_auto_complete_values({ option }, name))
         elseif _is_partial_match(data, option) then
-            vim.list_extend(output, _get_auto_complete_values({ option }))
+            vim.list_extend(output, _get_auto_complete_values({ option }, name))
         elseif option.option_type == M.OptionType.dynamic then
-            -- TODO: Consider allowing text here
-            for _, choice in ipairs(option.choices({ current_options = options, text = "" })) do
+            for _, choice in ipairs(option.choices({ current_options = options, text = name })) do
                 if vim.startswith(choice, name) then
                     table.insert(output, choice)
                 end
@@ -1180,7 +1179,6 @@ local function _get_options(tree, input, column)
     local stripped = _rstrip_input(input, column)
 
     local last = stripped.arguments[#stripped.arguments]
-    -- TODO: Consider checking the `argument`
     local subtree, completed, _ = _get_options_from_tree(stripped, tree)
     local options = _conform_current_options(subtree)
     local argument = _get_remainder_named_argument(last, options)
@@ -1191,9 +1189,6 @@ local function _get_options(tree, input, column)
             return _get_unfinished_named_argument_auto_complete_options(options, argument)
         end
     end
-
-    -- TODO: Do I still need this line? Remove?
-    options = _trim_exhausted_options(options)
 
     if completed then
         if stripped.remainder.value ~= "" then
