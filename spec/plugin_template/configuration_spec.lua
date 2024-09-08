@@ -1,6 +1,6 @@
 --- Make sure configuration health checks succeed or fail where they should.
 ---
---- @module 'plugin_template.configuration_spec'
+---@module 'plugin_template.configuration_spec'
 ---
 
 local configuration_ = require("plugin_template._core.configuration")
@@ -9,12 +9,10 @@ local tabler = require("plugin_template._core.tabler")
 
 local mock_vim = require("test_utilities.mock_vim")
 
---- @diagnostic disable: undefined-field
-
 --- Make sure `data`, whether undefined, defined, or partially defined, is broken.
 ---
---- @param data plugin_template.Configuration? The user customizations, if any.
---- @param messages string[] All found, expected error messages.
+---@param data plugin_template.Configuration? The user customizations, if any.
+---@param messages string[] All found, expected error messages.
 ---
 local function _assert_bad(data, messages)
     data = configuration_.resolve_data(data)
@@ -31,7 +29,7 @@ end
 
 --- Make sure `data`, whether undefined, defined, or partially defined, works.
 ---
---- @param data plugin_template.Configuration? The user customizations, if any.
+---@param data plugin_template.Configuration? The user customizations, if any.
 ---
 local function _assert_good(data)
     data = configuration_.resolve_data(data)
@@ -86,8 +84,8 @@ describe("default", function()
     end)
 end)
 
---- @diagnostic disable: assign-type-mismatch
---- @diagnostic disable: missing-fields
+---@diagnostic disable: assign-type-mismatch
+---@diagnostic disable: missing-fields
 describe("bad configuration - commands", function()
     it("happens with a bad type for #commands.goodnight_moon.phrase", function()
         _assert_bad(
@@ -124,10 +122,10 @@ describe("bad configuration - commands", function()
         )
     end)
 end)
---- @diagnostic enable: assign-type-mismatch
---- @diagnostic enable: missing-fields
+---@diagnostic enable: assign-type-mismatch
+---@diagnostic enable: missing-fields
 
---- @diagnostic disable: assign-type-mismatch
+---@diagnostic disable: assign-type-mismatch
 describe("bad configuration - logging", function()
     it("happens with a bad value for #logging", function()
         _assert_bad({ logging = false }, { 'logging: expected a table. e.g. { level = "info", ... }, got false' })
@@ -153,9 +151,9 @@ describe("bad configuration - logging", function()
         _assert_bad({ logging = { use_file = "asdf" } }, { "logging.use_file: expected a boolean, got asdf" })
     end)
 end)
---- @diagnostic enable: assign-type-mismatch
+---@diagnostic enable: assign-type-mismatch
 
---- @diagnostic disable: assign-type-mismatch
+---@diagnostic disable: assign-type-mismatch
 describe("health.check", function()
     before_each(function()
         mock_vim.mock_vim_health()
@@ -204,4 +202,4 @@ describe("health.check", function()
         vim.startswith(found[#found], 'tools.lualine.hello_world.text: expected a string. e.g. "some text here", got ')
     end)
 end)
---- @diagnostic enable: assign-type-mismatch
+---@diagnostic enable: assign-type-mismatch

@@ -4,63 +4,32 @@ local cli_subcommand = require("plugin_template._cli.cli_subcommand")
 
 local _PREFIX = "PluginTemplate"
 
---- @type PluginTemplateSubcommands
-local _SUBCOMMANDS = {
-    ["arbitrary-thing"] = {
-        complete = function(data)
-            local complete = require("plugin_template._commands.arbitrary_thing.complete")
+---@type plugin_template.ParserCreator
+local _SUBCOMMANDS = function()
+    local arbitrary_thing = require("plugin_template._commands.arbitrary_thing.parser")
+    local argparse2 = require("plugin_template._cli.argparse2")
+    local copy_logs = require("plugin_template._commands.copy_logs.parser")
+    local goodnight_moon = require("plugin_template._commands.goodnight_moon.parser")
+    local hello_world = require("plugin_template._commands.hello_world.parser")
 
-            return complete.complete(data)
-        end,
-        run = function(arguments)
-            local runner = require("plugin_template._cli.runner")
+    local root_parser = argparse2.ParameterParser.new({ help = "The root of all commands." })
+    local root_subparsers = root_parser:add_subparsers({ "command", help = "All root commands." })
 
-            runner.run_arbitrary_thing(arguments)
-        end,
-    },
-    ["copy-logs"] = {
-        run = function(arguments)
-            local runner = require("plugin_template._cli.runner")
+    local parser = root_subparsers:add_parser({ name = _PREFIX, help = "The starting command." })
+    local subparsers = parser:add_subparsers({ "commands", help = "All runnable commands." })
 
-            runner.run_copy_logs(arguments)
-        end,
-    },
-    ["goodnight-moon"] = {
-        complete = function(data)
-            local argparse = require("plugin_template._cli.argparse")
-            local completion = require("plugin_template._cli.completion")
+    subparsers:add_parser(arbitrary_thing.make_parser())
+    subparsers:add_parser(copy_logs.make_parser())
+    subparsers:add_parser(goodnight_moon.make_parser())
+    subparsers:add_parser(hello_world.make_parser())
 
-            local tree = { ["count-sheep"] = {}, ["read"] = {}, ["sleep"] = {} }
-            local arguments = argparse.parse_arguments(data)
+    return root_parser
+end
 
-            return completion.get_options(tree, arguments, vim.fn.getcmdpos())
-        end,
-        run = function(arguments)
-            local runner = require("plugin_template._cli.runner")
-
-            runner.run_goodnight_moon(arguments)
-        end,
-    },
-    ["hello-world"] = {
-        complete = function(data)
-            local complete = require("plugin_template._commands.hello_world.complete")
-
-            return complete.complete(data)
-        end,
-        run = function(arguments)
-            local runner = require("plugin_template._cli.runner")
-
-            runner.run_hello_world(arguments)
-        end,
-    },
-}
-
-cli_subcommand.initialize_missing_values(_SUBCOMMANDS)
-
-vim.api.nvim_create_user_command(_PREFIX, cli_subcommand.make_triager(_SUBCOMMANDS), {
-    nargs = "+",
+vim.api.nvim_create_user_command(_PREFIX, cli_subcommand.make_parser_triager(_SUBCOMMANDS), {
+    nargs = "*",
     desc = "PluginTemplate's command API.",
-    complete = cli_subcommand.make_command_completer(_PREFIX, _SUBCOMMANDS),
+    complete = cli_subcommand.make_parser_completer(_SUBCOMMANDS),
 })
 
 vim.keymap.set("n", "<Plug>(PluginTemplateSayHi)", function()

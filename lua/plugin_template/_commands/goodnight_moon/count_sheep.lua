@@ -1,6 +1,6 @@
 --- The main file that implements `goodnight-moon count-sheep` outside of COMMAND mode.
 ---
---- @module 'plugin_template._commands.goodnight_moon.count_sheep.runner'
+---@module 'plugin_template._commands.goodnight_moon.count_sheep.runner'
 ---
 
 local configuration = require("plugin_template._core.configuration")
@@ -10,7 +10,7 @@ local M = {}
 
 --- Count a sheep for each `count`.
 ---
---- @param count number Prints 1 sheep per `count`. A value that is 1-or-greater.
+---@param count number Prints 1 sheep per `count`. A value that is 1-or-greater.
 ---
 function M.run(count)
     configuration.initialize_data_if_needed()

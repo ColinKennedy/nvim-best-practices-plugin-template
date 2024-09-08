@@ -1,6 +1,6 @@
 --- Make that the Lualine component works as expected.
 ---
---- @module 'plugin_template.lualine_spec'
+---@module 'plugin_template.lualine_spec'
 ---
 
 local highlight = require("lualine.highlight")
@@ -9,9 +9,7 @@ local lualine_plugin_template = require("lualine.components.plugin_template")
 local mock_test = require("test_utilities.mock_test")
 local plugin_template = require("plugin_template")
 
---- @diagnostic disable: undefined-field
-
---- @return table # The generated Lualine component.
+---@return table # The generated Lualine component.
 local function _make_component()
     return lualine_plugin_template({ self = { section = "y" } })
 end
@@ -33,6 +31,7 @@ end
 
 describe("default", function()
     before_each(_setup_lualine)
+    after_each(mock_test.reset_mocked_vim_inspect)
 
     it("displays nothing if no command has been run yet", function()
         local component = _make_component()

@@ -16,13 +16,15 @@ A template repository for Neovim plugins.
 
 # Features
 - Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices)
-- Fast start-up (the plugin is defer-loaded)
+- Fast start-up (the plugin is super defer-loaded. < 1 ms guarantee)
 - Auto-release to [luarocks](https://luarocks.org)
-- Automated documentation + Vimtags generation
+- Automated User documentation (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
+- Automated API documentation (using [mini.doc](https://github.com/echasnovski/mini.doc))
+- Vimtags generation
 - Built-in Vim commands
 - A high quality command mode parser
 - A (experimental) auto-completion API
-- No external dependencies
+- No external dependencies*
 - [LuaCATS](https://luals.github.io/wiki/annotations/) annotations and type-hints, everywhere
 - RSS feed support
 - Built-in logging to stdout / files
@@ -38,7 +40,8 @@ A template repository for Neovim plugins.
     - [llscheck](https://github.com/jeffzi/llscheck) - Checks for Lua type mismatches
     - [luacheck](https://github.com/mpeterv/luacheck) - Checks for Lua code issues
     - [luarocks](https://luarocks.org) auto-release (LUAROCKS_API_KEY secret configuration required)
-    - [panvimdoc](https://github.com/kdheepak/panvimdoc) - Documentation auto-generator
+    - [mini.doc](https://github.com/echasnovski/mini.doc) - API documentation auto-generator
+    - [panvimdoc](https://github.com/kdheepak/panvimdoc) - User documentation auto-generator
     - PR reviews - Reminds users to update `doc/news.txt`
 
 
@@ -193,7 +196,7 @@ Here are some example commands:
 " Separate commands with completely separate, flexible APIs
 :PluginTemplate goodnight-moon count-sheep 42
 :PluginTemplate goodnight-moon read "a book"
-:PluginTemplate goodnight-moon sleep -zzz
+:PluginTemplate goodnight-moon sleep -z -z -z
 ```
 
 

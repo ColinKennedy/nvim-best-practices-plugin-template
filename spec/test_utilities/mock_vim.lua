@@ -1,6 +1,6 @@
 --- Temporarily track when certain built-in Vim commands are called.
 ---
---- @module 'test_utilities.mock_vim'
+---@module 'test_utilities.mock_vim'
 ---
 
 local M = {}
@@ -8,7 +8,7 @@ local M = {}
 local _ERROR_MESSAGES = {}
 local _ORIGINAL_HEALTH_ERROR = vim.health.error
 
---- @return string[] # Get all saved vim.health.error calls.
+---@return string[] # Get all saved vim.health.error calls.
 function M.get_vim_health_errors()
     return _ERROR_MESSAGES
 end

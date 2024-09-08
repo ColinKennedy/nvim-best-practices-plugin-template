@@ -1,23 +1,23 @@
 --- The main file that implements `copy-logs` outside of COMMAND mode.
 ---
---- @module 'plugin_template._commands.copy_logs.runner'
+---@module 'plugin_template._commands.copy_logs.runner'
 ---
 
 local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
---- @class ReadFileResult
----     A file path + its contents.
---- @field data string
----     The blob of text that was read from `path`.
---- @field path string
----     An absolute path to a file on-disk.
+---@class plugin_template.ReadFileResult
+---    A file path + its contents.
+---@field data string
+---    The blob of text that was read from `path`.
+---@field path string
+---    An absolute path to a file on-disk.
 
 --- Read the contents of `path` and pass its contents to `callback`.
 ---
---- @param path string An absolute path to a file on-disk.
---- @param callback fun(result: ReadFileResult): nil Call this once `path` is read.
+---@param path string An absolute path to a file on-disk.
+---@param callback fun(result: plugin_template.ReadFileResult): nil Call this once `path` is read.
 ---
 local function _read_file(path, callback)
     -- NOTE: mode 428 == rw-rw-rw-
@@ -42,7 +42,7 @@ end
 
 --- Modify the user's system clipboard with `result`.
 ---
---- @param result ReadFileResult The file path + its contents that we read.
+---@param result plugin_template.ReadFileResult The file path + its contents that we read.
 ---
 local function _callback(result)
     vim.fn.setreg("+", result.data)
@@ -52,9 +52,9 @@ end
 
 --- Copy the log data from the given `path` to the user's clipboard.
 ---
---- @param path string?
----     A path on-disk to look for logs. If none is given, the default fallback
----     location is used instead.
+---@param path string?
+---    A path on-disk to look for logs. If none is given, the default fallback
+---    location is used instead.
 ---
 function M.run(path)
     path = path or vlog:get_log_path()
