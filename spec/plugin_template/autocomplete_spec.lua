@@ -4,73 +4,73 @@
 ---
 
 local argparse = require("plugin_template._cli.argparse")
+local argparse2 = require("plugin_template._cli.argparse2")
 local completion = require("plugin_template._cli.completion")
 
 --- @diagnostic disable: undefined-field
 
 local _parse = argparse.parse_arguments
 
---- @return IncompleteOptionTree # Create a (sparse) tree for unittests.
-local function _make_simple_tree()
-    local values = {
-        {
-            choices = function(data)
-                local value = data.text
+--- @return ArgumentParser # Create a tree of commands for unittests.
+local function _make_simple_parser()
+    local choices = function(data)
+        local value = data.text
 
-                if value == "" then
-                    value = 0
-                else
-                    value = tonumber(value)
+        if value == "" then
+            value = 0
+        else
+            value = tonumber(value)
 
-                    if type(value) ~= "number" then
-                        return {}
-                    end
-                end
+            if type(value) ~= "number" then
+                return {}
+            end
+        end
 
-                --- @cast value number
+        --- @cast value number
 
-                local output = {}
+        local output = {}
 
-                for index = 1, 5 do
-                    table.insert(output, tostring(value + index))
-                end
+        for index = 1, 5 do
+            table.insert(output, tostring(value + index))
+        end
 
-                return output
-            end,
-            name = "repeat",
-            option_type = completion.OptionType.named,
-        },
-        {
-            option_type = completion.OptionType.named,
-            name = "style",
-            choices = { "lowercase", "uppercase" },
-        },
-    }
+        return output
+    end
 
-    return { say = { phrase = values, word = values } }
+    local parser = argparse2.ArgumentParser.new({name="test", description="Test"})
+    local subparsers = parser:add_subparsers({destination="commands"})
+    local say = subparsers:add_parser({name="say", description="Print stuff to the terminal."})
+    local say_subparsers = say:add_subparsers({destination="say_commands", description="All commands that print."})
+    local say_word = say_subparsers:add_parser({name="word", description="Print a single word."})
+    local say_phrase = say_subparsers:add_parser({name="phrase", description="Print a whole sentence."})
+
+    say_word:add_argument({names={"--repeat"}, choices=choices, description="The number of times to repeat the word"})
+    say_phrase:add_argument({names={"--repeat"}, choices=choices, description="The number of times to repeat the phrase."})
+
+    return parser
 end
 
 describe("default", function()
     it("works even if #simple", function()
-        local tree = _make_simple_tree()
+        local parser = _make_simple_parser()
 
-        assert.same({ "say" }, completion.get_options(tree, _parse(""), 1))
+        assert.same({ "say" }, parser:get_completion(""))
     end)
 end)
 
 describe("simple", function()
     it("works with multiple position arguments", function()
-        local tree = _make_simple_tree()
+        local parser = _make_simple_parser()
 
-        assert.same({ "phrase", "word" }, completion.get_options(tree, _parse("say "), 4))
-        assert.same({ "--repeat=", "--style=" }, completion.get_options(tree, _parse("say phrase "), 11))
+        assert.same({ "phrase", "word" }, parser:get_completion("say "))
+        assert.same({ "--repeat=", "--style=" }, parser:get_completion("say phrase "))
     end)
 
     it("works when two positions start with the same text", function()
-        local tree = { bottle = { "foo" }, bottles = { "bar" } }
+        local parser = { bottle = { "foo" }, bottles = { "bar" } }
 
-        assert.same({ "bottle", "bottles" }, completion.get_options(tree, _parse("bottle"), 6))
-        assert.same({ "foo" }, completion.get_options(tree, _parse("bottle "), 7))
+        assert.same({ "bottle", "bottles" }, parser:get_completion("bottle"))
+        assert.same({ "foo" }, parser:get_completion("bottle "))
     end)
 
     it("works with a basic multi-key example", function()
@@ -109,13 +109,13 @@ describe("simple", function()
             },
         }
 
-        local tree = { say = { [{ "phrase", "word" }] = values } }
+        local parser = { say = { [{ "phrase", "word" }] = values } }
 
-        assert.same({ "--repeat=", "--style=" }, completion.get_options(tree, _parse("say phrase "), 11))
+        assert.same({ "--repeat=", "--style=" }, parser:get_completion("say phrase "), 11))
     end)
 
     it("works even if there is a named / position argument at the same time - 001", function()
-        local tree = {
+        local parser = {
             {
                 {
                     option_type = completion.OptionType.named,
@@ -129,11 +129,11 @@ describe("simple", function()
             },
         }
 
-        assert.same({ "--style=", "style" }, completion.get_options(tree, _parse(""), 1))
+        assert.same({ "--style=", "style" }, parser:get_completion(""), 1))
     end)
 
     it("works even if there is a named / position argument at the same time - 002", function()
-        local tree = {
+        local parser = {
             {
                 {
                     option_type = completion.OptionType.named,
@@ -147,28 +147,28 @@ describe("simple", function()
             },
         }
 
-        assert.same({ "style" }, completion.get_options(tree, _parse("sty"), 3))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--sty"), 5))
+        assert.same({ "style" }, parser:get_completion("sty"), 3))
+        assert.same({ "--style=" }, parser:get_completion("--sty"), 5))
     end)
 
     it("works with a basic multi-position example", function()
-        local tree = _make_simple_tree()
+        local parser = _make_simple_parser()
 
         -- NOTE: Simple examples
-        assert.same({ "say" }, completion.get_options(tree, _parse("sa"), 2))
-        assert.same({ "say" }, completion.get_options(tree, _parse("say"), 3))
-        assert.same({ "phrase", "word" }, completion.get_options(tree, _parse("say "), 4))
-        assert.same({ "phrase" }, completion.get_options(tree, _parse("say p"), 5))
-        assert.same({ "phrase" }, completion.get_options(tree, _parse("say phrase"), 10))
-        assert.same({ "--repeat=", "--style=" }, completion.get_options(tree, _parse("say phrase "), 11))
+        assert.same({ "say" }, parser:get_completion("sa"), 2))
+        assert.same({ "say" }, parser:get_completion("say"), 3))
+        assert.same({ "phrase", "word" }, parser:get_completion("say "), 4))
+        assert.same({ "phrase" }, parser:get_completion("say p"), 5))
+        assert.same({ "phrase" }, parser:get_completion("say phrase"), 10))
+        assert.same({ "--repeat=", "--style=" }, parser:get_completion("say phrase "), 11))
 
         -- NOTE: Beginning a --double-dash named argument, maybe (we don't know yet)
-        assert.same({ "--repeat=", "--style=" }, completion.get_options(tree, _parse("say phrase --"), 13))
+        assert.same({ "--repeat=", "--style=" }, parser:get_completion("say phrase --"), 13))
 
         -- NOTE: Completing the name to a --double-dash named argument
-        assert.same({ "--repeat=" }, completion.get_options(tree, _parse("say phrase --r"), 14))
+        assert.same({ "--repeat=" }, parser:get_completion("say phrase --r"), 14))
         -- NOTE: Completing the =, so people know that this is requires an argument
-        assert.same({ "--repeat=" }, completion.get_options(tree, _parse("say phrase --repeat"), 19))
+        assert.same({ "--repeat=" }, parser:get_completion("say phrase --repeat"), 19))
         -- NOTE: Completing the value of the named argument
         assert.same({
             "--repeat=1",
@@ -176,44 +176,44 @@ describe("simple", function()
             "--repeat=3",
             "--repeat=4",
             "--repeat=5",
-        }, completion.get_options(tree, _parse("say phrase --repeat="), 20))
+        }, parser:get_completion("say phrase --repeat="), 20))
         assert.same({
             "--repeat=6",
             "--repeat=7",
             "--repeat=8",
             "--repeat=9",
             "--repeat=10",
-        }, completion.get_options(tree, _parse("say phrase --repeat=5"), 22))
+        }, parser:get_completion("say phrase --repeat=5"), 22))
 
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("say phrase --repeat=5 "), 22))
+        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 "), 22))
 
         -- NOTE: Asking for repeat again will not show the value (because count == 0)
-        assert.same({}, completion.get_options(tree, _parse("say phrase --repeat=5 --repe"), 30))
+        assert.same({}, parser:get_completion("say phrase --repeat=5 --repe"), 30))
 
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("say phrase --repeat=5 -"), 23))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("say phrase --repeat=5 --"), 24))
+        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 -"), 23))
+        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --"), 24))
 
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("say phrase --repeat=5 --s"), 25))
+        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --s"), 25))
 
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("say phrase --repeat=5 --style"), 29))
+        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --style"), 29))
 
         assert.same(
             { "--style=lowercase", "--style=uppercase" },
-            completion.get_options(tree, _parse("say phrase --repeat=5 --style="), 30)
+            parser:get_completion("say phrase --repeat=5 --style="), 30)
         )
 
         assert.same(
             { "--style=lowercase" },
-            completion.get_options(tree, _parse("say phrase --repeat=5 --style=l"), 31)
+            parser:get_completion("say phrase --repeat=5 --style=l"), 31)
         )
 
-        assert.same({}, completion.get_options(tree, _parse("say phrase --repeat=5 --style=lowercase"), 39))
+        assert.same({}, parser:get_completion("say phrase --repeat=5 --style=lowercase"), 39))
     end)
 end)
 
 describe("named argument", function()
     it("allow named argument as key", function()
-        local tree = {
+        local parser = {
             [{
                 option_type = completion.OptionType.named,
                 name = "style",
@@ -226,14 +226,14 @@ describe("named argument", function()
             },
         }
 
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--s"), 3))
-        assert.same({ "style" }, completion.get_options(tree, _parse("--style=10 "), 11))
-        assert.same({}, completion.get_options(tree, _parse("sty"), 3))
+        assert.same({ "--style=" }, parser:get_completion("--s"), 3))
+        assert.same({ "style" }, parser:get_completion("--style=10 "), 11))
+        assert.same({}, parser:get_completion("sty"), 3))
     end)
 
     -- TODO: Fix at some point
     -- it("auto-completes on the dashes - 001", function()
-    --     local tree = {
+    --     local parser = {
     --         {
     --             option_type = completion.OptionType.named,
     --             name = "style",
@@ -241,11 +241,11 @@ describe("named argument", function()
     --         },
     --     }
     --
-    --     assert.same({ "--style=" }, completion.get_options(tree, _parse("-"), 1))
+    --     assert.same({ "--style=" }, parser:get_completion("-"), 1))
     -- end)
     --
     -- it("auto-completes on the dashes - 002", function()
-    --     local tree = {
+    --     local parser = {
     --         {
     --             option_type = completion.OptionType.named,
     --             name = "style",
@@ -253,12 +253,12 @@ describe("named argument", function()
     --         },
     --     }
     --
-    --     assert.same({ "--style=" }, completion.get_options(tree, _parse("--"), 1))
-    --     assert.same({ "--style=" }, completion.get_options(tree, _parse("--"), 2))
+    --     assert.same({ "--style=" }, parser:get_completion("--"), 1))
+    --     assert.same({ "--style=" }, parser:get_completion("--"), 2))
     -- end)
 
     it("auto-completes on a #partial argument name - 001", function()
-        local tree = {
+        local parser = {
             {
                 option_type = completion.OptionType.named,
                 name = "style",
@@ -266,13 +266,13 @@ describe("named argument", function()
             },
         }
 
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--s"), 1))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--s"), 2))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--s"), 3))
+        assert.same({ "--style=" }, parser:get_completion("--s"), 1))
+        assert.same({ "--style=" }, parser:get_completion("--s"), 2))
+        assert.same({ "--style=" }, parser:get_completion("--s"), 3))
     end)
 
     it("auto-completes on a #partial argument name - 002", function()
-        local tree = {
+        local parser = {
             {
                 option_type = completion.OptionType.named,
                 name = "style",
@@ -280,16 +280,16 @@ describe("named argument", function()
             },
         }
 
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--styl"), 1))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--styl"), 2))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--styl"), 3))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--styl"), 4))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--styl"), 5))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--styl"), 6))
+        assert.same({ "--style=" }, parser:get_completion("--styl"), 1))
+        assert.same({ "--style=" }, parser:get_completion("--styl"), 2))
+        assert.same({ "--style=" }, parser:get_completion("--styl"), 3))
+        assert.same({ "--style=" }, parser:get_completion("--styl"), 4))
+        assert.same({ "--style=" }, parser:get_completion("--styl"), 5))
+        assert.same({ "--style=" }, parser:get_completion("--styl"), 6))
     end)
 
     it("auto-completes on a #partial argument name - 003", function()
-        local tree = {
+        local parser = {
             {
                 option_type = completion.OptionType.named,
                 name = "style",
@@ -297,17 +297,17 @@ describe("named argument", function()
             },
         }
 
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 1))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 2))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 3))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 4))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 5))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 6))
-        assert.same({ "--style=" }, completion.get_options(tree, _parse("--style"), 7))
+        assert.same({ "--style=" }, parser:get_completion("--style"), 1))
+        assert.same({ "--style=" }, parser:get_completion("--style"), 2))
+        assert.same({ "--style=" }, parser:get_completion("--style"), 3))
+        assert.same({ "--style=" }, parser:get_completion("--style"), 4))
+        assert.same({ "--style=" }, parser:get_completion("--style"), 5))
+        assert.same({ "--style=" }, parser:get_completion("--style"), 6))
+        assert.same({ "--style=" }, parser:get_completion("--style"), 7))
     end)
 
     it("does not auto-complete the name anymore and auto-completes the value", function()
-        local tree = {
+        local parser = {
             {
                 choices = function(data)
                     local output = {}
@@ -324,55 +324,55 @@ describe("named argument", function()
             },
         }
 
-        assert.same({}, completion.get_options(tree, _parse("--style="), 1))
-        assert.same({}, completion.get_options(tree, _parse("--style="), 2))
-        assert.same({}, completion.get_options(tree, _parse("--style="), 3))
-        assert.same({}, completion.get_options(tree, _parse("--style="), 4))
-        assert.same({}, completion.get_options(tree, _parse("--style="), 5))
-        assert.same({}, completion.get_options(tree, _parse("--style="), 6))
-        assert.same({}, completion.get_options(tree, _parse("--style="), 7))
-        assert.same({}, completion.get_options(tree, _parse("--style="), 8))
+        assert.same({}, parser:get_completion("--style="), 1))
+        assert.same({}, parser:get_completion("--style="), 2))
+        assert.same({}, parser:get_completion("--style="), 3))
+        assert.same({}, parser:get_completion("--style="), 4))
+        assert.same({}, parser:get_completion("--style="), 5))
+        assert.same({}, parser:get_completion("--style="), 6))
+        assert.same({}, parser:get_completion("--style="), 7))
+        assert.same({}, parser:get_completion("--style="), 8))
     end)
 
     it("should only auto-complete --repeat once", function()
-        local tree = _make_simple_tree()
+        local parser = _make_simple_parser()
 
         local data = "hello-world say word --repeat= --repe"
         local arguments = argparse.parse_arguments(data)
 
-        assert.same({}, completion.get_options(tree, arguments, 37))
+        assert.same({}, completion.get_options(parser, arguments, 37))
     end)
 end)
 
 describe("flag argument", function()
     -- TODO: Implement this later
     -- it("auto-completes on the dash", function()
-    --     local tree = {
+    --     local parser = {
     --         {
     --             option_type = completion.OptionType.flag,
     --             name = "f",
     --         },
     --     }
     --
-    --     assert.same({ "-f" }, completion.get_options(tree, _parse("-"), 1))
+    --     assert.same({ "-f" }, parser:get_completion("-"), 1))
     -- end)
 
     it("does not auto-complete if at the end of the flag", function()
-        local tree = {
+        local parser = {
             {
                 option_type = completion.OptionType.flag,
                 name = "f",
             },
         }
 
-        assert.same({}, completion.get_options(tree, _parse("-f"), 1))
-        assert.same({}, completion.get_options(tree, _parse("-f"), 2))
+        assert.same({}, parser:get_completion("-f"), 1))
+        assert.same({}, parser:get_completion("-f"), 2))
     end)
 end)
 
 describe("numbered count - named argument", function()
     it("works with count = 2", function()
-        local tree = {
+        local parser = {
             {
                 option_type = completion.OptionType.named,
                 name = "foo",
@@ -381,20 +381,20 @@ describe("numbered count - named argument", function()
             },
         }
 
-        assert.same({ "--foo=" }, completion.get_options(tree, _parse("--fo"), 4))
-        assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, completion.get_options(tree, _parse("--foo="), 6))
-        assert.same({ "--foo=" }, completion.get_options(tree, _parse("--foo=bar "), 10))
+        assert.same({ "--foo=" }, parser:get_completion("--fo"), 4))
+        assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, parser:get_completion("--foo="), 6))
+        assert.same({ "--foo=" }, parser:get_completion("--foo=bar "), 10))
         assert.same(
             { "--foo=bar", "--foo=fizz", "--foo=buzz" },
-            completion.get_options(tree, _parse("--foo=bar --foo="), 16)
+            parser:get_completion("--foo=bar --foo="), 16)
         )
-        assert.same({}, completion.get_options(tree, _parse("--foo=bar --foo=bar "), 20))
+        assert.same({}, parser:get_completion("--foo=bar --foo=bar "), 20))
     end)
 end)
 
 describe("numbered count - named argument", function()
     it("works with count = 2", function()
-        local tree = {
+        local parser = {
             {
                 option_type = completion.OptionType.named,
                 name = "foo",
@@ -403,20 +403,20 @@ describe("numbered count - named argument", function()
             },
         }
 
-        assert.same({ "--foo=" }, completion.get_options(tree, _parse("--fo"), 4))
-        assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, completion.get_options(tree, _parse("--foo="), 6))
-        assert.same({ "--foo=" }, completion.get_options(tree, _parse("--foo=bar "), 10))
+        assert.same({ "--foo=" }, parser:get_completion("--fo"), 4))
+        assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, parser:get_completion("--foo="), 6))
+        assert.same({ "--foo=" }, parser:get_completion("--foo=bar "), 10))
         assert.same(
             { "--foo=bar", "--foo=fizz", "--foo=buzz" },
-            completion.get_options(tree, _parse("--foo=bar --foo="), 16)
+            parser:get_completion("--foo=bar --foo="), 16)
         )
-        assert.same({}, completion.get_options(tree, _parse("--foo=bar --foo=bar "), 20))
+        assert.same({}, parser:get_completion("--foo=bar --foo=bar "), 20))
     end)
 end)
 
 describe("validate arguments", function()
     it("does not error if there is no text and all arguments are optional", function()
-        local tree = {
+        local parser = {
             {
                 option_type = argparse.ArgumentType.position,
                 required = false,
@@ -424,11 +424,11 @@ describe("validate arguments", function()
             },
         }
 
-        assert.same({ success = true, messages = {} }, completion.validate_options(tree, _parse("")))
+        assert.same({ success = true, messages = {} }, completion.validate_options(parser, _parse("")))
     end)
 
     it("errors if there is no text and at least one argument is required", function()
-        local tree = {
+        local parser = {
             {
                 option_type = argparse.ArgumentType.position,
                 required = true,
@@ -438,12 +438,12 @@ describe("validate arguments", function()
 
         assert.same(
             { success = false, messages = { "Arguments cannot be empty." } },
-            completion.validate_options(tree, _parse(""))
+            completion.validate_options(parser, _parse(""))
         )
     end)
 
     it("errors if a named argument is not given a value", function()
-        local tree = {
+        local parser = {
             {
                 option_type = argparse.ArgumentType.named,
                 name = "foo",
@@ -452,12 +452,12 @@ describe("validate arguments", function()
 
         assert.same(
             { success = false, messages = { 'Named argument "foo" needs a value.' } },
-            completion.validate_options(tree, _parse("--foo="))
+            completion.validate_options(parser, _parse("--foo="))
         )
     end)
 
     it("errors if a named argument in the middle of parse that is not given a value", function()
-        local tree = {
+        local parser = {
             foo = {
                 [{
                     option_type = argparse.ArgumentType.named,
@@ -477,12 +477,12 @@ describe("validate arguments", function()
 
         assert.same(
             { success = false, messages = { 'Named argument "bar" needs a value.' } },
-            completion.validate_options(tree, _parse("foo --bar= --fizz=123"))
+            completion.validate_options(parser, _parse("foo --bar= --fizz=123"))
         )
     end)
 
     it("errors if a position argument in the middle of parse that is not given a value", function()
-        local tree = {
+        local parser = {
             foo = {
                 another = { "blah" },
                 bar = {
@@ -496,12 +496,12 @@ describe("validate arguments", function()
 
         assert.same(
             { success = false, messages = { 'Missing argument. Need one of: "another, bar".' } },
-            completion.validate_options(tree, _parse("foo --fizz "))
+            completion.validate_options(parser, _parse("foo --fizz "))
         )
     end)
 
     it("errors if a position argument at the end of a parse that is not given a value", function()
-        local tree = {
+        local parser = {
             foo = {
                 another = { "blah" },
                 bar = {
@@ -515,7 +515,7 @@ describe("validate arguments", function()
 
         assert.same(
             { success = false, messages = { 'Missing argument. Need one of: "blah".' } },
-            completion.validate_options(tree, _parse("foo another "))
+            completion.validate_options(parser, _parse("foo another "))
         )
     end)
 end)
@@ -523,7 +523,7 @@ end)
 describe("* count", function()
     describe("simple", function()
         it("works with position arguments", function()
-            local tree = {
+            local parser = {
                 {
                     count = "*",
                     value = "foo",
@@ -531,11 +531,11 @@ describe("* count", function()
                 },
             }
 
-            assert.same({ "foo" }, completion.get_options(tree, _parse(""), 1))
-            assert.same({ "foo" }, completion.get_options(tree, _parse("fo"), 2))
-            assert.same({ "foo" }, completion.get_options(tree, _parse("foo"), 3))
-            assert.same({ "foo" }, completion.get_options(tree, _parse("foo "), 4))
-            assert.same({ "foo" }, completion.get_options(tree, _parse("foo fo"), 6))
+            assert.same({ "foo" }, parser:get_completion(""), 1))
+            assert.same({ "foo" }, parser:get_completion("fo"), 2))
+            assert.same({ "foo" }, parser:get_completion("foo"), 3))
+            assert.same({ "foo" }, parser:get_completion("foo "), 4))
+            assert.same({ "foo" }, parser:get_completion("foo fo"), 6))
         end)
     end)
 end)
@@ -550,7 +550,7 @@ describe("dynamic argument", function()
     end)
 
     it("works with positional arguments", function()
-        local tree = {
+        local parser = {
             say = {
                 [{
                     option_type = argparse.ArgumentType.dynamic,
@@ -569,15 +569,15 @@ describe("dynamic argument", function()
 
         assert.same(
             { "a", "ab", "asteroid", "bb", "cc", "lazers", "tt", "zzz" },
-            completion.get_options(tree, _parse("say "), 4)
+            parser:get_completion("say "), 4)
         )
-        assert.same({ "a", "ab", "asteroid" }, completion.get_options(tree, _parse("say a"), 5))
-        assert.same({ "thing" }, completion.get_options(tree, _parse("say a "), 6))
-        assert.same({ "another", "last" }, completion.get_options(tree, _parse("say a thing "), 12))
+        assert.same({ "a", "ab", "asteroid" }, parser:get_completion("say a"), 5))
+        assert.same({ "thing" }, parser:get_completion("say a "), 6))
+        assert.same({ "another", "last" }, parser:get_completion("say a thing "), 12))
 
-        assert.same({ "a", "ab", "asteroid" }, completion.get_options(tree, _parse("say a"), 5))
-        assert.same({ "different" }, completion.get_options(tree, _parse("say ab "), 7))
-        assert.same({ "branch", "here" }, completion.get_options(tree, _parse("say ab different "), 17))
+        assert.same({ "a", "ab", "asteroid" }, parser:get_completion("say a"), 5))
+        assert.same({ "different" }, parser:get_completion("say ab "), 7))
+        assert.same({ "branch", "here" }, parser:get_completion("say ab different "), 17))
     end)
 
     it("works with count = 2", function()
