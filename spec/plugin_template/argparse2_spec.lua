@@ -19,6 +19,14 @@ describe("default", function()
         assert.equal("usage: TODO", parser.get_concise_help())
     end)
 
+    it("works with a #empty type", function()
+        local parser = argparse2.ArgumentParser.new({description="Test"})
+        parser:add_argument({names="foo"})
+
+        local namespace = parser:parse_arguments("12")
+        assert.same({foo="12"}, namespace)
+    end)
+
     it("shows the full #help if the user asks for it", function()
         local parser = argparse2.ArgumentParser.new({description="Test"})
 
@@ -106,5 +114,23 @@ describe("scenarios", function()
             {author="Margaret Wise Brown", book="Goodnight Moon"},
             namespace
         )
+    end)
+end)
+
+describe("type", function()
+    it("works with a known type function", function()
+        local parser = argparse2.ArgumentParser.new({description="Test"})
+        parser:add_argument({names="foo", type=function(value) return value .. "tt" end})
+
+        local namespace = parser:parse_arguments("12")
+        assert.same({foo="12tt"}, namespace)
+    end)
+
+    it("works with a known type name", function()
+        local parser = argparse2.ArgumentParser.new({description="Test"})
+        parser:add_argument({names="foo", type="number"})
+
+        local namespace = parser:parse_arguments("12")
+        assert.same({foo=12}, namespace)
     end)
 end)

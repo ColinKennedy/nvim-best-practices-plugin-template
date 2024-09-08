@@ -7,6 +7,8 @@ local argparse = require("plugin_template._cli.argparse")
 local argparse2 = require("plugin_template._cli.argparse2")
 local completion = require("plugin_template._cli.completion")
 
+-- TODO: Docstring
+
 --- @diagnostic disable: undefined-field
 
 local _parse = argparse.parse_arguments
@@ -50,8 +52,19 @@ local function _make_simple_parser()
     return parser
 end
 
+--- @return ArgumentParser # Create a tree of commands for unittests.
+local function _make_style_parser()
+    local parser = argparse2.ArgumentParser.new({name="test", description="Test"})
+    local choice = { "lowercase", "uppercase" }
+    parser:add_argument({names="--style", choices=choice, description="Define how to print to the terminal", destination="style_flag"})
+    parser:add_argument({names="style", description="Define how to print to the terminal", destination="style_position"})
+
+    return parser
+end
+
+
 describe("default", function()
-    it("works even if #simple", function()
+    it("works even if #simple #asdf", function()
         local parser = _make_simple_parser()
 
         assert.same({ "say" }, parser:get_completion(""))
@@ -74,62 +87,16 @@ describe("simple", function()
     end)
 
     it("works with a basic multi-key example", function()
-        local values = {
-            {
-                choices = function(data)
-                    local value = data.text
+        local parser = _make_simple_parser()
 
-                    if value == "" then
-                        value = 0
-                    else
-                        value = tonumber(value)
-
-                        if type(value) ~= "number" then
-                            return {}
-                        end
-                    end
-
-                    --- @cast value number
-
-                    local output = {}
-
-                    for index = 1, 5 do
-                        table.insert(output, tostring(value + index))
-                    end
-
-                    return output
-                end,
-                name = "repeat",
-                option_type = completion.OptionType.named,
-            },
-            {
-                option_type = completion.OptionType.named,
-                name = "style",
-                choices = { "lowercase", "uppercase" },
-            },
-        }
-
-        local parser = { say = { [{ "phrase", "word" }] = values } }
-
-        assert.same({ "--repeat=", "--style=" }, parser:get_completion("say phrase "), 11))
+        assert.same({ "--repeat=", "--style=" }, parser:get_completion("say phrase "))
     end)
 
     it("works even if there is a named / position argument at the same time - 001", function()
-        local parser = {
-            {
-                {
-                    option_type = completion.OptionType.named,
-                    name = "style",
-                    choices = { "lowercase", "uppercase" },
-                },
-                {
-                    option_type = completion.OptionType.position,
-                    value = "style",
-                },
-            },
-        }
+        local parser = _make_style_parser()
 
-        assert.same({ "--style=", "style" }, parser:get_completion(""), 1))
+        assert.same({ "--style=" }, parser:get_completion(""))
+        assert.same({}, parser:get_completion("foo"))
     end)
 
     it("works even if there is a named / position argument at the same time - 002", function()
@@ -147,28 +114,28 @@ describe("simple", function()
             },
         }
 
-        assert.same({ "style" }, parser:get_completion("sty"), 3))
-        assert.same({ "--style=" }, parser:get_completion("--sty"), 5))
+        assert.same({ "style" }, parser:get_completion("sty"))
+        assert.same({ "--style=" }, parser:get_completion("--sty"))
     end)
 
     it("works with a basic multi-position example", function()
         local parser = _make_simple_parser()
 
         -- NOTE: Simple examples
-        assert.same({ "say" }, parser:get_completion("sa"), 2))
-        assert.same({ "say" }, parser:get_completion("say"), 3))
-        assert.same({ "phrase", "word" }, parser:get_completion("say "), 4))
-        assert.same({ "phrase" }, parser:get_completion("say p"), 5))
-        assert.same({ "phrase" }, parser:get_completion("say phrase"), 10))
-        assert.same({ "--repeat=", "--style=" }, parser:get_completion("say phrase "), 11))
+        assert.same({ "say" }, parser:get_completion("sa"))
+        assert.same({ "say" }, parser:get_completion("say"))
+        assert.same({ "phrase", "word" }, parser:get_completion("say "))
+        assert.same({ "phrase" }, parser:get_completion("say p"))
+        assert.same({ "phrase" }, parser:get_completion("say phrase"))
+        assert.same({ "--repeat=", "--style=" }, parser:get_completion("say phrase "))
 
         -- NOTE: Beginning a --double-dash named argument, maybe (we don't know yet)
-        assert.same({ "--repeat=", "--style=" }, parser:get_completion("say phrase --"), 13))
+        assert.same({ "--repeat=", "--style=" }, parser:get_completion("say phrase --"))
 
         -- NOTE: Completing the name to a --double-dash named argument
-        assert.same({ "--repeat=" }, parser:get_completion("say phrase --r"), 14))
+        assert.same({ "--repeat=" }, parser:get_completion("say phrase --r"))
         -- NOTE: Completing the =, so people know that this is requires an argument
-        assert.same({ "--repeat=" }, parser:get_completion("say phrase --repeat"), 19))
+        assert.same({ "--repeat=" }, parser:get_completion("say phrase --repeat"))
         -- NOTE: Completing the value of the named argument
         assert.same({
             "--repeat=1",
@@ -176,38 +143,38 @@ describe("simple", function()
             "--repeat=3",
             "--repeat=4",
             "--repeat=5",
-        }, parser:get_completion("say phrase --repeat="), 20))
+        }, parser:get_completion("say phrase --repeat="))
         assert.same({
             "--repeat=6",
             "--repeat=7",
             "--repeat=8",
             "--repeat=9",
             "--repeat=10",
-        }, parser:get_completion("say phrase --repeat=5"), 22))
+        }, parser:get_completion("say phrase --repeat=5"))
 
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 "), 22))
+        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 "))
 
         -- NOTE: Asking for repeat again will not show the value (because count == 0)
-        assert.same({}, parser:get_completion("say phrase --repeat=5 --repe"), 30))
+        assert.same({}, parser:get_completion("say phrase --repeat=5 --repe"))
 
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 -"), 23))
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --"), 24))
+        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 -"))
+        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --"))
 
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --s"), 25))
+        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --s"))
 
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --style"), 29))
+        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --style"))
 
         assert.same(
             { "--style=lowercase", "--style=uppercase" },
-            parser:get_completion("say phrase --repeat=5 --style="), 30)
+            parser:get_completion("say phrase --repeat=5 --style=")
         )
 
         assert.same(
             { "--style=lowercase" },
-            parser:get_completion("say phrase --repeat=5 --style=l"), 31)
+            parser:get_completion("say phrase --repeat=5 --style=l")
         )
 
-        assert.same({}, parser:get_completion("say phrase --repeat=5 --style=lowercase"), 39))
+        assert.same({}, parser:get_completion("say phrase --repeat=5 --style=lowercase"))
     end)
 end)
 
@@ -226,9 +193,9 @@ describe("named argument", function()
             },
         }
 
-        assert.same({ "--style=" }, parser:get_completion("--s"), 3))
-        assert.same({ "style" }, parser:get_completion("--style=10 "), 11))
-        assert.same({}, parser:get_completion("sty"), 3))
+        assert.same({ "--style=" }, parser:get_completion("--s"))
+        assert.same({ "style" }, parser:get_completion("--style=10 "))
+        assert.same({}, parser:get_completion("sty"))
     end)
 
     -- TODO: Fix at some point
@@ -266,9 +233,9 @@ describe("named argument", function()
             },
         }
 
-        assert.same({ "--style=" }, parser:get_completion("--s"), 1))
-        assert.same({ "--style=" }, parser:get_completion("--s"), 2))
-        assert.same({ "--style=" }, parser:get_completion("--s"), 3))
+        assert.same({ "--style=" }, parser:get_completion("--s", 1))
+        assert.same({ "--style=" }, parser:get_completion("--s", 2))
+        assert.same({ "--style=" }, parser:get_completion("--s", 3))
     end)
 
     it("auto-completes on a #partial argument name - 002", function()
@@ -280,12 +247,12 @@ describe("named argument", function()
             },
         }
 
-        assert.same({ "--style=" }, parser:get_completion("--styl"), 1))
-        assert.same({ "--style=" }, parser:get_completion("--styl"), 2))
-        assert.same({ "--style=" }, parser:get_completion("--styl"), 3))
-        assert.same({ "--style=" }, parser:get_completion("--styl"), 4))
-        assert.same({ "--style=" }, parser:get_completion("--styl"), 5))
-        assert.same({ "--style=" }, parser:get_completion("--styl"), 6))
+        assert.same({ "--style=" }, parser:get_completion("--styl", 1))
+        assert.same({ "--style=" }, parser:get_completion("--styl", 2))
+        assert.same({ "--style=" }, parser:get_completion("--styl", 3))
+        assert.same({ "--style=" }, parser:get_completion("--styl", 4))
+        assert.same({ "--style=" }, parser:get_completion("--styl", 5))
+        assert.same({ "--style=" }, parser:get_completion("--styl", 6))
     end)
 
     it("auto-completes on a #partial argument name - 003", function()
@@ -297,13 +264,13 @@ describe("named argument", function()
             },
         }
 
-        assert.same({ "--style=" }, parser:get_completion("--style"), 1))
-        assert.same({ "--style=" }, parser:get_completion("--style"), 2))
-        assert.same({ "--style=" }, parser:get_completion("--style"), 3))
-        assert.same({ "--style=" }, parser:get_completion("--style"), 4))
-        assert.same({ "--style=" }, parser:get_completion("--style"), 5))
-        assert.same({ "--style=" }, parser:get_completion("--style"), 6))
-        assert.same({ "--style=" }, parser:get_completion("--style"), 7))
+        assert.same({ "--style=" }, parser:get_completion("--style", 1))
+        assert.same({ "--style=" }, parser:get_completion("--style", 2))
+        assert.same({ "--style=" }, parser:get_completion("--style", 3))
+        assert.same({ "--style=" }, parser:get_completion("--style", 4))
+        assert.same({ "--style=" }, parser:get_completion("--style", 5))
+        assert.same({ "--style=" }, parser:get_completion("--style", 6))
+        assert.same({ "--style=" }, parser:get_completion("--style", 7))
     end)
 
     it("does not auto-complete the name anymore and auto-completes the value", function()
@@ -324,14 +291,14 @@ describe("named argument", function()
             },
         }
 
-        assert.same({}, parser:get_completion("--style="), 1))
-        assert.same({}, parser:get_completion("--style="), 2))
-        assert.same({}, parser:get_completion("--style="), 3))
-        assert.same({}, parser:get_completion("--style="), 4))
-        assert.same({}, parser:get_completion("--style="), 5))
-        assert.same({}, parser:get_completion("--style="), 6))
-        assert.same({}, parser:get_completion("--style="), 7))
-        assert.same({}, parser:get_completion("--style="), 8))
+        assert.same({}, parser:get_completion("--style=", 1))
+        assert.same({}, parser:get_completion("--style=", 2))
+        assert.same({}, parser:get_completion("--style=", 3))
+        assert.same({}, parser:get_completion("--style=", 4))
+        assert.same({}, parser:get_completion("--style=", 5))
+        assert.same({}, parser:get_completion("--style=", 6))
+        assert.same({}, parser:get_completion("--style=", 7))
+        assert.same({}, parser:get_completion("--style=", 8))
     end)
 
     it("should only auto-complete --repeat once", function()
@@ -340,7 +307,7 @@ describe("named argument", function()
         local data = "hello-world say word --repeat= --repe"
         local arguments = argparse.parse_arguments(data)
 
-        assert.same({}, completion.get_options(parser, arguments, 37))
+        assert.same({}, completion.get_options(parser, arguments))
     end)
 end)
 
@@ -365,8 +332,8 @@ describe("flag argument", function()
             },
         }
 
-        assert.same({}, parser:get_completion("-f"), 1))
-        assert.same({}, parser:get_completion("-f"), 2))
+        assert.same({}, parser:get_completion("-f", 1))
+        assert.same({}, parser:get_completion("-f", 2))
     end)
 end)
 
@@ -381,14 +348,14 @@ describe("numbered count - named argument", function()
             },
         }
 
-        assert.same({ "--foo=" }, parser:get_completion("--fo"), 4))
-        assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, parser:get_completion("--foo="), 6))
-        assert.same({ "--foo=" }, parser:get_completion("--foo=bar "), 10))
+        assert.same({ "--foo=" }, parser:get_completion("--fo"))
+        assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, parser:get_completion("--foo="))
+        assert.same({ "--foo=" }, parser:get_completion("--foo=bar "))
         assert.same(
             { "--foo=bar", "--foo=fizz", "--foo=buzz" },
-            parser:get_completion("--foo=bar --foo="), 16)
+            parser:get_completion("--foo=bar --foo=")
         )
-        assert.same({}, parser:get_completion("--foo=bar --foo=bar "), 20))
+        assert.same({}, parser:get_completion("--foo=bar --foo=bar "))
     end)
 end)
 
@@ -403,14 +370,14 @@ describe("numbered count - named argument", function()
             },
         }
 
-        assert.same({ "--foo=" }, parser:get_completion("--fo"), 4))
-        assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, parser:get_completion("--foo="), 6))
-        assert.same({ "--foo=" }, parser:get_completion("--foo=bar "), 10))
+        assert.same({ "--foo=" }, parser:get_completion("--fo"))
+        assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, parser:get_completion("--foo="))
+        assert.same({ "--foo=" }, parser:get_completion("--foo=bar "))
         assert.same(
             { "--foo=bar", "--foo=fizz", "--foo=buzz" },
-            parser:get_completion("--foo=bar --foo="), 16)
+            parser:get_completion("--foo=bar --foo=")
         )
-        assert.same({}, parser:get_completion("--foo=bar --foo=bar "), 20))
+        assert.same({}, parser:get_completion("--foo=bar --foo=bar "))
     end)
 end)
 
@@ -531,11 +498,11 @@ describe("* count", function()
                 },
             }
 
-            assert.same({ "foo" }, parser:get_completion(""), 1))
-            assert.same({ "foo" }, parser:get_completion("fo"), 2))
-            assert.same({ "foo" }, parser:get_completion("foo"), 3))
-            assert.same({ "foo" }, parser:get_completion("foo "), 4))
-            assert.same({ "foo" }, parser:get_completion("foo fo"), 6))
+            assert.same({ "foo" }, parser:get_completion(""))
+            assert.same({ "foo" }, parser:get_completion("fo"))
+            assert.same({ "foo" }, parser:get_completion("foo"))
+            assert.same({ "foo" }, parser:get_completion("foo "))
+            assert.same({ "foo" }, parser:get_completion("foo fo"))
         end)
     end)
 end)
@@ -569,15 +536,15 @@ describe("dynamic argument", function()
 
         assert.same(
             { "a", "ab", "asteroid", "bb", "cc", "lazers", "tt", "zzz" },
-            parser:get_completion("say "), 4)
+            parser:get_completion("say ")
         )
-        assert.same({ "a", "ab", "asteroid" }, parser:get_completion("say a"), 5))
-        assert.same({ "thing" }, parser:get_completion("say a "), 6))
-        assert.same({ "another", "last" }, parser:get_completion("say a thing "), 12))
+        assert.same({ "a", "ab", "asteroid" }, parser:get_completion("say a"))
+        assert.same({ "thing" }, parser:get_completion("say a "))
+        assert.same({ "another", "last" }, parser:get_completion("say a thing "))
 
-        assert.same({ "a", "ab", "asteroid" }, parser:get_completion("say a"), 5))
-        assert.same({ "different" }, parser:get_completion("say ab "), 7))
-        assert.same({ "branch", "here" }, parser:get_completion("say ab different "), 17))
+        assert.same({ "a", "ab", "asteroid" }, parser:get_completion("say a"))
+        assert.same({ "different" }, parser:get_completion("say ab "))
+        assert.same({ "branch", "here" }, parser:get_completion("say ab different "))
     end)
 
     it("works with count = 2", function()
