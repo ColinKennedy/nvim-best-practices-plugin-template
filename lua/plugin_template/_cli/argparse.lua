@@ -1,73 +1,72 @@
 --- Parse text into positional / named arguments.
 ---
---- @module 'plugin_template._cli.argparse'
+---@module 'plugin_template._cli.argparse'
 ---
 
 local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
---- @enum ArgumentType
+local _PREFIX_CHARACTERS = { "-", "+" }
+
+---@enum argparse.ArgumentType
 M.ArgumentType = {
-    dynamic = "__dynamic",
     flag = "__flag",
     named = "__named",
     position = "__position",
 }
 
---- @class BaseArgument
+---@class argparse.BaseArgument
 ---     A base class to inherit from.
---- @field argument_type ArgumentType
+---@field argument_type argparse.ArgumentType
 ---     An type indicator for this argument.
---- @field range ArgumentRange
+---@field range argparse.ArgumentRange
 ---     The start and end index (both are inclusive) of the argument.
 
---- @class ArgumentRange
+---@class argparse.ArgumentRange
 ---     The start and end index (both are inclusive) of the argument.
---- @field start_column number
+---@field start_column number
 ---     The first index of the argument (inclusive).
---- @field end_column number
+---@field end_column number
 ---     The last index of the argument (inclusive).
 
---- @class FlagArgument : BaseArgument
+---@class argparse.FlagArgument : argparse.BaseArgument
 ---     An argument that has a name but no value. It starts with either - or --
 ---     Examples: `-f` or `--foo` or `--foo-bar`
---- @field name string
+---@field name string
 ---     The text of the flag. e.g. The `"foo"` part of `"--foo"`.
 
---- @class PositionArgument : BaseArgument
+---@class argparse.PositionArgument : argparse.BaseArgument
 ---     An argument that is just text. e.g. `"foo bar"` is two positions, foo and bar.
---- @field value string
+---@field value string
 ---     The position's label.
 
---- @class NamedArgument : BaseArgument
----     A --key=value pair. Basically it's a FlagArgument that has an extra value.
---- @field name string
----     The text of the argument. e.g. The `"foo"` part of `"--foo=bar"`.
---- @field needs_choice_completion boolean
+---@class argparse.NamedArgument : argparse.FlagArgument
+---     A --key=value pair. Basically it's a argparse.FlagArgument that has an extra value.
+---@field needs_choice_completion boolean
 ---     If `true`, it means that we've typed `"--foo="` and are ready to
 ---     auto-complete for `"--foo=bar"`. If `false`, it means we've typed
 ---     `"--"`, `"--f"`, `"--fo"`, `"--foo"`, and we are still auto-completing
 ---     the name and aren't ready to auto-complete for the choices yet.
---- @field value string | boolean
+---@field value string | boolean
 ---     The second-hand side of the argument. e.g. The `"bar"` part of
 ---     `"--foo=bar"`. If the argument is partially written like `"--foo="`
 ---     then this will be an empty string.
 
---- @alias ArgparseArgument FlagArgument | PositionArgument | NamedArgument
+---@alias argparse.ArgparseArgument argparse.FlagArgument | argparse.PositionArgument | argparse.NamedArgument
 
---- @class ArgparseResults
+---@class argparse.ArgparseResults
 ---     All information that was found from parsing some user's input.
---- @field arguments ArgparseArgument[]
+---@field arguments argparse.ArgparseArgument[]
 ---     The arguments that were able to be parsed
---- @field remainder ArgparseRemainder
+---@field remainder argparse.ArgparseRemainder
 ---     Any leftover text during parsing that didn't match an argument.
---- @field text string
+---@field text string
 ---     The original, raw, unparsed user arguments.
 
---- @class ArgparseRemainder
+---@class argparse.ArgparseRemainder
 ---     Any leftover text during parsing that didn't match an argument.
---- @field value string
+---@field value string
 ---     The raw, unparsed text.
 
 --- An internal tracker for the arguments.
@@ -83,17 +82,26 @@ local _State = {
 
 --- Check if `character` is a typical a-zA-Z0-9 character.
 ---
---- @param character string Basically any non-special character.
---- @return boolean # If a-zA-Z0-9, return `true`.
+---@param character string Basically any non-special character.
+---@return boolean # If a-zA-Z0-9, return `true`.
 ---
 local function is_alpha_numeric(character)
     return character:match("[^='\"%s]") ~= nil
 end
 
+--- Check if `character` marks the start of a `argparse.FlagArgument` or `argparse.NamedArgument`.
+---
+---@param character string A starting character. e.g. `-`, `+`, etc.
+---@return boolean # If `character` is a `argparse.PositionArgument` character, return `true`.
+---
+local function _is_prefix(character)
+    return vim.tbl_contains(_PREFIX_CHARACTERS, character)
+end
+
 --- Check if `character` is a space, tab, or newline.
 ---
---- @param character string Basically `" "`, `\n`, `\t`.
---- @return boolean # If it's any whitespace, return `true`.
+---@param character string Basically `" "`, `\n`, `\t`.
+---@return boolean # If it's any whitespace, return `true`.
 ---
 local function _is_whitespace(character)
     return character:match("%s")
@@ -101,8 +109,8 @@ end
 
 --- Check if `character` starts a multi-word quote.
 ---
---- @param character string Basically ' or ".
---- @return boolean # If ' or ", return `true`.
+---@param character string Basically ' or ".
+---@return boolean # If ' or ", return `true`.
 ---
 local function _is_quote(character)
     return character == '"' or character == "'"
@@ -116,9 +124,9 @@ end
 ---     - `--buzz` is a multi-letter flag
 ---     - `--some="thing else" is a named argument whose value is "thing else"
 ---
---- @param text string
+---@param text string
 ---     Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
---- @return ArgparseResults
+---@return argparse.ArgparseResults
 ---     All found for positional arguments, named arguments, and flag arguments.
 ---
 function M.parse_arguments(text)
@@ -132,7 +140,7 @@ function M.parse_arguments(text)
     local is_escaping = false
     local needs_name = false
     local needs_value = false
-    --- @type ArgparseRemainder
+    --- @type argparse.ArgparseRemainder
     local remainder = { value = "" }
     local start_index = 1
     local escaped_character_count = 0
@@ -222,13 +230,14 @@ function M.parse_arguments(text)
                 -- NOTE: We know we've encounted some -f` or `--foo` or
                 -- `--foo=bar` but we aren't sure which it is yet.
                 --
-                if character == "-" then
+                if _is_prefix(character) then
                     local next_character = peek(physical_index)
 
-                    if next_character == "-" then
+                    if _is_prefix(next_character) and next_character == character then
                         -- NOTE: It's definitely a `--foo` flag or `--foo=bar` argument.
                         state = _State.in_double_flag
                         _reset_argument()
+                        current_name = character .. next_character
                         remainder.value = remainder.value .. next_character
                         logical_index = logical_index + 1
                         physical_index = physical_index + 1
@@ -238,6 +247,7 @@ function M.parse_arguments(text)
                         -- NOTE: It's definitely a `-f` flag.
                         state = _State.in_single_flag
                         _reset_argument()
+                        current_name = character
                         needs_name = false
                         needs_value = true
                     end
@@ -273,7 +283,7 @@ function M.parse_arguments(text)
                 -- to find the `bar` part
                 --
                 needs_name = false
-                current_name = current_argument
+                current_name = current_name .. current_argument
                 _reset_argument()
 
                 if _is_quote(peek(physical_index)) then
@@ -289,7 +299,7 @@ function M.parse_arguments(text)
             elseif _is_whitespace(character) then
                 -- NOTE: Ignore whitespace in some situations.
                 if not is_escaping then
-                    current_name = current_argument
+                    current_name = current_name .. current_argument
                     current_argument = true
                     _add_to_output()
                     _reset_all()
@@ -308,6 +318,7 @@ function M.parse_arguments(text)
                 -- Add every found character as flags
                 --
                 local current_argument_ = current_argument .. character
+                local current_name_ = current_name
                 current_argument = true
 
                 start_index = start_index - 1
@@ -315,7 +326,7 @@ function M.parse_arguments(text)
                 for index_ = 1, #current_argument_ do
                     local character_ = current_argument_:sub(index_, index_)
                     start_index = start_index + 1
-                    current_name = character_
+                    current_name = current_name_ .. character_
                     physical_index = physical_index + 1
                     _add_to_output()
                     physical_index = physical_index - 1
@@ -365,7 +376,7 @@ function M.parse_arguments(text)
     elseif state == _State.normal and current_argument ~= "" then
         _add_to_output()
     elseif (state == _State.in_double_flag or state == _State.in_single_flag) and current_argument ~= "" then
-        current_name = current_argument
+        current_name = current_name .. current_argument
         current_argument = true
         needs_value = true
         _add_to_output()

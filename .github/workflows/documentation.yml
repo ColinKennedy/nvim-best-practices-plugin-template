@@ -5,39 +5,82 @@ on:
 name: documentation
 
 jobs:
-  documentation:
+  api_documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout plugin-template
+        uses: actions/checkout@v4
+        with:
+          repository: ColinKennedy/nvim-best-practices-plugin-template
+          path: neovim_plugin
+
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: stable
+
+      - name: Create API Documentation
+        working-directory: ./neovim_plugin
+        run: |
+          nvim --version
+          make api_documentation
+
+      - name: Push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Auto-generate API documentation"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+  user_documentation:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: panvimdoc
+      - name: Create User Documentation
         uses: kdheepak/panvimdoc@main
         with:
           vimdoc: plugin-template
           version: "Neovim >= 0.8.0"
           demojify: true
           treesitter: true
+
       - name: Push changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "auto-generate vimdoc"
+          commit_message: "Auto-generate Vimdoc"
           commit_user_name: "github-actions[bot]"
           commit_user_email: "github-actions[bot]@users.noreply.github.com"
           commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
   tags:
     runs-on: ubuntu-latest
-    - uses: rhysd/action-setup-vim@v1
-      with:
-        neovim: true
-        version: stable
-      - name: Generate tags and exit
+    needs: [api_documentation, user_documentation]
+    steps:
+      - name: Setup Neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: stable
+
+      - name: Checkout plugin-template
+        uses: actions/checkout@v4
+        with:
+          repository: ColinKennedy/nvim-best-practices-plugin-template
+          path: neovim_plugin
+
+      - name: Generate tags
+        working-directory: ./neovim_plugin
         run: |
           nvim -c 'helptags doc' -c 'quit'
+
       - name: Configure Git
+        working-directory: ./neovim_plugin
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
+
       - name: Commit and push changes
+        working-directory: ./neovim_plugin
         run: |
           git add doc/tags
-          git commit -m "Auto-generated vimtags by GitHub Actions"
+          git commit -m "Auto-generated vimtags by GitHub Actions" || echo "No changes to commit"
           git push

@@ -1,6 +1,6 @@
 --- Make dealing with COMMAND mode parsed arguments a bit easier.
 ---
---- @module 'plugin_template._cli.argparse_helper'
+---@module 'plugin_template._cli.argparse_helper'
 ---
 
 local tabler = require("plugin_template._core.tabler")
@@ -11,9 +11,9 @@ local M = {}
 ---
 --- This function is useful for handling "subcommand triage".
 ---
---- @param results ArgparseResults
+---@param results argparse.ArgparseResults
 ---     The parsed arguments + any remainder text.
---- @param index number
+---@param index number
 ---     A 1-or-more value. 1 has not effect. 2-or-more will start removing
 ---     arguments from the left-hand side of `results`.
 ---
@@ -29,12 +29,12 @@ end
 ---
 --- This function is useful for handling "subcommand triage".
 ---
---- @param results ArgparseResults
+---@param results argparse.ArgparseResults
 ---     The parsed arguments + any remainder text.
---- @param index number
+---@param index number
 ---     A 1-or-more value. 1 has not effect. 2-or-more will remove arguments
 ---     from the right-hand side of `results`.
---- @return ArgparseResults
+---@return argparse.ArgparseResults
 ---     The stripped copy from `results`.
 ---
 function M.rstrip_arguments(results, index)

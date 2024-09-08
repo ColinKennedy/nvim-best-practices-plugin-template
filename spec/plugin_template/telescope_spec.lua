@@ -1,6 +1,6 @@
 --- Make sure the Telescope integration works as expected.
 ---
---- @module 'plugin_template.telescope_spec'
+---@module 'plugin_template.telescope_spec'
 ---
 
 local mock_test = require("test_utilities.mock_test")
@@ -9,15 +9,13 @@ local runner = require("telescope._extensions.plugin_template.runner")
 local telescope_actions = require("telescope.actions")
 local telescope_actions_state = require("telescope.actions.state")
 
---- @diagnostic disable: undefined-field
-
 local _ORIGINAL_GET_SELECTION_FUNCTION = runner.get_selection
 local _RESULT = nil
 
 --- Tempoarily wrap `runner.get_selection` so we can use it for unittests.
 local function _mock_get_selection()
     local function _mock(caller)
-        --- @diagnostic disable-next-line: duplicate-set-field
+        ---@diagnostic disable-next-line: duplicate-set-field
         runner.get_selection = function(...)
             local selection = caller(...)
             _RESULT = selection
@@ -41,7 +39,7 @@ end
 --- If you or some other API call `vim.schedule` / `vim.schedule_wrap` and want
 --- to make sure that function runs, call this function.
 ---
---- @param timeout number?
+---@param timeout number?
 ---     The milliseconds to wait before continuing. If the timeout is exceeded
 ---     then we stop waiting for all of the functions to call.
 ---
@@ -63,7 +61,7 @@ end
 
 --- Wait for our (mocked) unittest variable to get some data back.
 ---
---- @param timeout number?
+---@param timeout number?
 ---     The milliseconds to wait before continuing. If the timeout is exceeded
 ---     then we stop waiting for all of the functions to call.
 ---
@@ -79,7 +77,7 @@ end
 
 --- Create a Telescope picker for `command` and get the created "prompt" buffer back.
 ---
---- @param command string
+---@param command string
 ---     A Telescope sub-command. e.g. If the command was `:Telescope
 ---     plugin_template foo` then this function would require `"foo"`.
 ---

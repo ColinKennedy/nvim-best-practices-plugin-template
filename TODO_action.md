@@ -1,0 +1,3 @@
+- Make sure action (set, store_true, append, etc) work with nargs (nargs *, +, Number, etc)
+- Make sure action (set, store_true, append, etc) work with type (make sure values are converted to number and stuff as expected)
+- make sure namesapce aggregation works as expected (default [set] vs store_true / store_false / append / etc)

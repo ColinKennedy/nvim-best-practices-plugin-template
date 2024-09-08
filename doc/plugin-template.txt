@@ -1,26 +1,38 @@
-*plugin-template.txt*      For Neovim >= 0.8.0     Last change: 2024 August 31
+*plugin-template.txt*    For Neovim >= 0.8.0    Last change: 2024 September 21
 
 ==============================================================================
 Table of Contents                          *plugin-template-table-of-contents*
 
-1. A Neovim Plugin Template         |plugin-template-a-neovim-plugin-template|
-2. Features                                         |plugin-template-features|
-3. Using This Template                   |plugin-template-using-this-template|
-4. Installation                                 |plugin-template-installation|
-5. Configuration                               |plugin-template-configuration|
+1. Under Construction                    |plugin-template-under-construction-|
+2. A Neovim Plugin Template         |plugin-template-a-neovim-plugin-template|
+3. Features                                         |plugin-template-features|
+4. Using This Template                   |plugin-template-using-this-template|
+5. Installation                                 |plugin-template-installation|
+6. Configuration                               |plugin-template-configuration|
   - Lualine                            |plugin-template-configuration-lualine|
   - Telescope                        |plugin-template-configuration-telescope|
   - Colors                              |plugin-template-configuration-colors|
-  - Commands                          |plugin-template-configuration-commands|
-6. Tests                                               |plugin-template-tests|
+7. Commands                                         |plugin-template-commands|
+8. Tests                                               |plugin-template-tests|
   - Initialization                      |plugin-template-tests-initialization|
   - Running                                    |plugin-template-tests-running|
-7. Tracking Updates                         |plugin-template-tracking-updates|
-8. Other Plugins                               |plugin-template-other-plugins|
-9. Links                                               |plugin-template-links|
+9. Tracking Updates                         |plugin-template-tracking-updates|
+10. Other Plugins                              |plugin-template-other-plugins|
+11. Links                                              |plugin-template-links|
 
 ==============================================================================
-1. A Neovim Plugin Template         *plugin-template-a-neovim-plugin-template*
+1. Under Construction                    *plugin-template-under-construction-*
+
+Thisrepository doesn’t have all GitHub CI actions working yet but is
+available as an early preview. We will update docs/news.txt once it’s ready.
+
+Add
+https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom
+to your RSS feed so you don’t miss it!
+
+
+==============================================================================
+2. A Neovim Plugin Template         *plugin-template-a-neovim-plugin-template*
 
 
 
@@ -28,10 +40,14 @@ A template repository for Neovim plugins.
 
 
 ==============================================================================
-2. Features                                         *plugin-template-features*
+3. Features                                         *plugin-template-features*
 
 - Follows nvim-best-practices <https://github.com/nvim-neorocks/nvim-best-practices>
-- Fast start-up (the plugin is defer-loaded)
+- Fast start-up (the plugin is super defer-loaded. < 1 ms guarantee)
+- Auto-release to luarocks <https://luarocks.org>
+- Automated User documentation (using panvimdoc <https://github.com/kdheepak/panvimdoc>)
+- Automated API documentation (using mini.doc <https://github.com/echasnovski/mini.doc>)
+- Vimtags generation
 - Built-in Vim commands
 - A high quality command mode parser
 - A (experimental) auto-completion API
@@ -41,84 +57,44 @@ A template repository for Neovim plugins.
 - Built-in logging to stdout / files
 - Unittests use the full power of native busted <https://olivinelabs.com/busted>
 - 100% Lua
+- Uses Semantic Versioning <https://semver.org>
 - Integrations
     - lualine.nvim <https://github.com/nvim-lualine/lualine.nvim>
     - telescope.nvim <https://github.com/nvim-telescope/telescope.nvim>
     - `:checkhealth`
 - Github actions for:
-    - PR reviews - Reminds users to update `doc/news.txt`
     - StyLua <https://github.com/JohnnyMorganz/StyLua> - Auto-formats Lua code
     - llscheck <https://github.com/jeffzi/llscheck> - Checks for Lua type mismatches
     - luacheck <https://github.com/mpeterv/luacheck> - Checks for Lua code issues
     - luarocks <https://luarocks.org> auto-release (LUAROCKS_API_KEY secret configuration required)
-    - panvimdoc <https://github.com/kdheepak/panvimdoc> - Documentation auto-generator
+    - mini.doc <https://github.com/echasnovski/mini.doc> - API documentation auto-generator
+    - panvimdoc <https://github.com/kdheepak/panvimdoc> - User documentation auto-generator
+    - PR reviews - Reminds users to update `doc/news.txt`
 
 
 ==============================================================================
-3. Using This Template                   *plugin-template-using-this-template*
+4. Using This Template                   *plugin-template-using-this-template*
 
-1. Clone this template (Or use `gh repo create your-plugin -p
-ColinKennedy/nvim-best-practices-plugin-template`)
-
-
-2. Replace all instances of the name of this plugin with your desired named
-
-
-
-TODO: test this command, make sure it works
-
->sh
-    find . -type f -print0 | xargs -0 sed -i 's/PluginTemplate/YourPlugin/g ; s/plugin_template/your_plugin/g ; s/plugin-template/your-plugin/g s/nvim-best-practices-plugin-template/your-plugin.nvim/g ; s/ColinKennedy/YourUsername/g'
-<
-
-1. Remove any features that you don’t need.
-
-In general that means
-
-- Replacing / removing anything in this file that you don’t need or want
-- Anything you remove here should be removed in the `lua/` directory, too
-- Make sure the `plugin/` directory implements the command(s) and mappings that
-    you need
-- Remove plugin integrations if you don’t want them:
-- Removing lualine.nvim <https://github.com/nvim-lualine/lualine.nvim>
-
->sh
-    rm -rf lua/lualine
-    rm configuration_tools_lualine_spec.lua
-    rm lualine_spec.lua
-<
-
-- Removing telescope.nvim <https://github.com/nvim-telescope/telescope.nvim>
-
->sh
-    rm -rf lua/lualine
-    rm configuration_tools_telescope_spec.lua
-    rm telescope_spec.lua
-<
-
-1. Search for "TODO: (you)" in all files and fill them out
-
->sh
-    grep --recursive --line-number --word-regexp 'TODO: (you)' | nvim -q - -c "copen"
-<
-
-1. After you’re done with the above, delete this section of the README.
+1. Follow the Wiki instructions <https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/Using-This-Template>
+2. Once you’re done, remove this section (the rest of this README.md file should be kept)
 
 
 ==============================================================================
-4. Installation                                 *plugin-template-installation*
+5. Installation                                 *plugin-template-installation*
 
 - lazy.nvim <https://github.com/folke/lazy.nvim>
 
 >lua
     {
         "ColinKennedy/nvim-best-practices-plugin-template",
+        -- TODO: (you) - Make sure your first release matches v1.0.0 so it auto-releases!
+        version = "v1.*",
     }
 <
 
 
 ==============================================================================
-5. Configuration                               *plugin-template-configuration*
+6. Configuration                               *plugin-template-configuration*
 
 (These are default values)
 
@@ -142,6 +118,10 @@ In general that means
                 },
                 tools = {
                     lualine = {
+                        arbitrary_thing = {
+                            color = "Visual",
+                            text = " Arbitrary Thing",
+                        },
                         copy_logs = {
                             color = "Comment",
                             text = "󰈔 Copy Logs",
@@ -237,7 +217,8 @@ them, here’s how:
 <
 
 
-COMMANDS                              *plugin-template-configuration-commands*
+==============================================================================
+7. Commands                                         *plugin-template-commands*
 
 Here are some example commands:
 
@@ -252,12 +233,12 @@ Here are some example commands:
     " Separate commands with completely separate, flexible APIs
     :PluginTemplate goodnight-moon count-sheep 42
     :PluginTemplate goodnight-moon read "a book"
-    :PluginTemplate goodnight-moon sleep -zzz
+    :PluginTemplate goodnight-moon sleep -z -z -z
 <
 
 
 ==============================================================================
-6. Tests                                               *plugin-template-tests*
+8. Tests                                               *plugin-template-tests*
 
 
 INITIALIZATION                          *plugin-template-tests-initialization*
@@ -285,7 +266,7 @@ Run test based on tags
 
 
 ==============================================================================
-7. Tracking Updates                         *plugin-template-tracking-updates*
+9. Tracking Updates                         *plugin-template-tracking-updates*
 
 See doc/news.txt <doc/news.txt> for updates.
 
@@ -297,7 +278,7 @@ You can add changes to this plugin by adding this URL to your RSS feed:
 
 
 ==============================================================================
-8. Other Plugins                               *plugin-template-other-plugins*
+10. Other Plugins                              *plugin-template-other-plugins*
 
 This template is full of various features. But if your plugin is only meant to
 be a simple plugin and you don’t want the bells and whistles that this
@@ -305,11 +286,10 @@ template provides, consider instead using nvim-plugin-template
 <https://github.com/ellisonleao/nvim-plugin-template>
 
 ==============================================================================
-9. Links                                               *plugin-template-links*
+11. Links                                              *plugin-template-links*
 
-1. *GitHub Workflow Status*: https://img.shields.io/github/actions/workflow/status/ColinKennedy/nvim-plugin-template/test.yml?branch=main&style=for-the-badge
+1. *GitHub Workflow Status*: https://img.shields.io/github/actions/workflow/status/ColinKennedy/nvim-best-practices-plugin-template/test.yml?branch=main&style=for-the-badge
 2. *Lua*: https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua
-3. *Clone this template*: https://github.com/user-attachments/assets/a366825c-aeb1-4b8a-971d-bba7ee3c61d7
 
 Generated by panvimdoc <https://github.com/kdheepak/panvimdoc>
 

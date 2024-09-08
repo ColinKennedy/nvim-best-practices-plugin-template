@@ -1,6 +1,6 @@
 --- Run auto-completion results for a Vim command CLI.
 ---
---- @module 'plugin_template._cli.completion'
+---@module 'plugin_template._cli.completion'
 ---
 
 local argparse = require("plugin_template._cli.argparse")
@@ -8,86 +8,86 @@ local argparse_helper = require("plugin_template._cli.argparse_helper")
 local texter = require("plugin_template._core.texter")
 local vlog = require("plugin_template._vendors.vlog")
 
---- @class CompletionContext
+---@class CompletionContext
 ---     When an option defines `choices` as a function, this data is the given argument.
---- @field current_options CompletionOption[]
+---@field current_options CompletionOption[]
 ---     The auto-completion values that are currently being considered, in total.
---- @field text string
+---@field text string
 ---     If the user has already written some value. e.g. `--foo=bar` will be
 ---     passed as `"bar"`.
 
---- @class BaseOption
+---@class BaseOption
 ---     A base class to inherit all Options from.
---- @field count OptionCount
+---@field count OptionCount
 ---     The number of times that this option can be used.
---- @field required boolean
+---@field required boolean
 ---     If `true`, this option must be exhausted before more arguments can be parsed.
---- @field used number
+---@field used number
 ---     The number of times that this option has been used already (0-or-greater value).
 
---- @class DynamicOption : BaseOption
+---@class DynamicOption : BaseOption
 ---     An argument that has a name but no value. It starts with either - or --
 ---     Examples: `-f` or `--foo` or `--foo-bar`
---- @field choices fun(data: CompletionContext?): string[]
+---@field choices fun(data: CompletionContext?): string[]
 ---     Since `NamedOption` requires a name + value, `choices` is used to
 ---     auto-complete its values, starting at `--foo=`.
---- @field option_type "__dynamic"
+---@field option_type "__dynamic"
 ---     This class's type.
 
---- @class FlagOption : BaseOption
+---@class FlagOption : BaseOption
 ---     An argument that has a name but no value. It starts with either - or --
 ---     Examples: `-f` or `--foo` or `--foo-bar`
---- @field name string
+---@field name string
 ---     The text of the flag. e.g. The `"foo"` part of `"--foo"`.
---- @field option_type "__flag"
+---@field option_type "__flag"
 ---     This class's type.
 
---- @class NamedOption : BaseOption
----     A --key=value pair. Basically it's a FlagArgument that has an extra value.
---- @field choices (string[] | fun(data: CompletionContext?): string[])?
+---@class NamedOption : BaseOption
+---     A --key=value pair. Basically it's a argparse.FlagArgument that has an extra value.
+---@field choices (string[] | fun(data: CompletionContext?): string[])?
 ---     Since `NamedOption` requires a name + value, `choices` is used to
 ---     auto-complete its values, starting at `--foo=`.
---- @field name string
+---@field name string
 ---     The text of the argument. e.g. The `"foo"` part of `"--foo=bar"`.
---- @field option_type "__named"
+---@field option_type "__named"
 ---     This class's type.
 
---- @class PositionOption: BaseOption
+---@class PositionOption: BaseOption
 ---     An argument that is just text. e.g. `"foo bar"` is two positions, foo and bar.
---- @field value string
+---@field value string
 ---     The position's label.
---- @field option_type "__position"
+---@field option_type "__position"
 ---     This class's type.
 
---- @alias OptionCount OptionCountNumber | OptionCountSpecialStar
+---@alias OptionCount OptionCountNumber | OptionCountSpecialStar
 ---     A description of how many times a specific completion option can be used.
 
---- @alias OptionCountNumber number
+---@alias OptionCountNumber number
 ---     The option can be used exactly N number of times. (1-or-more).
 
---- @alias OptionCountSpecialStar `"*"`
+---@alias OptionCountSpecialStar `"*"`
 ---     The option can be used 0-or-more times.
 
---- @alias CompletionOption FlagOption | NamedOption | PositionOption
+---@alias CompletionOption FlagOption | NamedOption | PositionOption
 
---- @alias IncompleteOptionTree (string | string[] | CompletionOption | CompletionOption[])[]
+---@alias IncompleteOptionTree (string | string[] | CompletionOption | CompletionOption[])[]
 ---     A basic CLI description that answers. 1. What arguments are next 2.
 ---     What should we return for auto-complete, if anything.
 
---- @alias OptionTree CompletionOption[] | table<CompletionOption[], OptionTree | CompletionOption[]>
+---@alias OptionTree CompletionOption[] | table<CompletionOption[], OptionTree | CompletionOption[]>
 ---     A basic CLI description that answers. 1. What arguments are next 2.
 ---     What should we return for auto-complete, if anything.
 
---- @alias ArgumentTree table<...>
+---@alias ArgumentTree table<any, any>
 ---     A (incomplete) tree of arguments. This typically includes "What
 ---     aruments are next" but cannot answer questions like "What should we
 ---     return for auto-complete".
 
---- @class OptionValidationResult
+---@class OptionValidationResult
 ---     All of the validation details. Did validation succeed? Fail? If failed, why?
---- @field success boolean
+---@field success boolean
 ---     If validation failed, `success` is `false`.
---- @field messages string[]
+---@field messages string[]
 ---     If validation failed, this shows all of the error messages. Otherwise
 ---     `messages` is empty.
 
@@ -95,7 +95,7 @@ local M = {}
 
 local _ANY_COUNT = "*"
 
---- @enum OptionType
+---@enum OptionType
 M.OptionType = {
     dynamic = "__dynamic",
     flag = argparse.ArgumentType.flag,
@@ -103,22 +103,22 @@ M.OptionType = {
     position = argparse.ArgumentType.position,
 }
 
---- @param option CompletionOption
---- @return boolean
+---@param option CompletionOption
+---@return boolean
 local function _has_fixed_count(option)
     return type(option.count) == "number"
 end
 
---- @param option CompletionOption
---- @return boolean
+---@param option CompletionOption
+---@return boolean
 local function _has_uses_left(option)
     return option.used < option.count
 end
 
 --- Check if `options` needs to be included in the user's arguments.
 ---
---- @param options CompletionOption[] All auto-complete options.
---- @return boolean # If any `options` is required, return `true`.
+---@param options CompletionOption[] All auto-complete options.
+---@return boolean # If any `options` is required, return `true`.
 ---
 local function _has_required_option(options)
     for _, option in ipairs(options) do
@@ -132,8 +132,8 @@ end
 
 --- Check if `options` has any count-enabled arguments that still have usages left.
 ---
---- @param options CompletionOption[] A complete list of `options` to consider.
---- @return boolean # If all of `options` don't have any counts left, return `true`.
+---@param options CompletionOption[] A complete list of `options` to consider.
+---@return boolean # If all of `options` don't have any counts left, return `true`.
 ---
 local function _is_exhausted(options)
     for _, option in ipairs(options) do
@@ -147,16 +147,16 @@ end
 
 --- Check if `data` is a fully-filled-out `option`.
 ---
---- @param data ArgparseArgument
+---@param data argparse.ArgparseArgument
 ---     An argument that may be fully-filled-out or might be partially written
 ---     by a user. If it is partially written, it is not included in the return.
---- @param option CompletionOption
+---@param option CompletionOption
 ---     All possible auto-complete tree options (fully-filled-out).
---- @param require_value boolean?
+---@param require_value boolean?
 ---     If `true`, then `data` cannot be a partially-written argument. This is
 ---     usually for "unfinished named arguments" and not something that you'd
 ---     usually need.
---- @return boolean
+---@return boolean
 ---     If `option` matches `data`.
 ---
 local function _is_exact_match(data, option, require_value)
@@ -182,9 +182,9 @@ end
 
 --- Check if `data` is actually an unfinished / partial named argument.
 ---
---- @param data ArgparseArgument A (maybe) partially written user argument.
---- @param option CompletionOption The option to check for a match.
---- @return boolean # If there's a match, return `true`.
+---@param data argparse.ArgparseArgument A (maybe) partially written user argument.
+---@param option CompletionOption The option to check for a match.
+---@return boolean # If there's a match, return `true`.
 ---
 local function _is_partial_match_named_argument(data, option)
     if
@@ -214,11 +214,39 @@ local function _is_partial_match_named_argument(data, option)
     return false
 end
 
+--- Find the label name of `option`.
+---
+--- - --foo = foo
+--- - --foo=bar = foo
+--- - -f = f
+--- - foo = foo
+---
+---@param argument argparse.ArgparseArgument Some argument / option to query.
+---@return string # The found name.
+---
+local function _get_argument_name(argument)
+    if argument.argument_type == M.OptionType.position then
+        --- @cast argument argparse.PositionArgument
+        return argument.value
+    end
+
+    if
+        argument.argument_type == argparse.ArgumentType.flag
+        or argument.argument_type == argparse.ArgumentType.named
+    then
+        return argument.name
+    end
+
+    vlog.fmt_error('Unabled to find a label for "%s" argument.', argument)
+
+    return ""
+end
+
 --- Find all `options` that match `argument`.
 ---
---- @param data ArgparseArgument A partially written user argument.
---- @param option CompletionOption The option to check for a match.
---- @return boolean # If there's a match, return `true`.
+---@param data argparse.ArgparseArgument A partially written user argument.
+---@param option CompletionOption The option to check for a match.
+---@return boolean # If there's a match, return `true`.
 ---
 local function _is_partial_match(data, option)
     if
@@ -241,9 +269,9 @@ end
 --- Different options could have different values but as long as the option's
 --- names both match, this function returns `true`.
 ---
---- @param left CompletionOption The first option to check for.
---- @param right CompletionOption Another option to check against.
---- @return boolean # If there is a match, return `true`.
+---@param left CompletionOption The first option to check for.
+---@param right CompletionOption Another option to check against.
+---@return boolean # If there is a match, return `true`.
 ---
 local function _is_similar_option(left, right)
     if left.option_type ~= right.option_type then
@@ -273,9 +301,9 @@ end
 
 --- Convert options class instances into raw auto-completion text.
 ---
---- @param options CompletionOption[]
+---@param options CompletionOption[]
 ---     All auto-completion data to extract for text.
---- @return string[]
+---@return string[]
 ---     The found auto-completion text.
 ---
 local function _get_auto_complete_values(options, text)
@@ -289,12 +317,7 @@ local function _get_auto_complete_values(options, text)
         elseif option.option_type == M.OptionType.named then
             table.insert(output, "--" .. option.name .. "=")
         elseif option.option_type == M.OptionType.dynamic then
-            vim.list_extend(
-                output,
-                option.choices(
-                    { current_options = options, text = text }
-                )
-            )
+            vim.list_extend(output, option.choices({ current_options = options, text = text }))
         end
     end
 
@@ -307,11 +330,11 @@ end
 
 --- Scan `input` and stop processing arguments after `column`.
 ---
---- @param input ArgparseResults
+---@param input argparse.ArgparseResults
 ---     The user's parsed text.
---- @param column number
+---@param column number
 ---     The point to stop checking for arguments. Must be a 1-or-greater value.
---- @return number
+---@return number
 ---     The found index. If all arguments are < `column` then the returning
 ---     index will cover all of `input.arguments`.
 ---
@@ -327,16 +350,16 @@ end
 
 --- Check if `data` is a fully-filled-out argument and also found in `options`.
 ---
---- @param data ArgparseArgument
+---@param data argparse.ArgparseArgument
 ---     An argument that may be fully-filled-out or might be partially written
 ---     by a user. If it is partially written, it is not included in the return.
---- @param options CompletionOption[]
+---@param options CompletionOption[]
 ---     All possible auto-complete tree options (fully-filled-out).
---- @param require_value boolean?
+---@param require_value boolean?
 ---     If `true`, then `data` cannot be a partially-written argument. This is
 ---     usually for "unfinished named arguments" and not something that you'd
 ---     usually need.
---- @return CompletionOption[]
+---@return CompletionOption[]
 ---     All `options` that match `data`.
 ---
 local function _get_exact_matches(data, options, require_value)
@@ -355,38 +378,10 @@ local function _get_exact_matches(data, options, require_value)
     return output
 end
 
---- Find the label name of `option`.
----
---- - --foo = foo
---- - --foo=bar = foo
---- - -f = f
---- - foo = foo
----
---- @param argument ArgparseArgument Some argument / option to query.
---- @return string # The found name.
----
-local function _get_argument_name(argument)
-    if argument.argument_type == M.OptionType.position then
-        --- @cast argument PositionArgument
-        return argument.value
-    end
-
-    if
-        argument.argument_type == argparse.ArgumentType.flag
-        or argument.argument_type == argparse.ArgumentType.named
-    then
-        return argument.name
-    end
-
-    vlog.fmt_error('Unabled to find a label for "%s" argument.', argument)
-
-    return ""
-end
-
 --- Get the readable label of `option`, if it has one.
 ---
---- @param option CompletionOption Any option that has a "query-able" name.
---- @return string # The found name, if any.
+---@param option CompletionOption Any option that has a "query-able" name.
+---@return string # The found name, if any.
 ---
 local function _get_option_name(option)
     if option.option_type == M.OptionType.position then
@@ -411,12 +406,12 @@ end
 ---
 --- If any group of options matches `text`, all options in that group are returned.
 ---
---- @param text string
+---@param text string
 ---     Some label that is either part of an argument like `"foo"` from
 ---     `"--foo"`, `"--foo=bar"`, or `"foo"`.
---- @param all_options CompletionOption[][]
+---@param all_options CompletionOption[][]
 ---     Each group of options to consider for matching.
---- @return CompletionOption[]?
+---@return CompletionOption[]?
 ---     All found matches, if any.
 ---
 local function _get_option_matches(text, all_options)
@@ -439,9 +434,9 @@ end
 
 --- Increase the "used" counter of the options.
 ---
---- @param all_options CompletionOption[]
+---@param all_options CompletionOption[]
 ---     All options that were auto-completion candidates but did not match.
---- @param matching_options CompletionOption[]
+---@param matching_options CompletionOption[]
 ---     All options that matched as auto-completion candidates.
 ---
 local function _increment_used(all_options, matching_options)
@@ -460,9 +455,9 @@ end
 
 --- Find all `options` that match `argument`.
 ---
---- @param argument ArgparseArgument A partially written user argument.
---- @param options CompletionOption[] The options to consider for auto-completion.
---- @return CompletionOption[] # All options that match part of `argument`.
+---@param argument argparse.ArgparseArgument A partially written user argument.
+---@param options CompletionOption[] The options to consider for auto-completion.
+---@return CompletionOption[] # All options that match part of `argument`.
 ---
 local function _get_partial_matches(argument, options)
     local output = {}
@@ -478,8 +473,8 @@ end
 
 --- Check if `options` have been used up (and we are ready to get more options).
 ---
---- @param options CompletionOption[] All options used in current / previous runs.
---- @return boolean # If `options` still has required uses, return `false`.
+---@param options CompletionOption[] All options used in current / previous runs.
+---@return boolean # If `options` still has required uses, return `false`.
 ---
 local function _needs_next_options(options)
     for _, option in ipairs(options) do
@@ -493,9 +488,9 @@ end
 
 --- Get all auto-complete option from `options` that still has uses left.
 ---
---- @param options CompletionOption[]
+---@param options CompletionOption[]
 ---     All options which may or may not have been already used.
---- @return CompletionOption[]
+---@return CompletionOption[]
 ---     Any `options` that still need / want to be used.
 ---
 local function _trim_exhausted_options(options)
@@ -512,12 +507,12 @@ end
 
 --- Remove the ending `index` options from `input`.
 ---
---- @param input ArgparseResults
+---@param input argparse.ArgparseResults
 ---     The parsed arguments + any remainder text.
---- @param column number
+---@param column number
 ---     The found index. If all arguments are < `column` then the returning
 ---     index will cover all of `input.arguments`.
---- @return ArgparseResults
+---@return argparse.ArgparseResults
 ---     The stripped copy from `input`.
 ---
 local function _rstrip_input(input, column)
@@ -536,12 +531,12 @@ end
 
 --- Look within `options` for a flag like `-f` by name.
 ---
---- @param options CompletionOption[]
+---@param options CompletionOption[]
 ---     Some auto-completion options to consider. It might contain flag
 ---     / position / named arguments.
---- @param name string
+---@param name string
 ---     The argument to search for. e.g. `"f"`.
---- @return FlagOption[]
+---@return FlagOption[]
 ---     All found flags, if any.
 ---
 local function _get_flag_arguments(options, name)
@@ -558,8 +553,8 @@ end
 
 --- Change `argument` flag to a named argument.
 ---
---- @param argument FlagArgument An `"--foo"` argument that doesn't expect a value.
---- @return NamedArgument # An `"--foo=..."` argument that expects a value.
+---@param argument argparse.FlagArgument An `"--foo"` argument that doesn't expect a value.
+---@return argparse.NamedArgument # An `"--foo=..."` argument that expects a value.
 ---
 local function _convert_flag_to_named_argument(argument)
     local copy = vim.deepcopy(argument)
@@ -573,17 +568,17 @@ end
 ---
 --- The `--foo=` is "unfinished" because it's missing a value.
 ---
---- @param argument ArgparseArgument
+---@param argument argparse.ArgparseArgument
 ---     The argument to check for a match.
---- @param options CompletionOption[]
+---@param options CompletionOption[]
 ---     Some auto-completion options to consider. It might contain flag
 ---     / position / named arguments.
---- @return NamedArgument?
+---@return argparse.NamedArgument?
 ---     The found named argument, if any.
 ---
 local function _get_remainder_named_argument(argument, options)
     if argument.argument_type == argparse.ArgumentType.named then
-        --- @cast argument NamedArgument
+        --- @cast argument argparse.NamedArgument
 
         return argument
     end
@@ -592,7 +587,7 @@ local function _get_remainder_named_argument(argument, options)
         argument.argument_type == argparse.ArgumentType.flag
         and not vim.tbl_contains(_get_flag_arguments(options, argument.name))
     then
-        --- @cast argument FlagArgument
+        --- @cast argument argparse.FlagArgument
 
         -- NOTE: This happens when the user has written `--foo`. We know from
         -- the `options` that this needs to be `--foo={bar, fizz, buzz}` but
@@ -618,9 +613,9 @@ end
 
 --- Find all `options` that matches the name/label of `argument`.
 ---
---- @param argument ArgparseArgument A user CLI setting to search for.
---- @param options CompletionOption[] All possible completion options.
---- @return CompletionOption[] # The found matches.
+---@param argument argparse.ArgparseArgument A user CLI setting to search for.
+---@param options CompletionOption[] All possible completion options.
+---@return CompletionOption[] # The found matches.
 ---
 local function _get_name_matches(argument, options)
     local name = _get_argument_name(argument)
@@ -637,10 +632,10 @@ end
 
 --- Get the named auto-complete options, if any.
 ---
---- @param option NamedOption The named option to grab from.
---- @param current_value string An existing value for the argument, if any.
---- @param options CompletionOption[] All options that are currently being considered.
---- @return string[] # The found auto-complete options, if any.
+---@param option NamedOption The named option to grab from.
+---@param current_value string An existing value for the argument, if any.
+---@param options CompletionOption[] All options that are currently being considered.
+---@return string[] # The found auto-complete options, if any.
 ---
 local function _get_named_option_choices(option, current_value, options)
     if not option.choices then
@@ -659,10 +654,10 @@ end
 
 --- Find all named arguments, e.g. `--foo=bar` style arguments.
 ---
---- @param options CompletionOption[]
+---@param options CompletionOption[]
 ---     Some auto-completion options to consider. It might contain flag
 ---     / position / named arguments.
---- @return NamedOption[]
+---@return NamedOption[]
 ---     All found arguments, if any.
 ---
 local function _get_named_arguments(options)
@@ -679,9 +674,9 @@ end
 
 --- Search `options` for a named argument that matches `data`.
 ---
---- @param data NamedArgument | FlagArgument
+---@param data argparse.NamedArgument | argparse.FlagArgument
 ---     The unfinished named argument.
---- @return NamedOption[]
+---@return NamedOption[]
 ---     All named argument (e.g. `--foo=bar`) arguments.
 ---
 local function _get_matching_unfinished_named_arguments(data, options)
@@ -705,12 +700,12 @@ end
 --- Important: It's assumed that this named argument doesn't already have
 --- a value or the value is incomplete.
 ---
---- @param options CompletionOption[]
+---@param options CompletionOption[]
 ---     Some auto-completion options to consider. It might contain flag
 ---     / position / named arguments.
---- @param argument NamedArgument
+---@param argument argparse.NamedArgument
 ---     The unfinished named argument.
---- @return string[]
+---@return string[]
 ---     The found auto-complete options.
 ---
 local function _get_unfinished_named_argument_auto_complete_options(options, argument)
@@ -746,9 +741,9 @@ end
 --- returned function will match when a user types `"f"` and suggest `{"foo",
 --- "fizz"}` as auto-completion options.
 ---
---- @param items string[]
+---@param items string[]
 ---     All completion options to consider for the function.
---- @return fun(value: string): string[]
+---@return fun(value: string): string[]
 ---     A function that takes the user's current input and auto-completes
 ---     remaining values.
 ---
@@ -771,8 +766,8 @@ end
 
 --- Check if `option` has only runtime behavior (unknown label(s) / choices).
 ---
---- @param option ... An argument that might be a `DynamicOption`.
---- @return boolean # If `DynamicOption`, return `true`.
+---@param option any An argument that might be a `DynamicOption`.
+---@return boolean # If `DynamicOption`, return `true`.
 ---
 local function _is_dynamic_option(option)
     return option.option_type == M.OptionType.dynamic
@@ -780,8 +775,8 @@ end
 
 --- Check if `option` is a `--foo` flag.
 ---
---- @param option ... An argument that might be a `FlagOption`.
---- @return boolean # If `FlagOption`, return `true`.
+---@param option any An argument that might be a `FlagOption`.
+---@return boolean # If `FlagOption`, return `true`.
 ---
 local function _is_flag_option(option)
     return option.option_type == M.OptionType.flag
@@ -789,8 +784,8 @@ end
 
 --- Check if `option` is a `--foo=bar` argument.
 ---
---- @param option ... An argument that might be a `NamedOption`.
---- @return boolean # If `NamedOption`, return `true`.
+---@param option any An argument that might be a `NamedOption`.
+---@return boolean # If `NamedOption`, return `true`.
 ---
 local function _is_named_option(option)
     return option.option_type == M.OptionType.named
@@ -798,8 +793,8 @@ end
 
 --- Check if `option` is a `foo` argument.
 ---
---- @param option ... An argument that might be a `PositionOption`.
---- @return boolean # If `PositionOption`, return `true`.
+---@param option any An argument that might be a `PositionOption`.
+---@return boolean # If `PositionOption`, return `true`.
 ---
 local function _is_position_option(option)
     return option.option_type == M.OptionType.position
@@ -807,8 +802,8 @@ end
 
 --- Check if `option` is a known completion option.
 ---
---- @param option CompletionOption The object to check.
---- @return boolean # If `option` is an option, return `true`.
+---@param option CompletionOption The object to check.
+---@return boolean # If `option` is an option, return `true`.
 ---
 local function _is_option(option)
     if not option then
@@ -827,9 +822,9 @@ end
 
 --- Check if `options` is a list/array of options.
 ---
---- @param options CompletionOption[]
+---@param options CompletionOption[]
 ---     Some auto-completion options to consider.
---- @return boolean
+---@return boolean
 ---     If `options` is not a list of options (e.g. a dictionary) return `false`.
 ---
 local function _is_option_array(options)
@@ -844,8 +839,8 @@ end
 
 --- Create a pseudo option based on `name`.
 ---
---- @param name string Some value to use for the new option.
---- @return PositionOption # The generated option.
+---@param name string Some value to use for the new option.
+---@return PositionOption # The generated option.
 ---
 local function _make_position_option(name)
     return { count = 1, used = 0, value = name, option_type = M.OptionType.position }
@@ -853,9 +848,9 @@ end
 
 --- Convert `tree` into a completion tree (if it isn't already).
 ---
---- @param tree IncompleteOptionTree | ArgumentTree
+---@param tree IncompleteOptionTree | ArgumentTree
 ---     The object to fill out into completion options.
---- @return OptionTree
+---@return OptionTree
 ---     The fully-parsed completion information.
 ---
 local function _fill_missing_data(tree)
@@ -889,7 +884,7 @@ local function _fill_missing_data(tree)
             end
 
             if option.choices and texter.is_string_list(option.choices) then
-                --- @diagnostic disable-next-line param-type-mismatch
+                ---@diagnostic disable-next-line param-type-mismatch
                 option.choices = _get_startswith_auto_complete_function(option.choices)
             end
         elseif option.option_type == M.OptionType.flag then
@@ -963,8 +958,8 @@ end
 
 --- Recursively flatten `data` until it is just a list of `CompletionOption[]`.
 ---
---- @param data ... A nested list-of-lists-of-`CompletionOption[]`.
---- @return CompletionOption[] # The flattened arguments.
+---@param data any A nested list-of-lists-of-`CompletionOption[]`.
+---@return CompletionOption[] # The flattened arguments.
 ---
 local function _flatten_to_arguments(data)
     local current = data
@@ -978,8 +973,8 @@ end
 
 --- Either keep `tree` unmodified or flatten it into a single list of options.
 ---
---- @param tree OptionTree The fully-parsed completion information.
---- @return CompletionOption[] # The options to use in other functions.
+---@param tree OptionTree The fully-parsed completion information.
+---@return CompletionOption[] # The options to use in other functions.
 ---
 local function _conform_current_options(tree)
     local keys
@@ -1000,16 +995,16 @@ end
 
 --- Get the completion of options for `input` by traversing `tree`.
 ---
---- @param input ArgparseResults
+---@param input argparse.ArgparseResults
 ---     The user's input text to parse.
---- @param tree OptionTree
+---@param tree OptionTree
 ---     A basic CLI description that answers. 1. What arguments are next 2.
 ---     What should we return for auto-complete, if anything.
---- @return OptionTree
+---@return OptionTree
 ---     The options to use in other functions.
---- @return boolean
+---@return boolean
 ---     If we stopped the traversal early, return `false`. Otherwise return `true`.
---- @return ArgparseArgument
+---@return argparse.ArgparseArgument
 ---     The last argument that was processed.
 ---
 local function _get_options_from_tree(input, tree)
@@ -1087,9 +1082,9 @@ end
 
 --- Find all `options` that either exactly  or partially match `data`.
 ---
---- @param data ArgparseArgument A user CLI setting to search from.
---- @param options CompletionOption[] All possible auto-complete values to return.
---- @return CompletionOption[] # The found matches, if any.
+---@param data argparse.ArgparseArgument A user CLI setting to search from.
+---@param options CompletionOption[] All possible auto-complete values to return.
+---@return CompletionOption[] # The found matches, if any.
 ---
 local function _get_exact_or_partial_matches(data, options)
     local output = {}
@@ -1115,8 +1110,8 @@ end
 
 --- Find all of the next completion options to suggest.
 ---
---- @param tree OptionTree All or part of the series of auto-complete options.
---- @return CompletionOption[] # The next auto-complete candidates to consider.
+---@param tree OptionTree All or part of the series of auto-complete options.
+---@return CompletionOption[] # The next auto-complete candidates to consider.
 ---
 local function _get_next_subtree_if_needed(tree)
     if vim.islist(tree) then
@@ -1153,14 +1148,14 @@ end
 --- There's some exceptions too (e.g. if the `column` is within an argument, don't
 --- auto-complete) but that's the jist.
 ---
---- @param tree IncompleteOptionTree | ArgumentTree
+---@param tree IncompleteOptionTree | ArgumentTree
 ---     A basic CLI description that answers. 1. What arguments are next 2.
 ---     What should we return for auto-complete, if anything.
---- @param input ArgparseResults
+---@param input argparse.ArgparseResults
 ---     The user's parsed text.
---- @param column number
+---@param column number
 ---     The starting point for the argument. Must be a 1-or-greater value.
---- @return string[]
+---@return string[]
 ---     All of the auto-completion options that were found, if any.
 ---
 local function _get_options(tree, input, column)
@@ -1214,14 +1209,14 @@ end
 
 --- Find the auto-completion results for `input` and `column`, using `tree`.
 ---
---- @param tree IncompleteOptionTree | ArgumentTree
+---@param tree IncompleteOptionTree | ArgumentTree
 ---     A basic CLI description that answers. 1. What arguments are next 2.
 ---     What should we return for auto-complete, if anything.
---- @param input ArgparseResults
+---@param input argparse.ArgparseResults
 ---     The user's parsed text.
---- @param column number
+---@param column number
 ---     The starting point for the argument. Must be a 1-or-greater value.
---- @return string[]
+---@return string[]
 ---     All of the auto-completion options that were found, if any.
 ---
 function M.get_options(tree, input, column)
@@ -1234,18 +1229,18 @@ end
 
 --- Check if `input` satisfies the expected `tree`.
 ---
---- @param tree IncompleteOptionTree | ArgumentTree
+---@param tree IncompleteOptionTree | ArgumentTree
 ---     A basic CLI description that answers. 1. What arguments are next 2.
 ---     What should we return for auto-complete, if anything.
---- @param input ArgparseResults
+---@param input argparse.ArgparseResults
 ---     The user's parsed text.
---- @return OptionValidationResult
+---@return OptionValidationResult
 ---     All of the validation details. Did validation succeed? Fail? If failed, why?
 ---
 function M.validate_options(tree, input)
     local function _get_validation_messages(argument)
         if argument and argument.argument_type == argparse.ArgumentType.named then
-            --- @cast argument NamedArgument
+            --- @cast argument argparse.NamedArgument
 
             if not argument.value or argument.value == "" then
                 return {

@@ -6,6 +6,10 @@ Notable changes since PluginTemplate 0.1
 ===============================================================================
 NEW FEATURES                                     *plugin-template-new-features*
 
+TEST
+
+- Check to make sure this works
+
 GENERAL
 
 - 100% Lua

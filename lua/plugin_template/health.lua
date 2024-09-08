@@ -3,7 +3,7 @@
 --- At minimum, we validate that the user's configuration is correct. But other
 --- checks can happen here if needed.
 ---
---- @module 'plugin_template.health'
+---@module 'plugin_template.health'
 ---
 
 local configuration_ = require("plugin_template._core.configuration")
@@ -17,18 +17,18 @@ local M = {}
 -- NOTE: This file is defer-loaded so it's okay to run this in the global scope
 configuration_.initialize_data_if_needed()
 
---- @class LualineColorHex
+---@class lualine.ColorHex
 ---     The table that Lualine expects when it sets colors.
---- @field bg string
+---@field bg string
 ---     The background hex color. e.g. `"#444444"`.
---- @field fg string
+---@field fg string
 ---     The text hex color. e.g. `"#DD0000"`.
---- @field gui string
+---@field gui string
 ---     The background hex color. e.g. `"#444444"`.
 
 --- Check if `value` has keys that it should not.
 ---
---- @param value LualineColorHex
+---@param value lualine.ColorHex
 ---
 local function _has_extra_color_keys(value)
     local keys = { "bg", "fg", "gui" }
@@ -44,8 +44,8 @@ end
 
 --- Make sure `text` is a HEX code. e.g. `"#D0FF1A"`.
 ---
---- @param text string An expected HEX code.
---- @return boolean # If `text` matches, return `true`.
+---@param text string An expected HEX code.
+---@return boolean # If `text` matches, return `true`.
 ---
 local function _is_hex_color(text)
     if type(text) ~= "string" then
@@ -57,9 +57,9 @@ end
 
 --- Check if `data` is a boolean under `key`.
 ---
---- @param key string The configuration value that we are checking.
---- @param data ... The object to validate.
---- @return string? # The found error message, if any.
+---@param key string The configuration value that we are checking.
+---@param data any The object to validate.
+---@return string? # The found error message, if any.
 ---
 local function _get_boolean_issue(key, data)
     local success, message = pcall(vim.validate, {
@@ -86,8 +86,8 @@ end
 
 --- Check all "commands" values for issues.
 ---
---- @param data plugin_template.Configuration All of the user's fallback settings.
---- @return string[] # All found issues, if any.
+---@param data plugin_template.Configuration All of the user's fallback settings.
+---@return string[] # All found issues, if any.
 ---
 local function _get_command_issues(data)
     local output = {}
@@ -143,8 +143,8 @@ end
 --- - Or the table, which is `table<str, table<...>>`, has an incorrect value.
 --- - The inner tables must also follow a specific structure.
 ---
---- @param command string A supported `plugin_template` command. e.g. `"hello_world"`.
---- @return string[] # All found issues, if any.
+---@param command string A supported `plugin_template` command. e.g. `"hello_world"`.
+---@return string[] # All found issues, if any.
 ---
 local function _get_lualine_command_issues(command, data)
     local success, message = pcall(vim.validate, {
@@ -240,8 +240,8 @@ end
 
 --- Check all "tools.lualine" values for issues.
 ---
---- @param data plugin_template.Configuration All of the user's fallback settings.
---- @return string[] # All found issues, if any.
+---@param data plugin_template.Configuration All of the user's fallback settings.
+---@return string[] # All found issues, if any.
 ---
 local function _get_lualine_issues(data)
     local output = {}
@@ -288,8 +288,8 @@ end
 
 --- Check if logging configuration `data` has any issues.
 ---
---- @param data plugin_template.LoggingConfiguration The user's logger settings.
---- @return string[] # All of the found issues, if any.
+---@param data plugin_template.LoggingConfiguration The user's logger settings.
+---@return string[] # All of the found issues, if any.
 ---
 local function _get_logging_issues(data)
     local success, message = pcall(vim.validate, {
@@ -351,8 +351,8 @@ end
 
 --- Check all "tools.lualine" values for issues.
 ---
---- @param data plugin_template.Configuration All of the user's fallback settings.
---- @return string[] # All found issues, if any.
+---@param data plugin_template.Configuration All of the user's fallback settings.
+---@return string[] # All found issues, if any.
 ---
 local function _get_telescope_issues(data)
     local output = {}
@@ -446,8 +446,8 @@ end
 
 --- Check `data` for problems and return each of them.
 ---
---- @param data plugin_template.Configuration? All extra customizations for this plugin.
---- @return string[] # All found issues, if any.
+---@param data plugin_template.Configuration? All extra customizations for this plugin.
+---@return string[] # All found issues, if any.
 ---
 function M.get_issues(data)
     if not data or vim.tbl_isempty(data) then
@@ -480,7 +480,7 @@ end
 
 --- Make sure `data` will work for `plugin_template`.
 ---
---- @param data plugin_template.Configuration? All extra customizations for this plugin.
+---@param data plugin_template.Configuration? All extra customizations for this plugin.
 ---
 function M.check(data)
     vlog.debug("Running plugin-template health check.")

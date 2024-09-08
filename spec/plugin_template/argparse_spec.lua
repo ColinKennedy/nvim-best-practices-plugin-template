@@ -1,11 +1,9 @@
 --- Make sure the argument parser works as expected.
 ---
---- @module 'plugin_template.argparse_spec'
+---@module 'plugin_template.argparse_spec'
 ---
 
 local argparse = require("plugin_template._cli.argparse")
-
---- @diagnostic disable: undefined-field
 
 describe("default", function()
     it("works even if #empty #simple", function()
@@ -261,17 +259,17 @@ describe("quotes", function()
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 6, end_column = 9 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 9 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 8, end_column = 9 },
                 },
             },
@@ -287,12 +285,12 @@ describe("double-dash flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "foo-bar",
+                    name = "--foo-bar",
                     range = { start_column = 1, end_column = 9 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "fizz",
+                    name = "--fizz",
                     range = { start_column = 11, end_column = 16 },
                 },
             },
@@ -306,7 +304,7 @@ describe("double-dash flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "foo-bar",
+                    name = "--foo-bar",
                     range = { start_column = 1, end_column = 9 },
                 },
             },
@@ -317,7 +315,7 @@ describe("double-dash flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "foo",
+                    name = "--foo",
                     range = { start_column = 1, end_column = 5 },
                 },
             },
@@ -331,22 +329,22 @@ describe("double-dash flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "foo",
+                    name = "--foo",
                     range = { start_column = 1, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "bar",
+                    name = "--bar",
                     range = { start_column = 7, end_column = 11 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "fizz",
+                    name = "--fizz",
                     range = { start_column = 13, end_column = 18 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "buzz",
+                    name = "--buzz",
                     range = { start_column = 20, end_column = 25 },
                 },
             },
@@ -360,7 +358,7 @@ describe("double-dash flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.named,
-                    name = "foo-bar",
+                    name = "--foo-bar",
                     needs_choice_completion = true,
                     range = { start_column = 1, end_column = 10 },
                     value = false,
@@ -396,14 +394,14 @@ describe("double-dash flags", function()
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
-                    name = "repeat",
+                    name = "--repeat",
                     needs_choice_completion = true,
                     range = { start_column = 27, end_column = 36 },
                     value = "2",
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
-                    name = "style",
+                    name = "--style",
                     needs_choice_completion = true,
                     range = { start_column = 38, end_column = 54 },
                     value = "uppercase",
@@ -418,7 +416,7 @@ describe("double-dash flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.named,
-                    name = "foo-bar",
+                    name = "--foo-bar",
                     needs_choice_completion = true,
                     range = { start_column = 1, end_column = 10 },
                     value = false,
@@ -430,14 +428,14 @@ describe("double-dash flags", function()
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
-                    name = "fizz-buzz",
+                    name = "--fizz-buzz",
                     needs_choice_completion = true,
                     range = { start_column = 17, end_column = 28 },
                     value = false,
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
-                    name = "one-more",
+                    name = "--one-more",
                     needs_choice_completion = true,
                     range = { start_column = 30, end_column = 40 },
                     value = false,
@@ -455,12 +453,12 @@ describe("double-dash equal-flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "foo-bar",
+                    name = "--foo-bar",
                     range = { start_column = 1, end_column = 9 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "fizz",
+                    name = "--fizz",
                     range = { start_column = 11, end_column = 16 },
                 },
             },
@@ -474,7 +472,7 @@ describe("double-dash equal-flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "foo-bar",
+                    name = "--foo-bar",
                     range = { start_column = 1, end_column = 9 },
                 },
             },
@@ -485,7 +483,7 @@ describe("double-dash equal-flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "foo",
+                    name = "--foo",
                     range = { start_column = 1, end_column = 5 },
                 },
             },
@@ -499,26 +497,26 @@ describe("double-dash equal-flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.named,
-                    name = "foo",
+                    name = "--foo",
                     needs_choice_completion = true,
                     range = { start_column = 1, end_column = 12 },
                     value = "text",
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
-                    name = "bar",
+                    name = "--bar",
                     needs_choice_completion = true,
                     range = { start_column = 14, end_column = 31 },
                     value = "some thing",
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "fizz",
+                    name = "--fizz",
                     range = { start_column = 33, end_column = 38 },
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
-                    name = "buzz",
+                    name = "--buzz",
                     needs_choice_completion = true,
                     range = { start_column = 40, end_column = 52 },
                     value = "blah",
@@ -536,7 +534,7 @@ describe("single-dash flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
             },
@@ -550,17 +548,17 @@ describe("single-dash flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 4 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 2, end_column = 4 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 3, end_column = 4 },
                 },
             },
@@ -574,17 +572,17 @@ describe("single-dash flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 8 },
                 },
             },
@@ -635,17 +633,17 @@ describe("remainder - flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 8 },
                 },
             },
@@ -659,17 +657,17 @@ describe("remainder - flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 8 },
                 },
             },
@@ -683,22 +681,22 @@ describe("remainder - flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 8 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "r",
+                    name = "--r",
                     range = { start_column = 10, end_column = 12 },
                 },
             },
@@ -716,17 +714,17 @@ describe("remainder - flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 8 },
                 },
             },
@@ -740,17 +738,17 @@ describe("remainder - flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 8 },
                 },
             },
@@ -764,32 +762,367 @@ describe("remainder - flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "x",
+                    name = "-x",
                     range = { start_column = 7, end_column = 10 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "y",
+                    name = "-y",
                     range = { start_column = 8, end_column = 10 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 9, end_column = 10 },
                 },
             },
             text = "-f -b -xyz ",
             remainder = { value = " " },
         }, argparse.parse_arguments("-f -b -xyz "))
+    end)
+end)
+
+describe("+ flags", function()
+    it("works with ++double flags 001 - start", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "++double",
+                    range = {
+                        end_column = 8,
+                        start_column = 1,
+                    },
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 13,
+                        start_column = 10,
+                    },
+                    value = "here",
+                },
+            },
+            remainder = {
+                value = "",
+            },
+            text = "++double here",
+        }, argparse.parse_arguments("++double here"))
+    end)
+
+    it("works with ++double flags 002 - middle", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 5,
+                        start_column = 1,
+                    },
+                    value = "thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "++double",
+                    range = {
+                        end_column = 14,
+                        start_column = 7,
+                    },
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 19,
+                        start_column = 16,
+                    },
+                    value = "here",
+                },
+            },
+            remainder = {
+                value = "",
+            },
+            text = "thing ++double here",
+        }, argparse.parse_arguments("thing ++double here"))
+    end)
+
+    it("works with +s (single) flags 003 - end", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 5,
+                        start_column = 1,
+                    },
+                    value = "thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "++double",
+                    range = {
+                        end_column = 14,
+                        start_column = 7,
+                    },
+                },
+            },
+            remainder = {
+                value = "",
+            },
+            text = "thing ++double",
+        }, argparse.parse_arguments("thing ++double"))
+    end)
+
+    it("works with +s (single) flags 004 - only", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "+s",
+                    range = {
+                        end_column = 2,
+                        start_column = 1,
+                    },
+                },
+            },
+            remainder = {
+                value = "",
+            },
+            text = "+s",
+        }, argparse.parse_arguments("+s"))
+    end)
+
+    it("works with ++named=foo arguments 001 - start", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "++double",
+                    needs_choice_completion = true,
+                    range = {
+                        end_column = 12,
+                        start_column = 1,
+                    },
+                    value = "foo",
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 17,
+                        start_column = 14,
+                    },
+                    value = "here",
+                },
+            },
+            remainder = {
+                value = "",
+            },
+            text = "++double=foo here",
+        }, argparse.parse_arguments("++double=foo here"))
+    end)
+
+    it("works with ++named=foo arguments 002 - middle", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 5,
+                        start_column = 1,
+                    },
+                    value = "thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "++double",
+                    needs_choice_completion = true,
+                    range = {
+                        end_column = 18,
+                        start_column = 7,
+                    },
+                    value = "bar",
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 23,
+                        start_column = 20,
+                    },
+                    value = "here",
+                },
+            },
+            remainder = {
+                value = "",
+            },
+            text = "thing ++double=bar here",
+        }, argparse.parse_arguments("thing ++double=bar here"))
+    end)
+
+    it("works with ++named=foo arguments 003 - end", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 5,
+                        start_column = 1,
+                    },
+                    value = "thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "++double",
+                    -- TODO: Do I actually need needs_choice_completion anymore?
+                    needs_choice_completion = true,
+                    range = {
+                        end_column = 18,
+                        start_column = 7,
+                    },
+                    value = "foo",
+                },
+            },
+            remainder = {
+                value = "",
+            },
+            text = "thing ++double=foo",
+        }, argparse.parse_arguments("thing ++double=foo"))
+    end)
+
+    it("works with ++named=foo arguments 004 - only", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "++named",
+                    needs_choice_completion = true,
+                    range = {
+                        end_column = 11,
+                        start_column = 1,
+                    },
+                    value = "foo",
+                },
+            },
+            remainder = {
+                value = "",
+            },
+            text = "++named=foo",
+        }, argparse.parse_arguments("++named=foo"))
+    end)
+
+    it("works with +s (single) flags 001 - start", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "+s",
+                    range = {
+                        end_column = 2,
+                        start_column = 1,
+                    },
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 7,
+                        start_column = 4,
+                    },
+                    value = "here",
+                },
+            },
+            remainder = {
+                value = "",
+            },
+            text = "+s here",
+        }, argparse.parse_arguments("+s here"))
+    end)
+
+    it("works with +s (single) flags 002 - middle", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 5,
+                        start_column = 1,
+                    },
+                    value = "thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "+s",
+                    range = {
+                        end_column = 8,
+                        start_column = 7,
+                    },
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 13,
+                        start_column = 10,
+                    },
+                    value = "here",
+                },
+            },
+            remainder = {
+                value = "",
+            },
+            text = "thing +s here",
+        }, argparse.parse_arguments("thing +s here"))
+    end)
+
+    it("works with +s (single) flags 003 - end", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 5,
+                        start_column = 1,
+                    },
+                    value = "thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "+s",
+                    range = {
+                        end_column = 8,
+                        start_column = 7,
+                    },
+                },
+            },
+            remainder = {
+                value = "",
+            },
+            text = "thing +s",
+        }, argparse.parse_arguments("thing +s"))
+    end)
+
+    it("works with +s (single) flags 004 - only", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "+s",
+                    range = {
+                        end_column = 2,
+                        start_column = 1,
+                    },
+                },
+            },
+            remainder = {
+                value = "",
+            },
+            text = "+s",
+        }, argparse.parse_arguments("+s"))
     end)
 end)
