@@ -539,3 +539,48 @@ describe("* count", function()
         end)
     end)
 end)
+
+describe("dynamic argument", function()
+    it("skips if no matches were found", function()
+        -- TODO: Add
+    end)
+
+    it("works even if matches use spaces", function()
+        -- TODO: The user's argument should be in quotes, basically
+    end)
+
+    it("works with positional arguments", function()
+        local tree = {
+            say = {
+                [{
+                    option_type = argparse.ArgumentType.dynamic,
+                    choices = function()
+                        return { "a", "bb", "asteroid", "tt" }
+                    end,
+                }] = { thing = { "another", "last" } },
+                [{
+                    option_type = argparse.ArgumentType.dynamic,
+                    choices = function()
+                        return { "ab", "cc", "zzz", "lazers" }
+                    end,
+                }] = { different = { "branch", "here" } },
+            },
+        }
+
+        assert.same(
+            { "a", "ab", "asteroid", "bb", "cc", "lazers", "tt", "zzz" },
+            completion.get_options(tree, _parse("say "), 4)
+        )
+        assert.same({ "a", "ab", "asteroid" }, completion.get_options(tree, _parse("say a"), 5))
+        assert.same({ "thing" }, completion.get_options(tree, _parse("say a "), 6))
+        assert.same({ "another", "last" }, completion.get_options(tree, _parse("say a thing "), 12))
+
+        assert.same({ "a", "ab", "asteroid" }, completion.get_options(tree, _parse("say a"), 5))
+        assert.same({ "different" }, completion.get_options(tree, _parse("say ab "), 7))
+        assert.same({ "branch", "here" }, completion.get_options(tree, _parse("say ab different "), 17))
+    end)
+
+    it("works with count = 2", function()
+        -- TODO: Add
+    end)
+end)

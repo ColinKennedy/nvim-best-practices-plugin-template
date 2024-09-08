@@ -1,0 +1,1 @@
+- make sure the various types works as expected (nargs *, +, Number, etc)

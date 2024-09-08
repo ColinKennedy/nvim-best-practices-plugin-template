@@ -48,6 +48,31 @@ function M.get_value(data, items)
     return current
 end
 
+--- Iterate over all of the given arrays.
+---
+--- @param ... table<...>[] All of the tables to expand
+--- @return ... # Every element of each table, in order.
+---
+function M.chain(...)
+    local lists = {...}
+    local index = 0
+    local current = 1
+
+    return function()
+        while current <= #lists do
+            index = index + 1
+
+            if index <= #lists[current] then
+                return lists[current][index]
+            else
+                -- Move to the next list
+                index = 0
+                current = current + 1
+            end
+        end
+    end
+end
+
 --- Delete the contents of `data`.
 ---
 --- @param data table<...> A dictionary or array to clear.

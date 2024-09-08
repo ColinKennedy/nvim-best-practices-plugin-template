@@ -40,10 +40,8 @@ M.ArgumentType = {
 --- @field value string
 ---     The position's label.
 
---- @class NamedArgument : BaseArgument
+--- @class NamedArgument : FlagArgument
 ---     A --key=value pair. Basically it's a FlagArgument that has an extra value.
---- @field name string
----     The text of the argument. e.g. The `"foo"` part of `"--foo=bar"`.
 --- @field needs_choice_completion boolean
 ---     If `true`, it means that we've typed `"--foo="` and are ready to
 ---     auto-complete for `"--foo=bar"`. If `false`, it means we've typed
@@ -229,6 +227,7 @@ function M.parse_arguments(text)
                         -- NOTE: It's definitely a `--foo` flag or `--foo=bar` argument.
                         state = _State.in_double_flag
                         _reset_argument()
+                        current_name = character .. next_character
                         remainder.value = remainder.value .. next_character
                         logical_index = logical_index + 1
                         physical_index = physical_index + 1
@@ -238,6 +237,7 @@ function M.parse_arguments(text)
                         -- NOTE: It's definitely a `-f` flag.
                         state = _State.in_single_flag
                         _reset_argument()
+                        current_name = character
                         needs_name = false
                         needs_value = true
                     end
@@ -308,6 +308,7 @@ function M.parse_arguments(text)
                 -- Add every found character as flags
                 --
                 local current_argument_ = current_argument .. character
+                local current_name_ = current_name
                 current_argument = true
 
                 start_index = start_index - 1
@@ -315,7 +316,7 @@ function M.parse_arguments(text)
                 for index_ = 1, #current_argument_ do
                     local character_ = current_argument_:sub(index_, index_)
                     start_index = start_index + 1
-                    current_name = character_
+                    current_name = current_name_ .. character_
                     physical_index = physical_index + 1
                     _add_to_output()
                     physical_index = physical_index - 1

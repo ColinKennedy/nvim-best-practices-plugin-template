@@ -214,6 +214,34 @@ local function _is_partial_match_named_argument(data, option)
     return false
 end
 
+--- Find the label name of `option`.
+---
+--- - --foo = foo
+--- - --foo=bar = foo
+--- - -f = f
+--- - foo = foo
+---
+--- @param argument ArgparseArgument Some argument / option to query.
+--- @return string # The found name.
+---
+local function _get_argument_name(argument)
+    if argument.argument_type == M.OptionType.position then
+        --- @cast argument PositionArgument
+        return argument.value
+    end
+
+    if
+        argument.argument_type == argparse.ArgumentType.flag
+        or argument.argument_type == argparse.ArgumentType.named
+    then
+        return argument.name
+    end
+
+    vlog.fmt_error('Unabled to find a label for "%s" argument.', argument)
+
+    return ""
+end
+
 --- Find all `options` that match `argument`.
 ---
 --- @param data ArgparseArgument A partially written user argument.
@@ -353,34 +381,6 @@ local function _get_exact_matches(data, options, require_value)
     end
 
     return output
-end
-
---- Find the label name of `option`.
----
---- - --foo = foo
---- - --foo=bar = foo
---- - -f = f
---- - foo = foo
----
---- @param argument ArgparseArgument Some argument / option to query.
---- @return string # The found name.
----
-local function _get_argument_name(argument)
-    if argument.argument_type == M.OptionType.position then
-        --- @cast argument PositionArgument
-        return argument.value
-    end
-
-    if
-        argument.argument_type == argparse.ArgumentType.flag
-        or argument.argument_type == argparse.ArgumentType.named
-    then
-        return argument.name
-    end
-
-    vlog.fmt_error('Unabled to find a label for "%s" argument.', argument)
-
-    return ""
 end
 
 --- Get the readable label of `option`, if it has one.
