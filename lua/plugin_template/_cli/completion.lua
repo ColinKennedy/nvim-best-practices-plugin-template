@@ -905,6 +905,12 @@ local function _fill_missing_data(tree)
         return option
     end
 
+    local function _initialize_as_subcommand(option)
+        if option.is_subcommand == nil then
+            option.is_subcommand = true
+        end
+    end
+
     local function _make_key(key)
         if type(key) == "string" then
             -- NOTE: `key` usually is a string.
@@ -940,6 +946,7 @@ local function _fill_missing_data(tree)
 
         for key, value in pairs(old) do
             local new_key = _make_key(key)
+            _initialize_as_subcommand(new_key)
             new[new_key] = {}
 
             if vim.islist(value) then
