@@ -59,14 +59,6 @@ local tabler = require("plugin_template._core.tabler")
 --- @field parent Subparsers?
 ---     A subparser that own this `ArgumentParser`, if any.
 
---- @class ArgumentParser
----     A starting point for arguments (positional arguments, flag arguments, etc).
---- @field description string
----     Explain what this parser is meant to do and the argument(s) it needs.
----     Keep it brief (< 88 characters).
---- @field name string?
----     The parser name. This only needed if this parser has a parent subparser.
-
 --- @class SubparsersOptions
 ---     Customization options for the new Subparsers.
 --- @field description string
@@ -110,6 +102,14 @@ M.Argument = {
 }
 M.Argument.__index = M.Argument
 
+--- @class ArgumentParser
+---     A starting point for arguments (positional arguments, flag arguments, etc).
+--- @field description string
+---     Explain what this parser is meant to do and the argument(s) it needs.
+---     Keep it brief (< 88 characters).
+--- @field name string?
+---     The parser name. This only needed if this parser has a parent subparser.
+---
 M.ArgumentParser = {
     __tostring = function(parser)
         return string.format(
@@ -182,9 +182,9 @@ end
 --     return output
 -- end
 
-local function _get_flag_help_text(flag)
-    return string.format("[%s]", flag:get_raw_name())
-end
+-- local function _get_flag_help_text(flag)
+--     return string.format("[%s]", flag:get_raw_name())
+-- end
 
 --- Strip argument name of any flag / prefix text. e.g. `"--foo"` becomes `"foo"`.
 ---
@@ -196,6 +196,13 @@ local function _get_nice_name(text)
 end
 
 
+--- Get a friendly label for `position`. Used for `--help` flags.
+---
+--- If `position` has expected choices, those choices are returned instead.
+---
+--- @param position Argument Some (non-flag) argument to get text for.
+--- @return string # The found label.
+---
 local function _get_position_help_text(position)
     local choices = position:get_choices()
     local text = ""
@@ -214,11 +221,21 @@ local function _get_position_help_text(position)
 end
 
 
+--- Add indentation to `text.
+---
+--- @param text string Some phrase to indent one level. e.g. `"foo"`.
+--- @return string # The indented text, `"    foo"`.
+---
 local function _indent(text)
     return string.format("    %s", text)
 end
 
 
+--- Re-order `arguments` alphabetically but put the `--help` flag at the end.
+---
+--- @param arguments Argument[] All position / flag / named arguments.
+--- @return Argument[] # The sorted entries.
+---
 local function _sort_arguments(arguments)
     local output = vim.deepcopy(arguments)
 
@@ -241,6 +258,11 @@ local function _sort_arguments(arguments)
 end
 
 
+--- Get all option flag / named argument --help text from `parser`.
+---
+--- @param parser ArgumentParser Some runnable command to get arguments from.
+--- @return string[] # The labels of all of the flags.
+---
 local function _get_parser_flag_help_text(parser)
     local output = {}
 
@@ -265,6 +287,11 @@ local function _get_parser_flag_help_text(parser)
 end
 
 
+--- Get all position argument --help text from `parser`.
+---
+--- @param parser ArgumentParser Some runnable command to get arguments from.
+--- @return string[] # The labels of all of the flags.
+---
 local function _get_parser_position_help_text(parser)
     local output = {}
 
@@ -275,11 +302,11 @@ local function _get_parser_position_help_text(parser)
     end
 
     for _, subparser in ipairs(parser._subparsers) do
-        for _, parser in ipairs(subparser:get_parsers()) do
-            local text = parser.name
+        for _, parser_ in ipairs(subparser:get_parsers()) do
+            local text = parser_.name
 
-            if parser.description then
-                text = text .. "    " .. parser.description
+            if parser_.description then
+                text = text .. "    " .. parser_.description
             end
 
             table.insert(output, _indent(text))
@@ -303,7 +330,6 @@ end
 local function _expand_type_options(options)
     options = vim.deepcopy(options)
 
-    -- TODO: Make unittests for this
     if not options.type then
         options.type = function(value) return value end
     elseif options.type == "string" then
@@ -693,6 +719,11 @@ end
 
 
 -- TODO: Consider merging this code with the over traversal code
+--- Search recursively for the lowest possible `ArgumentParser` from `data`.
+---
+--- @param data ArgparseResults All of the arguments to consider.
+--- @return ArgumentParser # The found parser, if any.
+---
 function M.ArgumentParser:_get_leaf_parser(data)
     local parser = self
     --- @cast parser ArgumentParser
@@ -707,7 +738,7 @@ function M.ArgumentParser:_get_leaf_parser(data)
                 {}
             )
 
-            if not found then
+            if not found or not found_parser then
                 break
             end
 
@@ -719,9 +750,22 @@ function M.ArgumentParser:_get_leaf_parser(data)
 end
 
 
-function M.ArgumentParser:get_completion(text, column)
-    -- TODO: Finish this
-    column = column or #text
+--- Get auto-complete options based on this instance + the user's `data` input.
+---
+--- @param data ArgparseResults | string The user input.
+--- @param column number A 1-or-more value that represents the user's cursor.
+--- @return string[] # All found auto-complete options, if any.
+---
+function M.ArgumentParser:get_completion(data, column)
+    if type(data) == "string" then
+        data = argparse.parse_arguments(data)
+    end
+
+    column = column or #data.text
+
+    local parser = self:_get_leaf_parser(data)
+
+    return parser.name
 end
 
 
@@ -760,11 +804,13 @@ function M.ArgumentParser:get_full_help(data)
 end
 
 
+--- @return Argument[] # Get all arguments that can be placed in any order.
 function M.ArgumentParser:get_flag_arguments()
     return self._flag_arguments
 end
 
 
+--- @return Argument[] # Get all arguments that must be put in a specific order.
 function M.ArgumentParser:get_position_arguments()
     return self._position_arguments
 end
