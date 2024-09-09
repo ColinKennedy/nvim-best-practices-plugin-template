@@ -64,7 +64,7 @@ end
 
 
 describe("default", function()
-    it("works even if #simple #asdf", function()
+    it("works even if #simple", function()
         local parser = _make_simple_parser()
 
         assert.same({ "say" }, parser:get_completion(""))

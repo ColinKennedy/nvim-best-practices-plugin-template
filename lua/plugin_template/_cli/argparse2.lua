@@ -34,6 +34,9 @@ local tabler = require("plugin_template._core.tabler")
 --- @field action Action?
 ---     This controls the behavior of how parsed arguments are added into the
 ---     final parsed `Namespace`.
+--- @field description string?
+---     Explain what this parser is meant to do and the argument(s) it needs.
+---     Keep it brief (< 88 characters).
 --- @field destination string?
 ---     When a parsed `Namespace` is created, this field is used to store
 ---     the final parsed value(s). If no `destination` is given an
@@ -79,6 +82,9 @@ local M = {}
 -- TODO: Add support for this later
 local _ONE_OR_MORE = "__one_or_more"
 local _ZERO_OR_MORE = "__zero_or_more"
+
+local _FULL_HELP_FLAG = "--help"
+local _SHORT_HELP_FLAG = "-h"
 
 --- @class Argument
 ---     An optional / required argument for some parser.
@@ -213,10 +219,32 @@ local function _indent(text)
 end
 
 
+local function _sort_arguments(arguments)
+    local output = vim.deepcopy(arguments)
+
+    table.sort(
+        output,
+        function(left, right)
+            if vim.tbl_contains(left.names, _FULL_HELP_FLAG) or vim.tbl_contains(left.names, _SHORT_HELP_FLAG) then
+                return false
+            end
+
+            if vim.tbl_contains(right.names, _FULL_HELP_FLAG) or vim.tbl_contains(right.names, _SHORT_HELP_FLAG) then
+                return true
+            end
+
+            return left.names[1] < right.names[1]
+        end
+    )
+
+    return output
+end
+
+
 local function _get_parser_flag_help_text(parser)
     local output = {}
 
-    for _, flag in ipairs(parser:get_flag_arguments()) do
+    for _, flag in ipairs(_sort_arguments(parser:get_flag_arguments())) do
         local names = vim.fn.join(flag.names, " ")
         local text = ""
 
@@ -228,8 +256,6 @@ local function _get_parser_flag_help_text(parser)
 
         table.insert(output, _indent(text))
     end
-
-    output = vim.fn.sort(output)
 
     if not vim.tbl_isempty(output) then
         table.insert(output, 1, "Options:")
@@ -390,6 +416,7 @@ function M.Argument.new(options)
     _validate_argument_names(options.names)
     options = _expand_type_options(options)
 
+    --- @class Argument
     local self = setmetatable({}, M.Argument)
 
     self._action = nil
@@ -545,7 +572,8 @@ function M.ArgumentParser.new(options)
     self._position_arguments = {}
     self._flag_arguments = {}
     self._subparsers = {}
-    self._help_flag = self:add_argument(
+
+    self:add_argument(
         {
             names={"--help", "-h"},
             action="store_true",
@@ -580,7 +608,7 @@ function M.ArgumentParser._get_usage_summary(parser)
         table.insert(text, _get_position_help_text(position))
     end
 
-    for _, flag in ipairs(parser:get_flag_arguments()) do
+    for _, flag in ipairs(_sort_arguments(parser:get_flag_arguments())) do
         table.insert(text, string.format("[%s]", flag:get_raw_name()))
     end
 
@@ -647,7 +675,7 @@ end
 --- @param argument_name string A raw argument name. e.g. `foo`.
 --- @param namespace Namespace An existing namespace to set/append/etc to the subparser.
 --- @return boolean # If a match was found, return `true`.
---- @return ArgumentParser # The found subparser, if any.
+--- @return ArgumentParser? # The found subparser, if any.
 ---
 function M.ArgumentParser:_handle_subparsers(data, argument_name, namespace)
     for _, subparser in ipairs(self._subparsers) do
@@ -667,12 +695,13 @@ end
 -- TODO: Consider merging this code with the over traversal code
 function M.ArgumentParser:_get_leaf_parser(data)
     local parser = self
+    --- @cast parser ArgumentParser
 
     for index, argument in ipairs(data.arguments) do
         if argument.argument_type == argparse.ArgumentType.position then
             local argument_name = _get_argument_name(argument)
 
-            local found, found_parser = self:_handle_subparsers(
+            local found, found_parser = parser:_handle_subparsers(
                 argparse_helper.lstrip_arguments(data, index + 1),
                 argument_name,
                 {}
@@ -717,11 +746,11 @@ function M.ArgumentParser:get_full_help(data)
 
     local output = summary
 
-    if position_text ~= "" then
+    if not vim.tbl_isempty(position_text) then
         output = output .. "\n\n" .. vim.fn.join(position_text, "\n")
     end
 
-    if flag_text ~= "" then
+    if not vim.tbl_isempty(flag_text) then
         output = output .. "\n\n" .. vim.fn.join(flag_text, "\n")
     end
 
@@ -732,11 +761,7 @@ end
 
 
 function M.ArgumentParser:get_flag_arguments()
-    local output = {}
-    vim.list_extend(output, self._flag_arguments)
-    table.insert(output, self._help_flag)
-
-    return output
+    return self._flag_arguments
 end
 
 
@@ -763,7 +788,7 @@ function M.ArgumentParser:add_argument(options)
     if _is_position_name(names[1]) then
         table.insert(self._position_arguments, argument)
     else
-        table.insert(self:get_flag_arguments(), argument)
+        table.insert(self._flag_arguments, argument)
     end
 
     return argument

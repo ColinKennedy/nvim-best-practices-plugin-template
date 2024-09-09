@@ -2,6 +2,67 @@
 
 local argparse2 = require("plugin_template._cli.argparse2")
 
+--- @return ArgumentParser # Create a tree of commands for unittests.
+local function _make_simple_parser()
+    local choices = function(data)
+        local value = data.text
+
+        if value == "" then
+            value = 0
+        else
+            value = tonumber(value)
+
+            if type(value) ~= "number" then
+                return {}
+            end
+        end
+
+        --- @cast value number
+
+        local output = {}
+
+        for index = 1, 5 do
+            table.insert(output, tostring(value + index))
+        end
+
+        return output
+    end
+
+    local function _add_repeat_argument(parser)
+        parser:add_argument(
+            {
+                names={"--repeat", "-r"},
+                choices=choices,
+                description="The number of times to display the message.",
+            }
+        )
+    end
+
+    local function _add_style_argument(parser)
+        parser:add_argument(
+            {
+                names={"--style", "-s"},
+                choices={"lowercase", "uppercase"},
+                description="The format of the message.",
+            }
+        )
+    end
+
+
+    local parser = argparse2.ArgumentParser.new({name="top_test", description="Test"})
+    local subparsers = parser:add_subparsers({destination="commands"})
+    local say = subparsers:add_parser({name="say", description="Print stuff to the terminal."})
+    local say_subparsers = say:add_subparsers({destination="say_commands", description="All commands that print."})
+    local say_word = say_subparsers:add_parser({name="word", description="Print a single word."})
+    local say_phrase = say_subparsers:add_parser({name="phrase", description="Print a whole sentence."})
+
+    _add_repeat_argument(say_phrase)
+    _add_repeat_argument(say_word)
+    _add_style_argument(say_phrase)
+    _add_style_argument(say_word)
+
+    return parser
+end
 
 describe("bad input", function()
     it("knows if the user gives #bad input", function()
@@ -30,17 +91,56 @@ describe("default", function()
     it("shows the full #help if the user asks for it", function()
         local parser = argparse2.ArgumentParser.new({description="Test"})
 
-        assert.equal("usage: TODO\n\noptions:\nTODO", parser.get_full_help())
+        assert.equal("usage: TODO\n\noptions:\nTODO", parser:get_full_help())
     end)
 end)
 
+-- TODO: Make sure that the help shows position choices or named argument choices
 
 describe("help", function()
     describe("full", function()
-        it("shows all of the options for a #basic parser", function()
+        it("shows all of the options for a #basic parser - 001", function()
             local parser = _make_simple_parser()
 
-            assert.equal("asdfasfsd", parser:get_full_help(""))
+            assert.equal(
+                [[Usage: [--help]
+
+Positional Arguments:
+    say    Print stuff to the terminal.
+
+Options:
+    --help -h    Show this help message and exit.
+]],
+                parser:get_full_help("")
+            )
+
+            assert.equal(
+                [[Usage: [--help]
+
+Positional Arguments:
+    phrase    Print a whole sentence.
+    word    Print a single word.
+
+Options:
+    --help -h    Show this help message and exit.
+]],
+                parser:get_full_help("say ")
+            )
+        end)
+
+        it("shows all of the options for a #basic parser - 002", function()
+            local parser = _make_simple_parser()
+
+            assert.equal(
+                [[Usage: [--repeat] [--style] [--help]
+
+Options:
+    --repeat -r    The number of times to display the message.
+    --style -s    The format of the message.
+    --help -h    Show this help message and exit.
+]],
+                parser:get_full_help("say word ")
+            )
         end)
 
         it("shows all of the options for a subparser - 001", function()
@@ -52,7 +152,16 @@ describe("help", function()
         it("shows all of the options for a subparser - 002", function()
             local parser = _make_simple_parser()
 
-            assert.equal("ffffff", parser:get_full_help("say phrase "))
+            assert.equal(
+            [[Usage: [--repeat] [--style] [--help]
+
+Options:
+    --repeat -r    The number of times to display the message.
+    --style -s    The format of the message.
+    --help -h    Show this help message and exit.
+]],
+            parser:get_full_help("say phrase ")
+            )
         end)
     end)
 end)
