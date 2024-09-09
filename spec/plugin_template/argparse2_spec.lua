@@ -34,6 +34,30 @@ describe("default", function()
     end)
 end)
 
+
+describe("help", function()
+    describe("full", function()
+        it("shows all of the options for a #basic parser", function()
+            local parser = _make_simple_parser()
+
+            assert.equal("asdfasfsd", parser:get_full_help(""))
+        end)
+
+        it("shows all of the options for a subparser - 001", function()
+            local parser = _make_simple_parser()
+
+            assert.equal("tttt", parser:get_full_help("say "))
+        end)
+
+        it("shows all of the options for a subparser - 002", function()
+            local parser = _make_simple_parser()
+
+            assert.equal("ffffff", parser:get_full_help("say phrase "))
+        end)
+    end)
+end)
+
+
 describe("scenarios", function()
     it("works with a #basic flag argument", function()
         local parser = argparse2.ArgumentParser.new({description="Test"})

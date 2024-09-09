@@ -3,6 +3,7 @@
 --- @module 'plugin_template._cli.argparse2'
 ---
 
+-- TODO: DOCSTRINGS
 -- TODO: Clean-up code
 
 -- TODO: Add unittest for required subparsers
@@ -175,6 +176,9 @@ end
 --     return output
 -- end
 
+local function _get_flag_help_text(flag)
+    return string.format("[%s]", flag:get_raw_name())
+end
 
 --- Strip argument name of any flag / prefix text. e.g. `"--foo"` becomes `"foo"`.
 ---
@@ -183,6 +187,86 @@ end
 ---
 local function _get_nice_name(text)
     return text:match("%W*(%w+)")
+end
+
+
+local function _get_position_help_text(position)
+    local choices = position:get_choices()
+    local text = ""
+
+    if choices then
+        text = string.format("{%s}", vim.fn.join(vim.fn.sort(choices), ", "))
+    else
+        text = position:get_nice_name()
+    end
+
+    if position.description then
+        text = text .. "    " .. position.description
+    end
+
+    return text
+end
+
+
+local function _indent(text)
+    return string.format("    %s", text)
+end
+
+
+local function _get_parser_flag_help_text(parser)
+    local output = {}
+
+    for _, flag in ipairs(parser:get_flag_arguments()) do
+        local names = vim.fn.join(flag.names, " ")
+        local text = ""
+
+        if flag.description then
+            text = string.format("%s    %s", names, flag.description)
+        else
+            text = names
+        end
+
+        table.insert(output, _indent(text))
+    end
+
+    output = vim.fn.sort(output)
+
+    if not vim.tbl_isempty(output) then
+        table.insert(output, 1, "Options:")
+    end
+
+    return output
+end
+
+
+local function _get_parser_position_help_text(parser)
+    local output = {}
+
+    for _, position in ipairs(parser:get_position_arguments()) do
+        local text = _get_position_help_text(position)
+
+        table.insert(output, _indent(text))
+    end
+
+    for _, subparser in ipairs(parser._subparsers) do
+        for _, parser in ipairs(subparser:get_parsers()) do
+            local text = parser.name
+
+            if parser.description then
+                text = text .. "    " .. parser.description
+            end
+
+            table.insert(output, _indent(text))
+        end
+    end
+
+    output = vim.fn.sort(output)
+
+    if not vim.tbl_isempty(output) then
+        table.insert(output, 1, "Positional Arguments:")
+    end
+
+    return output
 end
 
 --- Find a proper type converter from `options`.
@@ -313,7 +397,8 @@ function M.Argument.new(options)
     self._count = 1
     self._used = 0
     self.names = options.names
-    self.destination = options.destination or options.names[1]
+    self.description = options.description
+    self.destination = _get_nice_name(options.destination or options.names[1])
     self:set_action(options.action)
     self._parent = options.parent
 
@@ -340,6 +425,12 @@ end
 --- @return string # The (clean) argument mame. e.g. `"--foo"` becomes `"foo"`.
 function M.Argument:get_nice_name()
     return _get_nice_name(self.destination or self.names[1])
+end
+
+
+--- @return string # The (raw) argument mame. e.g. `"--foo"`.
+function M.Argument:get_raw_name()
+    return self.names[1]
 end
 
 
@@ -454,6 +545,13 @@ function M.ArgumentParser.new(options)
     self._position_arguments = {}
     self._flag_arguments = {}
     self._subparsers = {}
+    self._help_flag = self:add_argument(
+        {
+            names={"--help", "-h"},
+            action="store_true",
+            description="Show this help message and exit.",
+        }
+    )
 
     return self
 end
@@ -464,7 +562,7 @@ function M.ArgumentParser:_get_default_namespace()
     local output = {}
 
     -- TODO: Add unittests for these arg types
-    for argument in tabler.chain(self._position_arguments, self._flag_arguments) do
+    for argument in tabler.chain(self:get_position_arguments(), self:get_flag_arguments()) do
         if argument.default then
             output[argument:get_nice_name()] = argument.default
         end
@@ -475,9 +573,19 @@ end
 
 
 --- @return string # A one/two liner explanation of this instance's expected arguments.
-function M.ArgumentParser._get_usage_summary()
+function M.ArgumentParser._get_usage_summary(parser)
+    local text = {}
+
+    for _, position in ipairs(parser:get_position_arguments()) do
+        table.insert(text, _get_position_help_text(position))
+    end
+
+    for _, flag in ipairs(parser:get_flag_arguments()) do
+        table.insert(text, string.format("[%s]", flag:get_raw_name()))
+    end
+
     -- TODO: Need to finish the concise args and also give advice on the next line
-    return "usage: TODO"
+    return string.format("Usage: %s", vim.fn.join(text, " "))
 end
 
 
@@ -539,6 +647,7 @@ end
 --- @param argument_name string A raw argument name. e.g. `foo`.
 --- @param namespace Namespace An existing namespace to set/append/etc to the subparser.
 --- @return boolean # If a match was found, return `true`.
+--- @return ArgumentParser # The found subparser, if any.
 ---
 function M.ArgumentParser:_handle_subparsers(data, argument_name, namespace)
     for _, subparser in ipairs(self._subparsers) do
@@ -546,27 +655,93 @@ function M.ArgumentParser:_handle_subparsers(data, argument_name, namespace)
             if parser.name == argument_name then
                 parser:parse_arguments(data, namespace)
 
-                return true
+                return true, parser
             end
         end
     end
 
-    return false
+    return false, nil
+end
+
+
+-- TODO: Consider merging this code with the over traversal code
+function M.ArgumentParser:_get_leaf_parser(data)
+    local parser = self
+
+    for index, argument in ipairs(data.arguments) do
+        if argument.argument_type == argparse.ArgumentType.position then
+            local argument_name = _get_argument_name(argument)
+
+            local found, found_parser = self:_handle_subparsers(
+                argparse_helper.lstrip_arguments(data, index + 1),
+                argument_name,
+                {}
+            )
+
+            if not found then
+                break
+            end
+
+            parser = found_parser
+        end
+    end
+
+    return parser
+end
+
+
+function M.ArgumentParser:get_completion(text, column)
+    -- TODO: Finish this
+    column = column or #text
 end
 
 
 --- @return string # A one/two liner explanation of this instance's expected arguments.
 function M.ArgumentParser:get_concise_help()
-    return M.ArgumentParser._get_usage_summary()
+    return M.ArgumentParser._get_usage_summary(self)
 end
 
 
 --- @return string # A multi-liner explanation of this instance's expected arguments.
-function M.ArgumentParser:get_full_help()
-    -- TODO: Need to gather all options and print them
-    local summary = M.ArgumentParser._get_usage_summary()
+function M.ArgumentParser:get_full_help(data)
+    if type(data) == "string" then
+        data = argparse.parse_arguments(data)
+    end
 
-    return string.format("%s\n\noptions:%s", summary, "TODO")
+    -- TODO: Need to gather all options and print them
+    local parser = self:_get_leaf_parser(data)
+    local summary = M.ArgumentParser._get_usage_summary(parser)
+
+    local position_text = _get_parser_position_help_text(parser)
+    local flag_text = _get_parser_flag_help_text(parser)
+
+    local output = summary
+
+    if position_text ~= "" then
+        output = output .. "\n\n" .. vim.fn.join(position_text, "\n")
+    end
+
+    if flag_text ~= "" then
+        output = output .. "\n\n" .. vim.fn.join(flag_text, "\n")
+    end
+
+    output = output .. "\n"
+
+    return output
+end
+
+
+function M.ArgumentParser:get_flag_arguments()
+    local output = {}
+    vim.list_extend(output, self._flag_arguments)
+    table.insert(output, self._help_flag)
+
+    return output
+end
+
+
+function M.ArgumentParser:get_position_arguments()
+    return self._position_arguments
 end
 
 
@@ -588,7 +763,7 @@ function M.ArgumentParser:add_argument(options)
     if _is_position_name(names[1]) then
         table.insert(self._position_arguments, argument)
     else
-        table.insert(self._flag_arguments, argument)
+        table.insert(self:get_flag_arguments(), argument)
     end
 
     return argument
@@ -651,7 +826,7 @@ end
 
 --- Parse user text `data`.
 ---
---- @param data string
+--- @param data string | ArgparseResults
 ---     User text that needs to be parsed. e.g. `hello "World!"`
 --- @param namespace Namespace?
 ---     All pre-existing, default parsed values. If this is the first
@@ -673,14 +848,14 @@ function M.ArgumentParser:parse_arguments(data, namespace)
         namespace
     )
 
-    local position_arguments = vim.deepcopy(self._position_arguments)
-    local flag_arguments = vim.deepcopy(self._flag_arguments)
+    local position_arguments = vim.deepcopy(self:get_position_arguments())
+    local flag_arguments = vim.deepcopy(self:get_flag_arguments())
 
     for index, argument in ipairs(data.arguments) do
         if argument.argument_type == argparse.ArgumentType.position then
             local argument_name = _get_argument_name(argument)
 
-            local found = self:_handle_subparsers(
+            local found, _ = self:_handle_subparsers(
                 argparse_helper.lstrip_arguments(data, index + 1),
                 argument_name,
                 namespace
