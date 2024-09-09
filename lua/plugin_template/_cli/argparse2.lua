@@ -764,8 +764,6 @@ function M.ArgumentParser:get_completion(data, column)
     column = column or #data.text
 
     local parser = self:_get_leaf_parser(data)
-    print("TTT")
-    print(parser)
 
     local output = {}
 
