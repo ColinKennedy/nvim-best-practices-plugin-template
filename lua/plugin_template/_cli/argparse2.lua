@@ -753,7 +753,7 @@ end
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
 --- @param data ArgparseResults | string The user input.
---- @param column number A 1-or-more value that represents the user's cursor.
+--- @param column number? A 1-or-more value that represents the user's cursor.
 --- @return string[] # All found auto-complete options, if any.
 ---
 function M.ArgumentParser:get_completion(data, column)
@@ -764,8 +764,28 @@ function M.ArgumentParser:get_completion(data, column)
     column = column or #data.text
 
     local parser = self:_get_leaf_parser(data)
+    print("TTT")
+    print(parser)
 
-    return parser.name
+    local output = {}
+
+    for _, subparsers in ipairs(parser._subparsers) do
+        for _, parser_ in ipairs(subparsers:get_parsers()) do
+            if vim.startswith(parser_.name, data.remainder.value) then
+                table.insert(output, parser_.name)
+            end
+        end
+    end
+
+    -- for _, argument in ipairs(parser:get_position_arguments()) do
+    -- end
+    --
+    -- for argument in tabler.chain(parser:get_position_arguments(), parser._flag_arguments) do
+    --     print(argument)
+    --     table.insert(output, "asdf")
+    -- end
+
+    return output
 end
 
 

@@ -75,6 +75,8 @@ describe("simple", function()
     it("works with multiple position arguments", function()
         local parser = _make_simple_parser()
 
+        assert.same({ "say" }, parser:get_completion("sa"))
+        assert.same({ "say" }, parser:get_completion("say"))
         assert.same({ "phrase", "word" }, parser:get_completion("say "))
         assert.same({ "--repeat=", "--style=" }, parser:get_completion("say phrase "))
     end)
