@@ -77,7 +77,7 @@ describe("default", function()
     it("works with a #default", function()
         local parser = argparse2.ArgumentParser.new({description="Test"})
 
-        assert.equal("usage: TODO", parser.get_concise_help())
+        assert.equal("Usage: [--help]\n", parser:get_concise_help(""))
     end)
 
     it("works with a #empty type", function()
@@ -91,7 +91,14 @@ describe("default", function()
     it("shows the full #help if the user asks for it", function()
         local parser = argparse2.ArgumentParser.new({description="Test"})
 
-        assert.equal("usage: TODO\n\noptions:\nTODO", parser:get_full_help())
+        assert.equal(
+            [[Usage: [--help]
+
+Options:
+    --help -h    Show this help message and exit.
+]],
+            parser:get_full_help("")
+        )
     end)
 end)
 
@@ -113,19 +120,6 @@ Options:
 ]],
                 parser:get_full_help("")
             )
-
-            assert.equal(
-                [[Usage: [--help]
-
-Positional Arguments:
-    phrase    Print a whole sentence.
-    word    Print a single word.
-
-Options:
-    --help -h    Show this help message and exit.
-]],
-                parser:get_full_help("say ")
-            )
         end)
 
         it("shows all of the options for a #basic parser - 002", function()
@@ -146,7 +140,18 @@ Options:
         it("shows all of the options for a subparser - 001", function()
             local parser = _make_simple_parser()
 
-            assert.equal("tttt", parser:get_full_help("say "))
+            assert.equal(
+                [[Usage: [--help]
+
+Positional Arguments:
+    phrase    Print a whole sentence.
+    word    Print a single word.
+
+Options:
+    --help -h    Show this help message and exit.
+]],
+                parser:get_full_help("say ")
+            )
         end)
 
         it("shows all of the options for a subparser - 002", function()
