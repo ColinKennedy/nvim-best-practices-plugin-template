@@ -350,14 +350,8 @@ end)
 
 describe("numbered count - named argument", function()
     it("works with count = 2", function()
-        local parser = {
-            {
-                option_type = completion.OptionType.named,
-                name = "foo",
-                choices = { "bar", "fizz", "buzz" },
-                count = 2,
-            },
-        }
+        local parser = argparse2.ArgumentParser.new({description="Test"})
+        parser:add_argument({name="--foo", choices={ "bar", "fizz", "buzz" }, count=2})
 
         assert.same({ "--foo=" }, parser:get_completion("--fo"))
         assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, parser:get_completion("--foo="))

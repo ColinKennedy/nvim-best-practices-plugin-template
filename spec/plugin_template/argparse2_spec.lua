@@ -65,11 +65,31 @@ local function _make_simple_parser()
 end
 
 describe("bad input", function()
-    it("knows if the user gives #bad input", function()
+    it("knows if the user is #missing a required flag argument", function()
+        -- TODO: Finish
+    end)
+
+    it("knows if the user is #missing a required named argument", function()
+        -- TODO: Finish
+    end)
+
+    it("knows if the user is #missing a required position argument", function()
         local parser = argparse2.ArgumentParser.new({description="Test"})
         parser:add_argument({names="foo"})
 
-        assert.is_false(parser.is_valid(""))
+        assert.same({"ASDADSASDADS"}, parser:get_errors(""))
+    end)
+
+    it("knows if the user is #missing an argument - 001", function()
+        -- TODO: Add NamedArgument check
+    end)
+
+    it("knows if the user is #missing an argument - 002", function()
+        -- TODO: Add FlagArgument + PositionArgument check
+    end)
+
+    it("knows if the user is #missing one of several argumentis - 003", function()
+        -- TODO: Add FlagArgument + PositionArgument + nargs = 2 check
     end)
 end)
 
