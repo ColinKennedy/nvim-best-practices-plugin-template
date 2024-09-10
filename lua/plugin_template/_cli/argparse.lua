@@ -7,6 +7,8 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
+local _PREFIX_CHARACTERS = {"-", "+"}
+
 --- @enum ArgumentType
 M.ArgumentType = {
     dynamic = "__dynamic",
@@ -86,6 +88,15 @@ local _State = {
 ---
 local function is_alpha_numeric(character)
     return character:match("[^='\"%s]") ~= nil
+end
+
+--- Check if `character` marks the start of a `FlagArgument` or `NamedArgument`.
+---
+--- @param character string A starting character. e.g. `-`, `+`, etc.
+--- @return boolean # If `character` is a `PositionArgument` character, return `true`.
+---
+local function _is_prefix(character)
+    return vim.tbl_contains(_PREFIX_CHARACTERS, character)
 end
 
 --- Check if `character` is a space, tab, or newline.
@@ -220,10 +231,10 @@ function M.parse_arguments(text)
                 -- NOTE: We know we've encounted some -f` or `--foo` or
                 -- `--foo=bar` but we aren't sure which it is yet.
                 --
-                if character == "-" then
+                if _is_prefix(character) then
                     local next_character = peek(physical_index)
 
-                    if next_character == "-" then
+                    if _is_prefix(next_character) and next_character == character then
                         -- NOTE: It's definitely a `--foo` flag or `--foo=bar` argument.
                         state = _State.in_double_flag
                         _reset_argument()

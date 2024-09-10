@@ -261,17 +261,17 @@ describe("quotes", function()
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 6, end_column = 9 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 9 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 8, end_column = 9 },
                 },
             },
@@ -536,7 +536,7 @@ describe("single-dash flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
             },
@@ -550,17 +550,17 @@ describe("single-dash flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 4 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 2, end_column = 4 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 3, end_column = 4 },
                 },
             },
@@ -574,17 +574,17 @@ describe("single-dash flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 8 },
                 },
             },
@@ -635,17 +635,17 @@ describe("remainder - flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 8 },
                 },
             },
@@ -659,17 +659,17 @@ describe("remainder - flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 8 },
                 },
             },
@@ -683,22 +683,22 @@ describe("remainder - flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 8 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "r",
+                    name = "--r",
                     range = { start_column = 10, end_column = 12 },
                 },
             },
@@ -716,17 +716,17 @@ describe("remainder - flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 8 },
                 },
             },
@@ -740,17 +740,17 @@ describe("remainder - flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 7, end_column = 8 },
                 },
             },
@@ -764,27 +764,27 @@ describe("remainder - flags", function()
             arguments = {
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "f",
+                    name = "-f",
                     range = { start_column = 1, end_column = 2 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "b",
+                    name = "-b",
                     range = { start_column = 4, end_column = 5 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "x",
+                    name = "-x",
                     range = { start_column = 7, end_column = 10 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "y",
+                    name = "-y",
                     range = { start_column = 8, end_column = 10 },
                 },
                 {
                     argument_type = argparse.ArgumentType.flag,
-                    name = "z",
+                    name = "-z",
                     range = { start_column = 9, end_column = 10 },
                 },
             },

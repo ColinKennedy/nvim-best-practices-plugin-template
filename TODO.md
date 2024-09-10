@@ -9,6 +9,11 @@
 - Add a unittest to makes sure that position `choices` can maintain another table and remove possible matches each time the argument is used
  - Same test but for flag arguments
 
+
+- Allow ++foo arguments instead of --
+
+- Add namespaces to all of the argparse / argparse2 types
+
 - replace all `_subparsers` with a get_subparsers() method
 - replace the subparsers / parser nested for-loop with a "parser iterator" instead
 - Add unittests for invalid arguments. e.g. `say word 'asdfasd`
