@@ -107,6 +107,8 @@ M.Argument.__index = M.Argument
 
 --- @class ArgumentParser
 ---     A starting point for arguments (positional arguments, flag arguments, etc).
+--- @field choices (fun(): string[])?
+---     If included, this parser can be referred to using these names instead of its expected name.
 --- @field description string
 ---     Explain what this parser is meant to do and the argument(s) it needs.
 ---     Keep it brief (< 88 characters).
@@ -116,9 +118,10 @@ M.Argument.__index = M.Argument
 M.ArgumentParser = {
     __tostring = function(parser)
         return string.format(
-            'ArgumentParser({name="%s", description="%s"})',
+            'ArgumentParser({name="%s", description="%s", choices="%s"})',
             parser.name,
-            parser.description
+            parser.description,
+            parser.choices
         )
     end,
 }
@@ -442,6 +445,21 @@ local function _get_parser_position_help_text(parser)
     return output
 end
 
+
+--- Print `data` but don't recurse.
+---
+--- If you don't call this function and you try to print one of our Argument
+--- types, it will print parent / child objects and it ends up priting the
+--- whole tree. This function instead prints just the relevant details.
+---
+--- @param data ... Anything. Usually an Argument type from this file.
+--- @return string # The found data.
+---
+local function _concise_inspect(data)
+    return vim.inspect(data, {depth=1})
+end
+
+
 --- Find a proper type converter from `options`.
 ---
 --- @param options ArgumentOptions The suggested type for an argument.
@@ -459,7 +477,7 @@ local function _expand_type_options(options)
     elseif type(options.type) == "function" then
         -- NOTE: Do nothing. Assume the user knows what they're doing.
     else
-        error(string.format('Type "%s" is unknown. We can\'t parse it.', vim.inspect(options)))
+        error(string.format('Type "%s" is unknown. We can\'t parse it.', _concise_inspect(options)))
     end
 
     return options
@@ -487,7 +505,7 @@ local function _expand_argument_options(options)
         elseif type(options.choices) == "function" then
             choices = options.choices
         else
-            error(string.format('Got invalid "%s" choices. Expected a list or a function.', vim.inspect(options.choices)))
+            error(string.format('Got invalid "%s" choices. Expected a list or a function.', _concise_inspect(options.choices)))
         end
     end
 
@@ -502,9 +520,9 @@ end
 ---
 --- If `names` is `{"foo", "-f"}` then this function will error.
 ---
---- @param names string[] | string All arguments to check.
+--- @param options ArgumentOptions All data to check.
 ---
-local function _validate_argument_names(names)
+local function _validate_argument_names(options)
     local function _get_type(name)
         if _is_position_name(name) then
             return "position"
@@ -512,6 +530,8 @@ local function _validate_argument_names(names)
 
         return "flag"
     end
+
+    local names = options.names or options.name
 
     if type(names) == "string" then
         names = {names}
@@ -536,6 +556,8 @@ local function _validate_argument_names(names)
     if not found_type then
         error('Options "%s" must provide at least one name.', vim.inspect(names))
     end
+
+    options.names = names
 end
 
 
@@ -546,7 +568,7 @@ end
 local function _validate_name(options)
     -- TODO: name is required
     if not options.name or _is_whitespace(options.name) then
-        error(string.format('Argument "%s" must have a name.', vim.inspect(options)))
+        error(string.format('Argument "%s" must have a name.', _concise_inspect(options)))
     end
 end
 
@@ -595,13 +617,6 @@ end
 --- @return Argument # The created instance.
 ---
 function M.Argument.new(options)
-    if not options.names or vim.tbl_isempty(options.names) then
-        error(string.format('Argument "%s" must define `names`.', vim.inspect(options)))
-    end
-
-    _validate_argument_names(options.names or option.name)
-    options = _expand_argument_options(options)
-
     --- @class Argument
     local self = setmetatable({}, M.Argument)
 
@@ -868,7 +883,7 @@ end
 ---
 function M.ArgumentParser:_handle_subparsers(data, argument_name, namespace)
     for parser in _iter_parsers(self) do
-        if parser.name == argument_name then
+        if vim.tbl_contains(parser:get_names(), argument_name) then
             parser:parse_arguments(data, namespace)
 
             return true, parser
@@ -1020,7 +1035,9 @@ function M.ArgumentParser:get_completion(data, column)
     if remainder ~= "" then
         local last = data.arguments[#data.arguments]
         local last_name = _get_argument_name(last)
-        local matches = vim.iter(parsers):filter(function(parser) return parser.name == last_name end):totable()
+        local matches = vim.iter(parsers):filter(function(parser)
+            return vim.tbl_contains(parser:get_names(), last_name)
+        end):totable()
         -- TODO: If 2+ matches, log a warning
         local match = matches[1]
 
@@ -1043,7 +1060,7 @@ function M.ArgumentParser:get_completion(data, column)
     end
 
     for _, parser in ipairs(parsers or {}) do
-        table.insert(output, parser.name)
+        vim.list_extend(output, parser:get_names())
     end
 
     local last = data.arguments[#data.arguments]
@@ -1128,6 +1145,16 @@ function M.ArgumentParser:get_flag_arguments()
 end
 
 
+--- @return string[] # Get all of auto-complete options for this instance.
+function M.ArgumentParser:get_names()
+    if self.choices then
+        return self.choices()
+    end
+
+    return {self.name}
+end
+
+
 --- @return Argument[] # Get all arguments that must be put in a specific order.
 function M.ArgumentParser:get_position_arguments()
     return self._position_arguments
@@ -1140,16 +1167,13 @@ end
 --- @return Argument # The created `Argument` instance.
 ---
 function M.ArgumentParser:add_argument(options)
-    local names = options.names
+    _validate_argument_names(options)
+    options = _expand_argument_options(options)
+    local new_options = vim.tbl_deep_extend("force", options, {parent=self})
 
-    if type(names) == "string" then
-        names = {names}
-    end
-
-    local new_options = vim.tbl_deep_extend("force", options, ({names=names, parent=self}))
     local argument = M.Argument.new(new_options)
 
-    if _is_position_name(names[1]) then
+    if _is_position_name(options.names[1]) then
         table.insert(self._position_arguments, argument)
     else
         table.insert(self._flag_arguments, argument)

@@ -372,14 +372,8 @@ end)
 
 describe("numbered count - named argument", function()
     it("works with count = 2", function()
-        local parser = {
-            {
-                option_type = completion.OptionType.named,
-                name = "foo",
-                choices = { "bar", "fizz", "buzz" },
-                count = 2,
-            },
-        }
+        local parser = argparse2.ArgumentParser.new({description="Test."})
+        parser:add_argument({name="--foo", choices={ "bar", "fizz", "buzz" }, count=2})
 
         assert.same({ "--foo=" }, parser:get_completion("--fo"))
         assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, parser:get_completion("--foo="))
@@ -501,19 +495,16 @@ end)
 describe("* count", function()
     describe("simple", function()
         it("works with position arguments", function()
-            local parser = {
-                {
-                    count = "*",
-                    value = "foo",
-                    option_type = argparse.ArgumentType.position,
-                },
-            }
+            local parser = argparse2.ArgumentParser.new({description="Test"})
+            parser:add_argument({names="thing", choices={"foo"}, nargs="*"})
 
             assert.same({ "foo" }, parser:get_completion(""))
             assert.same({ "foo" }, parser:get_completion("fo"))
             assert.same({ "foo" }, parser:get_completion("foo"))
             assert.same({ "foo" }, parser:get_completion("foo "))
             assert.same({ "foo" }, parser:get_completion("foo fo"))
+            assert.same({ "foo" }, parser:get_completion("foo foo"))
+            assert.same({ "foo" }, parser:get_completion("foo foo foo"))
         end)
     end)
 end)
@@ -528,22 +519,24 @@ describe("dynamic argument", function()
     end)
 
     it("works with positional arguments", function()
-        local parser = {
-            say = {
-                [{
-                    option_type = argparse.ArgumentType.dynamic,
-                    choices = function()
-                        return { "a", "bb", "asteroid", "tt" }
-                    end,
-                }] = { thing = { "another", "last" } },
-                [{
-                    option_type = argparse.ArgumentType.dynamic,
-                    choices = function()
-                        return { "ab", "cc", "zzz", "lazers" }
-                    end,
-                }] = { different = { "branch", "here" } },
-            },
-        }
+        local parser = argparse2.ArgumentParser.new({name="top_test", description="Test"})
+        local subparsers = parser:add_subparsers({destination="commands"})
+        local parser = subparsers:add_parser({name="say", description="Say something."})
+        parser:add_argument({
+            name="thing",
+            choices=function() return { "a", "bb", "asteroid", "tt" } end,
+            description="Choices that come from a function.",
+        })
+        local inner_subparsers = parser:add_subparsers({destination="thing_subparsers"})
+        local thing = inner_subparsers:add_parser({name="thing", description="Inner thing."})
+        thing:add_argument({name="last_thing", choices={ "another", "last" }})
+
+        local dynamic = inner_subparsers:add_parser(
+            {name="dynamic_thing", choices=function() return { "ab", "cc", "zzz", "lazers" } end}
+        )
+        local inner_dynamic = dynamic:add_subparsers({name="inner_dynamic_thing"})
+        local different = inner_dynamic:add_parser({name="different"})
+        different:add_argument({name="last", choices=function() return { "branch", "here" } end})
 
         assert.same(
             { "a", "ab", "asteroid", "bb", "cc", "lazers", "tt", "zzz" },
