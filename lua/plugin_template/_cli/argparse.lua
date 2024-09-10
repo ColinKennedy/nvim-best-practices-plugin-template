@@ -284,7 +284,7 @@ function M.parse_arguments(text)
                 -- to find the `bar` part
                 --
                 needs_name = false
-                current_name = current_argument
+                current_name = current_name .. current_argument
                 _reset_argument()
 
                 if _is_quote(peek(physical_index)) then
@@ -300,7 +300,7 @@ function M.parse_arguments(text)
             elseif _is_whitespace(character) then
                 -- NOTE: Ignore whitespace in some situations.
                 if not is_escaping then
-                    current_name = current_argument
+                    current_name = current_name .. current_argument
                     current_argument = true
                     _add_to_output()
                     _reset_all()
@@ -377,7 +377,7 @@ function M.parse_arguments(text)
     elseif state == _State.normal and current_argument ~= "" then
         _add_to_output()
     elseif (state == _State.in_double_flag or state == _State.in_single_flag) and current_argument ~= "" then
-        current_name = current_argument
+        current_name = current_name .. current_argument
         current_argument = true
         needs_value = true
         _add_to_output()
