@@ -188,6 +188,25 @@ Options:
             parser:get_full_help("say phrase ")
             )
         end)
+
+        it("works with a parser that has more than one choice for its name", function()
+            local parser = argparse2.ArgumentParser.new({description="Test."})
+            local subparsers = parser:add_subparsers({destination="commands"})
+            subparsers:add_parser({name="thing", choices={"aaa", "bbb", "ccc"}, description="Do a thing."})
+
+            assert.equal(
+                [[Usage: [--help]
+
+Positional Arguments:
+    {aaa, bbb, ccc}    Do a thing.
+
+Options:
+    --help -h    Show this help message and exit.
+]],
+                parser:get_full_help("")
+            )
+        end)
+
     end)
 end)
 

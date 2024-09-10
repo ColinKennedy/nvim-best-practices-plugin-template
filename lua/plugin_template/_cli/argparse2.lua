@@ -402,6 +402,16 @@ local function _iter_parsers(parser)
 end
 
 
+--- Combine `labels` into a single-line summary (for help messages).
+---
+--- @param labels string[] All commands to run.
+--- @return string # The created text.
+---
+local function _get_help_command_labels(labels)
+    return string.format("{%s}", vim.fn.join(vim.fn.sort(labels), ", "))
+end
+
+
 --- Find all required arguments in `parser` that still need value(s).
 ---
 --- @param parsers ArgumentParser[] All child / leaf parsers to check.
@@ -520,7 +530,7 @@ local function _get_position_help_text(position)
     local text = ""
 
     if position.choices then
-        text = string.format("{%s}", vim.fn.join(vim.fn.sort(position.choices()), ", "))
+        text = _get_help_command_labels(position.choices())
     else
         text = position:get_nice_name()
     end
@@ -587,7 +597,12 @@ local function _get_parser_position_help_text(parser)
     end
 
     for parser_ in _iter_parsers(parser) do
-        local text = parser_.name
+        local names = parser_:get_names()
+        local text = names[1]
+
+        if #names ~= 1 then
+            text = _get_help_command_labels(names)
+        end
 
         if parser_.description then
             text = text .. "    " .. parser_.description
