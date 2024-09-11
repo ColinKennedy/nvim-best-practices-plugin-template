@@ -71,7 +71,7 @@ describe("arbitrary-thing commands", function()
     it("runs #arbitrary-thing with arguments", function()
         vim.cmd([[PluginTemplate arbitrary-thing -vvv -abc -f]])
 
-        assert.same({ "v, v, v, a, b, c, f" }, _DATA)
+        assert.same({ "-v, -v, -v, -a, -b, -c, -f" }, _DATA)
     end)
 end)
 

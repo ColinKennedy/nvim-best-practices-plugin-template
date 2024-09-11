@@ -49,9 +49,9 @@ local texter = require("plugin_template._core.texter")
 ---     When a parsed `Namespace` is created, this field is used to store
 ---     the final parsed value(s). If no `destination` is given an
 ---     automatically assigned name is used instead.
---- @field name string
+--- @field name? string
 ---     The ways to refer to this instance.
---- @field names string[]
+--- @field names? string[]
 ---     The ways to refer to this instance.
 --- @field nargs Nargs
 ---     The number of elements that this argument consumes at once.
@@ -86,8 +86,8 @@ local texter = require("plugin_template._core.texter")
 local M = {}
 
 -- TODO: Add support for this later
-local _ONE_OR_MORE = "__one_or_more"
-local _ZERO_OR_MORE = "__zero_or_more"
+local _ONE_OR_MORE = "+"
+local _ZERO_OR_MORE = "*"
 
 local _FULL_HELP_FLAG = "--help"
 local _SHORT_HELP_FLAG = "-h"
@@ -105,12 +105,13 @@ local _SHORT_HELP_FLAG = "-h"
 M.Argument = {
     __tostring = function(argument)
         return string.format(
-            'Argument({names=%s, help=%s, type=%s, action=%s, nargs=%s})',
+            'Argument({names=%s, help=%s, type=%s, action=%s, nargs=%s, choices=%s})',
             vim.inspect(argument.names),
             vim.inspect(argument.help),
             vim.inspect(argument.type),
             vim.inspect(argument._action),
-            vim.inspect(argument._nargs)
+            vim.inspect(argument._nargs),
+            vim.inspect(argument.choices)
         )
     end,
 }
@@ -214,6 +215,25 @@ local function _get_arguments_names(arguments)
 end
 
 
+local function _get_array_startswith(values, prefix)
+    local output = {}
+
+    for _, value in ipairs(values) do
+        if vim.startswith(value, prefix) then
+            table.insert(output, value)
+        end
+    end
+
+    return output
+end
+
+
+
+local function _remove_boundary_whitespace(text)
+    return (text:gsub("^%s*$", ""))
+end
+
+
 --- Re-order `arguments` alphabetically but put the `--help` flag at the end.
 ---
 --- @param arguments Argument[] All position / flag / named arguments.
@@ -262,41 +282,19 @@ local function _get_cursor_offset(input, column)
 end
 
 
---- Find all Argments starting with `name`.
----
---- @param argument ArgparseArgument The last known, parsable argument.
---- @param parser ArgumentParser The starting point to search within.
---- @return string[] # The matching names, if any.
----
-local function _get_exact_or_partial_matches(argument, parser)
-    local name = _get_argument_name(argument)
+local function _get_matching_flag_text(prefix, flags)
     local output = {}
 
-    for _, argument_ in ipairs(parser:get_position_arguments()) do
+    for _, argument_ in ipairs(_sort_arguments(flags)) do
         if not argument_:is_exhausted() then
-            local choices = argument_.choices()
-
-            if choices then
-                -- TODO: Handle this case. Make sure there's tests
-                vim.list_extend(output, choices)
-            end
-        end
-    end
-
-    local request_choices = argument.argument_type == argparse.ArgumentType.named
-
-    for _, argument_ in ipairs(_sort_arguments(parser:get_flag_arguments())) do
-        if not argument_:is_exhausted() then
-            for _, name_ in ipairs(argument_.names) do
-                if _is_whitespace(name) or vim.startswith(name_, name) then
-                    if request_choices then
-                        if argument_.choices then
-                            for _, choice in ipairs(argument_.choices()) do
-                                if argument_:get_nargs() == 1 then
-                                    table.insert(output, argument_.names[1] .. "=" .. choice)
-                                else
-                                    table.insert(output, choice)
-                                end
+            for _, name in ipairs(argument_.names) do
+                if vim.startswith(name, prefix) then
+                    if argument_.choices then
+                        for _, choice in ipairs(argument_.choices()) do
+                            if argument_:get_nargs() == 1 then
+                                table.insert(output, argument_.names[1] .. "=" .. choice)
+                            else
+                                table.insert(output, choice)
                             end
                         end
                     else
@@ -312,6 +310,52 @@ local function _get_exact_or_partial_matches(argument, parser)
             end
         end
     end
+
+    return output
+end
+
+
+local function _get_recommended_position_names(argument)
+    if argument.choices then
+        return argument.choices()
+    end
+
+    return {argment.names[1]}
+end
+
+
+local function _get_matching_position_arguments(name, arguments)
+    local output = {}
+
+    for _, argument in ipairs(_sort_arguments(arguments)) do
+        if not argument:is_exhausted() then
+            vim.list_extend(
+                output,
+                _get_array_startswith(_get_recommended_position_names(argument), name)
+            )
+        end
+    end
+
+    return output
+end
+
+
+-- TODO: Docstring
+--- Find all Argments starting with `name`.
+---
+--- @param parser ArgumentParser The starting point to search within.
+--- @return string[] # The matching names, if any.
+---
+local function _get_exact_or_partial_matches(prefix, parser)
+    prefix = _remove_boundary_whitespace(prefix)
+    local output = {}
+
+    vim.list_extend(output, _get_matching_position_arguments(prefix, parser:get_position_arguments()))
+
+    vim.list_extend(
+        output,
+        _get_matching_flag_text(prefix, parser:get_flag_arguments())
+    )
 
     return output
 end
@@ -338,7 +382,7 @@ end
 -- end
 
 
--- local function _get_matching_position_names(argument, parser)
+-- local function _get_matching_position_arguments(argument, parser)
 --     local output = {}
 --
 --     if vim.startswith(parser.name, argument) then
@@ -363,22 +407,55 @@ end
 --- Note:
 ---     This is not recursive. It just gets the direct children.
 ---
---- @return fun(): ArgumentParser? # An iterator that find all child parsers.
+--- @param parser ArgumentParser
+---     The starting point ot saerch for child parsers.
+--- @param inclusive boolean?
+---     If `true`, `parser` will be the first returned value. If `false` then
+---     only the children are returned.
+--- @return fun(): ArgumentParser?
+---     An iterator that find all child parsers.
 ---
-local function _iter_parsers(parser)
-    local subparsers_index = 1
-    local subparsers = parser._subparsers[subparsers_index]
-
-    if not subparsers then
-        return function() return nil end
+local function _iter_parsers(parser, inclusive)
+    -- TODO: Audit this variable. Maybe remove / make default
+    if inclusive == nil then
+        inclusive = false
     end
 
+    local subparsers_index = 1
+    local subparsers = parser._subparsers[subparsers_index]
+    local returned_parser = false
+
+    -- TODO: Remove?
+    -- if not subparsers then
+    --     if inclusive then
+    --         return function() return nil end
+    --     end
+    --
+    --     return function()
+    --         if not returned_parser then
+    --             returned_parser = true
+    --
+    --             return parser
+    --         end
+    --
+    --         return nil
+    --     end
+    -- end
+
     local parser_index = 1
-    local parsers = subparsers:get_parsers()
+    local parsers = {}
+
+    if subparsers then
+        parsers = subparsers:get_parsers()
+    end
 
     local parser_count = #parsers
 
     return function()
+        if inclusive and not returned_parser then
+            return parser
+        end
+
         if parser_index > parser_count then
             -- NOTE: Get the next subparsers.
             parser_index = 1
@@ -431,7 +508,6 @@ local function _get_incomplete_arguments(parsers)
     return output
 end
 
-
 --- Find all all child parsers that start with `prefix`, starting from `parser`.
 ---
 --- This function is *exclusive* - `parser` cannot be returned from this function.
@@ -476,17 +552,22 @@ end
 ---     The matching names, if any.
 ---
 local function _get_next_arguments_from_remainder(argument, remainder_text, parsers)
-    local name = _get_argument_name(argument)
-    local matches = vim.iter(parsers):filter(function(parser)
-        return vim.tbl_contains(parser:get_names(), name)
-    end):totable()
-    -- TODO: If 2+ matches, log a warning
-    local match = matches[1]
+    -- local name = _get_argument_name(argument)
+    -- local matches = vim.iter(parsers):filter(function(parser)
+    --     return vim.tbl_contains(parser:get_names(), name)
+    -- end):totable()
+    -- -- TODO: If 2+ matches, log a warning
+    -- local match = matches[1]
 
     local output = {}
 
-    vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(remainder_text, match)))
-    vim.list_extend(output, _get_exact_or_partial_matches(argument, match))
+    local match = parsers[#parsers]
+
+    if match then
+        vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(remainder_text, match)))
+    end
+
+    vim.list_extend(output, _get_exact_or_partial_matches(remainder_text, match))
 
     -- TODO: There's a bug here. We may not be able to assume the last argument like this
     -- local last = stripped.arguments[#stripped.arguments]
@@ -504,19 +585,18 @@ local function _get_next_arguments_from_remainder(argument, remainder_text, pars
 end
 
 
---- Find all arguments that match `prefix`, starting from `parser.
----
---- @param argument ArgparseArgument The last known, parsable argument.
---- @param parser ArgumentParser The starting point to search within.
---- @return string[] # The matching names, if any.
----
-local function _get_next_exact_or_partial_arguments(prefix, parser)
-    local output = {}
-    vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(prefix, parser)))
-    vim.list_extend(output, _get_exact_or_partial_matches(prefix, parser))
-
-    return output
-end
+-- --- Find all arguments that match `prefix`, starting from `parser.
+-- ---
+-- --- @param parser ArgumentParser The starting point to search within.
+-- --- @return string[] # The matching names, if any.
+-- ---
+-- local function _get_next_exact_or_partial_arguments(parser)
+--     local output = {}
+--     vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(parser)))
+--     vim.list_extend(output, _get_exact_or_partial_matches(parser))
+--
+--     return output
+-- end
 
 
 --- Get a friendly label for `position`. Used for `--help` flags.
@@ -878,6 +958,12 @@ end
 
 --- @return boolean # Check if this instance cannot be used anymore.
 function M.Argument:is_exhausted()
+    if self._nargs == _ZERO_OR_MORE then
+        return false
+    end
+
+    -- TODO: Consider 1-or-more here, too
+
     return self._used >= self._count
 end
 
@@ -1032,6 +1118,7 @@ function M.ArgumentParser.new(options)
             action="store_true",
             description="Show this help message and exit.",
             names={"--help", "-h"},
+            nargs=0,
         }
     )
 
@@ -1176,7 +1263,7 @@ function M.ArgumentParser:_get_leaf_parser(data)
 end
 
 
---- Traverse the parsers, marking arguments as used / exhausted as we traverse.
+--- Traverse the parsers, marking arguments as used / exhausted as we traverse down.
 ---
 --- @param arguments ArgparseArgument[]
 ---     All user inputs to walk through.
@@ -1207,9 +1294,9 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
         end
 
         if not found then
-            for _, argument in ipairs(parser:get_flag_arguments()) do
-                if not argument:is_exhausted() and vim.tbl_contains(argument.names, argument_name) then
-                    argument:increment_used()
+            for _, argument_ in ipairs(current_parser:get_flag_arguments()) do
+                if not argument_:is_exhausted() and vim.tbl_contains(argument_.names, argument_name) then
+                    argument_:increment_used()
                     found = true
 
                     break
@@ -1217,10 +1304,10 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
             end
 
             if not found then
-                for _, argument in ipairs(parser:get_position_arguments()) do
-                    if not argument:is_exhausted() and vim.tbl_contains(argument.names, argument_name) then
+                for _, argument_ in ipairs(current_parser:get_position_arguments()) do
+                    if not argument_:is_exhausted() and vim.tbl_contains(argument_.names, argument_name) then
                         -- TODO: Handle this scenario. Need to do nargs checks and stuff
-                        argument:increment_used()
+                        argument_:increment_used()
                         found = true
                     end
                 end
@@ -1241,11 +1328,26 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
         argument_name = _get_argument_name(last)
     end
 
-    local output = {}
+    local output = {current_parser}
 
-    for parser_ in _iter_parsers(current_parser) do
-        if vim.startswith(parser_.name, argument_name) then
-            table.insert(output, parser_)
+    -- for parser_ in _iter_parsers(current_parser) do
+    --     if vim.startswith(parser_:get_names(), argument_name) then
+    --         table.insert(output, parser_)
+    --     end
+    -- end
+
+    for _, argument_ in ipairs(current_parser:get_position_arguments()) do
+        if not argument_:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(_get_recommended_position_names(argument_), argument_name)) then
+            -- TODO: Handle this scenario. Need to do nargs checks and stuff
+            argument_:increment_used()
+        end
+    end
+
+    -- TODO: Might need to consider choices values here.
+    for _, argument_ in ipairs(current_parser:get_flag_arguments()) do
+        if not argument_:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(argument_.names, argument_name)) then
+            -- TODO: Handle this scenario. Need to do nargs checks and stuff
+            argument_:increment_used()
         end
     end
 
@@ -1311,27 +1413,41 @@ function M.ArgumentParser:get_completion(data, column)
     column = column or #data.text
     local stripped = _rstrip_input(data, column)
     local remainder = stripped.remainder.value
+    local output = {}
 
     if vim.tbl_isempty(stripped.arguments) then
-        return _get_next_exact_or_partial_arguments(remainder, self)
+        -- NOTE: Get all possible initial arguments
+        vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names("", self)))
+        vim.list_extend(output, _get_matching_position_arguments("", self:get_position_arguments()))
+        vim.list_extend(output, _get_matching_flag_text("", self:get_flag_arguments()))
+
+        return output
     end
 
     local parsers = self:_compute_matching_parsers(stripped.arguments)
 
     if remainder ~= "" then
+        if not parsers then
+            -- NOTE: Something went wrong during parsing. We don't know where
+            -- the user is in the tree so we need to exit early.
+            --
+            -- TODO: Check if this situation actually happens in the unittests.
+            -- If so, add a log.
+            --
+            return {}
+        end
+
         local last = stripped.arguments[#stripped.arguments]
 
         return _get_next_arguments_from_remainder(last, remainder, parsers)
     end
-
-    local output = {}
 
     for _, parser in ipairs(parsers or {}) do
         vim.list_extend(output, parser:get_names())
     end
 
     local last = stripped.arguments[#stripped.arguments]
-    vim.list_extend(output, _get_exact_or_partial_matches(last, self))
+    vim.list_extend(output, _get_exact_or_partial_matches(_get_argument_name(last), self))
 
     output = vim.fn.sort(output)
 
@@ -1346,7 +1462,7 @@ function M.ArgumentParser:get_completion(data, column)
     --     -- TODO: There's a bug here. We may not be able to assume the last argument like this
     --     local last = stripped.arguments[#stripped.arguments]
     --     local last_name = _get_argument_name(last)
-    --     output = _get_matching_position_names(last_name, parser)
+    --     output = _get_matching_position_arguments(last_name, parser)
     --     output = vim.fn.sort(output)
     --
     --     return output

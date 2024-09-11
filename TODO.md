@@ -11,6 +11,10 @@
 
 - Consider renaming `nargs` to `elements_count` or something
 
+- Make a unittest for nargs where it fails to find values and errors ou
+ - scenario A: nargs stops because a flag/named argument is encountered
+ - scenario B: the argument has a known set of choices and no choice matches
+
 - Add a unittest to makes sure that position `choices` can maintain another table and remove possible matches each time the argument is used
  - Same test but for flag arguments
 
