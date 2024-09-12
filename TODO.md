@@ -9,6 +9,8 @@
 
 - Make sure help text allows a parser choices() to be represented as text
 
+- Add a check when user does `--foo=bar` but foo requires 2+ arguments (the
+= would be syntactically incorrect in that case)
 - Consider renaming `nargs` to `elements_count` or something
 
 - Make a unittest for nargs where it fails to find values and errors ou

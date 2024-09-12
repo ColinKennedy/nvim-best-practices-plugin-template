@@ -105,13 +105,15 @@ local _SHORT_HELP_FLAG = "-h"
 M.Argument = {
     __tostring = function(argument)
         return string.format(
-            'Argument({names=%s, help=%s, type=%s, action=%s, nargs=%s, choices=%s})',
+            'Argument({names=%s, help=%s, type=%s, action=%s, nargs=%s, choices=%s, count=%s, used=%s})',
             vim.inspect(argument.names),
             vim.inspect(argument.help),
             vim.inspect(argument.type),
             vim.inspect(argument._action),
             vim.inspect(argument._nargs),
-            vim.inspect(argument.choices)
+            vim.inspect(argument.choices),
+            vim.inspect(argument._count),
+            vim.inspect(argument._used)
         )
     end,
 }
@@ -320,7 +322,7 @@ local function _get_recommended_position_names(argument)
         return argument.choices()
     end
 
-    return {argment.names[1]}
+    return {argument.names[1]}
 end
 
 
@@ -350,7 +352,10 @@ local function _get_exact_or_partial_matches(prefix, parser)
     prefix = _remove_boundary_whitespace(prefix)
     local output = {}
 
-    vim.list_extend(output, _get_matching_position_arguments(prefix, parser:get_position_arguments()))
+    vim.list_extend(
+        output,
+        _get_matching_position_arguments(prefix, parser:get_position_arguments())
+    )
 
     vim.list_extend(
         output,
@@ -1272,13 +1277,66 @@ end
 ---     completely, we return nothing to indicate a failure.
 ---
 function M.ArgumentParser:_compute_matching_parsers(arguments)
+    local function _has_satisfying_value(argument, arguments)
+        local nargs = argument:get_nargs()
+
+        if nargs == 0 or nargs == _ZERO_OR_MORE then
+            -- NOTE: If `argument` doesn't need any value then it is definitely satisified.
+            return true
+        end
+
+        local count = 0
+
+        for _, argument_ in ipairs(arguments) do
+            if argument_.argument_type ~= argparse.ArgumentType.position then
+                -- NOTE: Flag arguments can only accept non-flag arguments, in general.
+                return false
+            end
+
+            count = count + 1
+
+            if count == nargs or nargs == _ONE_OR_MORE then
+                return true
+            end
+        end
+
+        -- NOTE: There wasn't enough `arguments` left to satisfy `argument`.
+        return false
+    end
+
+    local function _compute_exact_flag_match(parser, argument_name, arguments)
+        for _, argument_ in ipairs(parser:get_flag_arguments()) do
+            if not argument_:is_exhausted() and vim.tbl_contains(argument_.names, argument_name) and _has_satisfying_value(argument_, arguments) then
+                argument_:increment_used()
+
+                return true
+            end
+        end
+
+        return false
+    end
+
+    local function _compute_exact_position_match(parser, argument_name)
+        for _, argument_ in ipairs(parser:get_position_arguments()) do
+            if not argument_:is_exhausted() and vim.tbl_contains(_get_recommended_position_names(argument_), argument_name) then
+                -- TODO: Handle this scenario. Need to do nargs checks and stuff
+                argument_:increment_used()
+
+                return true
+            end
+        end
+
+        return false
+    end
+
     local current_parser = self
+    local count = #arguments
 
     -- NOTE: We search all but the last argument here.
     -- IMPORTANT: Every argument must have a match or it means the `arguments`
     -- failed to match something in the parser tree.
     --
-    for index=1,#arguments - 1 do
+    for index=1,count - 1 do
         local argument = arguments[index]
         local argument_name = _get_argument_name(argument)
 
@@ -1294,23 +1352,14 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
         end
 
         if not found then
-            for _, argument_ in ipairs(current_parser:get_flag_arguments()) do
-                if not argument_:is_exhausted() and vim.tbl_contains(argument_.names, argument_name) then
-                    argument_:increment_used()
-                    found = true
-
-                    break
-                end
-            end
+            found = _compute_exact_flag_match(
+                current_parser,
+                argument_name,
+                tabler.get_slice(arguments, index + 1)
+            )
 
             if not found then
-                for _, argument_ in ipairs(current_parser:get_position_arguments()) do
-                    if not argument_:is_exhausted() and vim.tbl_contains(_get_recommended_position_names(argument_), argument_name) then
-                        -- TODO: Handle this scenario. Need to do nargs checks and stuff
-                        argument_:increment_used()
-                        found = true
-                    end
-                end
+                found = _compute_exact_position_match(current_parser, argument_name)
             end
 
             if not found then
@@ -1320,7 +1369,7 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
     end
 
     -- NOTE: The last user argument is special because it might be partially written.
-    local last = arguments[#arguments]
+    local last = arguments[count]
 
     local argument_name = ""
 
@@ -1330,25 +1379,34 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
 
     local output = {current_parser}
 
+    -- TODO: Remove?
     -- for parser_ in _iter_parsers(current_parser) do
     --     if vim.startswith(parser_:get_names(), argument_name) then
     --         table.insert(output, parser_)
     --     end
     -- end
 
-    for _, argument_ in ipairs(current_parser:get_position_arguments()) do
-        if not argument_:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(_get_recommended_position_names(argument_), argument_name)) then
-            -- TODO: Handle this scenario. Need to do nargs checks and stuff
-            argument_:increment_used()
-        end
+    -- for _, argument_ in ipairs(current_parser:get_position_arguments()) do
+    --     if not argument_:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(_get_recommended_position_names(argument_), argument_name)) then
+    --         -- TODO: Handle this scenario. Need to do nargs checks and stuff
+    --         argument_:increment_used()
+    --     end
+    -- end
+    --
+    -- -- TODO: Might need to consider choices values here.
+    -- for _, argument_ in ipairs(current_parser:get_flag_arguments()) do
+    --     if not argument_:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(argument_.names, argument_name)) then
+    --         -- TODO: Handle this scenario. Need to do nargs checks and stuff
+    --         argument_:increment_used()
+    --     end
+    -- end
+
+    if _compute_exact_flag_match(current_parser, argument_name, {}) then
+        return output
     end
 
-    -- TODO: Might need to consider choices values here.
-    for _, argument_ in ipairs(current_parser:get_flag_arguments()) do
-        if not argument_:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(argument_.names, argument_name)) then
-            -- TODO: Handle this scenario. Need to do nargs checks and stuff
-            argument_:increment_used()
-        end
+    if _compute_exact_position_match(current_parser, argument_name) then
+        return output
     end
 
     return output
@@ -1442,12 +1500,14 @@ function M.ArgumentParser:get_completion(data, column)
         return _get_next_arguments_from_remainder(last, remainder, parsers)
     end
 
+    local last = stripped.arguments[#stripped.arguments]
+    local last_name = _get_argument_name(last)
+
     for _, parser in ipairs(parsers or {}) do
-        vim.list_extend(output, parser:get_names())
+        vim.list_extend(output, _get_array_startswith(parser:get_names(), last_name))
     end
 
-    local last = stripped.arguments[#stripped.arguments]
-    vim.list_extend(output, _get_exact_or_partial_matches(_get_argument_name(last), self))
+    vim.list_extend(output, _get_exact_or_partial_matches(last_name, self))
 
     output = vim.fn.sort(output)
 
@@ -1647,6 +1707,7 @@ function M.ArgumentParser:parse_arguments(data, namespace)
     local position_arguments = vim.deepcopy(self:get_position_arguments())
     local flag_arguments = vim.deepcopy(self:get_flag_arguments())
 
+    -- TODO: Need to handle nargs-related code here
     for index, argument in ipairs(data.arguments) do
         if argument.argument_type == argparse.ArgumentType.position then
             local argument_name = _get_argument_name(argument)
