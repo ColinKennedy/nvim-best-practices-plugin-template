@@ -1732,6 +1732,12 @@ function M.ArgumentParser:parse_arguments(data, namespace)
                 -- TODO: Do something about this one
             end
         end
+
+        if not found then
+            -- TODO: Add a unittest
+            -- NOTE: We lost our place in the parse so we can't continue.
+            return {}
+        end
     end
 
     return namespace
