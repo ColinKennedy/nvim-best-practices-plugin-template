@@ -284,23 +284,42 @@ describe("named argument", function()
         assert.same({ "--style=" }, parser:get_completion("--style", 7))
     end)
 
+    it("does not auto-complete if the name does not match", function()
+        local parser = argparse2.ArgumentParser.new({description="Test."})
+
+        local choices = function(data)
+            local output = {}
+            local value = data.value or 0
+
+            for index = 1, 5 do
+                table.insert(output, tostring(value + index))
+            end
+
+            return output
+        end
+
+        parser:add_argument({"--repeat", choices=choices, description="Number of values."})
+
+        assert.same({}, parser:get_completion("--style=", 1))
+        assert.same({}, parser:get_completion("--style=", 2))
+        assert.same({}, parser:get_completion("--style=", 3))
+        assert.same({}, parser:get_completion("--style=", 4))
+        assert.same({}, parser:get_completion("--style=", 5))
+        assert.same({}, parser:get_completion("--style=", 6))
+        assert.same({}, parser:get_completion("--style=", 7))
+        assert.same({}, parser:get_completion("--style=", 8))
+    end)
+
     it("does not auto-complete the name anymore and auto-completes the value", function()
-        local parser = {
+        local parser = argparse2.ArgumentParser.new({description="Test."})
+
+        parser:add_argument(
             {
-                choices = function(data)
-                    local output = {}
-                    local value = data.value or 0
-
-                    for index = 1, 5 do
-                        table.insert(output, tostring(value + index))
-                    end
-
-                    return output
-                end,
-                name = "repeat",
-                option_type = completion.OptionType.named,
-            },
-        }
+                names={"--style", "-s"},
+                choices={"lowercase", "uppercase"},
+                description="The format of the message.",
+            }
+        )
 
         assert.same({}, parser:get_completion("--style=", 1))
         assert.same({}, parser:get_completion("--style=", 2))
@@ -315,10 +334,9 @@ describe("named argument", function()
     it("should only auto-complete --repeat once", function()
         local parser = _make_simple_parser()
 
-        local data = "hello-world say word --repeat= --repe"
-        local arguments = argparse.parse_arguments(data)
-
-        assert.same({}, completion.get_options(parser, arguments))
+        -- TODO: Add this check later
+        -- assert.same({"--repeat="}, parser:get_completion("hello-world say word --repeat= --repe", 30))
+        assert.same({}, parser:get_completion("hello-world say word --repeat= --repe"))
     end)
 end)
 
@@ -336,12 +354,8 @@ describe("flag argument", function()
     -- end)
 
     it("does not auto-complete if at the end of the flag", function()
-        local parser = {
-            {
-                option_type = completion.OptionType.flag,
-                name = "f",
-            },
-        }
+        local parser = argparse2.ArgumentParser.new({description="Test."})
+        parser:add_argument({"-f", description="Force it."})
 
         assert.same({}, parser:get_completion("-f", 1))
         assert.same({}, parser:get_completion("-f", 2))

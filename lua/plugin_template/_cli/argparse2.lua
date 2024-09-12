@@ -851,7 +851,7 @@ local function _validate_argument_names(options)
         return "flag"
     end
 
-    local names = options.names or options.name
+    local names = options.names or options.name or options[1]
 
     if type(names) == "string" then
         names = {names}
