@@ -285,30 +285,57 @@ end
 
 
 local function _get_matching_flag_text(prefix, flags)
+    local function _get_single_choices_text(argument)
+        if not argument.choices then
+            return {argument.names[1] .. "="}
+        end
+
+        local output = {}
+
+        for _, choice in ipairs(argument.choices()) do
+            table.insert(output, argument.names[1] .. "=" .. choice)
+        end
+
+        return output
+    end
+
     local output = {}
 
     for _, argument_ in ipairs(_sort_arguments(flags)) do
         if not argument_:is_exhausted() then
             for _, name in ipairs(argument_.names) do
-                if vim.startswith(name, prefix) then
-                    if argument_.choices then
-                        for _, choice in ipairs(argument_.choices()) do
-                            if argument_:get_nargs() == 1 then
-                                table.insert(output, argument_.names[1] .. "=" .. choice)
-                            else
-                                table.insert(output, choice)
-                            end
-                        end
+                if name == prefix then
+                    if argument_:get_nargs() == 1 then
+                        vim.list_extend(output, _get_single_choices_text(argument_))
                     else
-                        if argument_:get_nargs() == 1 then
-                            table.insert(output, argument_.names[1] .. "=")
-                        else
-                            table.insert(output, argument_.names[1])
-                        end
+                        table.insert(output, name)
                     end
-
-                    break
+                elseif vim.startswith(name, prefix) then
+                    if argument_:get_nargs() == 1 then
+                        table.insert(output, name .. "=")
+                    else
+                        table.insert(output, name)
+                    end
                 end
+                -- if vim.startswith(name, prefix) then
+                --     if argument_.choices then
+                --         for _, choice in ipairs(argument_.choices()) do
+                --             if argument_:get_nargs() == 1 then
+                --                 table.insert(output, argument_.names[1] .. "=" .. choice)
+                --             else
+                --                 table.insert(output, choice)
+                --             end
+                --         end
+                --     else
+                --         if argument_:get_nargs() == 1 then
+                --             table.insert(output, argument_.names[1] .. "=")
+                --         else
+                --             table.insert(output, argument_.names[1])
+                --         end
+                --     end
+                --
+                --     break
+                -- end
             end
         end
     end
@@ -946,7 +973,7 @@ function M.Argument.new(options)
     local self = setmetatable({}, M.Argument)
 
     self._action = nil
-    self._count = 1
+    self._count = options.count or 1
     self._nargs = options.nargs or 1
     self._type = options.type
     self._used = 0
@@ -1277,7 +1304,29 @@ end
 ---     completely, we return nothing to indicate a failure.
 ---
 function M.ArgumentParser:_compute_matching_parsers(arguments)
+    local function _is_single_nargs_and_named_argument(argument, arguments)
+        if argument:get_nargs() ~= 1 then
+            return false
+        end
+
+        local argument_ = arguments[1]
+
+        if not argument_ then
+            return false
+        end
+
+        if argument_.argument_type ~= argparse.ArgumentType.named then
+            return false
+        end
+
+        return vim.tbl_contains(argument.names, argument_.name)
+    end
+
     local function _has_satisfying_value(argument, arguments)
+        if _is_single_nargs_and_named_argument(argument, arguments) then
+            return true
+        end
+
         local nargs = argument:get_nargs()
 
         if nargs == 0 or nargs == _ZERO_OR_MORE then
@@ -1506,9 +1555,8 @@ function M.ArgumentParser:get_completion(data, column)
 
     for _, parser in ipairs(parsers or {}) do
         vim.list_extend(output, _get_array_startswith(parser:get_names(), last_name))
+        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser))
     end
-
-    vim.list_extend(output, _get_exact_or_partial_matches(last_name, self))
 
     output = vim.fn.sort(output)
 

@@ -37,7 +37,7 @@ end
 --     before_each(_initialize_all)
 --     after_each(_reset_all)
 --
---     it("runs #arbitrary-thing with default arguments - 001 #asdf", function()
+--     it("runs #arbitrary-thing with default arguments - 001", function()
 --         plugin_template.run_arbitrary_thing()
 --     end)
 -- end)

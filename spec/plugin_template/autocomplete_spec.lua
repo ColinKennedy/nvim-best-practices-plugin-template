@@ -248,13 +248,7 @@ describe("named argument", function()
     -- end)
 
     it("auto-completes on a #partial argument name - 001", function()
-        local parser = {
-            {
-                option_type = completion.OptionType.named,
-                name = "style",
-                choices = { "lowercase", "uppercase" },
-            },
-        }
+        local parser = _make_style_parser()
 
         assert.same({ "--style=" }, parser:get_completion("--s", 1))
         assert.same({ "--style=" }, parser:get_completion("--s", 2))
@@ -396,12 +390,12 @@ describe("numbered count - named argument", function()
 
         assert.same({ "--foo=" }, parser:get_completion("--fo"))
         assert.same({ "--foo=bar", "--foo=buzz", "--foo=fizz" }, parser:get_completion("--foo="))
-        assert.same({ "--foo=" }, parser:get_completion("--foo=bar "))
+        assert.same({ "--foo=", "--help", "-h" }, parser:get_completion("--foo=bar "))
         assert.same(
-            { "--foo=bar", "--foo=fizz", "--foo=buzz" },
+            { "--foo=bar", "--foo=buzz", "--foo=fizz" },
             parser:get_completion("--foo=bar --foo=")
         )
-        assert.same({}, parser:get_completion("--foo=bar --foo=bar "))
+        assert.same({"--help", "-h"}, parser:get_completion("--foo=bar --foo=bar "))
     end)
 end)
 
@@ -517,15 +511,15 @@ describe("* count", function()
             local parser = argparse2.ArgumentParser.new({description="Test"})
             parser:add_argument({names="thing", choices={"foo"}, nargs="*"})
 
-            assert.same({ "foo", "--help" }, parser:get_completion(""))
+            assert.same({ "foo", "--help", "-h" }, parser:get_completion(""))
             assert.same({ "foo" }, parser:get_completion("fo"))
             assert.same({ "foo" }, parser:get_completion("foo"))
-            assert.same({ "foo", "--help" }, parser:get_completion("foo "))
+            assert.same({ "foo", "--help", "-h" }, parser:get_completion("foo "))
             assert.same({ "foo" }, parser:get_completion("foo fo"))
             assert.same({ "foo" }, parser:get_completion("foo foo"))
-            assert.same({ "foo", "--help" }, parser:get_completion("foo foo "))
+            assert.same({ "foo", "--help", "-h" }, parser:get_completion("foo foo "))
             assert.same({ "foo" }, parser:get_completion("foo foo foo"))
-            assert.same({ "foo", "--help" }, parser:get_completion("foo foo foo "))
+            assert.same({ "foo", "--help", "-h" }, parser:get_completion("foo foo foo "))
         end)
     end)
 end)
