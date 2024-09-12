@@ -284,6 +284,17 @@ describe("named argument", function()
         assert.same({ "--style=" }, parser:get_completion("--style", 7))
     end)
 
+    it("auto-completes on a #partial argument value - 001", function()
+        local parser = _make_style_parser()
+
+        assert.same({ "--style=lowercase" }, parser:get_completion("--style=lowercase", 1))
+        assert.same({ "--style=lowercase" }, parser:get_completion("--style=lowercase", 3))
+        assert.same({ "--style=lowercase" }, parser:get_completion("--style=lowercase", 8))
+        assert.same({ "--style=lowercase" }, parser:get_completion("--style=lowercase", 9))
+        assert.same({ "--style=lowercase" }, parser:get_completion("--style=lowercase", 10))
+        assert.same({ "--style=lowercase" }, parser:get_completion("--style=lowercase"))
+    end)
+
     it("does not auto-complete if the name does not match", function()
         local parser = argparse2.ArgumentParser.new({description="Test."})
 
