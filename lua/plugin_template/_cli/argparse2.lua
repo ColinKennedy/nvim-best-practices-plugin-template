@@ -1374,6 +1374,7 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
     local argument_name = ""
 
     if last then
+        -- TODO: When would this ever not be true? Remove?
         argument_name = _get_argument_name(last)
     end
 

@@ -442,7 +442,7 @@ describe("validate arguments", function()
         }
 
         assert.same(
-            { success = false, messages = { 'Named argument "foo" needs a value.' } },
+            { success = false, messages = { 'Named argument "--foo" needs a value.' } },
             completion.validate_options(parser, _parse("--foo="))
         )
     end)
@@ -467,7 +467,7 @@ describe("validate arguments", function()
         }
 
         assert.same(
-            { success = false, messages = { 'Named argument "bar" needs a value.' } },
+            { success = false, messages = { 'Named argument "--bar" needs a value.' } },
             completion.validate_options(parser, _parse("foo --bar= --fizz=123"))
         )
     end)
