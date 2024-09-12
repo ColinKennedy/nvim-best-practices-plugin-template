@@ -1305,7 +1305,7 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
 
             if not found then
                 for _, argument_ in ipairs(current_parser:get_position_arguments()) do
-                    if not argument_:is_exhausted() and vim.tbl_contains(argument_.names, argument_name) then
+                    if not argument_:is_exhausted() and vim.tbl_contains(_get_recommended_position_names(argument_), argument_name) then
                         -- TODO: Handle this scenario. Need to do nargs checks and stuff
                         argument_:increment_used()
                         found = true
