@@ -132,7 +132,7 @@ M.Argument.__index = M.Argument
 M.ArgumentParser = {
     __tostring = function(parser)
         return string.format(
-            'ArgumentParser({name="%s", description="%s", choices="%s"})',
+            'ArgumentParser({name="%s", description="%s", choices=%s})',
             parser.name,
             parser.description,
             parser.choices
@@ -169,7 +169,7 @@ end
 --- @return boolean # If `text` has non-empty alphanumeric character(s), return `true`.
 ---
 local function _is_whitespace(text)
-    return text:match("%s+")
+    return text == "" or text:match("%s+")
 end
 
 
@@ -275,8 +275,10 @@ end
 ---
 local function _get_cursor_offset(input, column)
     for index, argument in ipairs(input.arguments) do
-        if argument.range.end_column > column then
+        if argument.range.end_column == column then
             return index
+        elseif argument.range.end_column > column then
+            return index - 1
         end
     end
 
@@ -357,81 +359,16 @@ local function _get_matching_position_arguments(name, arguments)
     local output = {}
 
     for _, argument in ipairs(_sort_arguments(arguments)) do
-        if not argument:is_exhausted() then
+        if not argument:is_exhausted() and argument.choices then
             vim.list_extend(
                 output,
-                _get_array_startswith(_get_recommended_position_names(argument), name)
+                _get_array_startswith(argument.choices(), name)
             )
         end
     end
 
     return output
 end
-
-
--- TODO: Docstring
---- Find all Argments starting with `name`.
----
---- @param parser ArgumentParser The starting point to search within.
---- @return string[] # The matching names, if any.
----
-local function _get_exact_or_partial_matches(prefix, parser)
-    prefix = _remove_boundary_whitespace(prefix)
-    local output = {}
-
-    vim.list_extend(
-        output,
-        _get_matching_position_arguments(prefix, parser:get_position_arguments())
-    )
-
-    vim.list_extend(
-        output,
-        _get_matching_flag_text(prefix, parser:get_flag_arguments())
-    )
-
-    return output
-end
-
-
--- local function _get_matches(name, items)
---     local output = {}
---
---     for _, item in ipairs(items) do
---         for _, item_name in ipairs(item.names) do
---             if item_name == name then
---                 table.insert(output, item)
---
---                 break
---             end
---         end
---     end
---
---     return output
--- end
-
--- local function _get_flag_help_text(flag)
---     return string.format("[%s]", flag:get_raw_name())
--- end
-
-
--- local function _get_matching_position_arguments(argument, parser)
---     local output = {}
---
---     if vim.startswith(parser.name, argument) then
---         table.insert(output, parser.name)
---     end
---
---     -- TODO: Make this code more real, later
---     for _, subparsers in ipairs(parser._subparsers) do
---         for _, parser_ in ipairs(subparsers:get_parsers()) do
---             if vim.startswith(parser_.name, argument) then
---                 table.insert(output, parser_.name)
---             end
---         end
---     end
---
---     return output
--- end
 
 
 --- Find all direct-children parsers of `parser`.
@@ -511,6 +448,82 @@ local function _iter_parsers(parser, inclusive)
 end
 
 
+-- TODO: Docstring
+--- Find all Argments starting with `name`.
+---
+--- @param parser ArgumentParser The starting point to search within.
+--- @return string[] # The matching names, if any.
+---
+local function _get_exact_or_partial_matches(prefix, parser)
+    prefix = _remove_boundary_whitespace(prefix)
+    local output = {}
+
+    vim.list_extend(
+        output,
+        _get_matching_position_arguments(prefix, parser:get_position_arguments())
+    )
+
+    vim.list_extend(
+        output,
+        _get_matching_flag_text(prefix, parser:get_flag_arguments())
+    )
+
+    -- print(vim.inspect(parsers, {depth=2}))
+
+    -- for _, parser in ipairs(parsers) do
+    --     for parser_ in _iter_parsers(parser) do
+    --         print(parser_)
+    --         if vim.startswith(parser_:get_names(), argument_name) then
+    --             table.insert(output, parser_)
+    --         end
+    --     end
+    -- end
+
+    return output
+end
+
+
+-- local function _get_matches(name, items)
+--     local output = {}
+--
+--     for _, item in ipairs(items) do
+--         for _, item_name in ipairs(item.names) do
+--             if item_name == name then
+--                 table.insert(output, item)
+--
+--                 break
+--             end
+--         end
+--     end
+--
+--     return output
+-- end
+
+-- local function _get_flag_help_text(flag)
+--     return string.format("[%s]", flag:get_raw_name())
+-- end
+
+
+-- local function _get_matching_position_arguments(argument, parser)
+--     local output = {}
+--
+--     if vim.startswith(parser.name, argument) then
+--         table.insert(output, parser.name)
+--     end
+--
+--     -- TODO: Make this code more real, later
+--     for _, subparsers in ipairs(parser._subparsers) do
+--         for _, parser_ in ipairs(subparsers:get_parsers()) do
+--             if vim.startswith(parser_.name, argument) then
+--                 table.insert(output, parser_.name)
+--             end
+--         end
+--     end
+--
+--     return output
+-- end
+
+
 --- Combine `labels` into a single-line summary (for help messages).
 ---
 --- @param labels string[] All commands to run.
@@ -552,8 +565,12 @@ local function _get_matching_subparser_names(prefix, parser)
     local output = {}
 
     for parser_ in _iter_parsers(parser) do
-        if _is_whitespace(prefix) or vim.startswith(parser_.name, prefix) then
-            table.insert(output, parser_.name)
+        local names = parser_:get_names()
+
+        if _is_whitespace(prefix) then
+            vim.list_extend(output, names)
+        else
+            vim.list_extend(output, _get_array_startswith(names, prefix))
         end
     end
 
@@ -595,6 +612,9 @@ local function _get_next_arguments_from_remainder(argument, remainder_text, pars
 
     local match = parsers[#parsers]
 
+    -- TODO: Fix the argument4 sorting here. It's broken
+    -- See "dynamic argument - works with positional arguments" test
+    --
     if match then
         vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(remainder_text, match)))
     end
@@ -859,6 +879,8 @@ local function _rstrip_input(input, column)
 
     if last then
         stripped.remainder.value = input.text:sub(last.range.end_column + 1, #input.text)
+    else
+        stripped.remainder.value = input.text:sub(1, column)
     end
 
     stripped.text = input.text:sub(1, column)
@@ -1294,7 +1316,7 @@ function M.ArgumentParser:_get_leaf_parser(data)
     return parser
 end
 
-
+-- TODO: Consider returning just 1 parser, not a list
 --- Traverse the parsers, marking arguments as used / exhausted as we traverse down.
 ---
 --- @param arguments ArgparseArgument[]
@@ -1320,6 +1342,19 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
         end
 
         return vim.tbl_contains(argument.names, argument_.name)
+    end
+
+    local function _has_position_argument_match(name, argument)
+        if not argument.choices then
+            -- NOTE: Any value is valid if there are no explicit choices
+            return true
+        end
+
+        if vim.tbl_contains(argument.choices(), name) then
+            return true
+        end
+
+        return false
     end
 
     local function _has_satisfying_value(argument, arguments)
@@ -1353,7 +1388,7 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
         return false
     end
 
-    local function _compute_exact_flag_match(parser, argument_name, arguments)
+    local function _compute_exact_flag_match(argument_name, parser, arguments)
         for _, argument_ in ipairs(parser:get_flag_arguments()) do
             if not argument_:is_exhausted() and vim.tbl_contains(argument_.names, argument_name) and _has_satisfying_value(argument_, arguments) then
                 argument_:increment_used()
@@ -1365,19 +1400,22 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
         return false
     end
 
-    local function _compute_exact_position_match(parser, argument_name)
+    local function _compute_exact_position_match(argument_name, parser)
         for _, argument_ in ipairs(parser:get_position_arguments()) do
-            if not argument_:is_exhausted() and vim.tbl_contains(_get_recommended_position_names(argument_), argument_name) then
-                -- TODO: Handle this scenario. Need to do nargs checks and stuff
-                argument_:increment_used()
+            if not argument_:is_exhausted() then
+                if _has_position_argument_match(argument_name, argument_) then
+                    -- TODO: Handle this scenario. Need to do nargs checks and stuff
+                    argument_:increment_used()
 
-                return true
+                    return true
+                end
             end
         end
 
         return false
     end
 
+    local previous_parser = nil
     local current_parser = self
     local count = #arguments
 
@@ -1385,7 +1423,7 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
     -- IMPORTANT: Every argument must have a match or it means the `arguments`
     -- failed to match something in the parser tree.
     --
-    for index=1,count - 1 do
+    for index=1,count do
         local argument = arguments[index]
         local argument_name = _get_argument_name(argument)
 
@@ -1394,6 +1432,7 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
         for parser_ in _iter_parsers(current_parser) do
             if parser_.name == argument_name then
                 found = true
+                previous_parser = current_parser
                 current_parser = parser_
 
                 break
@@ -1402,64 +1441,66 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
 
         if not found then
             found = _compute_exact_flag_match(
-                current_parser,
                 argument_name,
+                current_parser,
                 tabler.get_slice(arguments, index + 1)
             )
 
             if not found then
-                found = _compute_exact_position_match(current_parser, argument_name)
+                found = _compute_exact_position_match(argument_name, current_parser)
             end
 
             if not found then
-                return nil
+                return nil, previous_parser or self
             end
         end
     end
 
-    -- NOTE: The last user argument is special because it might be partially written.
-    local last = arguments[count]
+    return {current_parser}, previous_parser
 
-    local argument_name = ""
-
-    if last then
-        -- TODO: When would this ever not be true? Remove?
-        argument_name = _get_argument_name(last)
-    end
-
-    local output = {current_parser}
-
-    -- TODO: Remove?
-    -- for parser_ in _iter_parsers(current_parser) do
-    --     if vim.startswith(parser_:get_names(), argument_name) then
-    --         table.insert(output, parser_)
-    --     end
-    -- end
-
-    -- for _, argument_ in ipairs(current_parser:get_position_arguments()) do
-    --     if not argument_:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(_get_recommended_position_names(argument_), argument_name)) then
-    --         -- TODO: Handle this scenario. Need to do nargs checks and stuff
-    --         argument_:increment_used()
-    --     end
+    -- -- NOTE: The last user argument is special because it might be partially written.
+    -- local last = arguments[count]
+    --
+    -- local argument_name = ""
+    --
+    -- if last then
+    --     -- TODO: When would this ever not be true? Remove?
+    --     argument_name = _get_argument_name(last)
     -- end
     --
-    -- -- TODO: Might need to consider choices values here.
-    -- for _, argument_ in ipairs(current_parser:get_flag_arguments()) do
-    --     if not argument_:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(argument_.names, argument_name)) then
-    --         -- TODO: Handle this scenario. Need to do nargs checks and stuff
-    --         argument_:increment_used()
-    --     end
+    -- local output = {current_parser}
+    --
+    -- -- TODO: Remove?
+    -- -- for parser_ in _iter_parsers(current_parser) do
+    -- --     if vim.startswith(parser_:get_names(), argument_name) then
+    -- --         table.insert(output, parser_)
+    -- --     end
+    -- -- end
+    --
+    -- -- for _, argument_ in ipairs(current_parser:get_position_arguments()) do
+    -- --     if not argument_:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(_get_recommended_position_names(argument_), argument_name)) then
+    -- --         -- TODO: Handle this scenario. Need to do nargs checks and stuff
+    -- --         argument_:increment_used()
+    -- --     end
+    -- -- end
+    -- --
+    -- -- -- TODO: Might need to consider choices values here.
+    -- -- for _, argument_ in ipairs(current_parser:get_flag_arguments()) do
+    -- --     if not argument_:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(argument_.names, argument_name)) then
+    -- --         -- TODO: Handle this scenario. Need to do nargs checks and stuff
+    -- --         argument_:increment_used()
+    -- --     end
+    -- -- end
+    --
+    -- if _compute_exact_flag_match(current_parser, argument_name, {}) then
+    --     return output
     -- end
-
-    if _compute_exact_flag_match(current_parser, argument_name, {}) then
-        return output
-    end
-
-    if _compute_exact_position_match(current_parser, argument_name) then
-        return output
-    end
-
-    return output
+    --
+    -- if _compute_exact_position_match(current_parser, argument_name) then
+    --     return output
+    -- end
+    --
+    -- return output
 end
 
 
@@ -1524,6 +1565,14 @@ function M.ArgumentParser:get_completion(data, column)
     local output = {}
 
     if vim.tbl_isempty(stripped.arguments) then
+        if not _is_whitespace(remainder) then
+            -- NOTE: If there was unparsed text then it means that the user is
+            -- in the middle of an argument. We don't waot to show completion
+            -- options in that situation.
+            --
+            return {}
+        end
+
         -- NOTE: Get all possible initial arguments
         vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names("", self)))
         vim.list_extend(output, _get_matching_position_arguments("", self:get_position_arguments()))
@@ -1532,30 +1581,51 @@ function M.ArgumentParser:get_completion(data, column)
         return output
     end
 
-    local parsers = self:_compute_matching_parsers(stripped.arguments)
+    local parsers, previous_parser = self:_compute_matching_parsers(stripped.arguments)
 
     if remainder ~= "" then
-        if not parsers then
-            -- NOTE: Something went wrong during parsing. We don't know where
-            -- the user is in the tree so we need to exit early.
-            --
-            -- TODO: Check if this situation actually happens in the unittests.
-            -- If so, add a log.
-            --
-            return {}
-        end
+        -- if not parsers then
+        --     -- NOTE: Something went wrong during parsing. We don't know where
+        --     -- the user is in the tree so we need to exit early.
+        --     --
+        --     -- TODO: Check if this situation actually happens in the unittests.
+        --     -- If so, add a log.
+        --     --
+        --     return {}
+        -- end
 
         local last = stripped.arguments[#stripped.arguments]
 
-        return _get_next_arguments_from_remainder(last, remainder, parsers)
+        return _get_next_arguments_from_remainder(last, remainder, parsers or {previous_parser})
     end
 
     local last = stripped.arguments[#stripped.arguments]
     local last_name = _get_argument_name(last)
 
+    -- TODO: Make this all into a function. Simplify the code
+    if not parsers and previous_parser then
+        vim.list_extend(output, _get_exact_or_partial_matches(last_name, previous_parser))
+
+        if not _is_whitespace(last_name) then
+            for parser_ in _iter_parsers(previous_parser) do
+                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+            end
+        end
+    end
     for _, parser in ipairs(parsers or {}) do
-        vim.list_extend(output, _get_array_startswith(parser:get_names(), last_name))
+        -- vim.list_extend(output, _get_array_startswith(parser:get_names(), last_name))
         vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser))
+
+        -- TODO: Move to a function later
+        -- NOTE: This case is for when there are multiple child parsers with
+        -- similar names. e.g. `get-asset` & `get-assets` might both auto-complete here.
+        --
+        local parent_parser = parser:get_parent_parser()
+        if parent_parser and not _is_whitespace(last_name) then
+            for parser_ in _iter_parsers(parent_parser) do
+                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+            end
+        end
     end
 
     output = vim.fn.sort(output)
@@ -1643,6 +1713,16 @@ function M.ArgumentParser:get_names()
     end
 
     return {self.name}
+end
+
+
+function M.ArgumentParser:get_parent_parser()
+    if not self._parent then
+        return nil
+    end
+
+    -- TODO: Maybe use a stack here. But probably fine without
+    return self._parent._parent
 end
 
 

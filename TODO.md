@@ -9,6 +9,13 @@
 
 - Make sure help text allows a parser choices() to be represented as text
 
+- Is there really any need to auto-complete the short flags if the long flag is there? Remove?
+
+- Add a configuration option to disable --help / -h from auto-completion
+
+- Need a test for when a subparser is the last argument
+ - When the subparser is required it should error. If not then forget it
+ - Auto-complete should work as expected
 - Add a check when user does `--foo=bar` but foo requires 2+ arguments (the
 = would be syntactically incorrect in that case)
 - Consider renaming `nargs` to `elements_count` or something

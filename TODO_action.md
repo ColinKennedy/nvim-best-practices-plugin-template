@@ -1,1 +1,2 @@
 - make sure the various types works as expected (nargs *, +, Number, etc)
+- make sure namesapce aggregation works as expected (default [set] vs store_true / store_false / append / etc)
