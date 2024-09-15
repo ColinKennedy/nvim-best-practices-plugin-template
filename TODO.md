@@ -3,9 +3,13 @@
 - Support `--foo=bar` syntax, in general
  - Auto-complete should include `--foo=` if a flag requires `nargs=1`
 
+- Rename "argument" to "option", for consistency
 - Allow parsers to have `choices` names
 - Allow all `choices` to get context information (current argument, current text, etc etc)
 - Rename all `description` to `help` instead
+
+- "works with nested parsers where a parent also defines a default" is bugged. Selecting a subparser should immediately get its value(s).
+
 
 - Make sure help text allows a parser choices() to be represented as text
 

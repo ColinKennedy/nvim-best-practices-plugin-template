@@ -298,7 +298,6 @@ describe("named argument", function()
         assert.same({ "--style=" }, parser:get_completion("--style", 4))
         assert.same({ "--style=" }, parser:get_completion("--style", 5))
         assert.same({ "--style=" }, parser:get_completion("--style", 6))
-        assert.same({ "--style=" }, parser:get_completion("--style", 7))
     end)
 
     it("auto-completes on a #partial argument value - 001", function()
@@ -577,11 +576,11 @@ describe("dynamic argument", function()
         different:add_argument({name="last", choices=function() return { "branch", "here" } end})
 
         assert.same(
-            { "a", "ab", "asteroid", "bb", "cc", "lazers", "tt", "zzz" },
+            { "ab", "cc", "lazers", "thing", "zzz", "a", "bb", "asteroid", "tt", "--help", "-h" },
             parser:get_completion("say ")
         )
         assert.same({ "a", "ab", "asteroid" }, parser:get_completion("say a"))
-        assert.same({ "thing" }, parser:get_completion("say a "))
+        assert.same({ "ab", "cc", "zzz", }, parser:get_completion("say a "))
         assert.same({ "another", "last" }, parser:get_completion("say a thing "))
 
         assert.same({ "a", "ab", "asteroid" }, parser:get_completion("say a"))

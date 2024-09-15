@@ -211,6 +211,51 @@ Options:
 end)
 
 
+describe("set_defaults", function()
+    it("works with a basic execute function", function()
+        local parser = argparse2.ArgumentParser.new({description="Test"})
+        local count = 0
+        parser:set_defaults({execute=function() count = count + 1 end})
+
+        local namespace = parser:parse_arguments("")
+
+        assert.equal(0, count)
+
+        namespace.execute(namespace)
+
+        assert.equal(1, count)
+    end)
+
+    it("works with an #empty value", function()
+        local parser = argparse2.ArgumentParser.new({description="Test"})
+        parser:set_defaults({})
+
+        local namespace = parser:parse_arguments("")
+
+        assert.same({}, namespace)
+    end)
+
+    it("works with nested parsers where a parent also defines a default", function()
+        local parser = argparse2.ArgumentParser.new({description="Test"})
+        parser:set_defaults({foo="bar"})
+
+        local subparsers = parser:add_subparsers({description="The available commands", destination="commands"})
+        local creator = subparsers:add_parser({name="create", description="Create stuff"})
+        creator:add_argument(
+            {
+                names={"--style", "-s"},
+                default="blah",
+                help="If included, always run the action"
+            }
+        )
+        creator:set_defaults({foo="fizz"})
+
+        assert.same({foo="bar"}, parser:parse_arguments(""))
+        assert.same({foo="fizz", style="blah"}, parser:parse_arguments("create "))
+    end)
+end)
+
+
 describe("scenarios", function()
     it("works with a #basic flag argument", function()
         local parser = argparse2.ArgumentParser.new({description="Test"})

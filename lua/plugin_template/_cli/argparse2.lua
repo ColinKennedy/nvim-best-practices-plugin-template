@@ -1000,6 +1000,7 @@ function M.Argument.new(options)
     self._type = options.type
     self._used = 0
     self.choices = options.choices
+    self.default = options.default
     self.names = options.names
     self.description = options.description
     self.destination = _get_nice_name(options.destination or options.names[1])
@@ -1162,6 +1163,7 @@ function M.ArgumentParser.new(options)
     self.name = options.name
     self.choices = options.choices
     self.description = options.description
+    self._defaults = {}
     self._position_arguments = {}
     self._flag_arguments = {}
     self._subparsers = {}
@@ -1275,7 +1277,15 @@ end
 function M.ArgumentParser:_handle_subparsers(data, argument_name, namespace)
     for parser in _iter_parsers(self) do
         if vim.tbl_contains(parser:get_names(), argument_name) then
-            parser:parse_arguments(data, namespace)
+            local new_namespace = parser:parse_arguments(data, namespace)
+
+            for key in pairs(namespace) do
+                namespace[key] = nil
+            end
+
+            for key, value in pairs(new_namespace) do
+                namespace[key] = value
+            end
 
             return true, parser
         end
@@ -1829,19 +1839,25 @@ function M.ArgumentParser:parse_arguments(data, namespace)
     namespace = namespace or {}
     namespace = vim.tbl_deep_extend(
         "force",
+        namespace,
+        self._defaults
+    )
+    namespace = vim.tbl_deep_extend(
+        "force",
         self:_get_default_namespace(),
         namespace
     )
 
     local position_arguments = vim.deepcopy(self:get_position_arguments())
     local flag_arguments = vim.deepcopy(self:get_flag_arguments())
+    local found = false
 
     -- TODO: Need to handle nargs-related code here
     for index, argument in ipairs(data.arguments) do
         if argument.argument_type == argparse.ArgumentType.position then
             local argument_name = _get_argument_name(argument)
 
-            local found, _ = self:_handle_subparsers(
+            found, _ = self:_handle_subparsers(
                 argparse_helper.lstrip_arguments(data, index + 1),
                 argument_name,
                 namespace
@@ -1870,6 +1886,11 @@ function M.ArgumentParser:parse_arguments(data, namespace)
     end
 
     return namespace
+end
+
+
+function M.ArgumentParser:set_defaults(data)
+    self._defaults = data
 end
 
 
