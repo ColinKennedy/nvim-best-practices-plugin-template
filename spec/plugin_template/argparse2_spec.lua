@@ -379,3 +379,20 @@ describe("type", function()
         assert.same({foo=12}, namespace)
     end)
 end)
+
+
+describe("+ flags", function()
+    it("works with ++double flags", function()
+    end)
+
+    it("works with ++named=foo arguments", function()
+    end)
+
+    it("works with +s (single) flags", function()
+        local parser = argparse2.ArgumentParser.new({description="Test"})
+        parser:add_argument({"+s", destination="blah", type=function(value) return value .. "tt" end})
+
+        local namespace = parser:parse_arguments("12")
+        assert.same({blah="12tt"}, namespace)
+    end)
+end)

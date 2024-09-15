@@ -19,6 +19,8 @@
 
 - Make sure help text allows a parser choices() to be represented as text
 
+- Make sure that a "dynamic plugin" command-line parse is possible. e.g. Telescope
+
 - Is there really any need to auto-complete the short flags if the long flag is there? Remove?
 
 - Add a configuration option to disable --help / -h from auto-completion
