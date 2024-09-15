@@ -7,7 +7,9 @@ local _PREFIX = "PluginTemplate"
 --- @type PluginTemplateSubcommands
 local _SUBCOMMANDS = {
     ["arbitrary-thing"] = function()
-        -- TODO: Finish this command
+        local parser = require("plugin_template._commands.arbitrary_thing.parser")
+
+        return parser.make_parser()
     end,
     ["copy-logs"] = function()
         local parser = require("plugin_template._commands.goodnight_moon.parser")

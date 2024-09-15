@@ -110,10 +110,14 @@ end
 
 
 local function _run_subcommand(parser, text)
-    local namespace = parser:parse_arguments(text)
+    local argparse = require("plugin_template._cli.argparse")
+
+    local arguments = argparse.parse_arguments(text)
+    local namespace = parser:parse_arguments(arguments)
 
     if namespace.execute then
-        namespace.execute(namespace)
+        -- TODO: Make sure this has the right type-hint
+        namespace.execute({input=arguments, namespace=namespace})
 
         return
     end

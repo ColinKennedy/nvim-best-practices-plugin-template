@@ -13,6 +13,14 @@ function M.make_parser()
     parser:add_argument({"-v", count="*", destination="verbose"})
     parser:add_argument({"-f", count="*"})
 
+    parser:set_execute(
+        function(data)
+            local runner = require("plugin_template._commands.arbitrary_thing.runner")
+
+            runner.run(data.input.arguments)
+        end
+    )
+
     return parser
 end
 

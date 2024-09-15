@@ -26,26 +26,27 @@ function M.make_parser()
     })
 
     count_sheep:set_execute(
-        function(namespace)
-            local command = require("plugin_template._commands.goodnight_moon.command")
+        function(data)
+            local count_sheep_ = require("plugin_template._commands.goodnight_moon.count_sheep")
 
-            command.run_count_sheep(namespace)
+            count_sheep_.run(data.namespace.count)
         end
     )
 
     read:set_execute(
-        function(namespace)
-            local command = require("plugin_template._commands.goodnight_moon.command")
+        function(data)
+            local read_ = require("plugin_template._commands.goodnight_moon.read")
 
-            command.run_read(namespace)
+            read_.run(data.namespace.book)
         end
     )
 
     sleep:set_execute(
-        function(namespace)
-            local command = require("plugin_template._commands.goodnight_moon.command")
+        -- TODO: Make sure to add type-hints for all of these inner functions (across all files)
+        function(data)
+            local sleep_ = require("plugin_template._commands.goodnight_moon.sleep")
 
-            command.run_sleep(namespace)
+            sleep_.run(data.namespace.count)
         end
     )
 

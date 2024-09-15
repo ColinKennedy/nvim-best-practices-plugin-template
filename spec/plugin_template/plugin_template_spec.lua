@@ -79,16 +79,22 @@ describe("hello world API - say phrase/word", function()
     before_each(_initialize_all)
     after_each(_reset_all)
 
-    it("runs #hello-world with default arguments - 001", function()
+    it("runs #hello-world with default `say phrase` arguments - 001", function()
         plugin_template.run_hello_world_say_phrase({ "" })
 
         assert.same({ "No phrase was given" }, _DATA)
     end)
 
-    it("runs #hello-world with default arguments - 002", function()
+    it("runs #hello-world with default `say phrase` arguments - 002", function()
         plugin_template.run_hello_world_say_phrase({})
 
         assert.same({ "No phrase was given" }, _DATA)
+    end)
+
+    it("runs #hello-world with default `say word` arguments - 001", function()
+        plugin_template.run_hello_world_say_word( "" )
+
+        assert.same({ "No word was given" }, _DATA)
     end)
 
     it("runs #hello-world say phrase - with all of its arguments", function()

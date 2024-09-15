@@ -69,18 +69,24 @@ function M.make_parser()
     _add_style_argument(word)
 
     phrase:set_execute(
-        function(namespace)
-            local command = require("plugin_template._commands.hello_world.say.command")
+        function(data)
+            local runner = require("plugin_template._commands.hello_world.say.runner")
 
-            command.run_say_phrase(namespace)
+            local phrases = data.namespace.phrases
+
+            if not phrases then
+                phrases = {}
+            end
+
+            runner.run_say_phrase(phrases, data.namespace["repeat"], data.namespace.style)
         end
     )
 
     word:set_execute(
-        function(namespace)
-            local command = require("plugin_template._commands.hello_world.say.command")
+        function(data)
+            local runner = require("plugin_template._commands.hello_world.say.runner")
 
-            command.run_say_word(namespace)
+            runner.run_say_word(data.namespace.word or "", data.namespace["repeat"], data.namespace.style)
         end
     )
 
