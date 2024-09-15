@@ -362,6 +362,7 @@ describe("scenarios", function()
     end)
 end)
 
+
 describe("type", function()
     it("works with a known type function", function()
         local parser = argparse2.ArgumentParser.new({description="Test"})
@@ -380,20 +381,30 @@ describe("type", function()
     end)
 end)
 
--- TODO: continue here
--- TODO: Finish these
+
 describe("+ flags", function()
     it("works with ++double flags", function()
+        local parser = argparse2.ArgumentParser.new({description="Test"})
+        parser:add_argument({"++foo", destination="blah"})
+
+        local namespace = parser:parse_arguments("++foo")
+        assert.same({blah=true}, namespace)
     end)
 
     it("works with ++named=foo arguments", function()
-    end)
-
-    it("works with +s (single) flags", function()
         local parser = argparse2.ArgumentParser.new({description="Test"})
-        parser:add_argument({"+s", destination="blah", type=function(value) return value .. "tt" end})
+        parser:add_argument({"++foo", destination="blah", type=function(value) return value .. "tt" end})
 
-        local namespace = parser:parse_arguments("12")
+        local namespace = parser:parse_arguments("++foo=12")
         assert.same({blah="12tt"}, namespace)
     end)
+
+    -- -- TODO: Maybe support this in the future
+    -- it("works with +s (single) flags", function()
+    --     local parser = argparse2.ArgumentParser.new({description="Test"})
+    --     parser:add_argument({"+s", destination="blah", type=function(value) return value .. "tt" end})
+    --
+    --     local namespace = parser:parse_arguments("+s=12")
+    --     assert.same({blah="12tt"}, namespace)
+    -- end)
 end)
