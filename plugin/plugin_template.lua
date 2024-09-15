@@ -6,53 +6,24 @@ local _PREFIX = "PluginTemplate"
 
 --- @type PluginTemplateSubcommands
 local _SUBCOMMANDS = {
-    ["arbitrary-thing"] = {
-        complete = function(data)
-            local complete = require("plugin_template._commands.arbitrary_thing.complete")
+    ["arbitrary-thing"] = function()
+        -- TODO: Finish this command
+    end,
+    ["copy-logs"] = function()
+        local parser = require("plugin_template._commands.goodnight_moon.parser")
 
-            return complete.complete(data)
-        end,
-        run = function(arguments)
-            local runner = require("plugin_template._cli.runner")
+        return parser.make_parser()
+    end,
+    ["goodnight-moon"] = function()
+        local parser = require("plugin_template._commands.goodnight_moon.parser")
 
-            runner.run_arbitrary_thing(arguments)
-        end,
-    },
-    ["copy-logs"] = {
-        run = function(arguments)
-            local runner = require("plugin_template._cli.runner")
+        return parser.make_parser()
+    end,
+    ["hello-world"] = function()
+        local parser = require("plugin_template._commands.hello_world.parser")
 
-            runner.run_copy_logs(arguments)
-        end,
-    },
-    ["goodnight-moon"] = {
-        complete = function(data)
-            local argparse = require("plugin_template._cli.argparse")
-            local completion = require("plugin_template._cli.completion")
-
-            local tree = { ["count-sheep"] = {}, ["read"] = {}, ["sleep"] = {} }
-            local arguments = argparse.parse_arguments(data)
-
-            return completion.get_options(tree, arguments, vim.fn.getcmdpos())
-        end,
-        run = function(arguments)
-            local runner = require("plugin_template._cli.runner")
-
-            runner.run_goodnight_moon(arguments)
-        end,
-    },
-    ["hello-world"] = {
-        complete = function(data)
-            local complete = require("plugin_template._commands.hello_world.complete")
-
-            return complete.complete(data)
-        end,
-        run = function(arguments)
-            local runner = require("plugin_template._cli.runner")
-
-            runner.run_hello_world(arguments)
-        end,
-    },
+        return parser.make_parser()
+    end,
 }
 
 cli_subcommand.initialize_missing_values(_SUBCOMMANDS)

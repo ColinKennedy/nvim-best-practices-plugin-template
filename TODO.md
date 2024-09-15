@@ -11,6 +11,12 @@
 - "works with nested parsers where a parent also defines a default" is bugged. Selecting a subparser should immediately get its value(s).
 
 
+- Remove subcommand-related files
+ - Make sure the GitHub wiki + documentation still works
+
+- Add the wiki pages to this repository
+ - Make sure the documentation tellsthe user to delete this folder
+
 - Make sure help text allows a parser choices() to be represented as text
 
 - Is there really any need to auto-complete the short flags if the long flag is there? Remove?

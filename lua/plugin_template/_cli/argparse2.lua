@@ -286,16 +286,20 @@ local function _get_cursor_offset(input, column)
 end
 
 
-local function _get_matching_flag_text(prefix, flags)
-    local function _get_single_choices_text(argument)
+local function _get_matching_partial_flag_text(prefix, flags, value)
+    local function _get_single_choices_text(argument, value)
         if not argument.choices then
             return {argument.names[1] .. "="}
         end
 
+        value = value or ""
+
         local output = {}
 
         for _, choice in ipairs(argument.choices()) do
-            table.insert(output, argument.names[1] .. "=" .. choice)
+            if vim.startswith(choice, value) then
+                table.insert(output, argument.names[1] .. "=" .. choice)
+            end
         end
 
         return output
@@ -308,7 +312,7 @@ local function _get_matching_flag_text(prefix, flags)
             for _, name in ipairs(argument_.names) do
                 if name == prefix then
                     if argument_:get_nargs() == 1 then
-                        vim.list_extend(output, _get_single_choices_text(argument_))
+                        vim.list_extend(output, _get_single_choices_text(argument_, value))
                     else
                         table.insert(output, name)
                     end
@@ -454,7 +458,7 @@ end
 --- @param parser ArgumentParser The starting point to search within.
 --- @return string[] # The matching names, if any.
 ---
-local function _get_exact_or_partial_matches(prefix, parser)
+local function _get_exact_or_partial_matches(prefix, parser, value)
     prefix = _remove_boundary_whitespace(prefix)
     local output = {}
 
@@ -465,7 +469,7 @@ local function _get_exact_or_partial_matches(prefix, parser)
 
     vim.list_extend(
         output,
-        _get_matching_flag_text(prefix, parser:get_flag_arguments())
+        _get_matching_partial_flag_text(prefix, parser:get_flag_arguments(), value)
     )
 
     -- print(vim.inspect(parsers, {depth=2}))
@@ -1151,6 +1155,10 @@ end
 ---     The created instance.
 ---
 function M.ArgumentParser.new(options)
+    if options[1] and not options.name then
+        options.name = options[1]
+    end
+
     if options.parent then
         _validate_name(options)
     end
@@ -1586,7 +1594,7 @@ function M.ArgumentParser:get_completion(data, column)
         -- NOTE: Get all possible initial arguments
         vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names("", self)))
         vim.list_extend(output, _get_matching_position_arguments("", self:get_position_arguments()))
-        vim.list_extend(output, _get_matching_flag_text("", self:get_flag_arguments()))
+        vim.list_extend(output, _get_matching_partial_flag_text("", self:get_flag_arguments()))
 
         return output
     end
@@ -1623,8 +1631,8 @@ function M.ArgumentParser:get_completion(data, column)
         end
     end
     for _, parser in ipairs(parsers or {}) do
-        -- vim.list_extend(output, _get_array_startswith(parser:get_names(), last_name))
-        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser))
+        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last.value))
+
 
         -- TODO: Move to a function later
         -- NOTE: This case is for when there are multiple child parsers with
@@ -1889,8 +1897,23 @@ function M.ArgumentParser:parse_arguments(data, namespace)
 end
 
 
+--- Whenever this parser is visited add all of these values to the resulting namespace.
+---
+--- @param caller fun(data: table<string, ...>): nil
+---     All of the data to set onto the namespace when it's found.
+---
 function M.ArgumentParser:set_defaults(data)
     self._defaults = data
+end
+
+
+--- Whenever this parser is visited, return `{execute=caller}` so people can use it.
+---
+--- @param caller fun(...): ...
+---     A function that runs a specific parser command. e.g. a "Hello, World!" program.
+---
+function M.ArgumentParser:set_execute(caller)
+    self._defaults.execute = caller
 end
 
 

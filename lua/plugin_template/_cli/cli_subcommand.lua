@@ -5,12 +5,20 @@
 
 local M = {}
 
+-- TODO: Fix documentation here later
+
 --- @class PluginTemplateSubcommand
----     A Python subparser's definition.
---- @field run fun(data: string[], options: table?): nil
----     The function to run when the subcommand is called.
---- @field complete? fun(data: string): string[]
+---     A subparser's definition. At minimum you need to define `parser` or
+---     `run` or code will error when you try to run commands. If you define
+---     `parser`, you don't need to define `complete` or `run` (`parser` is the
+---     preferred way to make parsers).
+--- @field complete (fun(data: string): string[])?
 ---     Command completions callback, the `data` are  the lead of the subcommand's arguments
+--- @field parser (fun(): ArgumentParser)?
+---     The primary parser used for subcommands. It handles auto-complete,
+---     expression-evaluation, and running a user's code.
+--- @field run (fun(data: PluginTemplateSubcommandRun): nil)?
+---     The function to run when the subcommand is called.
 
 --- @alias PluginTemplateSubcommands table<string, PluginTemplateSubcommand>
 
@@ -26,6 +34,7 @@ local function _is_subcommand(full, prefix)
     return full:match(expression) ~= nil
 end
 
+
 --- Get the auto-complete, if any, for a subcommand.
 ---
 --- @param text string Some full text like `"PluginTemplate blah"`.
@@ -34,14 +43,35 @@ end
 ---
 local function _get_subcommand_completion(text, prefix, subcommands)
     local expression = "^" .. prefix .. "*%s(%S+)%s(.*)$"
-    local subcommand, arguments = text:match(expression)
+    local subcommand_key, arguments = text:match(expression)
 
-    if not subcommand or not arguments then
+    if not subcommand_key or not arguments then
         return nil
     end
 
-    if subcommands[subcommand] and subcommands[subcommand].complete then
-        local result = subcommands[subcommand].complete(arguments)
+    if subcommands[subcommand_key] then
+        vim.notify(
+            string.format(
+                'PluginTemplate: Unknown command "%s". Please check your spelling and try again.',
+                vim.log.levels.ERROR
+            )
+        )
+
+        return nil
+    end
+
+    local subcommand = subcommands[subcommand_key]
+
+    if subcommand.parser then
+        local parser = subcommand.parser()
+        local column = vim.fn.getcmdpos()
+
+        return parser:get_completion(arguments, column)
+    end
+
+    if subcommand.complete then
+        -- TODO: Make sure this works still
+        local result = subcommand.complete({parsed_arguments=results})
 
         if result == nil or vim.islist(result) then
             if arguments == "" then
@@ -66,6 +96,7 @@ local function _get_subcommand_completion(text, prefix, subcommands)
     return nil
 end
 
+
 --- Change `text` to something that will work with Lua regex.
 ---
 --- @param text string Some raw text. e.g. `"foo-bar"`.
@@ -76,6 +107,35 @@ local function _escape(text)
 
     return escaped
 end
+
+
+local function _run_subcommand(parser, text)
+    local namespace = parser:parse_arguments(text)
+
+    if namespace.execute then
+        namespace.execute(namespace)
+
+        return
+    end
+
+    vim.notify(
+        string.format(
+            'PluginTemplate: Command "%s" parsed "%s" text into "%s" namespace but no `execute` '
+            .. 'function was defined. '
+            .. 'Call parser:set_execute(function() print("Your function here") end)',
+            parser.name or parser.description or "<No name or description for this parser was provided>",
+            text,
+            vim.inspect(namespace)
+        ),
+        vim.log.levels.ERROR
+    )
+end
+
+
+local function _strip_prefix(prefix, text)
+    return (text:gsub("^" .. _escape(prefix) .. "%s*", ""))
+end
+
 
 --- Create a function that implements "Vim COMMAND mode auto-complete".
 ---
@@ -115,6 +175,7 @@ function M.make_command_completer(prefix, subcommands)
     return runner
 end
 
+-- TODO: Fix this doc + the others
 --- If anything in `subcommands` is missing data, define default value(s) for it.
 ---
 --- @param subcommands PluginTemplateSubcommands
@@ -122,7 +183,7 @@ end
 ---
 function M.initialize_missing_values(subcommands)
     for _, subcommand in pairs(subcommands) do
-        if not subcommand.complete then
+        if type(subcommand) == "table" and not subcommand.complete then
             subcommand.complete = function()
                 return {}
             end
@@ -155,6 +216,7 @@ function M.make_triager(subcommands)
         configuration.initialize_data_if_needed()
 
         local subcommand_key = opts.fargs[1]
+        --- @type PluginTemplateSubcommand?
         local subcommand = subcommands[subcommand_key]
 
         if not subcommand then
@@ -163,8 +225,44 @@ function M.make_triager(subcommands)
             return
         end
 
-        local results = argparse.parse_arguments(opts.args)
-        subcommand.run(results)
+        local stripped_text = _strip_prefix(subcommand_key, opts.args)
+
+        if type(subcommand) == "function" then
+            local parser = subcommand()
+
+            if not parser then
+                vim.notify(
+                    string.format(
+                        'Subcommand "%s" does not define a parser. Please fix!',
+                        subcommand_key
+                    ),
+                    vim.log.levels.ERROR
+                )
+
+                return
+            end
+
+            _run_subcommand(parser, stripped_text)
+
+            return
+        end
+
+        if subcommand.parser then
+            local parser = subcommand.parser()
+            _run_subcommand(parser, stripped_text)
+
+            return
+        end
+
+        if subcommand.run then
+            -- TODO: Add a unittest. Make sure this still works
+            local results = argparse.parse_arguments(stripped_text)
+            subcommand.run(vim.tbl_deep_extend("force", opts, {parsed_arguments=results}))
+        end
+
+        vim.notify(
+            string.format('Subcommand "%s" must define `parser` or `run`.', vim.log.levels.ERROR)
+        )
     end
 
     return runner

@@ -9,10 +9,10 @@
 local configuration = require("plugin_template._core.configuration")
 local arbitrary_thing_runner = require("plugin_template._commands.arbitrary_thing.runner")
 local copy_logs_runner = require("plugin_template._commands.copy_logs.runner")
-local count_sheep_runner = require("plugin_template._commands.goodnight_moon.count_sheep.runner")
-local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
+local count_sheep = require("plugin_template._commands.goodnight_moon.count_sheep")
+local read = require("plugin_template._commands.goodnight_moon.read")
 local say_runner = require("plugin_template._commands.hello_world.say.runner")
-local sleep_runner = require("plugin_template._commands.goodnight_moon.sleep.runner")
+local sleep = require("plugin_template._commands.goodnight_moon.sleep")
 
 local M = {}
 
@@ -23,8 +23,8 @@ M.run_arbitrary_thing = arbitrary_thing_runner.run
 M.run_copy_logs = copy_logs_runner.run
 M.run_hello_world_say_phrase = say_runner.run_say_phrase
 M.run_hello_world_say_word = say_runner.run_say_word
-M.run_goodnight_moon_read = read_runner.run
-M.run_goodnight_moon_count_sheep = count_sheep_runner.run
-M.run_goodnight_moon_sleep = sleep_runner.run
+M.run_goodnight_moon_read = read.run
+M.run_goodnight_moon_count_sheep = count_sheep.run
+M.run_goodnight_moon_sleep = sleep.run
 
 return M

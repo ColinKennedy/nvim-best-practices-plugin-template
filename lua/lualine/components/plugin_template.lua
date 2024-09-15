@@ -8,12 +8,12 @@
 local arbitrary_thing_runner = require("plugin_template._commands.arbitrary_thing.runner")
 local configuration = require("plugin_template._core.configuration")
 local copy_log_runner = require("plugin_template._commands.copy_logs.runner")
-local count_sheep_runner = require("plugin_template._commands.goodnight_moon.count_sheep.runner")
+local count_sheep = require("plugin_template._commands.goodnight_moon.count_sheep")
 local lualine_require = require("lualine_require")
 local modules = lualine_require.lazy_require({ highlight = "lualine.highlight" })
-local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
+local read = require("plugin_template._commands.goodnight_moon.read")
 local say_runner = require("plugin_template._commands.hello_world.say.runner")
-local sleep_runner = require("plugin_template._commands.goodnight_moon.sleep.runner")
+local sleep = require("plugin_template._commands.goodnight_moon.sleep")
 local tabler = require("plugin_template._core.tabler")
 
 local M = require("lualine.component"):extend()
@@ -56,10 +56,10 @@ end
 
 _patch_runner_commands(arbitrary_thing_runner, { "run" }, "arbitrary_thing")
 _patch_runner_commands(copy_log_runner, { "run" }, "copy_logs")
-_patch_runner_commands(count_sheep_runner, { "run" }, "goodnight_moon")
-_patch_runner_commands(read_runner, { "run" }, "goodnight_moon")
+_patch_runner_commands(count_sheep, { "run" }, "goodnight_moon")
+_patch_runner_commands(read, { "run" }, "goodnight_moon")
 _patch_runner_commands(say_runner, { "run_say_phrase", "run_say_word" }, "hello_world")
-_patch_runner_commands(sleep_runner, { "run" }, "goodnight_moon")
+_patch_runner_commands(sleep, { "run" }, "goodnight_moon")
 
 --- Setup all colors / text for lualine to display later.
 ---

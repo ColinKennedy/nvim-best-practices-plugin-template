@@ -16,7 +16,7 @@ local telescope_actions = require("telescope.actions")
 local telescope_config = require("telescope.config").values
 
 local configuration = require("plugin_template._core.configuration")
-local read_runner = require("plugin_template._commands.goodnight_moon.read.runner")
+local read = require("plugin_template._commands.goodnight_moon.read")
 local say_runner = require("plugin_template._commands.hello_world.say.runner")
 local tabler = require("plugin_template._core.tabler")
 
@@ -32,7 +32,7 @@ vim.api.nvim_set_hl(0, "PluginTemplateTelescopeSecondary", { link = "TelescopeRe
 function M.get_goodnight_moon_picker(options)
     local function _select_book(buffer)
         for _, book in ipairs(M.get_selection(buffer)) do
-            read_runner.run(book)
+            read.run(book)
         end
 
         telescope_actions.close(buffer)
