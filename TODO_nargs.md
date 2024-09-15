@@ -1,1 +1,5 @@
--
+- Make sure * works
+ - Should refer to `choices` on each iteration
+ - Auto-complete should always recommend
+ - help should not error out if no value is given
+ - Should stop parsing once a non-position argument is found (flag / named)

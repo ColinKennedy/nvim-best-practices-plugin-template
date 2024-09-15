@@ -380,7 +380,8 @@ describe("type", function()
     end)
 end)
 
-
+-- TODO: continue here
+-- TODO: Finish these
 describe("+ flags", function()
     it("works with ++double flags", function()
     end)
