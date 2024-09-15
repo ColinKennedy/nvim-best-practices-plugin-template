@@ -33,14 +33,6 @@ local function _reset_all()
     _DATA = {}
 end
 
--- describe("arbitrary-thing API", function()
---     before_each(_initialize_all)
---     after_each(_reset_all)
---
---     it("runs #arbitrary-thing with default arguments - 001", function()
---         plugin_template.run_arbitrary_thing()
---     end)
--- end)
 
 describe("arbitrary-thing API", function()
     before_each(_initialize_all)

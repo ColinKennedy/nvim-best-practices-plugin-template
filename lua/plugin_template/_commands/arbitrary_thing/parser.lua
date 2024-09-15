@@ -17,7 +17,13 @@ function M.make_parser()
         function(data)
             local runner = require("plugin_template._commands.arbitrary_thing.runner")
 
-            runner.run(data.input.arguments)
+            local names = {}
+
+            for _, argument in ipairs(data.input.arguments) do
+                table.insert(names, argument.name)
+            end
+
+            runner.run(names)
         end
     )
 
