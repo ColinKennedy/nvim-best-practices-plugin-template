@@ -866,6 +866,15 @@ local function _expand_argument_options(options)
 end
 
 
+local function _merge_namespaces(namespace, ...)
+    for _, override in ipairs({...}) do
+        for key, value in pairs(override) do
+            namespace[key] = value
+        end
+    end
+end
+
+
 --- Remove the ending `index` options from `input`.
 ---
 --- @param input ArgparseResults
@@ -1017,7 +1026,7 @@ end
 
 --- @return boolean # Check if this instance cannot be used anymore.
 function M.Argument:is_exhausted()
-    if self._nargs == _ZERO_OR_MORE then
+    if self._count == _ZERO_OR_MORE then
         return false
     end
 
@@ -1057,7 +1066,7 @@ end
 
 --- Get a converter function that takes in a raw argument's text and outputs some converted result.
 ---
---- @return fun(value: string | boolean): ... # The converter function.
+--- @return fun(value: (string | boolean)?): ... # The converter function.
 ---
 function M.Argument:get_type()
     return self._type
@@ -1205,104 +1214,6 @@ function M.ArgumentParser:_get_default_namespace()
 end
 
 
---- @return string # A one/two liner explanation of this instance's expected arguments.
-function M.ArgumentParser._get_usage_summary(parser)
-    local text = {}
-
-    for _, position in ipairs(parser:get_position_arguments()) do
-        table.insert(text, _get_position_help_text(position))
-    end
-
-    for _, flag in ipairs(_sort_arguments(parser:get_flag_arguments())) do
-        table.insert(text, string.format("[%s]", flag:get_raw_name()))
-    end
-
-    -- TODO: Need to finish the concise args and also give advice on the next line
-    return string.format("Usage: %s", vim.fn.join(text, " "))
-end
-
-
---- Add `flags` to `namespace` if they match `argument`.
----
---- @param flags Argument[] All `-f`, `--foo`, etc arguments to check.
---- @param argument ArgparseArgument The argument to check for `flags` matches.
---- @param namespace Namespace # A container for the found match(es).
---- @return boolean # If a match was found, return `true`.
----
-function M.ArgumentParser:_handle_flag_arguments(flags, argument, namespace)
-    for _, flag in ipairs(flags) do
-        if not flag:is_exhausted() then
-            local name = flag:get_nice_name()
-            local value = flag:get_type()(argument.value)
-            local action = flag:get_action()
-
-            action({namespace=namespace, name=name, value=value})
-
-            flag:increment_used()
-
-            return true
-        end
-    end
-
-    return false
-end
-
-
---- Add `positions` to `namespace` if they match `argument`.
----
---- @param positions Argument[] All `foo`, `bar`, etc arguments to check.
---- @param argument ArgparseArgument The argument to check for `positions` matches.
---- @param namespace Namespace # A container for the found match(es).
---- @return boolean # If a match was found, return `true`.
----
-function M.ArgumentParser:_handle_position_arguments(positions, argument, namespace)
-    for _, position in ipairs(positions) do
-        if not position:is_exhausted() then
-            local name = position:get_nice_name()
-            local value = position:get_type()(argument.value)
-            local action = position:get_action()
-
-            action({namespace=namespace, name=name, value=value})
-
-            position:increment_used()
-
-            return true
-        end
-    end
-
-    return false
-end
-
-
---- Check if `argument_name` matches a registered subparser.
----
---- @param data ArgparseResults The parsed arguments + any remainder text.
---- @param argument_name string A raw argument name. e.g. `foo`.
---- @param namespace Namespace An existing namespace to set/append/etc to the subparser.
---- @return boolean # If a match was found, return `true`.
---- @return ArgumentParser? # The found subparser, if any.
----
-function M.ArgumentParser:_handle_subparsers(data, argument_name, namespace)
-    for parser in _iter_parsers(self) do
-        if vim.tbl_contains(parser:get_names(), argument_name) then
-            local new_namespace = parser:parse_arguments(data, namespace)
-
-            for key in pairs(namespace) do
-                namespace[key] = nil
-            end
-
-            for key, value in pairs(new_namespace) do
-                namespace[key] = value
-            end
-
-            return true, parser
-        end
-    end
-
-    return false, nil
-end
-
-
 -- TODO: Consider merging this code with the over traversal code
 --- Search recursively for the lowest possible `ArgumentParser` from `data`.
 ---
@@ -1333,6 +1244,106 @@ function M.ArgumentParser:_get_leaf_parser(data)
 
     return parser
 end
+
+
+--- @return string # A one/two liner explanation of this instance's expected arguments.
+function M.ArgumentParser._get_usage_summary(parser)
+    local text = {}
+
+    for _, position in ipairs(parser:get_position_arguments()) do
+        table.insert(text, _get_position_help_text(position))
+    end
+
+    for _, flag in ipairs(_sort_arguments(parser:get_flag_arguments())) do
+        table.insert(text, string.format("[%s]", flag:get_raw_name()))
+    end
+
+    -- TODO: Need to finish the concise args and also give advice on the next line
+    return string.format("Usage: %s", vim.fn.join(text, " "))
+end
+
+
+--- Add `flags` to `namespace` if they match `argument`.
+---
+--- @param flags Argument[] All `-f=asdf`, `--foo=asdf`, etc arguments to check.
+--- @param argument FlagArgument | NamedArgument The argument to check for `flags` matches.
+--- @param namespace Namespace # A container for the found match(es).
+--- @return boolean # If a match was found, return `true`.
+---
+function M.ArgumentParser:_handle_exact_flag_arguments(flags, argument, namespace)
+    for _, flag in ipairs(flags) do
+        if vim.tbl_contains(flag.names, argument.name) and not flag:is_exhausted() then
+            local name = flag:get_nice_name()
+
+            local value
+
+            -- TODO: Replace this with a real nargs check later
+            if argument.value then
+                value = flag:get_type()(argument.value)
+            else
+                value = flag:get_type()()
+            end
+
+            local action = flag:get_action()
+
+            action({namespace=namespace, name=name, value=value})
+
+            flag:increment_used()
+
+            return true
+        end
+    end
+
+    return false
+end
+
+
+--- Add `positions` to `namespace` if they match `argument`.
+---
+--- @param positions Argument[] All `foo`, `bar`, etc arguments to check.
+--- @param argument ArgparseArgument The argument to check for `positions` matches.
+--- @param namespace Namespace # A container for the found match(es).
+--- @return boolean # If a match was found, return `true`.
+---
+function M.ArgumentParser:_handle_exact_position_arguments(positions, argument, namespace)
+    for _, position in ipairs(positions) do
+        if not position:is_exhausted() then
+            local name = position:get_nice_name()
+            local value = position:get_type()(argument.value)
+            local action = position:get_action()
+
+            action({namespace=namespace, name=name, value=value})
+
+            position:increment_used()
+
+            return true
+        end
+    end
+
+    return false
+end
+
+
+--- Check if `argument_name` matches a registered subparser.
+---
+--- @param data ArgparseResults The parsed arguments + any remainder text.
+--- @param argument_name string A raw argument name. e.g. `foo`.
+--- @param namespace Namespace An existing namespace to set/append/etc to the subparser.
+--- @return boolean # If a match was found, return `true`.
+--- @return ArgumentParser? # The found subparser, if any.
+---
+function M.ArgumentParser:_handle_subparsers(data, argument_name, namespace)
+    for parser in _iter_parsers(self) do
+        if vim.tbl_contains(parser:get_names(), argument_name) then
+            parser:_parse_arguments(data, namespace)
+
+            return true, parser
+        end
+    end
+
+    return false, nil
+end
+
 
 -- TODO: Consider returning just 1 parser, not a list
 --- Traverse the parsers, marking arguments as used / exhausted as we traverse down.
@@ -1519,6 +1530,77 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
     -- end
     --
     -- return output
+end
+
+
+--- Parse user text `data`.
+---
+--- @param data string | ArgparseResults
+---     User text that needs to be parsed. e.g. `hello "World!"`
+--- @param namespace Namespace?
+---     All pre-existing, default parsed values. If this is the first
+---     ArgumentParser then this argument will always be empty but a nested
+---     parser will usually have the parsed arguments of the parent subparsers
+---     that were before it.
+--- @return Namespace
+---     All of the parsed data as one group.
+---
+function M.ArgumentParser:_parse_arguments(data, namespace)
+    if type(data) == "string" then
+        data = argparse.parse_arguments(data)
+    end
+
+    -- TODO: Merge namespaces more cleanly
+    namespace = namespace or {}
+    _merge_namespaces(namespace, self._defaults, self:_get_default_namespace())
+
+    local position_arguments = vim.deepcopy(self:get_position_arguments())
+    local flag_arguments = vim.deepcopy(self:get_flag_arguments())
+    local found = false
+
+    -- TODO: Need to handle nargs-related code here
+    for index, argument in ipairs(data.arguments) do
+        if argument.argument_type == argparse.ArgumentType.position then
+            --- @cast argument PositionArgument
+            local argument_name = _get_argument_name(argument)
+
+            found, _ = self:_handle_subparsers(
+                argparse_helper.lstrip_arguments(data, index + 1),
+                argument_name,
+                namespace
+            )
+
+            if found then
+                -- NOTE: We can only do this because `self:_handle_subparsers`
+                -- calls `_parse_arguments` which creates a recursive loop.
+                -- Once we finally terminate the loop and return here the
+                -- `found` is the final status of all of those recursions.
+                --
+                return namespace
+            end
+
+            found = self:_handle_exact_position_arguments(position_arguments, argument, namespace)
+
+            if not found then
+                -- TODO: Do something about this one
+            end
+        elseif argument.argument_type == argparse.ArgumentType.named or argument.argument_type == argparse.ArgumentType.flag then
+            --- @cast argument FlagArgument | NamedArgument
+            found = self:_handle_exact_flag_arguments(flag_arguments, argument, namespace)
+
+            if not found then
+                -- TODO: Do something about this one
+            end
+        end
+
+        if not found then
+            -- TODO: Add a unittest
+            -- NOTE: We lost our place in the parse so we can't continue.
+            return {}
+        end
+    end
+
+    return namespace
 end
 
 
@@ -1788,6 +1870,11 @@ function M.ArgumentParser:add_subparsers(options)
 end
 
 
+function M.ArgumentParser:parse_arguments(data)
+    return self:_parse_arguments(data, {})
+end
+
+
 -- function M.ArgumentParser:_get_matches(argument)
 --     if argument.argument_type == argparse.ArgumentType.position then
 --         local output = {}
@@ -1825,76 +1912,6 @@ end
 --
 --     return output
 -- end
-
-
---- Parse user text `data`.
----
---- @param data string | ArgparseResults
----     User text that needs to be parsed. e.g. `hello "World!"`
---- @param namespace Namespace?
----     All pre-existing, default parsed values. If this is the first
----     ArgumentParser then this argument will always be empty but a nested
----     parser will usually have the parsed arguments of the parent subparsers
----     that were before it.
---- @return Namespace
----     All of the parsed data as one group.
----
-function M.ArgumentParser:parse_arguments(data, namespace)
-    if type(data) == "string" then
-        data = argparse.parse_arguments(data)
-    end
-
-    namespace = namespace or {}
-    namespace = vim.tbl_deep_extend(
-        "force",
-        namespace,
-        self._defaults
-    )
-    namespace = vim.tbl_deep_extend(
-        "force",
-        self:_get_default_namespace(),
-        namespace
-    )
-
-    local position_arguments = vim.deepcopy(self:get_position_arguments())
-    local flag_arguments = vim.deepcopy(self:get_flag_arguments())
-    local found = false
-
-    -- TODO: Need to handle nargs-related code here
-    for index, argument in ipairs(data.arguments) do
-        if argument.argument_type == argparse.ArgumentType.position then
-            local argument_name = _get_argument_name(argument)
-
-            found, _ = self:_handle_subparsers(
-                argparse_helper.lstrip_arguments(data, index + 1),
-                argument_name,
-                namespace
-            )
-
-            if not found then
-                found = self:_handle_position_arguments(position_arguments, argument, namespace)
-
-                if not found then
-                    -- TODO: Do something about this one
-                end
-            end
-        elseif argument.argument_type == argparse.ArgumentType.named then
-            local found = self:_handle_flag_arguments(flag_arguments, argument, namespace)
-
-            if not found then
-                -- TODO: Do something about this one
-            end
-        end
-
-        if not found then
-            -- TODO: Add a unittest
-            -- NOTE: We lost our place in the parse so we can't continue.
-            return {}
-        end
-    end
-
-    return namespace
-end
 
 
 --- Whenever this parser is visited add all of these values to the resulting namespace.

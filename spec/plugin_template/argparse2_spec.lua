@@ -296,6 +296,29 @@ describe("scenarios", function()
         assert.same({book="Goodnight Moon"}, namespace)
     end)
 
+    it("works with repeated flags", function()
+        local parser = argparse2.ArgumentParser.new({"goodnight-moon", description="Prepare to sleep or sleep."})
+        local subparsers = parser:add_subparsers({destination="commands", description="All commands for goodnight-moon."})
+        subparsers.required = true
+
+        local sleep = subparsers:add_parser({"sleep", description="Sleep tight!"})
+        sleep:add_argument({
+            "-z",
+            action="count",
+            count="*",
+            description="The number of Zzz to print.",
+            nargs=0,
+        })
+
+        sleep:set_execute(function(namespace)
+            assert.same(3, namespace.z)
+        end)
+
+        local namespace = parser:parse_arguments("sleep -z -z -z")
+
+        namespace.execute(namespace)
+    end)
+
     it("works with nested subcommands", function()
         local parser = argparse2.ArgumentParser.new({description="Test"})
 

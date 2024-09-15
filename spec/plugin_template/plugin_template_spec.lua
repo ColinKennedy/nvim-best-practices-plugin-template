@@ -146,7 +146,7 @@ describe("goodnight-moon API", function()
     it("runs #goodnight-moon #sleep with all of its arguments", function()
         plugin_template.run_goodnight_moon_sleep(3)
 
-        assert.same({ "zzz", "zzz", "zzz" }, _DATA)
+        assert.same({ "Zzz", "Zzz", "Zzz" }, _DATA)
     end)
 end)
 
@@ -167,8 +167,8 @@ describe("goodnight-moon commands", function()
     end)
 
     it("runs #goodnight-moon #sleep with all of its arguments", function()
-        vim.cmd([[PluginTemplate goodnight-moon sleep -zzz]])
+        vim.cmd([[PluginTemplate goodnight-moon sleep -z -z -z]])
 
-        assert.same({ "zzz", "zzz", "zzz" }, _DATA)
+        assert.same({ "Zzz", "Zzz", "Zzz" }, _DATA)
     end)
 end)

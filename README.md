@@ -193,7 +193,7 @@ Here are some example commands:
 " Separate commands with completely separate, flexible APIs
 :PluginTemplate goodnight-moon count-sheep 42
 :PluginTemplate goodnight-moon read "a book"
-:PluginTemplate goodnight-moon sleep -zzz
+:PluginTemplate goodnight-moon sleep -z -z -z
 ```
 
 

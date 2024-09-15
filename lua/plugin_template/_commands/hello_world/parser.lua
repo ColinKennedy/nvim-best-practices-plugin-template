@@ -55,10 +55,12 @@ function M.make_parser()
     subparsers.required = true
 
     local phrase = subparsers:add_parser({"phrase", description="Print everything that the user types."})
+    phrase:add_argument({"phrases", count="*", description="All of the text to print."})
     _add_repeat_argument(phrase)
     _add_style_argument(phrase)
 
     local word = subparsers:add_parser({"phrase", description="Print only the first word that the user types."})
+    phrase:add_argument({"word", description="The to print."})
     _add_repeat_argument(word)
     _add_style_argument(word)
 
@@ -77,6 +79,8 @@ function M.make_parser()
             command.run_word(data.namespace)
         end
     )
+
+    return parser
 end
 
 return M

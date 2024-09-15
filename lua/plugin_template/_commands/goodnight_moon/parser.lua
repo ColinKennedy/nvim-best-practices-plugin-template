@@ -12,30 +12,40 @@ function M.make_parser()
 
     -- TODO: Finish this stuff later
     local count_sheep = subparsers:add_parser({"count-sheep", description="Count some sheep to help you sleep."})
+    count_sheep:add_argument({"count", type="number", description="The number of sheept to count."})
     local read = subparsers:add_parser({"read", description="Read a book in bed."})
+    read:add_argument({"book", description="The name of the book to read."})
+
     local sleep = subparsers:add_parser({"sleep", description="Sleep tight!"})
+    sleep:add_argument({
+        "-z",
+        action="count",
+        count="*",
+        description="The number of Zzz to print.",
+        destination="count",
+    })
 
     count_sheep:set_execute(
-        function(data)
+        function(namespace)
             local command = require("plugin_template._commands.goodnight_moon.command")
 
-            command.run_count_sheep(data.namespace)
+            command.run_count_sheep(namespace)
         end
     )
 
     read:set_execute(
-        function(data)
+        function(namespace)
             local command = require("plugin_template._commands.goodnight_moon.command")
 
-            command.run_read(data.namespace)
+            command.run_read(namespace)
         end
     )
 
     sleep:set_execute(
-        function(data)
+        function(namespace)
             local command = require("plugin_template._commands.goodnight_moon.command")
 
-            command.run_sleep(data.namespace)
+            command.run_sleep(namespace)
         end
     )
 
