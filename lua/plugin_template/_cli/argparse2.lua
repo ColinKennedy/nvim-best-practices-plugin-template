@@ -20,7 +20,7 @@ local texter = require("plugin_template._core.texter")
 
 --- @alias Namespace table<string, ...> All parsed values.
 
---- @alias Nargs number | "*" | "+"
+--- @alias argparse2.MultiNumber number | "*" | "+"
 ---     The number of elements needed to satisfy an argument. * == 0-or-more.
 ---     + == 1-or-more. A number means "we need exactly this number of
 ---     elements".
@@ -35,13 +35,15 @@ local texter = require("plugin_template._core.texter")
 --- @field value ...
 ---     A value to add into `namespace`.
 
---- @class ArgumentOptions
+--- @class argparse2.ArgumentOptions
 ---     All of the settings to include in a new parse argument.
 --- @field action Action?
 ---     This controls the behavior of how parsed arguments are added into the
 ---     final parsed `Namespace`.
 --- @field choices (fun(): string[])?
 ---     If included, the argument can only accept these choices as values.
+--- @field count argparse2.MultiNumber
+---     The number of times that this argument must be written.
 --- @field description string?
 ---     Explain what this parser is meant to do and the argument(s) it needs.
 ---     Keep it brief (< 88 characters).
@@ -53,7 +55,7 @@ local texter = require("plugin_template._core.texter")
 ---     The ways to refer to this instance.
 --- @field names? string[]
 ---     The ways to refer to this instance.
---- @field nargs Nargs
+--- @field nargs argparse2.MultiNumber
 ---     The number of elements that this argument consumes at once.
 --- @field parent ArgumentParser?
 ---     The parser that owns this instance.
@@ -61,7 +63,7 @@ local texter = require("plugin_template._core.texter")
 ---     The expected output type. If a function is given, assume that the user
 ---     knows what they're doing and use their function's return value.
 
---- @class ArgumentParserOptions
+--- @class argparse2.ArgumentParserOptions
 ---     The options that we might pass to `ArgumentParser.new`.
 --- @field choices (fun(): string[])?
 ---     If included, the argument can only accept these choices as values.
@@ -73,7 +75,7 @@ local texter = require("plugin_template._core.texter")
 --- @field parent Subparsers?
 ---     A subparser that own this `ArgumentParser`, if any.
 
---- @class SubparsersOptions
+--- @class argparse2.SubparsersOptions
 ---     Customization options for the new Subparsers.
 --- @field description string
 ---     Explain what types of parsers this object is meant to hold Keep it
@@ -92,7 +94,7 @@ local _ZERO_OR_MORE = "*"
 local _FULL_HELP_FLAG = "--help"
 local _SHORT_HELP_FLAG = "-h"
 
---- @class Argument
+--- @class argparse2.Argument
 ---     An optional / required argument for some parser.
 --- @field action Action?
 ---     This controls the behavior of how parsed arguments are added into the
@@ -105,7 +107,7 @@ local _SHORT_HELP_FLAG = "-h"
 M.Argument = {
     __tostring = function(argument)
         return string.format(
-            'Argument({names=%s, help=%s, type=%s, action=%s, nargs=%s, choices=%s, count=%s, used=%s})',
+            'argparse2.Argument({names=%s, help=%s, type=%s, action=%s, nargs=%s, choices=%s, count=%s, used=%s})',
             vim.inspect(argument.names),
             vim.inspect(argument.help),
             vim.inspect(argument.type),
@@ -209,7 +211,7 @@ end
 
 --- Get the recommended name(s) of all `arguments`.
 ---
---- @param arguments Argument[] All flag / position arguments to get names for.
+--- @param arguments argparse2.Argument[] All flag / position arguments to get names for.
 --- @return string[] # The found names.
 ---
 local function _get_arguments_names(arguments)
@@ -238,8 +240,8 @@ end
 
 --- Re-order `arguments` alphabetically but put the `--help` flag at the end.
 ---
---- @param arguments Argument[] All position / flag / named arguments.
---- @return Argument[] # The sorted entries.
+--- @param arguments argparse2.Argument[] All position / flag / named arguments.
+--- @return argparse2.Argument[] # The sorted entries.
 ---
 local function _sort_arguments(arguments)
     local output = vim.deepcopy(arguments)
@@ -347,15 +349,6 @@ local function _get_matching_partial_flag_text(prefix, flags, value)
     end
 
     return output
-end
-
-
-local function _get_recommended_position_names(argument)
-    if argument.choices then
-        return argument.choices()
-    end
-
-    return {argument.names[1]}
 end
 
 
@@ -541,7 +534,7 @@ end
 --- Find all required arguments in `parser` that still need value(s).
 ---
 --- @param parsers ArgumentParser[] All child / leaf parsers to check.
---- @return Argument[] # The arguments that are still unused.
+--- @return argparse2.Argument[] # The arguments that are still unused.
 ---
 local function _get_incomplete_arguments(parsers)
     local output = {}
@@ -659,7 +652,7 @@ end
 ---
 --- If `position` has expected choices, those choices are returned instead.
 ---
---- @param position Argument Some (non-flag) argument to get text for.
+--- @param position argparse2.Argument Some (non-flag) argument to get text for.
 --- @return string # The found label.
 ---
 local function _get_position_help_text(position)
@@ -814,7 +807,7 @@ end
 
 --- Find a proper type converter from `options`.
 ---
---- @param options ArgumentOptions The suggested type for an argument.
+--- @param options argparse2.ArgumentOptions The suggested type for an argument.
 ---
 local function _expand_type_options(options)
     if not options.type then
@@ -858,7 +851,7 @@ end
 
 --- If `options` is sparsely written, "expand" all of its values. so we can use it.
 ---
---- @param options ArgumentOptions The user-written options. (sparse or not).
+--- @param options argparse2.ArgumentOptions The user-written options. (sparse or not).
 ---
 local function _expand_argument_options(options)
     _expand_type_options(options)
@@ -903,11 +896,11 @@ end
 
 
 -- TODO: Add unittest for this
---- Make sure an `Argument` has a name and every name is the same type.
+--- Make sure an `argparse2.Argument` has a name and every name is the same type.
 ---
 --- If `names` is `{"foo", "-f"}` then this function will error.
 ---
---- @param options ArgumentOptions All data to check.
+--- @param options argparse2.ArgumentOptions All data to check.
 ---
 local function _validate_argument_names(options)
     local function _get_type(name)
@@ -950,7 +943,7 @@ end
 
 --- Make sure a name was provided from `options`.
 ---
---- @param options ArgumentParserOptions
+--- @param options argparse2.ArgumentParserOptions
 ---
 local function _validate_name(options)
     -- TODO: name is required
@@ -962,7 +955,7 @@ end
 
 --- Create a new group of parsers.
 ---
---- @param options SubparsersOptions Customization options for the new Subparsers.
+--- @param options argparse2.SubparsersOptions Customization options for the new Subparsers.
 --- @return Subparsers # A group of parsers (which will be filled with parsers later).
 ---
 function M.Subparsers.new(options)
@@ -979,7 +972,7 @@ end
 
 --- Create a new `ArgumentParser` using `options`.
 ---
---- @param options ArgumentParserOptions The options to pass to `ArgumentParser.new`.
+--- @param options argparse2.ArgumentParserOptions The options to pass to `ArgumentParser.new`.
 --- @return ArgumentParser # The created parser.
 ---
 function M.Subparsers:add_parser(options)
@@ -1000,11 +993,11 @@ end
 
 --- Create a new instance using `options`.
 ---
---- @param options ArgumentOptions All of the settings to include in a new parse argument.
---- @return Argument # The created instance.
+--- @param options argparse2.ArgumentOptions All of the settings to include in a new parse argument.
+--- @return argparse2.Argument # The created instance.
 ---
 function M.Argument.new(options)
-    --- @class Argument
+    --- @class argparse2.Argument
     local self = setmetatable({}, M.Argument)
 
     self._action = nil
@@ -1046,7 +1039,7 @@ function M.Argument:get_action()
 end
 
 
---- @return Nargs # The number of elements that this argument consumes at once.
+--- @return argparse2.MultiNumber # The number of elements that this argument consumes at once.
 function M.Argument:get_nargs()
     return self._nargs
 end
@@ -1160,7 +1153,7 @@ end
 --- If the parser is a child of a subparser then this instance must be given
 --- a name via `{name="foo"}` or this function will error.
 ---
---- @param options ArgumentParserOptions
+--- @param options argparse2.ArgumentParserOptions
 ---     The options that we might pass to `ArgumentParser.new`.
 --- @return ArgumentParser
 ---     The created instance.
@@ -1378,7 +1371,7 @@ end
 
 --- Add `flags` to `namespace` if they match `argument`.
 ---
---- @param flags Argument[] All `-f=asdf`, `--foo=asdf`, etc arguments to check.
+--- @param flags argparse2.Argument[] All `-f=asdf`, `--foo=asdf`, etc arguments to check.
 --- @param argument FlagArgument | NamedArgument The argument to check for `flags` matches.
 --- @param namespace Namespace # A container for the found match(es).
 --- @return boolean # If a match was found, return `true`.
@@ -1417,7 +1410,7 @@ end
 
 --- Add `positions` to `namespace` if they match `argument`.
 ---
---- @param positions Argument[] All `foo`, `bar`, etc arguments to check.
+--- @param positions argparse2.Argument[] All `foo`, `bar`, etc arguments to check.
 --- @param argument ArgparseArgument The argument to check for `positions` matches.
 --- @param namespace Namespace # A container for the found match(es).
 --- @return boolean # If a match was found, return `true`.
@@ -1836,7 +1829,7 @@ function M.ArgumentParser:get_full_help(data)
 end
 
 
---- @return Argument[] # Get all arguments that can be placed in any order.
+--- @return argparse2.Argument[] # Get all arguments that can be placed in any order.
 function M.ArgumentParser:get_flag_arguments()
     return self._flag_arguments
 end
@@ -1862,7 +1855,7 @@ function M.ArgumentParser:get_parent_parser()
 end
 
 
---- @return Argument[] # Get all arguments that must be put in a specific order.
+--- @return argparse2.Argument[] # Get all arguments that must be put in a specific order.
 function M.ArgumentParser:get_position_arguments()
     return self._position_arguments
 end
@@ -1870,8 +1863,8 @@ end
 
 --- Create a child argument so we can use it to parse text later.
 ---
---- @param options ArgumentOptions All of the settings to include in the new argument.
---- @return Argument # The created `Argument` instance.
+--- @param options argparse2.ArgumentOptions All of the settings to include in the new argument.
+--- @return argparse2.Argument # The created `argparse2.Argument` instance.
 ---
 function M.ArgumentParser:add_argument(options)
     _validate_argument_names(options)
@@ -1893,7 +1886,7 @@ end
 
 --- Create a group so we can add nested parsers underneath it later.
 ---
---- @param options SubparsersOptions Customization options for the new Subparsers.
+--- @param options argparse2.SubparsersOptions Customization options for the new Subparsers.
 --- @return Subparsers # A new group of parsers.
 ---
 function M.ArgumentParser:add_subparsers(options)
