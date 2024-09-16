@@ -54,7 +54,7 @@ end
 --- @return ... # Every element of each table, in order.
 ---
 function M.chain(...)
-    local lists = {...}
+    local lists = { ... }
     local index = 0
     local current = 1
 

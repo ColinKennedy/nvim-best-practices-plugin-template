@@ -7,7 +7,7 @@
 -- TODO: Clean-up code
 
 -- TODO: Add unittest for required subparsers
- -- - set_required must fail if subparsers has no dest
+-- - set_required must fail if subparsers has no dest
 
 local argparse = require("plugin_template._cli.argparse")
 local argparse_helper = require("plugin_template._cli.argparse_helper")
@@ -107,7 +107,7 @@ local _SHORT_HELP_FLAG = "-h"
 M.Argument = {
     __tostring = function(argument)
         return string.format(
-            'argparse2.Argument({names=%s, help=%s, type=%s, action=%s, nargs=%s, choices=%s, count=%s, used=%s})',
+            "argparse2.Argument({names=%s, help=%s, type=%s, action=%s, nargs=%s, choices=%s, count=%s, used=%s})",
             vim.inspect(argument.names),
             vim.inspect(argument.help),
             vim.inspect(argument.type),
@@ -154,7 +154,6 @@ M.Subparsers = {
 }
 M.Subparsers.__index = M.Subparsers
 
-
 --- Check if `text`.
 ---
 --- @param text string Some text. e.g. `--foo`.
@@ -164,7 +163,6 @@ local function _is_position_name(text)
     return text:sub(1, 1):match("%w")
 end
 
-
 --- Check if `text` is only spaces.
 ---
 --- @param text string Some word / phrase to check. e.g. `" "`.
@@ -173,7 +171,6 @@ end
 local function _is_whitespace(text)
     return text == "" or text:match("%s+")
 end
-
 
 --- Find all parsers / sub-parsers starting from `parsers`.
 ---
@@ -195,7 +192,6 @@ local function _get_all_parent_parsers(parsers)
     return output
 end
 
-
 --- Get the raw argument name. e.g. `"--foo"`.
 ---
 --- Important:
@@ -208,16 +204,18 @@ local function _get_argument_name(argument)
     return argument.name or argument.value
 end
 
-
 --- Get the recommended name(s) of all `arguments`.
 ---
 --- @param arguments argparse2.Argument[] All flag / position arguments to get names for.
 --- @return string[] # The found names.
 ---
 local function _get_arguments_names(arguments)
-    return vim:iter(arguments):map(function(argument) return argument.names[1] end):totable()
+    return vim:iter(arguments)
+        :map(function(argument)
+            return argument.names[1]
+        end)
+        :totable()
 end
-
 
 local function _get_array_startswith(values, prefix)
     local output = {}
@@ -231,12 +229,9 @@ local function _get_array_startswith(values, prefix)
     return output
 end
 
-
-
 local function _remove_boundary_whitespace(text)
     return (text:gsub("^%s*$", ""))
 end
-
 
 --- Re-order `arguments` alphabetically but put the `--help` flag at the end.
 ---
@@ -246,24 +241,20 @@ end
 local function _sort_arguments(arguments)
     local output = vim.deepcopy(arguments)
 
-    table.sort(
-        output,
-        function(left, right)
-            if vim.tbl_contains(left.names, _FULL_HELP_FLAG) or vim.tbl_contains(left.names, _SHORT_HELP_FLAG) then
-                return false
-            end
-
-            if vim.tbl_contains(right.names, _FULL_HELP_FLAG) or vim.tbl_contains(right.names, _SHORT_HELP_FLAG) then
-                return true
-            end
-
-            return left.names[1] < right.names[1]
+    table.sort(output, function(left, right)
+        if vim.tbl_contains(left.names, _FULL_HELP_FLAG) or vim.tbl_contains(left.names, _SHORT_HELP_FLAG) then
+            return false
         end
-    )
+
+        if vim.tbl_contains(right.names, _FULL_HELP_FLAG) or vim.tbl_contains(right.names, _SHORT_HELP_FLAG) then
+            return true
+        end
+
+        return left.names[1] < right.names[1]
+    end)
 
     return output
 end
-
 
 --- Scan `input` and stop processing arguments after `column`.
 ---
@@ -287,11 +278,10 @@ local function _get_cursor_offset(input, column)
     return #input.arguments
 end
 
-
 local function _get_matching_partial_flag_text(prefix, flags, value)
     local function _get_single_choices_text(argument, value)
         if not argument.choices then
-            return {argument.names[1] .. "="}
+            return { argument.names[1] .. "=" }
         end
 
         value = value or ""
@@ -351,22 +341,17 @@ local function _get_matching_partial_flag_text(prefix, flags, value)
     return output
 end
 
-
 local function _get_matching_position_arguments(name, arguments)
     local output = {}
 
     for _, argument in ipairs(_sort_arguments(arguments)) do
         if not argument:is_exhausted() and argument.choices then
-            vim.list_extend(
-                output,
-                _get_array_startswith(argument.choices(), name)
-            )
+            vim.list_extend(output, _get_array_startswith(argument.choices(), name))
         end
     end
 
     return output
 end
-
 
 --- Find all direct-children parsers of `parser`.
 ---
@@ -444,7 +429,6 @@ local function _iter_parsers(parser, inclusive)
     end
 end
 
-
 -- TODO: Docstring
 --- Find all Argments starting with `name`.
 ---
@@ -455,15 +439,9 @@ local function _get_exact_or_partial_matches(prefix, parser, value)
     prefix = _remove_boundary_whitespace(prefix)
     local output = {}
 
-    vim.list_extend(
-        output,
-        _get_matching_position_arguments(prefix, parser:get_position_arguments())
-    )
+    vim.list_extend(output, _get_matching_position_arguments(prefix, parser:get_position_arguments()))
 
-    vim.list_extend(
-        output,
-        _get_matching_partial_flag_text(prefix, parser:get_flag_arguments(), value)
-    )
+    vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_arguments(), value))
 
     -- print(vim.inspect(parsers, {depth=2}))
 
@@ -478,7 +456,6 @@ local function _get_exact_or_partial_matches(prefix, parser, value)
 
     return output
 end
-
 
 -- local function _get_matches(name, items)
 --     local output = {}
@@ -500,7 +477,6 @@ end
 --     return string.format("[%s]", flag:get_raw_name())
 -- end
 
-
 -- local function _get_matching_position_arguments(argument, parser)
 --     local output = {}
 --
@@ -520,7 +496,6 @@ end
 --     return output
 -- end
 
-
 --- Combine `labels` into a single-line summary (for help messages).
 ---
 --- @param labels string[] All commands to run.
@@ -529,7 +504,6 @@ end
 local function _get_help_command_labels(labels)
     return string.format("{%s}", vim.fn.join(vim.fn.sort(labels), ", "))
 end
-
 
 --- Find all required arguments in `parser` that still need value(s).
 ---
@@ -574,7 +548,6 @@ local function _get_matching_subparser_names(prefix, parser)
     return output
 end
 
-
 --- Strip argument name of any flag / prefix text. e.g. `"--foo"` becomes `"foo"`.
 ---
 --- @param text string Some raw argument name. e.g. `"--foo"`.
@@ -583,7 +556,6 @@ end
 local function _get_nice_name(text)
     return text:match("%W*(%w+)")
 end
-
 
 --- Find the next arguments that need to be completed / used based on some partial `remainder_text`.
 ---
@@ -633,7 +605,6 @@ local function _get_next_arguments_from_remainder(argument, remainder_text, pars
     return output
 end
 
-
 -- --- Find all arguments that match `prefix`, starting from `parser.
 -- ---
 -- --- @param parser ArgumentParser The starting point to search within.
@@ -646,7 +617,6 @@ end
 --
 --     return output
 -- end
-
 
 --- Get a friendly label for `position`. Used for `--help` flags.
 ---
@@ -671,7 +641,6 @@ local function _get_position_help_text(position)
     return text
 end
 
-
 --- Add indentation to `text.
 ---
 --- @param text string Some phrase to indent one level. e.g. `"foo"`.
@@ -680,7 +649,6 @@ end
 local function _indent(text)
     return string.format("    %s", text)
 end
-
 
 --- Get all option flag / named argument --help text from `parser`.
 ---
@@ -709,7 +677,6 @@ local function _get_parser_flag_help_text(parser)
 
     return output
 end
-
 
 --- Get all position argument --help text from `parser`.
 ---
@@ -749,7 +716,6 @@ local function _get_parser_position_help_text(parser)
     return output
 end
 
-
 --- Get the name(s) used to refer to `parsers`.
 ---
 --- Usually a parser can only be referred to by one name, in which case this
@@ -770,7 +736,6 @@ local function _get_parsers_names(parsers)
     return output
 end
 
-
 --- Find all required child parsers from `parsers`.
 ---
 --- @param parsers ArgumentParser[] Each parser to search within.
@@ -790,7 +755,6 @@ local function _get_unused_required_subparsers(parsers)
     return output
 end
 
-
 --- Print `data` but don't recurse.
 ---
 --- If you don't call this function and you try to print one of our Argument
@@ -801,9 +765,8 @@ end
 --- @return string # The found data.
 ---
 local function _concise_inspect(data)
-    return vim.inspect(data, {depth=1})
+    return vim.inspect(data, { depth = 1 })
 end
-
 
 --- Find a proper type converter from `options`.
 ---
@@ -811,18 +774,23 @@ end
 ---
 local function _expand_type_options(options)
     if not options.type then
-        options.type = function(value) return value end
+        options.type = function(value)
+            return value
+        end
     elseif options.type == "string" then
-        options.type = function(value) return value end
+        options.type = function(value)
+            return value
+        end
     elseif options.type == "number" then
-        options.type = function(value) return tonumber(value) end
+        options.type = function(value)
+            return tonumber(value)
+        end
     elseif type(options.type) == "function" then
         -- NOTE: Do nothing. Assume the user knows what they're doing.
     else
         error(string.format('Type "%s" is unknown. We can\'t parse it.', _concise_inspect(options)))
     end
 end
-
 
 local function _expand_choices_options(options)
     if not options.choices then
@@ -836,18 +804,23 @@ local function _expand_choices_options(options)
     -- passed as an import to these functions
     --
     if type(options.choices) == "string" then
-        choices = function() return {input} end
+        choices = function()
+            return { input }
+        end
     elseif texter.is_string_list(options.choices) then
-        choices = function() return input end
+        choices = function()
+            return input
+        end
     elseif type(options.choices) == "function" then
         choices = input
     else
-        error(string.format('Got invalid "%s" choices. Expected a list or a function.', _concise_inspect(options.choices)))
+        error(
+            string.format('Got invalid "%s" choices. Expected a list or a function.', _concise_inspect(options.choices))
+        )
     end
 
     options.choices = choices
 end
-
 
 --- If `options` is sparsely written, "expand" all of its values. so we can use it.
 ---
@@ -858,15 +831,13 @@ local function _expand_argument_options(options)
     _expand_choices_options(options)
 end
 
-
 local function _merge_namespaces(namespace, ...)
-    for _, override in ipairs({...}) do
+    for _, override in ipairs({ ... }) do
         for key, value in pairs(override) do
             namespace[key] = value
         end
     end
 end
-
 
 --- Remove the ending `index` options from `input`.
 ---
@@ -894,7 +865,6 @@ local function _rstrip_input(input, column)
     return stripped
 end
 
-
 -- TODO: Add unittest for this
 --- Make sure an `argparse2.Argument` has a name and every name is the same type.
 ---
@@ -914,7 +884,7 @@ local function _validate_argument_names(options)
     local names = options.names or options.name or options[1]
 
     if type(names) == "string" then
-        names = {names}
+        names = { names }
     end
 
     local found_type = nil
@@ -925,9 +895,9 @@ local function _validate_argument_names(options)
         elseif found_type ~= _get_type(name) then
             error(
                 string.format(
-                    'Argument names have to be the same type. '
-                    .. 'e.g. If one name starts with "-", all names '
-                    .. 'must start with "-" and vice versa.'
+                    "Argument names have to be the same type. "
+                        .. 'e.g. If one name starts with "-", all names '
+                        .. 'must start with "-" and vice versa.'
                 )
             )
         end
@@ -940,7 +910,6 @@ local function _validate_argument_names(options)
     options.names = names
 end
 
-
 --- Make sure a name was provided from `options`.
 ---
 --- @param options argparse2.ArgumentParserOptions
@@ -951,7 +920,6 @@ local function _validate_name(options)
         error(string.format('Argument "%s" must have a name.', _concise_inspect(options)))
     end
 end
-
 
 --- Create a new group of parsers.
 ---
@@ -969,14 +937,13 @@ function M.Subparsers.new(options)
     return self
 end
 
-
 --- Create a new `ArgumentParser` using `options`.
 ---
 --- @param options argparse2.ArgumentParserOptions The options to pass to `ArgumentParser.new`.
 --- @return ArgumentParser # The created parser.
 ---
 function M.Subparsers:add_parser(options)
-    local new_options = vim.tbl_deep_extend("force", options, {parent = self})
+    local new_options = vim.tbl_deep_extend("force", options, { parent = self })
     local parser = M.ArgumentParser.new(new_options)
 
     table.insert(self._parsers, parser)
@@ -984,12 +951,10 @@ function M.Subparsers:add_parser(options)
     return parser
 end
 
-
 --- @return ArgumentParser[] # Get all of the child parsers for this instance.
 function M.Subparsers:get_parsers()
     return self._parsers
 end
-
 
 --- Create a new instance using `options`.
 ---
@@ -1016,7 +981,6 @@ function M.Argument.new(options)
     return self
 end
 
-
 --- @return boolean # Check if this instance cannot be used anymore.
 function M.Argument:is_exhausted()
     if self._count == _ZERO_OR_MORE then
@@ -1028,7 +992,6 @@ function M.Argument:is_exhausted()
     return self._used >= self._count
 end
 
-
 --- Get a function that mutates the namespace with a new parsed argument.
 ---
 --- @return fun(data: ActionData): nil
@@ -1038,24 +1001,20 @@ function M.Argument:get_action()
     return self._action
 end
 
-
 --- @return argparse2.MultiNumber # The number of elements that this argument consumes at once.
 function M.Argument:get_nargs()
     return self._nargs
 end
-
 
 --- @return string # The (clean) argument mame. e.g. `"--foo"` becomes `"foo"`.
 function M.Argument:get_nice_name()
     return _get_nice_name(self.destination or self.names[1])
 end
 
-
 --- @return string # The (raw) argument mame. e.g. `"--foo"`.
 function M.Argument:get_raw_name()
     return self.names[1]
 end
-
 
 --- Get a converter function that takes in a raw argument's text and outputs some converted result.
 ---
@@ -1064,7 +1023,6 @@ end
 function M.Argument:get_type()
     return self._type
 end
-
 
 --- Use up more of the available use(s) of this instance.
 ---
@@ -1077,7 +1035,6 @@ function M.Argument:increment_used(increment)
     increment = increment or 1
     self._used = self._used + increment
 end
-
 
 --- Describe how this argument should ingest new CLI value(s).
 ---
@@ -1125,7 +1082,6 @@ function M.Argument:set_action(action)
     self._action = action
 end
 
-
 -- TODO: need to add unittests for this.
 --- Tell how many value(s) are needed to satisfy this instance.
 ---
@@ -1146,7 +1102,6 @@ function M.Argument:set_nargs(count)
 
     self._nargs = count
 end
-
 
 --- Create a new `ArgumentParser`.
 ---
@@ -1181,18 +1136,15 @@ function M.ArgumentParser.new(options)
     self._subparsers = {}
     self._parent = options.parent
 
-    self:add_argument(
-        {
-            action="store_true",
-            description="Show this help message and exit.",
-            names={"--help", "-h"},
-            nargs=0,
-        }
-    )
+    self:add_argument({
+        action = "store_true",
+        description = "Show this help message and exit.",
+        names = { "--help", "-h" },
+        nargs = 0,
+    })
 
     return self
 end
-
 
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
@@ -1244,7 +1196,7 @@ function M.ArgumentParser:_get_completion(data, column)
 
         local last = stripped.arguments[#stripped.arguments]
 
-        return _get_next_arguments_from_remainder(last, remainder, parsers or {previous_parser})
+        return _get_next_arguments_from_remainder(last, remainder, parsers or { previous_parser })
     end
 
     local last = stripped.arguments[#stripped.arguments]
@@ -1262,7 +1214,6 @@ function M.ArgumentParser:_get_completion(data, column)
     end
     for _, parser in ipairs(parsers or {}) do
         vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last.value))
-
 
         -- TODO: Move to a function later
         -- NOTE: This case is for when there are multiple child parsers with
@@ -1304,7 +1255,6 @@ function M.ArgumentParser:_get_completion(data, column)
     return output
 end
 
-
 --- @return Namespace # All default values from all (direct) child arguments.
 function M.ArgumentParser:_get_default_namespace()
     local output = {}
@@ -1318,7 +1268,6 @@ function M.ArgumentParser:_get_default_namespace()
 
     return output
 end
-
 
 -- TODO: Consider merging this code with the over traversal code
 --- Search recursively for the lowest possible `ArgumentParser` from `data`.
@@ -1334,11 +1283,8 @@ function M.ArgumentParser:_get_leaf_parser(data)
         if argument.argument_type == argparse.ArgumentType.position then
             local argument_name = _get_argument_name(argument)
 
-            local found, found_parser = parser:_handle_subparsers(
-                argparse_helper.lstrip_arguments(data, index + 1),
-                argument_name,
-                {}
-            )
+            local found, found_parser =
+                parser:_handle_subparsers(argparse_helper.lstrip_arguments(data, index + 1), argument_name, {})
 
             if not found or not found_parser then
                 break
@@ -1350,7 +1296,6 @@ function M.ArgumentParser:_get_leaf_parser(data)
 
     return parser
 end
-
 
 --- @return string # A one/two liner explanation of this instance's expected arguments.
 function M.ArgumentParser._get_usage_summary(parser)
@@ -1367,7 +1312,6 @@ function M.ArgumentParser._get_usage_summary(parser)
     -- TODO: Need to finish the concise args and also give advice on the next line
     return string.format("Usage: %s", vim.fn.join(text, " "))
 end
-
 
 --- Add `flags` to `namespace` if they match `argument`.
 ---
@@ -1392,7 +1336,7 @@ function M.ArgumentParser:_handle_exact_flag_arguments(flags, argument, namespac
 
             local action = flag:get_action()
 
-            action({namespace=namespace, name=name, value=value})
+            action({ namespace = namespace, name = name, value = value })
 
             -- TODO: Possible bug here. What if the `flag` has explicit
             -- choice(s) and the written value doesn't match it? I guess in
@@ -1406,7 +1350,6 @@ function M.ArgumentParser:_handle_exact_flag_arguments(flags, argument, namespac
 
     return false
 end
-
 
 --- Add `positions` to `namespace` if they match `argument`.
 ---
@@ -1422,7 +1365,7 @@ function M.ArgumentParser:_handle_exact_position_arguments(positions, argument, 
             local value = position:get_type()(argument.value)
             local action = position:get_action()
 
-            action({namespace=namespace, name=name, value=value})
+            action({ namespace = namespace, name = name, value = value })
 
             position:increment_used()
 
@@ -1432,7 +1375,6 @@ function M.ArgumentParser:_handle_exact_position_arguments(positions, argument, 
 
     return false
 end
-
 
 --- Check if `argument_name` matches a registered subparser.
 ---
@@ -1453,7 +1395,6 @@ function M.ArgumentParser:_handle_subparsers(data, argument_name, namespace)
 
     return false, nil
 end
-
 
 -- TODO: Consider returning just 1 parser, not a list
 --- Traverse the parsers, marking arguments as used / exhausted as we traverse down.
@@ -1533,7 +1474,11 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
 
     local function _compute_exact_flag_match(argument_name, parser, arguments)
         for _, argument_ in ipairs(parser:get_flag_arguments()) do
-            if not argument_:is_exhausted() and vim.tbl_contains(argument_.names, argument_name) and _has_satisfying_value(argument_, arguments) then
+            if
+                not argument_:is_exhausted()
+                and vim.tbl_contains(argument_.names, argument_name)
+                and _has_satisfying_value(argument_, arguments)
+            then
                 argument_:increment_used()
 
                 return true
@@ -1566,7 +1511,7 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
     -- IMPORTANT: Every argument must have a match or it means the `arguments`
     -- failed to match something in the parser tree.
     --
-    for index=1,count do
+    for index = 1, count do
         local argument = arguments[index]
         local argument_name = _get_argument_name(argument)
 
@@ -1583,11 +1528,7 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
         end
 
         if not found then
-            found = _compute_exact_flag_match(
-                argument_name,
-                current_parser,
-                tabler.get_slice(arguments, index)
-            )
+            found = _compute_exact_flag_match(argument_name, current_parser, tabler.get_slice(arguments, index))
 
             if not found then
                 found = _compute_exact_position_match(argument_name, current_parser)
@@ -1599,7 +1540,7 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
         end
     end
 
-    return {current_parser}, previous_parser
+    return { current_parser }, previous_parser
 
     -- -- NOTE: The last user argument is special because it might be partially written.
     -- local last = arguments[count]
@@ -1646,7 +1587,6 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
     -- return output
 end
 
-
 --- Parse user text `data`.
 ---
 --- @param data string | ArgparseResults
@@ -1678,11 +1618,8 @@ function M.ArgumentParser:_parse_arguments(data, namespace)
             --- @cast argument PositionArgument
             local argument_name = _get_argument_name(argument)
 
-            found, _ = self:_handle_subparsers(
-                argparse_helper.lstrip_arguments(data, index + 1),
-                argument_name,
-                namespace
-            )
+            found, _ =
+                self:_handle_subparsers(argparse_helper.lstrip_arguments(data, index + 1), argument_name, namespace)
 
             if found then
                 -- NOTE: We can only do this because `self:_handle_subparsers`
@@ -1698,7 +1635,10 @@ function M.ArgumentParser:_parse_arguments(data, namespace)
             if not found then
                 -- TODO: Do something about this one
             end
-        elseif argument.argument_type == argparse.ArgumentType.named or argument.argument_type == argparse.ArgumentType.flag then
+        elseif
+            argument.argument_type == argparse.ArgumentType.named
+            or argument.argument_type == argparse.ArgumentType.flag
+        then
             --- @cast argument FlagArgument | NamedArgument
             found = self:_handle_exact_flag_arguments(flag_arguments, argument, namespace)
 
@@ -1717,14 +1657,12 @@ function M.ArgumentParser:_parse_arguments(data, namespace)
     return namespace
 end
 
-
 --- (Assuming argument counts were modified by any function) Reset counts back to zero.
 function M.ArgumentParser:_reset_used()
     for argument in tabler.chain(self:get_position_arguments(), self:get_flag_arguments()) do
         argument._used = 0
     end
 end
-
 
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
@@ -1744,7 +1682,7 @@ function M.ArgumentParser:get_errors(data, column)
 
     if not parsers then
         -- TODO: Need to handle this case (when there's bad user input)
-        return {"TODO: Need to write for this case"}
+        return { "TODO: Need to write for this case" }
     end
 
     local unused_parsers = _get_unused_required_subparsers(parsers)
@@ -1756,7 +1694,7 @@ function M.ArgumentParser:get_errors(data, column)
             string.format(
                 'Your command is incomplete. Please choose one of these sub-commands "%s" to continue.',
                 vim.fn.join(vim.fn.sort(names))
-            )
+            ),
         }
     end
 
@@ -1764,12 +1702,11 @@ function M.ArgumentParser:get_errors(data, column)
 
     if not vim.tbl_isempty(arguments) then
         local names = _get_arguments_names(arguments)
-        return {string.format('Required arguments "%s" were not given.', vim.fn.sort(names))}
+        return { string.format('Required arguments "%s" were not given.', vim.fn.sort(names)) }
     end
 
     return {}
 end
-
 
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
@@ -1785,7 +1722,6 @@ function M.ArgumentParser:get_completion(data, column)
     return result
 end
 
-
 -- TODO: Fix docstring
 --- @return string # A one/two liner explanation of this instance's expected arguments.
 function M.ArgumentParser:get_concise_help(data)
@@ -1798,7 +1734,6 @@ function M.ArgumentParser:get_concise_help(data)
 
     return result .. "\n"
 end
-
 
 -- TODO: Fix docstring
 --- @return string # A multi-liner explanation of this instance's expected arguments.
@@ -1828,12 +1763,10 @@ function M.ArgumentParser:get_full_help(data)
     return output
 end
 
-
 --- @return argparse2.Argument[] # Get all arguments that can be placed in any order.
 function M.ArgumentParser:get_flag_arguments()
     return self._flag_arguments
 end
-
 
 --- @return string[] # Get all of auto-complete options for this instance.
 function M.ArgumentParser:get_names()
@@ -1841,9 +1774,8 @@ function M.ArgumentParser:get_names()
         return self.choices()
     end
 
-    return {self.name}
+    return { self.name }
 end
-
 
 function M.ArgumentParser:get_parent_parser()
     if not self._parent then
@@ -1854,12 +1786,10 @@ function M.ArgumentParser:get_parent_parser()
     return self._parent._parent
 end
 
-
 --- @return argparse2.Argument[] # Get all arguments that must be put in a specific order.
 function M.ArgumentParser:get_position_arguments()
     return self._position_arguments
 end
-
 
 --- Create a child argument so we can use it to parse text later.
 ---
@@ -1870,7 +1800,7 @@ function M.ArgumentParser:add_argument(options)
     _validate_argument_names(options)
     _expand_argument_options(options)
 
-    local new_options = vim.tbl_deep_extend("force", options, {parent=self})
+    local new_options = vim.tbl_deep_extend("force", options, { parent = self })
 
     local argument = M.Argument.new(new_options)
 
@@ -1883,21 +1813,19 @@ function M.ArgumentParser:add_argument(options)
     return argument
 end
 
-
 --- Create a group so we can add nested parsers underneath it later.
 ---
 --- @param options argparse2.SubparsersOptions Customization options for the new Subparsers.
 --- @return Subparsers # A new group of parsers.
 ---
 function M.ArgumentParser:add_subparsers(options)
-    local new_options = vim.tbl_deep_extend("force", options, {parent = self})
+    local new_options = vim.tbl_deep_extend("force", options, { parent = self })
     local subparsers = M.Subparsers.new(new_options)
 
     table.insert(self._subparsers, subparsers)
 
     return subparsers
 end
-
 
 function M.ArgumentParser:parse_arguments(data)
     local results = self:_parse_arguments(data, {})
@@ -1906,7 +1834,6 @@ function M.ArgumentParser:parse_arguments(data)
 
     return results
 end
-
 
 -- function M.ArgumentParser:_get_matches(argument)
 --     if argument.argument_type == argparse.ArgumentType.position then
@@ -1933,7 +1860,6 @@ end
 --     return {}
 -- end
 
-
 -- function M.ArgumentParser:_get_position_arguments()
 --     local output = {}
 --
@@ -1946,7 +1872,6 @@ end
 --     return output
 -- end
 
-
 --- Whenever this parser is visited add all of these values to the resulting namespace.
 ---
 --- @param caller fun(data: table<string, ...>): nil
@@ -1956,7 +1881,6 @@ function M.ArgumentParser:set_defaults(data)
     self._defaults = data
 end
 
-
 --- Whenever this parser is visited, return `{execute=caller}` so people can use it.
 ---
 --- @param caller fun(...): ...
@@ -1965,6 +1889,5 @@ end
 function M.ArgumentParser:set_execute(caller)
     self._defaults.execute = caller
 end
-
 
 return M

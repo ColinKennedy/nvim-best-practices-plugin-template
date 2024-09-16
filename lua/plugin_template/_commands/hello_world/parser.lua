@@ -3,9 +3,7 @@
 local argparse2 = require("plugin_template._cli.argparse2")
 local constant = require("plugin_template._commands.hello_world.say.constant")
 
-
 local M = {}
-
 
 local function _add_repeat_argument(parser)
     parser:add_argument({
@@ -34,7 +32,7 @@ local function _add_repeat_argument(parser)
             return output
         end,
         default = 1,
-        description="Print to the user X number of times (default=1).",
+        description = "Print to the user X number of times (default=1).",
     })
 end
 
@@ -45,50 +43,46 @@ local function _add_style_argument(parser)
             constant.Keyword.style.lowercase,
             constant.Keyword.style.uppercase,
         },
-        description="lowercase modifies all capital letters. uppercase modifies all non-capital letter.",
+        description = "lowercase modifies all capital letters. uppercase modifies all non-capital letter.",
     })
 end
 
 function M.make_parser()
-    local parser = argparse2.ArgumentParser.new({"hello-world", description="Print hello to the user."})
-    local top_subparsers = parser:add_subparsers({destination="commands", description="All allowed commands."})
+    local parser = argparse2.ArgumentParser.new({ "hello-world", description = "Print hello to the user." })
+    local top_subparsers = parser:add_subparsers({ destination = "commands", description = "All allowed commands." })
     top_subparsers.required = true
 
-    local say = top_subparsers:add_parser({"say", description="Print something to the user."})
-    local subparsers = say:add_subparsers({destination="say_commands", description="All say-related commands."})
+    local say = top_subparsers:add_parser({ "say", description = "Print something to the user." })
+    local subparsers = say:add_subparsers({ destination = "say_commands", description = "All say-related commands." })
     subparsers.required = true
 
-    local phrase = subparsers:add_parser({"phrase", description="Print everything that the user types."})
-    phrase:add_argument({"phrases", count="*", action="append", description="All of the text to print."})
+    local phrase = subparsers:add_parser({ "phrase", description = "Print everything that the user types." })
+    phrase:add_argument({ "phrases", count = "*", action = "append", description = "All of the text to print." })
     _add_repeat_argument(phrase)
     _add_style_argument(phrase)
 
-    local word = subparsers:add_parser({"word", description="Print only the first word that the user types."})
-    word:add_argument({"word", description="The word to print."})
+    local word = subparsers:add_parser({ "word", description = "Print only the first word that the user types." })
+    word:add_argument({ "word", description = "The word to print." })
     _add_repeat_argument(word)
     _add_style_argument(word)
 
-    phrase:set_execute(
-        function(data)
-            local runner = require("plugin_template._commands.hello_world.say.runner")
+    phrase:set_execute(function(data)
+        local runner = require("plugin_template._commands.hello_world.say.runner")
 
-            local phrases = data.namespace.phrases
+        local phrases = data.namespace.phrases
 
-            if not phrases then
-                phrases = {}
-            end
-
-            runner.run_say_phrase(phrases, data.namespace["repeat"], data.namespace.style)
+        if not phrases then
+            phrases = {}
         end
-    )
 
-    word:set_execute(
-        function(data)
-            local runner = require("plugin_template._commands.hello_world.say.runner")
+        runner.run_say_phrase(phrases, data.namespace["repeat"], data.namespace.style)
+    end)
 
-            runner.run_say_word(data.namespace.word or "", data.namespace["repeat"], data.namespace.style)
-        end
-    )
+    word:set_execute(function(data)
+        local runner = require("plugin_template._commands.hello_world.say.runner")
+
+        runner.run_say_word(data.namespace.word or "", data.namespace["repeat"], data.namespace.style)
+    end)
 
     return parser
 end

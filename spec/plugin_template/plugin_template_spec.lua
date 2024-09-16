@@ -33,7 +33,6 @@ local function _reset_all()
     _DATA = {}
 end
 
-
 describe("arbitrary-thing API", function()
     before_each(_initialize_all)
     after_each(_reset_all)
@@ -84,7 +83,7 @@ describe("hello world API - say phrase/word", function()
     end)
 
     it("runs #hello-world with default `say word` arguments - 001", function()
-        plugin_template.run_hello_world_say_word( "" )
+        plugin_template.run_hello_world_say_word("")
 
         assert.same({ "No word was given" }, _DATA)
     end)

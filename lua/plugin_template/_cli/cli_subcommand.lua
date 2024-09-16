@@ -34,7 +34,6 @@ local function _is_subcommand(full, prefix)
     return full:match(expression) ~= nil
 end
 
-
 --- Get the auto-complete, if any, for a subcommand.
 ---
 --- @param text string Some full text like `"PluginTemplate blah"`.
@@ -68,10 +67,7 @@ local function _get_subcommand_completion(text, prefix, subcommands)
 
         if not parser then
             vim.notify(
-                string.format(
-                    'Subcommand "%s" does not define a parser. Please fix!',
-                    subcommand_key
-                ),
+                string.format('Subcommand "%s" does not define a parser. Please fix!', subcommand_key),
                 vim.log.levels.ERROR
             )
 
@@ -92,7 +88,7 @@ local function _get_subcommand_completion(text, prefix, subcommands)
 
     if subcommand.complete then
         -- TODO: Make sure this works still
-        local result = subcommand.complete({parsed_arguments=results})
+        local result = subcommand.complete({ parsed_arguments = results })
 
         if result == nil or vim.islist(result) then
             if arguments == "" then
@@ -117,7 +113,6 @@ local function _get_subcommand_completion(text, prefix, subcommands)
     return nil
 end
 
-
 --- Change `text` to something that will work with Lua regex.
 ---
 --- @param text string Some raw text. e.g. `"foo-bar"`.
@@ -129,7 +124,6 @@ local function _escape(text)
     return escaped
 end
 
-
 local function _run_subcommand(parser, text)
     local argparse = require("plugin_template._cli.argparse")
 
@@ -138,7 +132,7 @@ local function _run_subcommand(parser, text)
 
     if namespace.execute then
         -- TODO: Make sure this has the right type-hint
-        namespace.execute({input=arguments, namespace=namespace})
+        namespace.execute({ input = arguments, namespace = namespace })
 
         return
     end
@@ -146,8 +140,8 @@ local function _run_subcommand(parser, text)
     vim.notify(
         string.format(
             'PluginTemplate: Command "%s" parsed "%s" text into "%s" namespace but no `execute` '
-            .. 'function was defined. '
-            .. 'Call parser:set_execute(function() print("Your function here") end)',
+                .. "function was defined. "
+                .. 'Call parser:set_execute(function() print("Your function here") end)',
             parser.name or parser.description or "<No name or description for this parser was provided>",
             text,
             vim.inspect(namespace)
@@ -156,11 +150,9 @@ local function _run_subcommand(parser, text)
     )
 end
 
-
 local function _strip_prefix(prefix, text)
     return (text:gsub("^" .. _escape(prefix) .. "%s*", ""))
 end
-
 
 --- Create a function that implements "Vim COMMAND mode auto-complete".
 ---
@@ -257,10 +249,7 @@ function M.make_triager(subcommands)
 
             if not parser then
                 vim.notify(
-                    string.format(
-                        'Subcommand "%s" does not define a parser. Please fix!',
-                        subcommand_key
-                    ),
+                    string.format('Subcommand "%s" does not define a parser. Please fix!', subcommand_key),
                     vim.log.levels.ERROR
                 )
 
@@ -282,12 +271,10 @@ function M.make_triager(subcommands)
         if subcommand.run then
             -- TODO: Add a unittest. Make sure this still works
             local results = argparse.parse_arguments(stripped_text)
-            subcommand.run(vim.tbl_deep_extend("force", opts, {parsed_arguments=results}))
+            subcommand.run(vim.tbl_deep_extend("force", opts, { parsed_arguments = results }))
         end
 
-        vim.notify(
-            string.format('Subcommand "%s" must define `parser` or `run`.', vim.log.levels.ERROR)
-        )
+        vim.notify(string.format('Subcommand "%s" must define `parser` or `run`.', vim.log.levels.ERROR))
     end
 
     return runner

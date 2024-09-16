@@ -7,7 +7,7 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
-local _PREFIX_CHARACTERS = {"-", "+"}
+local _PREFIX_CHARACTERS = { "-", "+" }
 
 --- @enum ArgumentType
 M.ArgumentType = {

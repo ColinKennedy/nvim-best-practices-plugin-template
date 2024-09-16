@@ -317,12 +317,7 @@ local function _get_auto_complete_values(options, text)
         elseif option.option_type == M.OptionType.named then
             table.insert(output, "--" .. option.name .. "=")
         elseif option.option_type == M.OptionType.dynamic then
-            vim.list_extend(
-                output,
-                option.choices(
-                    { current_options = options, text = text }
-                )
-            )
+            vim.list_extend(output, option.choices({ current_options = options, text = text }))
         end
     end
 

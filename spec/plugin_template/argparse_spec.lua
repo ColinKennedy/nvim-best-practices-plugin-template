@@ -794,338 +794,337 @@ describe("remainder - flags", function()
     end)
 end)
 
-
 describe("+ flags", function()
     it("works with ++double flags 001 - start", function()
-        assert.same(
-            {
-              arguments = { {
-                  argument_type = argparse.ArgumentType.flag,
-                  name = "++double",
-                  range = {
-                    end_column = 8,
-                    start_column = 1
-                  }
-                }, {
-                  argument_type = argparse.ArgumentType.position,
-                  range = {
-                    end_column = 13,
-                    start_column = 10
-                  },
-                  value = "here"
-                } },
-              remainder = {
-                value = ""
-              },
-              text = "++double here"
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "++double",
+                    range = {
+                        end_column = 8,
+                        start_column = 1,
+                    },
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 13,
+                        start_column = 10,
+                    },
+                    value = "here",
+                },
             },
-            argparse.parse_arguments("++double here")
-        )
+            remainder = {
+                value = "",
+            },
+            text = "++double here",
+        }, argparse.parse_arguments("++double here"))
     end)
 
     it("works with ++double flags 002 - middle", function()
-        assert.same(
-            {
-              arguments = { {
-                  argument_type = argparse.ArgumentType.position,
-                  range = {
-                    end_column = 5,
-                    start_column = 1
-                  },
-                  value = "thing"
-                }, {
-                  argument_type = argparse.ArgumentType.flag,
-                  name = "++double",
-                  range = {
-                    end_column = 14,
-                    start_column = 7
-                  }
-                }, {
-                  argument_type = argparse.ArgumentType.position,
-                  range = {
-                    end_column = 19,
-                    start_column = 16
-                  },
-                  value = "here"
-                } },
-              remainder = {
-                value = ""
-              },
-              text = "thing ++double here"
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 5,
+                        start_column = 1,
+                    },
+                    value = "thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "++double",
+                    range = {
+                        end_column = 14,
+                        start_column = 7,
+                    },
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 19,
+                        start_column = 16,
+                    },
+                    value = "here",
+                },
             },
-            argparse.parse_arguments("thing ++double here")
-        )
+            remainder = {
+                value = "",
+            },
+            text = "thing ++double here",
+        }, argparse.parse_arguments("thing ++double here"))
     end)
 
     it("works with +s (single) flags 003 - end", function()
-        assert.same(
-            {
-              arguments = { {
-                  argument_type = argparse.ArgumentType.position,
-                  range = {
-                    end_column = 5,
-                    start_column = 1
-                  },
-                  value = "thing"
-                }, {
-                  argument_type = argparse.ArgumentType.flag,
-                  name = "++double",
-                  range = {
-                    end_column = 14,
-                    start_column = 7
-                  }
-                } },
-              remainder = {
-                value = ""
-              },
-              text = "thing ++double"
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 5,
+                        start_column = 1,
+                    },
+                    value = "thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "++double",
+                    range = {
+                        end_column = 14,
+                        start_column = 7,
+                    },
+                },
             },
-            argparse.parse_arguments("thing ++double")
-        )
+            remainder = {
+                value = "",
+            },
+            text = "thing ++double",
+        }, argparse.parse_arguments("thing ++double"))
     end)
 
     it("works with +s (single) flags 004 - only", function()
-        assert.same(
-            {
-              arguments = { {
-                  argument_type = argparse.ArgumentType.flag,
-                  name = "+s",
-                  range = {
-                    end_column = 2,
-                    start_column = 1
-                  }
-                } },
-              remainder = {
-                value = ""
-              },
-              text = "+s"
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "+s",
+                    range = {
+                        end_column = 2,
+                        start_column = 1,
+                    },
+                },
             },
-            argparse.parse_arguments("+s")
-        )
+            remainder = {
+                value = "",
+            },
+            text = "+s",
+        }, argparse.parse_arguments("+s"))
     end)
 
     it("works with ++named=foo arguments 001 - start", function()
-        assert.same(
-            {
-              arguments = { {
-                  argument_type = argparse.ArgumentType.named,
-                  name = "++double",
-                  needs_choice_completion = true,
-                  range = {
-                    end_column = 12,
-                    start_column = 1
-                  },
-                  value = "foo"
-                }, {
-                  argument_type = argparse.ArgumentType.position,
-                  range = {
-                    end_column = 17,
-                    start_column = 14
-                  },
-                  value = "here"
-                } },
-              remainder = {
-                value = ""
-              },
-              text = "++double=foo here"
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "++double",
+                    needs_choice_completion = true,
+                    range = {
+                        end_column = 12,
+                        start_column = 1,
+                    },
+                    value = "foo",
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 17,
+                        start_column = 14,
+                    },
+                    value = "here",
+                },
             },
-            argparse.parse_arguments("++double=foo here")
-        )
+            remainder = {
+                value = "",
+            },
+            text = "++double=foo here",
+        }, argparse.parse_arguments("++double=foo here"))
     end)
 
     it("works with ++named=foo arguments 002 - middle", function()
-        assert.same(
-            {
-              arguments = { {
-                  argument_type = argparse.ArgumentType.position,
-                  range = {
-                    end_column = 5,
-                    start_column = 1
-                  },
-                  value = "thing"
-                }, {
-                  argument_type = argparse.ArgumentType.named,
-                  name = "++double",
-                  needs_choice_completion = true,
-                  range = {
-                    end_column = 18,
-                    start_column = 7
-                  },
-                  value = "bar"
-                }, {
-                  argument_type = argparse.ArgumentType.position,
-                  range = {
-                    end_column = 23,
-                    start_column = 20
-                  },
-                  value = "here"
-                } },
-              remainder = {
-                value = ""
-              },
-              text = "thing ++double=bar here"
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 5,
+                        start_column = 1,
+                    },
+                    value = "thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "++double",
+                    needs_choice_completion = true,
+                    range = {
+                        end_column = 18,
+                        start_column = 7,
+                    },
+                    value = "bar",
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 23,
+                        start_column = 20,
+                    },
+                    value = "here",
+                },
             },
-            argparse.parse_arguments("thing ++double=bar here")
-        )
+            remainder = {
+                value = "",
+            },
+            text = "thing ++double=bar here",
+        }, argparse.parse_arguments("thing ++double=bar here"))
     end)
 
     it("works with ++named=foo arguments 003 - end", function()
-        assert.same(
-            {
-              arguments = { {
-                  argument_type = argparse.ArgumentType.position,
-                  range = {
-                    end_column = 5,
-                    start_column = 1
-                  },
-                  value = "thing"
-                }, {
-                  argument_type = argparse.ArgumentType.named,
-                  name = "++double",
-                  -- TODO: Do I actually need needs_choice_completion anymore?
-                  needs_choice_completion=true,
-                  range = {
-                    end_column = 18,
-                    start_column = 7
-                  },
-                  value="foo",
-                } },
-              remainder = {
-                value = ""
-              },
-              text = "thing ++double=foo"
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 5,
+                        start_column = 1,
+                    },
+                    value = "thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "++double",
+                    -- TODO: Do I actually need needs_choice_completion anymore?
+                    needs_choice_completion = true,
+                    range = {
+                        end_column = 18,
+                        start_column = 7,
+                    },
+                    value = "foo",
+                },
             },
-            argparse.parse_arguments("thing ++double=foo")
-        )
+            remainder = {
+                value = "",
+            },
+            text = "thing ++double=foo",
+        }, argparse.parse_arguments("thing ++double=foo"))
     end)
 
     it("works with ++named=foo arguments 004 - only", function()
-        assert.same(
-            {
-              arguments = { {
-                  argument_type = argparse.ArgumentType.named,
-                  name = "++named",
-                  needs_choice_completion = true,
-                  range = {
-                    end_column = 11,
-                    start_column = 1
-                  },
-                  value = "foo"
-                } },
-              remainder = {
-                value = ""
-              },
-              text = "++named=foo"
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.named,
+                    name = "++named",
+                    needs_choice_completion = true,
+                    range = {
+                        end_column = 11,
+                        start_column = 1,
+                    },
+                    value = "foo",
+                },
             },
-            argparse.parse_arguments("++named=foo")
-        )
+            remainder = {
+                value = "",
+            },
+            text = "++named=foo",
+        }, argparse.parse_arguments("++named=foo"))
     end)
 
     it("works with +s (single) flags 001 - start", function()
-        assert.same(
-            {
-              arguments = { {
-                  argument_type = argparse.ArgumentType.flag,
-                  name = "+s",
-                  range = {
-                    end_column = 2,
-                    start_column = 1
-                  }
-                }, {
-                  argument_type = argparse.ArgumentType.position,
-                  range = {
-                    end_column = 7,
-                    start_column = 4
-                  },
-                  value = "here"
-                } },
-              remainder = {
-                value = ""
-              },
-              text = "+s here"
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "+s",
+                    range = {
+                        end_column = 2,
+                        start_column = 1,
+                    },
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 7,
+                        start_column = 4,
+                    },
+                    value = "here",
+                },
             },
-            argparse.parse_arguments("+s here")
-        )
+            remainder = {
+                value = "",
+            },
+            text = "+s here",
+        }, argparse.parse_arguments("+s here"))
     end)
 
     it("works with +s (single) flags 002 - middle", function()
-        assert.same(
-            {
-              arguments = { {
-                  argument_type = argparse.ArgumentType.position,
-                  range = {
-                    end_column = 5,
-                    start_column = 1
-                  },
-                  value = "thing"
-                }, {
-                  argument_type = argparse.ArgumentType.flag,
-                  name = "+s",
-                  range = {
-                    end_column = 8,
-                    start_column = 7
-                  }
-                }, {
-                  argument_type = argparse.ArgumentType.position,
-                  range = {
-                    end_column = 13,
-                    start_column = 10
-                  },
-                  value = "here"
-                } },
-              remainder = {
-                value = ""
-              },
-              text = "thing +s here"
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 5,
+                        start_column = 1,
+                    },
+                    value = "thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "+s",
+                    range = {
+                        end_column = 8,
+                        start_column = 7,
+                    },
+                },
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 13,
+                        start_column = 10,
+                    },
+                    value = "here",
+                },
             },
-            argparse.parse_arguments("thing +s here")
-        )
+            remainder = {
+                value = "",
+            },
+            text = "thing +s here",
+        }, argparse.parse_arguments("thing +s here"))
     end)
 
     it("works with +s (single) flags 003 - end", function()
-        assert.same(
-            {
-              arguments = { {
-                  argument_type = argparse.ArgumentType.position,
-                  range = {
-                    end_column = 5,
-                    start_column = 1
-                  },
-                  value = "thing"
-                }, {
-                  argument_type = argparse.ArgumentType.flag,
-                  name = "+s",
-                  range = {
-                    end_column = 8,
-                    start_column = 7
-                  }
-                } },
-              remainder = {
-                value = ""
-              },
-              text = "thing +s"
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = {
+                        end_column = 5,
+                        start_column = 1,
+                    },
+                    value = "thing",
+                },
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "+s",
+                    range = {
+                        end_column = 8,
+                        start_column = 7,
+                    },
+                },
             },
-            argparse.parse_arguments("thing +s")
-        )
+            remainder = {
+                value = "",
+            },
+            text = "thing +s",
+        }, argparse.parse_arguments("thing +s"))
     end)
 
     it("works with +s (single) flags 004 - only", function()
-        assert.same(
-            {
-              arguments = { {
-                  argument_type = argparse.ArgumentType.flag,
-                  name = "+s",
-                  range = {
-                    end_column = 2,
-                    start_column = 1
-                  }
-                } },
-              remainder = {
-                value = ""
-              },
-              text = "+s"
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.flag,
+                    name = "+s",
+                    range = {
+                        end_column = 2,
+                        start_column = 1,
+                    },
+                },
             },
-            argparse.parse_arguments("+s")
-        )
+            remainder = {
+                value = "",
+            },
+            text = "+s",
+        }, argparse.parse_arguments("+s"))
     end)
 end)
