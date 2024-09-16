@@ -42,20 +42,20 @@ local texter = require("plugin_template._core.texter")
 ---     final parsed `argparse2.Namespace`.
 --- @field choices (fun(): string[])?
 ---     If included, the argument can only accept these choices as values.
---- @field count argparse2.MultiNumber
+--- @field count argparse2.MultiNumber?
 ---     The number of times that this argument must be written.
---- @field description string?
----     Explain what this parser is meant to do and the argument(s) it needs.
----     Keep it brief (< 88 characters).
 --- @field destination string?
 ---     When a parsed `argparse2.Namespace` is created, this field is used to store
 ---     the final parsed value(s). If no `destination` is given an
 ---     automatically assigned name is used instead.
+--- @field help string?
+---     Explain what this parser is meant to do and the argument(s) it needs.
+---     Keep it brief (< 88 characters).
 --- @field name? string
 ---     The ways to refer to this instance.
 --- @field names? string[]
 ---     The ways to refer to this instance.
---- @field nargs argparse2.MultiNumber
+--- @field nargs argparse2.MultiNumber?
 ---     The number of elements that this argument consumes at once.
 --- @field parent argparse2.ArgumentParser?
 ---     The parser that owns this instance.
@@ -67,7 +67,7 @@ local texter = require("plugin_template._core.texter")
 ---     The options that we might pass to `argparse2.ArgumentParser.new`.
 --- @field choices (fun(): string[])?
 ---     If included, the argument can only accept these choices as values.
---- @field description string
+--- @field help string
 ---     Explain what this parser is meant to do and the argument(s) it needs.
 ---     Keep it brief (< 88 characters).
 --- @field name string?
@@ -77,11 +77,11 @@ local texter = require("plugin_template._core.texter")
 
 --- @class argparse2.SubparsersOptions
 ---     Customization options for the new argparse2.Subparsers.
---- @field description string
----     Explain what types of parsers this object is meant to hold Keep it
----     brief (< 88 characters).
 --- @field destination string
 ---     An internal name to track this subparser group.
+--- @field help string
+---     Explain what types of parsers this object is meant to hold Keep it
+---     brief (< 88 characters).
 
 --- @class argparse2.Subparsers A group of parsers.
 
@@ -125,7 +125,7 @@ M.Argument.__index = M.Argument
 ---     A starting point for arguments (positional arguments, flag arguments, etc).
 --- @field choices (fun(): string[])?
 ---     If included, this parser can be referred to using these names instead of its expected name.
---- @field description string
+--- @field help string
 ---     Explain what this parser is meant to do and the argument(s) it needs.
 ---     Keep it brief (< 88 characters).
 --- @field name string?
@@ -134,9 +134,9 @@ M.Argument.__index = M.Argument
 M.ArgumentParser = {
     __tostring = function(parser)
         return string.format(
-            'argparse2.ArgumentParser({name="%s", description="%s", choices=%s})',
+            'argparse2.ArgumentParser({name="%s", help="%s", choices=%s})',
             parser.name,
-            parser.description,
+            parser.help,
             parser.choices
         )
     end,
@@ -146,8 +146,8 @@ M.ArgumentParser.__index = M.ArgumentParser
 M.Subparsers = {
     __tostring = function(subparsers)
         return string.format(
-            'argparse2.Subparsers({description="%s", destination="%s"})',
-            subparsers.description,
+            'argparse2.Subparsers({help="%s", destination="%s"})',
+            subparsers.help,
             subparsers.destination
         )
     end,
@@ -671,8 +671,8 @@ local function _get_position_help_text(position)
         text = position:get_nice_name()
     end
 
-    if position.description then
-        text = text .. "    " .. position.description
+    if position.help then
+        text = text .. "    " .. position.help
     end
 
     return text
@@ -699,8 +699,8 @@ local function _get_parser_flag_help_text(parser)
         local names = vim.fn.join(flag.names, " ")
         local text = ""
 
-        if flag.description then
-            text = string.format("%s    %s", names, flag.description)
+        if flag.help then
+            text = string.format("%s    %s", names, flag.help)
         else
             text = names
         end
@@ -737,8 +737,8 @@ local function _get_parser_position_help_text(parser)
             text = _get_help_command_labels(names)
         end
 
-        if parser_.description then
-            text = text .. "    " .. parser_.description
+        if parser_.help then
+            text = text .. "    " .. parser_.help
         end
 
         table.insert(output, _indent(text))
@@ -983,7 +983,7 @@ end
 function M.Subparsers.new(options)
     local self = setmetatable({}, M.Subparsers)
 
-    self.description = options.description
+    self.help = options.help
     self.destination = options.destination
     self._parent = options.parent
     self._parsers = {}
@@ -1027,7 +1027,7 @@ function M.Argument.new(options)
     self.choices = options.choices
     self.default = options.default
     self.names = options.names
-    self.description = options.description
+    self.help = options.help
     self.destination = _get_nice_name(options.destination or options.names[1])
     self:set_action(options.action)
     self._parent = options.parent
@@ -1183,7 +1183,7 @@ function M.ArgumentParser.new(options)
 
     self.name = options.name
     self.choices = options.choices
-    self.description = options.description
+    self.help = options.help
     self._defaults = {}
     self._position_arguments = {}
     self._flag_arguments = {}
@@ -1192,7 +1192,7 @@ function M.ArgumentParser.new(options)
 
     self:add_argument({
         action = "store_true",
-        description = "Show this help message and exit.",
+        help = "Show this help message and exit.",
         names = { "--help", "-h" },
         nargs = 0,
     })
