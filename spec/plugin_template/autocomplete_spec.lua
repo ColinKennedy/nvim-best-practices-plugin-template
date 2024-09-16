@@ -536,7 +536,7 @@ describe("* count", function()
     describe("simple", function()
         it("works with position arguments", function()
             local parser = argparse2.ArgumentParser.new({description="Test"})
-            parser:add_argument({names="thing", choices={"foo"}, nargs="*"})
+            parser:add_argument({names="thing", choices={"foo"}, count="*"})
 
             assert.same({ "foo", "--help", "-h" }, parser:get_completion(""))
             assert.same({ "foo" }, parser:get_completion("fo"))
