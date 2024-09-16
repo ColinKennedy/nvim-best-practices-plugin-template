@@ -58,10 +58,9 @@ local function _make_simple_parser()
     end
 
     local parser = argparse2.ArgumentParser.new({ name = "top_test", help = "Test." })
-    local subparsers = parser:add_subparsers({ destination = "commands", help="Test."})
+    local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
     local say = subparsers:add_parser({ name = "say", help = "Print stuff to the terminal." })
-    local say_subparsers =
-        say:add_subparsers({ destination = "say_commands", help = "All commands that print." })
+    local say_subparsers = say:add_subparsers({ destination = "say_commands", help = "All commands that print." })
     local say_word = say_subparsers:add_parser({ name = "word", help = "Print a single word." })
     local say_phrase = say_subparsers:add_parser({ name = "phrase", help = "Print a whole sentence." })
 
@@ -112,16 +111,16 @@ describe("simple", function()
 
     it("works when two positions start with the same text", function()
         local parser = argparse2.ArgumentParser.new({ name = "top_test", help = "Test." })
-        local subparsers = parser:add_subparsers({ destination = "commands", help="Test." })
+        local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
         local bottle = subparsers:add_parser({ name = "bottle", help = "Something." })
-        local bottle_subparsers = bottle:add_subparsers({ destination = "bottle", help="Test." })
+        local bottle_subparsers = bottle:add_subparsers({ destination = "bottle", help = "Test." })
         local bottles = subparsers:add_parser({ name = "bottles", help = "Somethings." })
         bottles:add_argument({ name = "bar", help = "Any text allowed here." })
 
         bottle_subparsers:add_parser({ name = "foo", choices = { "foo" }, help = "Print stuff to the terminal." })
 
         local bottlez = subparsers:add_parser({ name = "bottlez", destination = "weird_name" })
-        local bottlez_subparsers = bottlez:add_subparsers({ destination = "bottlez", help="Test." })
+        local bottlez_subparsers = bottlez:add_subparsers({ destination = "bottlez", help = "Test." })
         bottlez_subparsers:add_parser({ name = "fizz", help = "Fizzy drink." })
 
         parser:add_argument({ name = "bottle", help = "Something." })
@@ -561,7 +560,7 @@ describe("dynamic argument", function()
 
     it("works with positional arguments", function()
         local parser = argparse2.ArgumentParser.new({ name = "top_test", help = "Test" })
-        local subparsers = parser:add_subparsers({ destination = "commands", help="All main commands."})
+        local subparsers = parser:add_subparsers({ destination = "commands", help = "All main commands." })
         local parser = subparsers:add_parser({ name = "say", help = "Say something." })
         parser:add_argument({
             name = "thing",
@@ -580,7 +579,7 @@ describe("dynamic argument", function()
                 return { "ab", "cc", "zzz", "lazers" }
             end,
         })
-        local inner_dynamic = dynamic:add_subparsers({ name = "inner_dynamic_thing", help="Test." })
+        local inner_dynamic = dynamic:add_subparsers({ name = "inner_dynamic_thing", help = "Test." })
         local different = inner_dynamic:add_parser({ name = "different" })
         different:add_argument({
             name = "last",

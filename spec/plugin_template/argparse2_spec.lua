@@ -52,8 +52,7 @@ local function _make_simple_parser()
     local parser = argparse2.ArgumentParser.new({ name = "top_test", help = "Test" })
     local subparsers = parser:add_subparsers({ destination = "commands" })
     local say = subparsers:add_parser({ name = "say", help = "Print stuff to the terminal." })
-    local say_subparsers =
-        say:add_subparsers({ destination = "say_commands", help = "All commands that print." })
+    local say_subparsers = say:add_subparsers({ destination = "say_commands", help = "All commands that print." })
     local say_word = say_subparsers:add_parser({ name = "word", help = "Print a single word." })
     local say_phrase = say_subparsers:add_parser({ name = "phrase", help = "Print a whole sentence." })
 

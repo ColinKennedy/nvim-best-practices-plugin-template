@@ -12,8 +12,7 @@ function M.make_parser()
         "log",
         required = false,
         default = "",
-        help = "The path on-disk to look for logs. "
-            .. "If no path is given, a fallback log path is used instead.",
+        help = "The path on-disk to look for logs. If no path is given, a fallback log path is used instead.",
     })
 
     parser:set_execute(function(data)

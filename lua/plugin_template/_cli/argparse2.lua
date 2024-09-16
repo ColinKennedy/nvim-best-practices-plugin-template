@@ -829,7 +829,6 @@ local function _expand_type_options(options)
     end
 end
 
-
 --- Add / modify `options.choices` as needed.
 ---
 --- Basically if `options.choices` is not defined, that's fine. If it is

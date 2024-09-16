@@ -6,8 +6,7 @@ local M = {}
 
 function M.make_parser()
     local parser = argparse2.ArgumentParser.new({ "goodnight-moon", help = "Prepare to sleep or sleep." })
-    local subparsers =
-        parser:add_subparsers({ destination = "commands", help = "All commands for goodnight-moon." })
+    local subparsers = parser:add_subparsers({ destination = "commands", help = "All commands for goodnight-moon." })
     subparsers.required = true
 
     -- TODO: Finish this stuff later
