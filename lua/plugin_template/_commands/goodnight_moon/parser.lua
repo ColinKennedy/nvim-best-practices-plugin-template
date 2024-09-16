@@ -5,24 +5,24 @@ local argparse2 = require("plugin_template._cli.argparse2")
 local M = {}
 
 function M.make_parser()
-    local parser = argparse2.ArgumentParser.new({ "goodnight-moon", description = "Prepare to sleep or sleep." })
+    local parser = argparse2.ArgumentParser.new({ "goodnight-moon", help = "Prepare to sleep or sleep." })
     local subparsers =
-        parser:add_subparsers({ destination = "commands", description = "All commands for goodnight-moon." })
+        parser:add_subparsers({ destination = "commands", help = "All commands for goodnight-moon." })
     subparsers.required = true
 
     -- TODO: Finish this stuff later
-    local count_sheep = subparsers:add_parser({ "count-sheep", description = "Count some sheep to help you sleep." })
-    count_sheep:add_argument({ "count", type = "number", description = "The number of sheept to count." })
-    local read = subparsers:add_parser({ "read", description = "Read a book in bed." })
-    read:add_argument({ "book", description = "The name of the book to read." })
+    local count_sheep = subparsers:add_parser({ "count-sheep", help = "Count some sheep to help you sleep." })
+    count_sheep:add_argument({ "count", type = "number", help = "The number of sheept to count." })
+    local read = subparsers:add_parser({ "read", help = "Read a book in bed." })
+    read:add_argument({ "book", help = "The name of the book to read." })
 
-    local sleep = subparsers:add_parser({ "sleep", description = "Sleep tight!" })
+    local sleep = subparsers:add_parser({ "sleep", help = "Sleep tight!" })
     sleep:add_argument({
         "-z",
         action = "count",
         count = "*",
-        description = "The number of Zzz to print.",
         destination = "count",
+        help = "The number of Zzz to print.",
     })
 
     count_sheep:set_execute(function(data)

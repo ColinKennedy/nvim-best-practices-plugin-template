@@ -142,7 +142,7 @@ local function _run_subcommand(parser, text)
             'PluginTemplate: Command "%s" parsed "%s" text into "%s" namespace but no `execute` '
                 .. "function was defined. "
                 .. 'Call parser:set_execute(function() print("Your function here") end)',
-            parser.name or parser.description or "<No name or description for this parser was provided>",
+            parser.name or parser.help or "<No name or help for this parser was provided>",
             text,
             vim.inspect(namespace)
         ),

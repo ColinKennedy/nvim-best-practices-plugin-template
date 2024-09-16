@@ -5,14 +5,14 @@ local argparse2 = require("plugin_template._cli.argparse2")
 local M = {}
 
 function M.make_parser()
-    local parser = argparse2.ArgumentParser.new({ "copy-logs", description = "Get debug logs for PluginTemplate." })
+    local parser = argparse2.ArgumentParser.new({ "copy-logs", help = "Get debug logs for PluginTemplate." })
 
     -- TODO: Make sure this argument works
     parser:add_argument({
         "log",
         required = false,
         default = "",
-        description = "The path on-disk to look for logs. "
+        help = "The path on-disk to look for logs. "
             .. "If no path is given, a fallback log path is used instead.",
     })
 

@@ -32,7 +32,7 @@ local function _add_repeat_argument(parser)
             return output
         end,
         default = 1,
-        description = "Print to the user X number of times (default=1).",
+        help = "Print to the user X number of times (default=1).",
     })
 end
 
@@ -43,26 +43,26 @@ local function _add_style_argument(parser)
             constant.Keyword.style.lowercase,
             constant.Keyword.style.uppercase,
         },
-        description = "lowercase modifies all capital letters. uppercase modifies all non-capital letter.",
+        help = "lowercase modifies all capital letters. uppercase modifies all non-capital letter.",
     })
 end
 
 function M.make_parser()
-    local parser = argparse2.ArgumentParser.new({ "hello-world", description = "Print hello to the user." })
-    local top_subparsers = parser:add_subparsers({ destination = "commands", description = "All allowed commands." })
+    local parser = argparse2.ArgumentParser.new({ "hello-world", help = "Print hello to the user." })
+    local top_subparsers = parser:add_subparsers({ destination = "commands", help = "All allowed commands." })
     top_subparsers.required = true
 
-    local say = top_subparsers:add_parser({ "say", description = "Print something to the user." })
-    local subparsers = say:add_subparsers({ destination = "say_commands", description = "All say-related commands." })
+    local say = top_subparsers:add_parser({ "say", help = "Print something to the user." })
+    local subparsers = say:add_subparsers({ destination = "say_commands", help = "All say-related commands." })
     subparsers.required = true
 
-    local phrase = subparsers:add_parser({ "phrase", description = "Print everything that the user types." })
-    phrase:add_argument({ "phrases", count = "*", action = "append", description = "All of the text to print." })
+    local phrase = subparsers:add_parser({ "phrase", help = "Print everything that the user types." })
+    phrase:add_argument({ "phrases", count = "*", action = "append", help = "All of the text to print." })
     _add_repeat_argument(phrase)
     _add_style_argument(phrase)
 
-    local word = subparsers:add_parser({ "word", description = "Print only the first word that the user types." })
-    word:add_argument({ "word", description = "The word to print." })
+    local word = subparsers:add_parser({ "word", help = "Print only the first word that the user types." })
+    word:add_argument({ "word", help = "The word to print." })
     _add_repeat_argument(word)
     _add_style_argument(word)
 

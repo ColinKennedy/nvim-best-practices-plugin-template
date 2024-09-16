@@ -3,7 +3,6 @@
 
 - Rename "argument" to "option", for consistency
 - Allow all `choices` to get context information (current argument, current text, etc etc)
-- Rename all `description` to `help` instead
 
 - "works with nested parsers where a parent also defines a default" is bugged. Selecting a subparser should immediately get its value(s).
 
