@@ -33,6 +33,7 @@ end
 
 describe("default", function()
     before_each(_setup_lualine)
+    after_each(mock_test.reset_mocked_vim_inspect)
 
     it("displays nothing if no command has been run yet", function()
         local component = _make_component()
