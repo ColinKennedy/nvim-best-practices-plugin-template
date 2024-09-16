@@ -12,7 +12,7 @@ local _SUBCOMMANDS = {
         return parser.make_parser()
     end,
     ["copy-logs"] = function()
-        local parser = require("plugin_template._commands.goodnight_moon.parser")
+        local parser = require("plugin_template._commands.copy_logs.parser")
 
         return parser.make_parser()
     end,

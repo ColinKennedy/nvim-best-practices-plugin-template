@@ -11,15 +11,16 @@ function M.make_parser()
     parser:add_argument({
         "log",
         required=false,
+        default="",
         description="The path on-disk to look for logs. "
         .. "If no path is given, a fallback log path is used instead.",
     })
 
     parser:set_execute(
         function(data)
-            local command = require("plugin_template._commands.copy_log.command")
+            local runner = require("plugin_template._commands.copy_logs.runner")
 
-            command.run(data.namespace)
+            runner.run(data.namespace.log)
         end
     )
 
