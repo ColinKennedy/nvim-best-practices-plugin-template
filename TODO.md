@@ -53,3 +53,18 @@ Replace all foo._bar code with actual accessors / functions
 - Add unittests for invalid arguments. e.g. `say word 'asdfasd`
 
 - Add dotted namespace types to the docstrings
+
+- Adjust all docstrings so they're as LuaCATS expects
+
+
+
+
+
+
+
+
+
+
+## Extra Features
+- lemmy-help to generate vimdocs from .lua files
+- Check files for syntax errors using tree-sitter parsers (via Neovim)?

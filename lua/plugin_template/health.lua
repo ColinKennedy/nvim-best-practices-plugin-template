@@ -58,7 +58,7 @@ end
 --- Check if `data` is a boolean under `key`.
 ---
 --- @param key string The configuration value that we are checking.
---- @param data ... The object to validate.
+--- @param data any The object to validate.
 --- @return string? # The found error message, if any.
 ---
 local function _get_boolean_issue(key, data)

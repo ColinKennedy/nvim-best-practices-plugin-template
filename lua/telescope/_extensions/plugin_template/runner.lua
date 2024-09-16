@@ -23,7 +23,7 @@ local tabler = require("plugin_template._core.tabler")
 vim.api.nvim_set_hl(0, "PluginTemplateTelescopeEntry", { link = "TelescopeResultsNormal", default = true })
 vim.api.nvim_set_hl(0, "PluginTemplateTelescopeSecondary", { link = "TelescopeResultsComment", default = true })
 
---- @alias TelescopeCommandOptions table<..., ...>
+--- @alias TelescopeCommandOptions table<any, any>
 
 --- Run the `:Telescope plugin_template goodnight-moon` command.
 ---

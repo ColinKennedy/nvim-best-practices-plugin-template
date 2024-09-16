@@ -18,7 +18,7 @@ local texter = require("plugin_template._core.texter")
 ---     This controls the behavior of how parsed arguments are added into the
 ---     final parsed `Namespace`.
 
---- @alias Namespace table<string, ...> All parsed values.
+--- @alias Namespace table<string, any> All parsed values.
 
 --- @alias argparse2.MultiNumber number | "*" | "+"
 ---     The number of elements needed to satisfy an argument. * == 0-or-more.
@@ -32,7 +32,7 @@ local texter = require("plugin_template._core.texter")
 --- @field namespace Namespace
 ---     The container where parsed argument + value will go into. This
 ---     object gets directly modified when an action is called.
---- @field value ...
+--- @field value any
 ---     A value to add into `namespace`.
 
 --- @class argparse2.ArgumentOptions
@@ -57,14 +57,14 @@ local texter = require("plugin_template._core.texter")
 ---     The ways to refer to this instance.
 --- @field nargs argparse2.MultiNumber
 ---     The number of elements that this argument consumes at once.
---- @field parent ArgumentParser?
+--- @field parent argparse2.ArgumentParser?
 ---     The parser that owns this instance.
---- @field type ("number" | "string" | fun(value: string): ...)?
+--- @field type ("number" | "string" | fun(value: string): any)?
 ---     The expected output type. If a function is given, assume that the user
 ---     knows what they're doing and use their function's return value.
 
 --- @class argparse2.ArgumentParserOptions
----     The options that we might pass to `ArgumentParser.new`.
+---     The options that we might pass to `argparse2.ArgumentParser.new`.
 --- @field choices (fun(): string[])?
 ---     If included, the argument can only accept these choices as values.
 --- @field description string
@@ -73,7 +73,7 @@ local texter = require("plugin_template._core.texter")
 --- @field name string?
 ---     The parser name. This only needed if this parser has a parent subparser.
 --- @field parent Subparsers?
----     A subparser that own this `ArgumentParser`, if any.
+---     A subparser that own this `argparse2.ArgumentParser`, if any.
 
 --- @class argparse2.SubparsersOptions
 ---     Customization options for the new Subparsers.
@@ -121,7 +121,7 @@ M.Argument = {
 }
 M.Argument.__index = M.Argument
 
---- @class ArgumentParser
+--- @class argparse2.ArgumentParser
 ---     A starting point for arguments (positional arguments, flag arguments, etc).
 --- @field choices (fun(): string[])?
 ---     If included, this parser can be referred to using these names instead of its expected name.
@@ -134,7 +134,7 @@ M.Argument.__index = M.Argument
 M.ArgumentParser = {
     __tostring = function(parser)
         return string.format(
-            'ArgumentParser({name="%s", description="%s", choices=%s})',
+            'argparse2.ArgumentParser({name="%s", description="%s", choices=%s})',
             parser.name,
             parser.description,
             parser.choices
@@ -174,13 +174,13 @@ end
 
 --- Find all parsers / sub-parsers starting from `parsers`.
 ---
---- @param parsers ArgumentParser[] All child / leaf parsers to start traversing from.
+--- @param parsers argparse2.ArgumentParser[] All child / leaf parsers to start traversing from.
 ---
 local function _get_all_parent_parsers(parsers)
     local output = {}
 
     for _, parser in ipairs(parsers) do
-        --- @type ArgumentParser | Subparsers
+        --- @type argparse2.ArgumentParser | Subparsers
         local current = parser
 
         while current do
@@ -358,12 +358,12 @@ end
 --- Note:
 ---     This is not recursive. It just gets the direct children.
 ---
---- @param parser ArgumentParser
+--- @param parser argparse2.ArgumentParser
 ---     The starting point ot saerch for child parsers.
 --- @param inclusive boolean?
 ---     If `true`, `parser` will be the first returned value. If `false` then
 ---     only the children are returned.
---- @return fun(): ArgumentParser?
+--- @return fun(): argparse2.ArgumentParser?
 ---     An iterator that find all child parsers.
 ---
 local function _iter_parsers(parser, inclusive)
@@ -432,7 +432,7 @@ end
 -- TODO: Docstring
 --- Find all Argments starting with `name`.
 ---
---- @param parser ArgumentParser The starting point to search within.
+--- @param parser argparse2.ArgumentParser The starting point to search within.
 --- @return string[] # The matching names, if any.
 ---
 local function _get_exact_or_partial_matches(prefix, parser, value)
@@ -507,7 +507,7 @@ end
 
 --- Find all required arguments in `parser` that still need value(s).
 ---
---- @param parsers ArgumentParser[] All child / leaf parsers to check.
+--- @param parsers argparse2.ArgumentParser[] All child / leaf parsers to check.
 --- @return argparse2.Argument[] # The arguments that are still unused.
 ---
 local function _get_incomplete_arguments(parsers)
@@ -529,7 +529,7 @@ end
 --- This function is *exclusive* - `parser` cannot be returned from this function.
 ---
 --- @param prefix string Some text to search for.
---- @param parser ArgumentParser The starting point to search within.
+--- @param parser argparse2.ArgumentParser The starting point to search within.
 --- @return string[] # The names of all matching child parsers.
 ---
 local function _get_matching_subparser_names(prefix, parser)
@@ -564,7 +564,7 @@ end
 --- @param remainder_text string
 ---     Text that we tried to parse into a valid argument but couldn't. Usually
 ---     this is empty or is just whitespace.
---- @param parsers ArgumentParser[]
+--- @param parsers argparse2.ArgumentParser[]
 ---     Any subparsers that we need to consider for the next argument(s).
 --- @return string[]
 ---     The matching names, if any.
@@ -607,7 +607,7 @@ end
 
 -- --- Find all arguments that match `prefix`, starting from `parser.
 -- ---
--- --- @param parser ArgumentParser The starting point to search within.
+-- --- @param parser argparse2.ArgumentParser The starting point to search within.
 -- --- @return string[] # The matching names, if any.
 -- ---
 -- local function _get_next_exact_or_partial_arguments(parser)
@@ -652,7 +652,7 @@ end
 
 --- Get all option flag / named argument --help text from `parser`.
 ---
---- @param parser ArgumentParser Some runnable command to get arguments from.
+--- @param parser argparse2.ArgumentParser Some runnable command to get arguments from.
 --- @return string[] # The labels of all of the flags.
 ---
 local function _get_parser_flag_help_text(parser)
@@ -680,7 +680,7 @@ end
 
 --- Get all position argument --help text from `parser`.
 ---
---- @param parser ArgumentParser Some runnable command to get arguments from.
+--- @param parser argparse2.ArgumentParser Some runnable command to get arguments from.
 --- @return string[] # The labels of all of the flags.
 ---
 local function _get_parser_position_help_text(parser)
@@ -723,7 +723,7 @@ end
 --- parsers can be referred to by several names. If that happens then the
 --- output string will have more elements than `parsers`.
 ---
---- @param parsers ArgumentParser[] The parsers to get names from.
+--- @param parsers argparse2.ArgumentParser[] The parsers to get names from.
 --- @return string[] # All ways to refer to `parsers`.
 ---
 local function _get_parsers_names(parsers)
@@ -738,8 +738,8 @@ end
 
 --- Find all required child parsers from `parsers`.
 ---
---- @param parsers ArgumentParser[] Each parser to search within.
---- @return ArgumentParser[] # The found required child parsers, if any.
+--- @param parsers argparse2.ArgumentParser[] Each parser to search within.
+--- @return argparse2.ArgumentParser[] # The found required child parsers, if any.
 ---
 local function _get_unused_required_subparsers(parsers)
     local output = {}
@@ -761,7 +761,7 @@ end
 --- types, it will print parent / child objects and it ends up priting the
 --- whole tree. This function instead prints just the relevant details.
 ---
---- @param data ... Anything. Usually an Argument type from this file.
+--- @param data any Anything. Usually an Argument type from this file.
 --- @return string # The found data.
 ---
 local function _concise_inspect(data)
@@ -937,10 +937,10 @@ function M.Subparsers.new(options)
     return self
 end
 
---- Create a new `ArgumentParser` using `options`.
+--- Create a new `argparse2.ArgumentParser` using `options`.
 ---
---- @param options argparse2.ArgumentParserOptions The options to pass to `ArgumentParser.new`.
---- @return ArgumentParser # The created parser.
+--- @param options argparse2.ArgumentParserOptions The options to pass to `argparse2.ArgumentParser.new`.
+--- @return argparse2.ArgumentParser # The created parser.
 ---
 function M.Subparsers:add_parser(options)
     local new_options = vim.tbl_deep_extend("force", options, { parent = self })
@@ -951,7 +951,7 @@ function M.Subparsers:add_parser(options)
     return parser
 end
 
---- @return ArgumentParser[] # Get all of the child parsers for this instance.
+--- @return argparse2.ArgumentParser[] # Get all of the child parsers for this instance.
 function M.Subparsers:get_parsers()
     return self._parsers
 end
@@ -1018,7 +1018,7 @@ end
 
 --- Get a converter function that takes in a raw argument's text and outputs some converted result.
 ---
---- @return fun(value: (string | boolean)?): ... # The converter function.
+--- @return fun(value: (string | boolean)?): any # The converter function.
 ---
 function M.Argument:get_type()
     return self._type
@@ -1103,14 +1103,14 @@ function M.Argument:set_nargs(count)
     self._nargs = count
 end
 
---- Create a new `ArgumentParser`.
+--- Create a new `argparse2.ArgumentParser`.
 ---
 --- If the parser is a child of a subparser then this instance must be given
 --- a name via `{name="foo"}` or this function will error.
 ---
 --- @param options argparse2.ArgumentParserOptions
----     The options that we might pass to `ArgumentParser.new`.
---- @return ArgumentParser
+---     The options that we might pass to `argparse2.ArgumentParser.new`.
+--- @return argparse2.ArgumentParser
 ---     The created instance.
 ---
 function M.ArgumentParser.new(options)
@@ -1124,7 +1124,7 @@ function M.ArgumentParser.new(options)
 
     _expand_choices_options(options)
 
-    --- @class ArgumentParser
+    --- @class argparse2.ArgumentParser
     local self = setmetatable({}, M.ArgumentParser)
 
     self.name = options.name
@@ -1270,14 +1270,14 @@ function M.ArgumentParser:_get_default_namespace()
 end
 
 -- TODO: Consider merging this code with the over traversal code
---- Search recursively for the lowest possible `ArgumentParser` from `data`.
+--- Search recursively for the lowest possible `argparse2.ArgumentParser` from `data`.
 ---
 --- @param data ArgparseResults All of the arguments to consider.
---- @return ArgumentParser # The found parser, if any.
+--- @return argparse2.ArgumentParser # The found parser, if any.
 ---
 function M.ArgumentParser:_get_leaf_parser(data)
     local parser = self
-    --- @cast parser ArgumentParser
+    --- @cast parser argparse2.ArgumentParser
 
     for index, argument in ipairs(data.arguments) do
         if argument.argument_type == argparse.ArgumentType.position then
@@ -1382,7 +1382,7 @@ end
 --- @param argument_name string A raw argument name. e.g. `foo`.
 --- @param namespace Namespace An existing namespace to set/append/etc to the subparser.
 --- @return boolean # If a match was found, return `true`.
---- @return ArgumentParser? # The found subparser, if any.
+--- @return argparse2.ArgumentParser? # The found subparser, if any.
 ---
 function M.ArgumentParser:_handle_subparsers(data, argument_name, namespace)
     for parser in _iter_parsers(self) do
@@ -1401,7 +1401,7 @@ end
 ---
 --- @param arguments ArgparseArgument[]
 ---     All user inputs to walk through.
---- @return ArgumentParser[]?
+--- @return argparse2.ArgumentParser[]?
 ---     All matching parsers, if any. If we failed to walk the `arguments`
 ---     completely, we return nothing to indicate a failure.
 ---
@@ -1593,7 +1593,7 @@ end
 ---     User text that needs to be parsed. e.g. `hello "World!"`
 --- @param namespace Namespace?
 ---     All pre-existing, default parsed values. If this is the first
----     ArgumentParser then this argument will always be empty but a nested
+---     argparse2.ArgumentParser then this argument will always be empty but a nested
 ---     parser will usually have the parsed arguments of the parent subparsers
 ---     that were before it.
 --- @return Namespace
@@ -1874,7 +1874,7 @@ end
 
 --- Whenever this parser is visited add all of these values to the resulting namespace.
 ---
---- @param caller fun(data: table<string, ...>): nil
+--- @param data table<string, any>
 ---     All of the data to set onto the namespace when it's found.
 ---
 function M.ArgumentParser:set_defaults(data)
@@ -1883,7 +1883,7 @@ end
 
 --- Whenever this parser is visited, return `{execute=caller}` so people can use it.
 ---
---- @param caller fun(...): ...
+--- @param caller fun(any): any
 ---     A function that runs a specific parser command. e.g. a "Hello, World!" program.
 ---
 function M.ArgumentParser:set_execute(caller)

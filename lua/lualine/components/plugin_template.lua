@@ -38,7 +38,7 @@ M.PREVIOUS_COMMAND = nil
 ---     To prevent unwanted behavior, only call this function one for every
 ---     unique Lua `module` + caller.
 ---
---- @param module table<...> A Lua file to directly edit.
+--- @param module table<any, any> A Lua file to directly edit.
 --- @param callers string[] The names of each function(s) to modify.
 --- @param command string The command name to track when a function `callers` runs.
 ---

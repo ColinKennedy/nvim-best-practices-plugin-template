@@ -10,13 +10,13 @@ local _DATA = nil
 
 --- Temporarily track vim.inspect calls.
 ---
---- @param data ... The passed value(s).
+--- @param data any The passed value(s).
 ---
 local function _set_inspection_data(data)
     _DATA = data
 end
 
---- @return ... # Get all saved vim.inspect calls.
+--- @return any # Get all saved vim.inspect calls.
 function M.get_inspection_data()
     return _DATA
 end

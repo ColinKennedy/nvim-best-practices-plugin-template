@@ -78,7 +78,7 @@ local vlog = require("plugin_template._vendors.vlog")
 ---     A basic CLI description that answers. 1. What arguments are next 2.
 ---     What should we return for auto-complete, if anything.
 
---- @alias ArgumentTree table<...>
+--- @alias ArgumentTree table<any, any>
 ---     A (incomplete) tree of arguments. This typically includes "What
 ---     aruments are next" but cannot answer questions like "What should we
 ---     return for auto-complete".
@@ -766,7 +766,7 @@ end
 
 --- Check if `option` has only runtime behavior (unknown label(s) / choices).
 ---
---- @param option ... An argument that might be a `DynamicOption`.
+--- @param option any An argument that might be a `DynamicOption`.
 --- @return boolean # If `DynamicOption`, return `true`.
 ---
 local function _is_dynamic_option(option)
@@ -775,7 +775,7 @@ end
 
 --- Check if `option` is a `--foo` flag.
 ---
---- @param option ... An argument that might be a `FlagOption`.
+--- @param option any An argument that might be a `FlagOption`.
 --- @return boolean # If `FlagOption`, return `true`.
 ---
 local function _is_flag_option(option)
@@ -784,7 +784,7 @@ end
 
 --- Check if `option` is a `--foo=bar` argument.
 ---
---- @param option ... An argument that might be a `NamedOption`.
+--- @param option any An argument that might be a `NamedOption`.
 --- @return boolean # If `NamedOption`, return `true`.
 ---
 local function _is_named_option(option)
@@ -793,7 +793,7 @@ end
 
 --- Check if `option` is a `foo` argument.
 ---
---- @param option ... An argument that might be a `PositionOption`.
+--- @param option any An argument that might be a `PositionOption`.
 --- @return boolean # If `PositionOption`, return `true`.
 ---
 local function _is_position_option(option)
@@ -958,7 +958,7 @@ end
 
 --- Recursively flatten `data` until it is just a list of `CompletionOption[]`.
 ---
---- @param data ... A nested list-of-lists-of-`CompletionOption[]`.
+--- @param data any A nested list-of-lists-of-`CompletionOption[]`.
 --- @return CompletionOption[] # The flattened arguments.
 ---
 local function _flatten_to_arguments(data)

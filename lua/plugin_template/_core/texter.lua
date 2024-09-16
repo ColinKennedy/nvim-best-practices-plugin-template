@@ -7,7 +7,7 @@ local M = {}
 
 --- Check if `items` is a flat array/list of string values.
 ---
---- @param items ... An array to check.
+--- @param items any An array to check.
 --- @return boolean # If found, return `true`.
 ---
 function M.is_string_list(items)
