@@ -7,7 +7,7 @@ local M = {}
 
 -- TODO: Fix documentation here later
 
---- @class PluginTemplateSubcommand
+--- @class plugin_template.Subcommand
 ---     A subparser's definition. At minimum you need to define `parser` or
 ---     `run` or code will error when you try to run commands. If you define
 ---     `parser`, you don't need to define `complete` or `run` (`parser` is the
@@ -20,7 +20,7 @@ local M = {}
 --- @field run (fun(data: PluginTemplateSubcommandRun): nil)?
 ---     The function to run when the subcommand is called.
 
---- @alias PluginTemplateSubcommands table<string, PluginTemplateSubcommand>
+--- @alias plugin_template.Subcommands table<string, plugin_template.Subcommand>
 
 --- Check if `full` contains `prefix` + whitespace.
 ---
@@ -38,7 +38,7 @@ end
 ---
 --- @param text string Some full text like `"PluginTemplate blah"`.
 --- @param prefix string The expected starting text. e.g. `"PluginTemplate"`.
---- @param subcommands PluginTemplateSubcommands All allowed commands.
+--- @param subcommands plugin_template.Subcommands All allowed commands.
 ---
 local function _get_subcommand_completion(text, prefix, subcommands)
     local expression = "^" .. prefix .. "*%s(%S+)%s(.*)$"
@@ -160,7 +160,7 @@ end
 --- hello` auto-complete to makes `:PluginTemplate hello-world`.
 ---
 --- @param prefix string The command to exclude from auto-complete. e.g. `"PluginTemplate"`.
---- @param subcommands PluginTemplateSubcommands All allowed commands.
+--- @param subcommands plugin_template.Subcommands All allowed commands.
 --- @return function # The generated auto-complete function.
 ---
 function M.make_command_completer(prefix, subcommands)
@@ -195,7 +195,7 @@ end
 -- TODO: Fix this doc + the others
 --- If anything in `subcommands` is missing data, define default value(s) for it.
 ---
---- @param subcommands PluginTemplateSubcommands
+--- @param subcommands plugin_template.Subcommands
 ---     All registered commands for `plugin_template` to possibly modify.
 ---
 function M.initialize_missing_values(subcommands)
@@ -216,7 +216,7 @@ end
 ---
 --- This function handles that process, which we call "triage".
 ---
---- @param subcommands PluginTemplateSubcommands
+--- @param subcommands plugin_template.Subcommands
 ---     All registered commands for `plugin_template` which we will let users run.
 ---     If the user gives an incorrect subcommand name, an error is displayed instead.
 ---
@@ -233,7 +233,7 @@ function M.make_triager(subcommands)
         configuration.initialize_data_if_needed()
 
         local subcommand_key = opts.fargs[1]
-        --- @type PluginTemplateSubcommand?
+        --- @type plugin_template.Subcommand?
         local subcommand = subcommands[subcommand_key]
 
         if not subcommand then

@@ -17,7 +17,7 @@ local M = {}
 -- NOTE: This file is defer-loaded so it's okay to run this in the global scope
 configuration_.initialize_data_if_needed()
 
---- @class LualineColorHex
+--- @class lualine.ColorHex
 ---     The table that Lualine expects when it sets colors.
 --- @field bg string
 ---     The background hex color. e.g. `"#444444"`.
@@ -28,7 +28,7 @@ configuration_.initialize_data_if_needed()
 
 --- Check if `value` has keys that it should not.
 ---
---- @param value LualineColorHex
+--- @param value lualine.ColorHex
 ---
 local function _has_extra_color_keys(value)
     local keys = { "bg", "fg", "gui" }

@@ -126,15 +126,15 @@ describe("bad input", function()
     end)
 
     it("knows if the user is #missing an argument - 001", function()
-        -- TODO: Add NamedArgument check
+        -- TODO: Add argparse.NamedArgument check
     end)
 
     it("knows if the user is #missing an argument - 002", function()
-        -- TODO: Add FlagArgument + PositionArgument check
+        -- TODO: Add argparse.FlagArgument + argparse.PositionArgument check
     end)
 
     it("knows if the user is #missing one of several argumentis - 003", function()
-        -- TODO: Add FlagArgument + PositionArgument + nargs = 2 check
+        -- TODO: Add argparse.FlagArgument + argparse.PositionArgument + nargs = 2 check
     end)
 end)
 

@@ -9,7 +9,7 @@ local M = {}
 
 local _PREFIX_CHARACTERS = { "-", "+" }
 
---- @enum ArgumentType
+--- @enum argparse.ArgumentType
 M.ArgumentType = {
     dynamic = "__dynamic",
     flag = "__flag",
@@ -17,33 +17,33 @@ M.ArgumentType = {
     position = "__position",
 }
 
---- @class BaseArgument
+--- @class argparse.BaseArgument
 ---     A base class to inherit from.
---- @field argument_type ArgumentType
+--- @field argument_type argparse.ArgumentType
 ---     An type indicator for this argument.
---- @field range ArgumentRange
+--- @field range argparse.ArgumentRange
 ---     The start and end index (both are inclusive) of the argument.
 
---- @class ArgumentRange
+--- @class argparse.ArgumentRange
 ---     The start and end index (both are inclusive) of the argument.
 --- @field start_column number
 ---     The first index of the argument (inclusive).
 --- @field end_column number
 ---     The last index of the argument (inclusive).
 
---- @class FlagArgument : BaseArgument
+--- @class argparse.FlagArgument : argparse.BaseArgument
 ---     An argument that has a name but no value. It starts with either - or --
 ---     Examples: `-f` or `--foo` or `--foo-bar`
 --- @field name string
 ---     The text of the flag. e.g. The `"foo"` part of `"--foo"`.
 
---- @class PositionArgument : BaseArgument
+--- @class argparse.PositionArgument : argparse.BaseArgument
 ---     An argument that is just text. e.g. `"foo bar"` is two positions, foo and bar.
 --- @field value string
 ---     The position's label.
 
---- @class NamedArgument : FlagArgument
----     A --key=value pair. Basically it's a FlagArgument that has an extra value.
+--- @class argparse.NamedArgument : argparse.FlagArgument
+---     A --key=value pair. Basically it's a argparse.FlagArgument that has an extra value.
 --- @field needs_choice_completion boolean
 ---     If `true`, it means that we've typed `"--foo="` and are ready to
 ---     auto-complete for `"--foo=bar"`. If `false`, it means we've typed
@@ -54,18 +54,18 @@ M.ArgumentType = {
 ---     `"--foo=bar"`. If the argument is partially written like `"--foo="`
 ---     then this will be an empty string.
 
---- @alias ArgparseArgument FlagArgument | PositionArgument | NamedArgument
+--- @alias argparse.ArgparseArgument argparse.FlagArgument | argparse.PositionArgument | argparse.NamedArgument
 
---- @class ArgparseResults
+--- @class argparse.ArgparseResults
 ---     All information that was found from parsing some user's input.
---- @field arguments ArgparseArgument[]
+--- @field arguments argparse.ArgparseArgument[]
 ---     The arguments that were able to be parsed
---- @field remainder ArgparseRemainder
+--- @field remainder argparse.ArgparseRemainder
 ---     Any leftover text during parsing that didn't match an argument.
 --- @field text string
 ---     The original, raw, unparsed user arguments.
 
---- @class ArgparseRemainder
+--- @class argparse.ArgparseRemainder
 ---     Any leftover text during parsing that didn't match an argument.
 --- @field value string
 ---     The raw, unparsed text.
@@ -90,10 +90,10 @@ local function is_alpha_numeric(character)
     return character:match("[^='\"%s]") ~= nil
 end
 
---- Check if `character` marks the start of a `FlagArgument` or `NamedArgument`.
+--- Check if `character` marks the start of a `argparse.FlagArgument` or `argparse.NamedArgument`.
 ---
 --- @param character string A starting character. e.g. `-`, `+`, etc.
---- @return boolean # If `character` is a `PositionArgument` character, return `true`.
+--- @return boolean # If `character` is a `argparse.PositionArgument` character, return `true`.
 ---
 local function _is_prefix(character)
     return vim.tbl_contains(_PREFIX_CHARACTERS, character)
@@ -127,7 +127,7 @@ end
 ---
 --- @param text string
 ---     Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
---- @return ArgparseResults
+--- @return argparse.ArgparseResults
 ---     All found for positional arguments, named arguments, and flag arguments.
 ---
 function M.parse_arguments(text)
@@ -141,7 +141,7 @@ function M.parse_arguments(text)
     local is_escaping = false
     local needs_name = false
     local needs_value = false
-    --- @type ArgparseRemainder
+    --- @type argparse.ArgparseRemainder
     local remainder = { value = "" }
     local start_index = 1
     local escaped_character_count = 0

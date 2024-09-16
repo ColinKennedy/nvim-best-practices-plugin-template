@@ -4,7 +4,7 @@ local cli_subcommand = require("plugin_template._cli.cli_subcommand")
 
 local _PREFIX = "PluginTemplate"
 
---- @type PluginTemplateSubcommands
+--- @type plugin_template.Subcommands
 local _SUBCOMMANDS = {
     ["arbitrary-thing"] = function()
         local parser = require("plugin_template._commands.arbitrary_thing.parser")

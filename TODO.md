@@ -44,8 +44,6 @@
 
 - Allow ++foo arguments instead of --
 
-- Add namespaces to all of the argparse / argparse2 types
-
 Replace all foo._bar code with actual accessors / functions
 
 - replace all `_subparsers` with a get_subparsers() method

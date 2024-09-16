@@ -14,22 +14,22 @@ local argparse_helper = require("plugin_template._cli.argparse_helper")
 local tabler = require("plugin_template._core.tabler")
 local texter = require("plugin_template._core.texter")
 
---- @alias Action "append" | "count" | "store_false" | "store_true" | fun(data: ActionData): nil
+--- @alias argparse2.Action "append" | "count" | "store_false" | "store_true" | fun(data: argparse2.ActionData): nil
 ---     This controls the behavior of how parsed arguments are added into the
----     final parsed `Namespace`.
+---     final parsed `argparse2.Namespace`.
 
---- @alias Namespace table<string, any> All parsed values.
+--- @alias argparse2.Namespace table<string, any> All parsed values.
 
 --- @alias argparse2.MultiNumber number | "*" | "+"
 ---     The number of elements needed to satisfy an argument. * == 0-or-more.
 ---     + == 1-or-more. A number means "we need exactly this number of
 ---     elements".
 
---- @class ActionData
+--- @class argparse2.ActionData
 ---     A struct of data that gets passed to an Argument's action.
 --- @field name string
 ---     The argument name to set/append/etc some `value`.
---- @field namespace Namespace
+--- @field namespace argparse2.Namespace
 ---     The container where parsed argument + value will go into. This
 ---     object gets directly modified when an action is called.
 --- @field value any
@@ -37,9 +37,9 @@ local texter = require("plugin_template._core.texter")
 
 --- @class argparse2.ArgumentOptions
 ---     All of the settings to include in a new parse argument.
---- @field action Action?
+--- @field action argparse2.Action?
 ---     This controls the behavior of how parsed arguments are added into the
----     final parsed `Namespace`.
+---     final parsed `argparse2.Namespace`.
 --- @field choices (fun(): string[])?
 ---     If included, the argument can only accept these choices as values.
 --- @field count argparse2.MultiNumber
@@ -48,7 +48,7 @@ local texter = require("plugin_template._core.texter")
 ---     Explain what this parser is meant to do and the argument(s) it needs.
 ---     Keep it brief (< 88 characters).
 --- @field destination string?
----     When a parsed `Namespace` is created, this field is used to store
+---     When a parsed `argparse2.Namespace` is created, this field is used to store
 ---     the final parsed value(s). If no `destination` is given an
 ---     automatically assigned name is used instead.
 --- @field name? string
@@ -72,18 +72,18 @@ local texter = require("plugin_template._core.texter")
 ---     Keep it brief (< 88 characters).
 --- @field name string?
 ---     The parser name. This only needed if this parser has a parent subparser.
---- @field parent Subparsers?
+--- @field parent argparse2.Subparsers?
 ---     A subparser that own this `argparse2.ArgumentParser`, if any.
 
 --- @class argparse2.SubparsersOptions
----     Customization options for the new Subparsers.
+---     Customization options for the new argparse2.Subparsers.
 --- @field description string
 ---     Explain what types of parsers this object is meant to hold Keep it
 ---     brief (< 88 characters).
 --- @field destination string
 ---     An internal name to track this subparser group.
 
---- @class Subparsers A group of parsers.
+--- @class argparse2.Subparsers A group of parsers.
 
 local M = {}
 
@@ -96,11 +96,11 @@ local _SHORT_HELP_FLAG = "-h"
 
 --- @class argparse2.Argument
 ---     An optional / required argument for some parser.
---- @field action Action?
+--- @field action argparse2.Action?
 ---     This controls the behavior of how parsed arguments are added into the
----     final parsed `Namespace`.
+---     final parsed `argparse2.Namespace`.
 --- @field destination string?
----     When a parsed `Namespace` is created, this field is used to store
+---     When a parsed `argparse2.Namespace` is created, this field is used to store
 ---     the final parsed value(s). If no `destination` is given an
 ---     automatically assigned name is used instead.
 ---
@@ -146,7 +146,7 @@ M.ArgumentParser.__index = M.ArgumentParser
 M.Subparsers = {
     __tostring = function(subparsers)
         return string.format(
-            'Subparsers({description="%s", destination="%s"})',
+            'argparse2.Subparsers({description="%s", destination="%s"})',
             subparsers.description,
             subparsers.destination
         )
@@ -180,7 +180,7 @@ local function _get_all_parent_parsers(parsers)
     local output = {}
 
     for _, parser in ipairs(parsers) do
-        --- @type argparse2.ArgumentParser | Subparsers
+        --- @type argparse2.ArgumentParser | argparse2.Subparsers
         local current = parser
 
         while current do
@@ -197,7 +197,7 @@ end
 --- Important:
 ---     If `argument` is a flag, this function must return back the prefix character(s) too.
 ---
---- @param argument ArgparseArgument Some named argument to get text from.
+--- @param argument argparse.ArgparseArgument Some named argument to get text from.
 --- @return string # The found name.
 ---
 local function _get_argument_name(argument)
@@ -258,7 +258,7 @@ end
 
 --- Scan `input` and stop processing arguments after `column`.
 ---
---- @param input ArgparseResults
+--- @param input argparse.ArgparseResults
 ---     The user's parsed text.
 --- @param column number
 ---     The point to stop checking for arguments. Must be a 1-or-greater value.
@@ -559,7 +559,7 @@ end
 
 --- Find the next arguments that need to be completed / used based on some partial `remainder_text`.
 ---
---- @param argument ArgparseArgument
+--- @param argument argparse.ArgparseArgument
 ---     The last known argument (which we will use to find the next argument(s)).
 --- @param remainder_text string
 ---     Text that we tried to parse into a valid argument but couldn't. Usually
@@ -841,12 +841,12 @@ end
 
 --- Remove the ending `index` options from `input`.
 ---
---- @param input ArgparseResults
+--- @param input argparse.ArgparseResults
 ---     The parsed arguments + any remainder text.
 --- @param column number
 ---     The found index. If all arguments are < `column` then the returning
 ---     index will cover all of `input.arguments`.
---- @return ArgparseResults
+--- @return argparse.ArgparseResults
 ---     The stripped copy from `input`.
 ---
 local function _rstrip_input(input, column)
@@ -923,8 +923,8 @@ end
 
 --- Create a new group of parsers.
 ---
---- @param options argparse2.SubparsersOptions Customization options for the new Subparsers.
---- @return Subparsers # A group of parsers (which will be filled with parsers later).
+--- @param options argparse2.SubparsersOptions Customization options for the new argparse2.Subparsers.
+--- @return argparse2.Subparsers # A group of parsers (which will be filled with parsers later).
 ---
 function M.Subparsers.new(options)
     local self = setmetatable({}, M.Subparsers)
@@ -994,7 +994,7 @@ end
 
 --- Get a function that mutates the namespace with a new parsed argument.
 ---
---- @return fun(data: ActionData): nil
+--- @return fun(data: argparse2.ActionData): nil
 ---     A function that directly modifies the contents of `data`.
 ---
 function M.Argument:get_action()
@@ -1038,7 +1038,7 @@ end
 
 --- Describe how this argument should ingest new CLI value(s).
 ---
---- @param action Action The selected functionality.
+--- @param action argparse2.Action The selected functionality.
 ---
 function M.Argument:set_action(action)
     if action == "store_false" then
@@ -1148,7 +1148,7 @@ end
 
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
---- @param data ArgparseResults | string The user input.
+--- @param data argparse.ArgparseResults | string The user input.
 --- @param column number? A 1-or-more value that represents the user's cursor.
 --- @return string[] # All found auto-complete options, if any.
 ---
@@ -1255,7 +1255,7 @@ function M.ArgumentParser:_get_completion(data, column)
     return output
 end
 
---- @return Namespace # All default values from all (direct) child arguments.
+--- @return argparse2.Namespace # All default values from all (direct) child arguments.
 function M.ArgumentParser:_get_default_namespace()
     local output = {}
 
@@ -1272,7 +1272,7 @@ end
 -- TODO: Consider merging this code with the over traversal code
 --- Search recursively for the lowest possible `argparse2.ArgumentParser` from `data`.
 ---
---- @param data ArgparseResults All of the arguments to consider.
+--- @param data argparse.ArgparseResults All of the arguments to consider.
 --- @return argparse2.ArgumentParser # The found parser, if any.
 ---
 function M.ArgumentParser:_get_leaf_parser(data)
@@ -1316,8 +1316,8 @@ end
 --- Add `flags` to `namespace` if they match `argument`.
 ---
 --- @param flags argparse2.Argument[] All `-f=asdf`, `--foo=asdf`, etc arguments to check.
---- @param argument FlagArgument | NamedArgument The argument to check for `flags` matches.
---- @param namespace Namespace # A container for the found match(es).
+--- @param argument argparse.FlagArgument | argparse.NamedArgument The argument to check for `flags` matches.
+--- @param namespace argparse2.Namespace # A container for the found match(es).
 --- @return boolean # If a match was found, return `true`.
 ---
 function M.ArgumentParser:_handle_exact_flag_arguments(flags, argument, namespace)
@@ -1354,8 +1354,8 @@ end
 --- Add `positions` to `namespace` if they match `argument`.
 ---
 --- @param positions argparse2.Argument[] All `foo`, `bar`, etc arguments to check.
---- @param argument ArgparseArgument The argument to check for `positions` matches.
---- @param namespace Namespace # A container for the found match(es).
+--- @param argument argparse.ArgparseArgument The argument to check for `positions` matches.
+--- @param namespace argparse2.Namespace # A container for the found match(es).
 --- @return boolean # If a match was found, return `true`.
 ---
 function M.ArgumentParser:_handle_exact_position_arguments(positions, argument, namespace)
@@ -1378,9 +1378,9 @@ end
 
 --- Check if `argument_name` matches a registered subparser.
 ---
---- @param data ArgparseResults The parsed arguments + any remainder text.
+--- @param data argparse.ArgparseResults The parsed arguments + any remainder text.
 --- @param argument_name string A raw argument name. e.g. `foo`.
---- @param namespace Namespace An existing namespace to set/append/etc to the subparser.
+--- @param namespace argparse2.Namespace An existing namespace to set/append/etc to the subparser.
 --- @return boolean # If a match was found, return `true`.
 --- @return argparse2.ArgumentParser? # The found subparser, if any.
 ---
@@ -1399,7 +1399,7 @@ end
 -- TODO: Consider returning just 1 parser, not a list
 --- Traverse the parsers, marking arguments as used / exhausted as we traverse down.
 ---
---- @param arguments ArgparseArgument[]
+--- @param arguments argparse.ArgparseArgument[]
 ---     All user inputs to walk through.
 --- @return argparse2.ArgumentParser[]?
 ---     All matching parsers, if any. If we failed to walk the `arguments`
@@ -1589,14 +1589,14 @@ end
 
 --- Parse user text `data`.
 ---
---- @param data string | ArgparseResults
+--- @param data string | argparse.ArgparseResults
 ---     User text that needs to be parsed. e.g. `hello "World!"`
---- @param namespace Namespace?
+--- @param namespace argparse2.Namespace?
 ---     All pre-existing, default parsed values. If this is the first
 ---     argparse2.ArgumentParser then this argument will always be empty but a nested
 ---     parser will usually have the parsed arguments of the parent subparsers
 ---     that were before it.
---- @return Namespace
+--- @return argparse2.Namespace
 ---     All of the parsed data as one group.
 ---
 function M.ArgumentParser:_parse_arguments(data, namespace)
@@ -1615,7 +1615,7 @@ function M.ArgumentParser:_parse_arguments(data, namespace)
     -- TODO: Need to handle nargs-related code here
     for index, argument in ipairs(data.arguments) do
         if argument.argument_type == argparse.ArgumentType.position then
-            --- @cast argument PositionArgument
+            --- @cast argument argparse.PositionArgument
             local argument_name = _get_argument_name(argument)
 
             found, _ =
@@ -1639,7 +1639,7 @@ function M.ArgumentParser:_parse_arguments(data, namespace)
             argument.argument_type == argparse.ArgumentType.named
             or argument.argument_type == argparse.ArgumentType.flag
         then
-            --- @cast argument FlagArgument | NamedArgument
+            --- @cast argument argparse.FlagArgument | argparse.NamedArgument
             found = self:_handle_exact_flag_arguments(flag_arguments, argument, namespace)
 
             if not found then
@@ -1666,7 +1666,7 @@ end
 
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
---- @param data ArgparseResults | string The user input.
+--- @param data argparse.ArgparseResults | string The user input.
 --- @param column number? A 1-or-more value that represents the user's cursor.
 --- @return string[] # All found auto-complete options, if any.
 ---
@@ -1710,7 +1710,7 @@ end
 
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
---- @param data ArgparseResults | string The user input.
+--- @param data argparse.ArgparseResults | string The user input.
 --- @param column number? A 1-or-more value that represents the user's cursor.
 --- @return string[] # All found auto-complete options, if any.
 ---
@@ -1815,8 +1815,8 @@ end
 
 --- Create a group so we can add nested parsers underneath it later.
 ---
---- @param options argparse2.SubparsersOptions Customization options for the new Subparsers.
---- @return Subparsers # A new group of parsers.
+--- @param options argparse2.SubparsersOptions Customization options for the new argparse2.Subparsers.
+--- @return argparse2.Subparsers # A new group of parsers.
 ---
 function M.ArgumentParser:add_subparsers(options)
     local new_options = vim.tbl_deep_extend("force", options, { parent = self })
