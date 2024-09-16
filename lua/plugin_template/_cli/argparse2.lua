@@ -1121,6 +1121,8 @@ function M.Argument:set_action(action)
 
             table.insert(namespace[name], data.value)
         end
+    elseif type(action) == "function" then
+        action = action
     else
         action = function(data)
             data.namespace[data.name] = data.value

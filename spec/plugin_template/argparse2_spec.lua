@@ -64,6 +64,58 @@ local function _make_simple_parser()
     return parser
 end
 
+describe("action", function()
+    describe("action - append", function()
+        it("simple", function()
+            local parser = argparse2.ArgumentParser.new({description="Test"})
+            parser:add_argument({names="--foo", action="append", nargs=1, count="*"})
+
+            assert.same({foo={"bar", "fizz", "buzz"}}, parser:parse_arguments("--foo=bar --foo=fizz --foo=buzz"))
+        end)
+    end)
+
+    describe("action - custom function", function()
+        it("external table", function()
+            local parser = argparse2.ArgumentParser.new({description="Test"})
+            local values = {"a", "bb", "ccc"}
+            parser:add_argument({
+                names="--foo",
+                action=function(data)
+                    local result = values[1]
+                    data.namespace[result] = true
+
+                    table.remove(values, 1)
+                end,
+                nargs=1,
+                count="*",
+            })
+
+            assert.same(
+                {a = true, bb = true, ccc = true},
+                parser:parse_arguments("--foo=bar --foo=fizz --foo=buzz")
+            )
+        end)
+    end)
+
+    describe("action - store_false", function()
+        it("simple", function()
+            local parser = argparse2.ArgumentParser.new({description="Test"})
+            parser:add_argument({names="--foo", action="store_false"})
+
+            assert.same({foo=false}, parser:parse_arguments("--foo"))
+        end)
+    end)
+
+    describe("action - store_true", function()
+        it("simple", function()
+            local parser = argparse2.ArgumentParser.new({description="Test"})
+            parser:add_argument({names="--foo", action="store_true"})
+
+            assert.same({foo=true}, parser:parse_arguments("--foo"))
+        end)
+    end)
+end)
+
 describe("bad input", function()
     it("knows if the user is #missing a required flag argument", function()
         -- TODO: Finish
@@ -385,7 +437,7 @@ end)
 describe("+ flags", function()
     it("works with ++double flags", function()
         local parser = argparse2.ArgumentParser.new({description="Test"})
-        parser:add_argument({"++foo", destination="blah"})
+        parser:add_argument({"++foo", action="store_true", destination="blah"})
 
         local namespace = parser:parse_arguments("++foo")
         assert.same({blah=true}, namespace)
