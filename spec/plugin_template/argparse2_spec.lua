@@ -2,6 +2,11 @@
 
 local argparse2 = require("plugin_template._cli.argparse2")
 
+-- NOTE: We disable `undefined-field` for llscheck. There might be a cleaner
+-- way to do this and still keep the check.
+--
+--- @diagnostic disable: undefined-field
+
 --- @return ArgumentParser # Create a tree of commands for unittests.
 local function _make_simple_parser()
     local choices = function(data)

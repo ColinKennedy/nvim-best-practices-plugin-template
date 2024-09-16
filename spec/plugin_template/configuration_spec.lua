@@ -9,6 +9,9 @@ local tabler = require("plugin_template._core.tabler")
 
 local mock_vim = require("test_utilities.mock_vim")
 
+-- NOTE: We disable `undefined-field` for llscheck. There might be a cleaner
+-- way to do this and still keep the check.
+--
 --- @diagnostic disable: undefined-field
 
 --- Make sure `data`, whether undefined, defined, or partially defined, is broken.

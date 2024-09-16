@@ -9,6 +9,9 @@ local lualine_plugin_template = require("lualine.components.plugin_template")
 local mock_test = require("test_utilities.mock_test")
 local plugin_template = require("plugin_template")
 
+-- NOTE: We disable `undefined-field` for llscheck. There might be a cleaner
+-- way to do this and still keep the check.
+--
 --- @diagnostic disable: undefined-field
 
 --- @return table # The generated Lualine component.

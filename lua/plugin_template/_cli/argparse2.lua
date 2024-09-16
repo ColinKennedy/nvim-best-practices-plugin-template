@@ -217,6 +217,12 @@ local function _get_arguments_names(arguments)
         :totable()
 end
 
+--- Check all elements in `values` for `prefix` text.
+---
+--- @param values string[] All values to check. e.g. `{"foo", "bar"}`.
+--- @param prefix string The prefix text to search for.
+--- @return string[] # All found values, if any.
+---
 local function _get_array_startswith(values, prefix)
     local output = {}
 
@@ -229,7 +235,12 @@ local function _get_array_startswith(values, prefix)
     return output
 end
 
-local function _remove_boundary_whitespace(text)
+--- Remove whitespace from `text` but only if `text` is 100% whitespace.
+---
+--- @param text string Some text to possibly strip.
+--- @return string # The processed `text` or, if it contains whitespace, the original `text`.
+---
+local function _remove_contiguous_whitespace(text)
     return (text:gsub("^%s*$", ""))
 end
 
@@ -278,6 +289,18 @@ local function _get_cursor_offset(input, column)
     return #input.arguments
 end
 
+--- Check all `flags` that match `prefix` and `value`.
+---
+--- @param prefix string
+---     The name of the flag that must match, exactly or partially.
+--- @param flags argparse2.Argument[]
+---     All position / flag / named arguments.
+--- @param value string?
+---     If the user provided a (exact or partial) value for the flag / named
+---     argument, the text is given here.
+--- @return argparse2.Argument[]
+---     The matched arguments, if any.
+---
 local function _get_matching_partial_flag_text(prefix, flags, value)
     local function _get_single_choices_text(argument, value)
         if not argument.choices then
@@ -341,10 +364,19 @@ local function _get_matching_partial_flag_text(prefix, flags, value)
     return output
 end
 
-local function _get_matching_position_arguments(name, arguments)
+--- Find all `options` that match `name`.
+---
+--- By default a position option takes any argument. Some position arguments
+--- have specific, required choice(s) that this function means to match.
+---
+--- @param name string The user's input text to try to match.
+--- @param options argparse2.Argument[] All position arguments to check.
+--- @return argparse2.Argument[] # The found matches, if any.
+---
+local function _get_matching_position_arguments(name, options)
     local output = {}
 
-    for _, argument in ipairs(_sort_arguments(arguments)) do
+    for _, argument in ipairs(_sort_arguments(options)) do
         if not argument:is_exhausted() and argument.choices then
             vim.list_extend(output, _get_array_startswith(argument.choices(), name))
         end
@@ -429,14 +461,19 @@ local function _iter_parsers(parser, inclusive)
     end
 end
 
--- TODO: Docstring
---- Find all Argments starting with `name`.
+--- Find all Argments starting with `prefix`.
 ---
---- @param parser argparse2.ArgumentParser The starting point to search within.
+--- @param prefix string
+---     The name of the flag that must match, exactly or partially.
+--- @param parser argparse2.ArgumentParser
+---     The starting point to search within.
+--- @param value string?
+---     If the user provided a (exact or partial) value for the flag / named
+---     argument, the text is given here.
 --- @return string[] # The matching names, if any.
 ---
 local function _get_exact_or_partial_matches(prefix, parser, value)
-    prefix = _remove_boundary_whitespace(prefix)
+    prefix = _remove_contiguous_whitespace(prefix)
     local output = {}
 
     vim.list_extend(output, _get_matching_position_arguments(prefix, parser:get_position_arguments()))
@@ -792,6 +829,15 @@ local function _expand_type_options(options)
     end
 end
 
+
+--- Add / modify `options.choices` as needed.
+---
+--- Basically if `options.choices` is not defined, that's fine. If it is
+--- a `string` or `string[]`, handle that. If it's a function, assume the user
+--- knows what they're doing and include it.
+---
+--- @param options argparse2.ArgumentOptions The user-written options. (sparse or not).
+---
 local function _expand_choices_options(options)
     if not options.choices then
         return
@@ -831,6 +877,14 @@ local function _expand_argument_options(options)
     _expand_choices_options(options)
 end
 
+--- Combined `namespace` with all other `...` namespaces.
+---
+--- @param namespace argparse2.Namespace
+---     The starting namespace that will be modified.
+--- @param ... argparse2.Namespace[]
+---     All other namespaces to merge into `namespace`. Later entries will
+---     override previous entries.
+---
 local function _merge_namespaces(namespace, ...)
     for _, override in ipairs({ ... }) do
         for key, value in pairs(override) do
@@ -1722,8 +1776,14 @@ function M.ArgumentParser:get_completion(data, column)
     return result
 end
 
--- TODO: Fix docstring
---- @return string # A one/two liner explanation of this instance's expected arguments.
+--- Get a 1-to-2 line summary on how to run the CLI.
+---
+--- @param data string | argparse.ArgparseResults
+---     User text that needs to be parsed. e.g. `hello "World!"`
+---     If `data` includes subparsers, that subparser's help message is returned instead.
+--- @return string
+---     A one/two liner explanation of this instance's expected arguments.
+---
 function M.ArgumentParser:get_concise_help(data)
     if type(data) == "string" then
         data = argparse.parse_arguments(data)
@@ -1735,8 +1795,14 @@ function M.ArgumentParser:get_concise_help(data)
     return result .. "\n"
 end
 
--- TODO: Fix docstring
---- @return string # A multi-liner explanation of this instance's expected arguments.
+--- Get all of information on how to run the CLI.
+---
+--- @param data string | argparse.ArgparseResults
+---     User text that needs to be parsed. e.g. `hello "World!"`
+---     If `data` includes subparsers, that subparser's help message is returned instead.
+--- @return string
+---     The full explanation of this instance's expected arguments (can be pretty long).
+---
 function M.ArgumentParser:get_full_help(data)
     if type(data) == "string" then
         data = argparse.parse_arguments(data)
@@ -1777,6 +1843,7 @@ function M.ArgumentParser:get_names()
     return { self.name }
 end
 
+--- @return argparse2.ArgumentParser? # Get the parser that owns this parser, if any.
 function M.ArgumentParser:get_parent_parser()
     if not self._parent then
         return nil
@@ -1827,6 +1894,13 @@ function M.ArgumentParser:add_subparsers(options)
     return subparsers
 end
 
+--- Parse user text `data`.
+---
+--- @param data string | argparse.ArgparseResults
+---     User text that needs to be parsed. e.g. `hello "World!"`
+--- @return argparse2.Namespace
+---     All of the parsed data as one group.
+---
 function M.ArgumentParser:parse_arguments(data)
     local results = self:_parse_arguments(data, {})
 

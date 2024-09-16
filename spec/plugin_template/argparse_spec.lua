@@ -5,6 +5,9 @@
 
 local argparse = require("plugin_template._cli.argparse")
 
+-- NOTE: We disable `undefined-field` for llscheck. There might be a cleaner
+-- way to do this and still keep the check.
+--
 --- @diagnostic disable: undefined-field
 
 describe("default", function()

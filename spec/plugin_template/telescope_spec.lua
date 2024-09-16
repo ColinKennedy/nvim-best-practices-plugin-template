@@ -9,6 +9,9 @@ local runner = require("telescope._extensions.plugin_template.runner")
 local telescope_actions = require("telescope.actions")
 local telescope_actions_state = require("telescope.actions.state")
 
+-- NOTE: We disable `undefined-field` for llscheck. There might be a cleaner
+-- way to do this and still keep the check.
+--
 --- @diagnostic disable: undefined-field
 
 local _ORIGINAL_GET_SELECTION_FUNCTION = runner.get_selection

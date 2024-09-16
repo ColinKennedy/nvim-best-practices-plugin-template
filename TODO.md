@@ -1,15 +1,13 @@
-- Update plugin/ folder with the new argparse API
-
-- Support `--foo=bar` syntax, in general
- - Auto-complete should include `--foo=` if a flag requires `nargs=1`
+- Get current CI luacheck / llscheck to pass
+- Auto-complete should include `--foo=` if a flag requires `nargs=1` but `--foo` if `nargs` is different
 
 - Rename "argument" to "option", for consistency
-- Allow parsers to have `choices` names
 - Allow all `choices` to get context information (current argument, current text, etc etc)
 - Rename all `description` to `help` instead
 
 - "works with nested parsers where a parent also defines a default" is bugged. Selecting a subparser should immediately get its value(s).
 
+- Change the file structure to make it easier to generate API documentation
 
 - Somehow the `--style=low|cursor|` auto-completion isn't working anymore. Fix!
 
@@ -41,7 +39,6 @@
 - Add a unittest to makes sure that position `choices` can maintain another table and remove possible matches each time the argument is used
  - Same test but for flag arguments
 
-
 - Allow ++foo arguments instead of --
 
 Replace all foo._bar code with actual accessors / functions
@@ -50,16 +47,20 @@ Replace all foo._bar code with actual accessors / functions
 - replace the subparsers / parser nested for-loop with a "parser iterator" instead
 - Add unittests for invalid arguments. e.g. `say word 'asdfasd`
 
-- Add dotted namespace types to the docstrings
-
 - Adjust all docstrings so they're as LuaCATS expects
 
 
 
+- Allow different matching schemes. e.g. startswith is the default. But maybe
+allow fuzzy matching too
+
+- Make sure that if the user provides incorrect input that the concise help message is shown
+ - Make sure they know that explicit --help shows the full message
 
 
 
-
+- See if there's a way to make llscheck work with busted attributes
+ - https://github.com/jeffzi/llscheck/issues/7
 
 
 

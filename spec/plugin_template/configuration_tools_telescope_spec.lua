@@ -6,6 +6,9 @@
 local configuration_ = require("plugin_template._core.configuration")
 local health = require("plugin_template.health")
 
+-- NOTE: We disable `undefined-field` for llscheck. There might be a cleaner
+-- way to do this and still keep the check.
+--
 --- @diagnostic disable: undefined-field
 
 --- Make sure `data`, whether undefined, defined, or partially defined, is broken.
