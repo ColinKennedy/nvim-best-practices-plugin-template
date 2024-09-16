@@ -1474,7 +1474,7 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
             found = _compute_exact_flag_match(
                 argument_name,
                 current_parser,
-                tabler.get_slice(arguments, index + 1)
+                tabler.get_slice(arguments, index)
             )
 
             if not found then
