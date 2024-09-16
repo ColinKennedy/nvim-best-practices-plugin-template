@@ -49,18 +49,39 @@ local function _get_subcommand_completion(text, prefix, subcommands)
         return nil
     end
 
-    if subcommands[subcommand_key] then
+    if not subcommands[subcommand_key] then
         vim.notify(
             string.format(
                 'PluginTemplate: Unknown command "%s". Please check your spelling and try again.',
-                vim.log.levels.ERROR
-            )
+                subcommand_key
+            ),
+            vim.log.levels.ERROR
         )
 
         return nil
     end
 
     local subcommand = subcommands[subcommand_key]
+
+    if type(subcommand) == "function" then
+        local parser = subcommand()
+
+        if not parser then
+            vim.notify(
+                string.format(
+                    'Subcommand "%s" does not define a parser. Please fix!',
+                    subcommand_key
+                ),
+                vim.log.levels.ERROR
+            )
+
+            return nil
+        end
+
+        local column = vim.fn.getcmdpos()
+
+        return parser:get_completion(arguments, column)
+    end
 
     if subcommand.parser then
         local parser = subcommand.parser()
