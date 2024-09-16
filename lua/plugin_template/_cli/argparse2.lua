@@ -1201,6 +1201,117 @@ function M.ArgumentParser.new(options)
 end
 
 
+--- Get auto-complete options based on this instance + the user's `data` input.
+---
+--- @param data ArgparseResults | string The user input.
+--- @param column number? A 1-or-more value that represents the user's cursor.
+--- @return string[] # All found auto-complete options, if any.
+---
+function M.ArgumentParser:_get_completion(data, column)
+    if type(data) == "string" then
+        data = argparse.parse_arguments(data)
+    end
+
+    self:_reset_used()
+
+    column = column or #data.text
+    local stripped = _rstrip_input(data, column)
+    local remainder = stripped.remainder.value
+    local output = {}
+
+    if vim.tbl_isempty(stripped.arguments) then
+        if not _is_whitespace(remainder) then
+            -- NOTE: If there was unparsed text then it means that the user is
+            -- in the middle of an argument. We don't waot to show completion
+            -- options in that situation.
+            --
+            return {}
+        end
+
+        -- NOTE: Get all possible initial arguments
+        vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names("", self)))
+        vim.list_extend(output, _get_matching_position_arguments("", self:get_position_arguments()))
+        vim.list_extend(output, _get_matching_partial_flag_text("", self:get_flag_arguments()))
+
+        return output
+    end
+
+    local parsers, previous_parser = self:_compute_matching_parsers(stripped.arguments)
+
+    if remainder ~= "" then
+        -- if not parsers then
+        --     -- NOTE: Something went wrong during parsing. We don't know where
+        --     -- the user is in the tree so we need to exit early.
+        --     --
+        --     -- TODO: Check if this situation actually happens in the unittests.
+        --     -- If so, add a log.
+        --     --
+        --     return {}
+        -- end
+
+        local last = stripped.arguments[#stripped.arguments]
+
+        return _get_next_arguments_from_remainder(last, remainder, parsers or {previous_parser})
+    end
+
+    local last = stripped.arguments[#stripped.arguments]
+    local last_name = _get_argument_name(last)
+
+    -- TODO: Make this all into a function. Simplify the code
+    if not parsers and previous_parser then
+        vim.list_extend(output, _get_exact_or_partial_matches(last_name, previous_parser))
+
+        if not _is_whitespace(last_name) then
+            for parser_ in _iter_parsers(previous_parser) do
+                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+            end
+        end
+    end
+    for _, parser in ipairs(parsers or {}) do
+        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last.value))
+
+
+        -- TODO: Move to a function later
+        -- NOTE: This case is for when there are multiple child parsers with
+        -- similar names. e.g. `get-asset` & `get-assets` might both auto-complete here.
+        --
+        local parent_parser = parser:get_parent_parser()
+        if parent_parser and not _is_whitespace(last_name) then
+            for parser_ in _iter_parsers(parent_parser) do
+                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+            end
+        end
+    end
+
+    output = vim.fn.sort(output)
+
+    -- local remainder = stripped.remainder.value
+    --
+    -- local output = {}
+    --
+    -- local last = stripped.arguments[#stripped.arguments]
+    -- local last_name = _get_argument_name(last)
+
+    -- if remainder == "" then
+    --     -- TODO: There's a bug here. We may not be able to assume the last argument like this
+    --     local last = stripped.arguments[#stripped.arguments]
+    --     local last_name = _get_argument_name(last)
+    --     output = _get_matching_position_arguments(last_name, parser)
+    --     output = vim.fn.sort(output)
+    --
+    --     return output
+    -- end
+    --
+    -- vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(parser, remainder)))
+    --
+    -- for argument in tabler.chain(_sort_arguments(parser._flag_arguments)) do
+    --     table.insert(output, argument:get_raw_name())
+    -- end
+
+    return output
+end
+
+
 --- @return Namespace # All default values from all (direct) child arguments.
 function M.ArgumentParser:_get_default_namespace()
     local output = {}
@@ -1290,6 +1401,10 @@ function M.ArgumentParser:_handle_exact_flag_arguments(flags, argument, namespac
 
             action({namespace=namespace, name=name, value=value})
 
+            -- TODO: Possible bug here. What if the `flag` has explicit
+            -- choice(s) and the written value doesn't match it? I guess in
+            -- that case the flag shouldn't be incremented?
+            --
             flag:increment_used()
 
             return true
@@ -1370,6 +1485,10 @@ function M.ArgumentParser:_compute_matching_parsers(arguments)
 
         if argument_.argument_type ~= argparse.ArgumentType.named then
             return false
+        end
+
+        if argument.choices then
+            return vim.tbl_contains(argument.choices(), argument_.value)
         end
 
         return vim.tbl_contains(argument.names, argument_.name)
@@ -1606,6 +1725,14 @@ function M.ArgumentParser:_parse_arguments(data, namespace)
 end
 
 
+--- (Assuming argument counts were modified by any function) Reset counts back to zero.
+function M.ArgumentParser:_reset_used()
+    for argument in tabler.chain(self:get_position_arguments(), self:get_flag_arguments()) do
+        argument._used = 0
+    end
+end
+
+
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
 --- @param data ArgparseResults | string The user input.
@@ -1650,6 +1777,7 @@ function M.ArgumentParser:get_errors(data, column)
     return {}
 end
 
+
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
 --- @param data ArgparseResults | string The user input.
@@ -1657,105 +1785,11 @@ end
 --- @return string[] # All found auto-complete options, if any.
 ---
 function M.ArgumentParser:get_completion(data, column)
-    if type(data) == "string" then
-        data = argparse.parse_arguments(data)
-    end
+    local result = self:_get_completion(data, column)
 
-    column = column or #data.text
-    local stripped = _rstrip_input(data, column)
-    local remainder = stripped.remainder.value
-    local output = {}
+    self:_reset_used()
 
-    if vim.tbl_isempty(stripped.arguments) then
-        if not _is_whitespace(remainder) then
-            -- NOTE: If there was unparsed text then it means that the user is
-            -- in the middle of an argument. We don't waot to show completion
-            -- options in that situation.
-            --
-            return {}
-        end
-
-        -- NOTE: Get all possible initial arguments
-        vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names("", self)))
-        vim.list_extend(output, _get_matching_position_arguments("", self:get_position_arguments()))
-        vim.list_extend(output, _get_matching_partial_flag_text("", self:get_flag_arguments()))
-
-        return output
-    end
-
-    local parsers, previous_parser = self:_compute_matching_parsers(stripped.arguments)
-
-    if remainder ~= "" then
-        -- if not parsers then
-        --     -- NOTE: Something went wrong during parsing. We don't know where
-        --     -- the user is in the tree so we need to exit early.
-        --     --
-        --     -- TODO: Check if this situation actually happens in the unittests.
-        --     -- If so, add a log.
-        --     --
-        --     return {}
-        -- end
-
-        local last = stripped.arguments[#stripped.arguments]
-
-        return _get_next_arguments_from_remainder(last, remainder, parsers or {previous_parser})
-    end
-
-    local last = stripped.arguments[#stripped.arguments]
-    local last_name = _get_argument_name(last)
-
-    -- TODO: Make this all into a function. Simplify the code
-    if not parsers and previous_parser then
-        vim.list_extend(output, _get_exact_or_partial_matches(last_name, previous_parser))
-
-        if not _is_whitespace(last_name) then
-            for parser_ in _iter_parsers(previous_parser) do
-                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
-            end
-        end
-    end
-    for _, parser in ipairs(parsers or {}) do
-        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last.value))
-
-
-        -- TODO: Move to a function later
-        -- NOTE: This case is for when there are multiple child parsers with
-        -- similar names. e.g. `get-asset` & `get-assets` might both auto-complete here.
-        --
-        local parent_parser = parser:get_parent_parser()
-        if parent_parser and not _is_whitespace(last_name) then
-            for parser_ in _iter_parsers(parent_parser) do
-                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
-            end
-        end
-    end
-
-    output = vim.fn.sort(output)
-
-    -- local remainder = stripped.remainder.value
-    --
-    -- local output = {}
-    --
-    -- local last = stripped.arguments[#stripped.arguments]
-    -- local last_name = _get_argument_name(last)
-
-    -- if remainder == "" then
-    --     -- TODO: There's a bug here. We may not be able to assume the last argument like this
-    --     local last = stripped.arguments[#stripped.arguments]
-    --     local last_name = _get_argument_name(last)
-    --     output = _get_matching_position_arguments(last_name, parser)
-    --     output = vim.fn.sort(output)
-    --
-    --     return output
-    -- end
-    --
-    -- vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(parser, remainder)))
-    --
-    -- for argument in tabler.chain(_sort_arguments(parser._flag_arguments)) do
-    --     table.insert(output, argument:get_raw_name())
-    -- end
-
-    return output
+    return result
 end
 
 
@@ -1873,7 +1907,11 @@ end
 
 
 function M.ArgumentParser:parse_arguments(data)
-    return self:_parse_arguments(data, {})
+    local results = self:_parse_arguments(data, {})
+
+    self:_reset_used()
+
+    return results
 end
 
 

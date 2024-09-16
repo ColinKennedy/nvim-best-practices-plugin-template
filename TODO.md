@@ -11,6 +11,8 @@
 - "works with nested parsers where a parent also defines a default" is bugged. Selecting a subparser should immediately get its value(s).
 
 
+- Somehow the `--style=low|cursor|` auto-completion isn't working anymore. Fix!
+
 - Remove subcommand-related files
  - Make sure the GitHub wiki + documentation still works
 
