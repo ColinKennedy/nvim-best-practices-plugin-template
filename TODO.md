@@ -1,4 +1,3 @@
-- Get current CI luacheck / llscheck to pass
 - Follow up on - https://github.com/jeffzi/llscheck/issues/7#issuecomment-2352981951
 - Change the docstrings to make it easier to generate API documentation (lemmy-help)
 - Change the file structure to make it easier to generate API documentation
