@@ -17,10 +17,13 @@ local M = {}
 --- @field parser (fun(): argparse2.ParameterParser)?
 ---     The primary parser used for subcommands. It handles auto-complete,
 ---     expression-evaluation, and running a user's code.
---- @field run (fun(data: PluginTemplateSubcommandRun): nil)?
+--- @field run (fun(data: plugin_template.SubcommandRun): nil)?
 ---     The function to run when the subcommand is called.
 
---- @alias plugin_template.Subcommands table<string, plugin_template.Subcommand>
+--- @class plugin_template.SubcommandRun
+---     TODO Finish this later
+
+--- @alias plugin_template.Subcommands table<string, plugin_template.Subcommand | fun(): argparse2.ParameterParser>
 
 --- Check if `full` contains `prefix` + whitespace.
 ---

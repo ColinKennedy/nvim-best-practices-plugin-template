@@ -119,7 +119,7 @@ describe("simple", function()
 
         bottle_subparsers:add_parser({ name = "foo", choices = { "foo" }, help = "Print stuff to the terminal." })
 
-        local bottlez = subparsers:add_parser({ name = "bottlez", destination = "weird_name" })
+        local bottlez = subparsers:add_parser({ name = "bottlez", destination = "weird_name", help = "Test." })
         local bottlez_subparsers = bottlez:add_subparsers({ destination = "bottlez", help = "Test." })
         bottlez_subparsers:add_parser({ name = "fizz", help = "Fizzy drink." })
 
@@ -569,7 +569,7 @@ describe("dynamic argument", function()
             end,
             help = "Choices that come from a function.",
         })
-        local inner_subparsers = say_parser:add_subparsers({ destination = "thing_subparsers" })
+        local inner_subparsers = say_parser:add_subparsers({ destination = "thing_subparsers", help = "Test." })
         local thing = inner_subparsers:add_parser({ name = "thing", help = "Inner thing." })
         thing:add_parameter({ name = "last_thing", choices = { "another", "last" } })
 
@@ -578,9 +578,10 @@ describe("dynamic argument", function()
             choices = function()
                 return { "ab", "cc", "zzz", "lazers" }
             end,
+            help = "Test.",
         })
         local inner_dynamic = dynamic:add_subparsers({ name = "inner_dynamic_thing", help = "Test." })
-        local different = inner_dynamic:add_parser({ name = "different" })
+        local different = inner_dynamic:add_parser({ name = "different", help = "Test." })
         different:add_parameter({
             name = "last",
             choices = function()

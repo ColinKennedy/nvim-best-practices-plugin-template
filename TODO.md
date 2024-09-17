@@ -1,4 +1,5 @@
 - Get current CI luacheck / llscheck to pass
+- Follow up on - https://github.com/jeffzi/llscheck/issues/7#issuecomment-2352981951
 - Auto-complete should include `--foo=` if a flag requires `nargs=1` but `--foo` if `nargs` is different
 
 - Allow all `choices` to get context information (current argument, current text, etc etc)
@@ -8,6 +9,7 @@
 - Change the file structure to make it easier to generate API documentation
 
 - replace PluginTemplate (PluginTemplateSubcommandRun) with namespace
+- replace Telescope (TelescopeCommandOptions) with namespace
 
 - Somehow the `--style=low|cursor|` auto-completion isn't working anymore. Fix!
 

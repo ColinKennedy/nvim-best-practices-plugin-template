@@ -40,7 +40,7 @@ local texter = require("plugin_template._core.texter")
 --- @field action argparse2.Action?
 ---     This controls the behavior of how parsed arguments are added into the
 ---     final parsed `argparse2.Namespace`.
---- @field choices (fun(): string[])?
+--- @field choices (string[] | fun(): string[])?
 ---     If included, the parameter can only accept these choices as values.
 --- @field count argparse2.MultiNumber?
 ---     The number of times that this parameter must be written.
@@ -65,7 +65,7 @@ local texter = require("plugin_template._core.texter")
 
 --- @class argparse2.ParameterParserOptions
 ---     The options that we might pass to `argparse2.ParameterParser.new`.
---- @field choices (fun(): string[])?
+--- @field choices (string[] | fun(): string[])?
 ---     If included, the parameter can only accept these choices as values.
 --- @field help string
 ---     Explain what this parser is meant to do and the parameter(s) it needs.
@@ -77,13 +77,15 @@ local texter = require("plugin_template._core.texter")
 
 --- @class argparse2.SubparsersOptions
 ---     Customization options for the new argparse2.Subparsers.
---- @field destination string
+--- @field destination string?
 ---     An internal name to track this subparser group.
 --- @field help string
 ---     Explain what types of parsers this object is meant to hold Keep it
 ---     brief (< 88 characters).
-
---- @class argparse2.Subparsers A group of parsers.
+--- @field required boolean?
+---     If `true` then one of the parser children must be matched or the user's
+---     argument input is considered invalid. If `false` then the inner parser
+---     does not have to be explicitly written. Defaults to false.
 
 local M = {}
 
@@ -143,6 +145,7 @@ M.ParameterParser = {
 }
 M.ParameterParser.__index = M.ParameterParser
 
+--- @class argparse2.Subparsers A group of parsers.
 M.Subparsers = {
     __tostring = function(subparsers)
         return string.format(
@@ -910,7 +913,7 @@ end
 --- @return string # The found data.
 ---
 local function _concise_inspect(data)
-    return vim.inspect(data, { depth = 1 })
+    return vim.inspect(data, { depth = 1 }) or ""
 end
 
 --- Find a proper type converter from `options`.
@@ -1091,10 +1094,13 @@ end
 function M.Subparsers.new(options)
     local self = setmetatable({}, M.Subparsers)
 
-    self.help = options.help
-    self.destination = options.destination
     self._parent = options.parent
     self._parsers = {}
+
+    -- TODO: I think we can remove self.destination. Try it
+    self.destination = options.destination
+    self.help = options.help
+    self.required = options.required or false
 
     return self
 end

@@ -85,7 +85,7 @@ end
 
 --- Run the `:Telescope plugin_template hello-world` command.
 ---
---- @param options TelescopeCommandOptions The Telescope UI / layout options.
+--- @param options telescope.CommandOptions The Telescope UI / layout options.
 ---
 function M.get_hello_world_picker(options)
     local function _select_phrases(buffer)

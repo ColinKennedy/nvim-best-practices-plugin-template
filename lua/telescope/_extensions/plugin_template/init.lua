@@ -19,7 +19,7 @@ configuration.initialize_data_if_needed()
 
 --- Run the `:Telescope plugin_template goodnight-moon` command.
 ---
---- @param options TelescopeCommandOptions The Telescope UI / layout options.
+--- @param options telescope.CommandOptions The Telescope UI / layout options.
 ---
 local function _run_goodnight_moon(options)
     local picker = runner.get_goodnight_moon_picker(options)
@@ -29,7 +29,7 @@ end
 
 --- Run the `:Telescope plugin_template hello-world` command.
 ---
---- @param options TelescopeCommandOptions The Telescope UI / layout options.
+--- @param options telescope.CommandOptions The Telescope UI / layout options.
 ---
 local function _run_hello_world(options)
     local picker = runner.get_hello_world_picker(options)

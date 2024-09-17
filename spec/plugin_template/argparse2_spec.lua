@@ -49,8 +49,8 @@ local function _make_simple_parser()
         })
     end
 
-    local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test" })
-    local subparsers = parser:add_subparsers({ destination = "commands" })
+    local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
+    local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
     local say = subparsers:add_parser({ name = "say", help = "Print stuff to the terminal." })
     local say_subparsers = say:add_subparsers({ destination = "say_commands", help = "All commands that print." })
     local say_word = say_subparsers:add_parser({ name = "word", help = "Print a single word." })
@@ -68,7 +68,7 @@ describe("action", function()
     describe("action - append", function()
         it("simple", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ names = "--foo", action = "append", nargs = 1, count = "*" })
+            parser:add_parameter({ name = "--foo", action = "append", nargs = 1, count = "*" })
 
             assert.same({ foo = { "bar", "fizz", "buzz" } }, parser:parse_arguments("--foo=bar --foo=fizz --foo=buzz"))
         end)
@@ -79,7 +79,7 @@ describe("action", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
             local values = { "a", "bb", "ccc" }
             parser:add_parameter({
-                names = "--foo",
+                name = "--foo",
                 action = function(data)
                     local result = values[1]
                     data.namespace[result] = true
@@ -97,7 +97,7 @@ describe("action", function()
     describe("action - store_false", function()
         it("simple", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ names = "--foo", action = "store_false" })
+            parser:add_parameter({ name = "--foo", action = "store_false" })
 
             assert.same({ foo = false }, parser:parse_arguments("--foo"))
         end)
@@ -106,7 +106,7 @@ describe("action", function()
     describe("action - store_true", function()
         it("simple", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ names = "--foo", action = "store_true" })
+            parser:add_parameter({ name = "--foo", action = "store_true" })
 
             assert.same({ foo = true }, parser:parse_arguments("--foo"))
         end)
@@ -124,7 +124,7 @@ describe("bad input", function()
 
     it("knows if the user is #missing a required position argument", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
-        parser:add_parameter({ names = "foo" })
+        parser:add_parameter({ name = "foo" })
 
         assert.same({ "ASDADSASDADS" }, parser:get_errors(""))
     end)
@@ -151,7 +151,7 @@ describe("default", function()
 
     it("works with a #empty type", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
-        parser:add_parameter({ names = "foo" })
+        parser:add_parameter({ name = "foo" })
 
         local namespace = parser:parse_arguments("12")
         assert.same({ foo = "12" }, namespace)
@@ -240,7 +240,7 @@ Options:
 
         it("works with a parser that has more than one choice for its name", function()
             local parser = argparse2.ParameterParser.new({ help = "Test." })
-            local subparsers = parser:add_subparsers({ destination = "commands" })
+            local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
             subparsers:add_parser({ name = "thing", choices = { "aaa", "bbb", "ccc" }, help = "Do a thing." })
 
             assert.equal(
@@ -346,9 +346,11 @@ describe("scenarios", function()
 
     it("works with repeated flags", function()
         local parser = argparse2.ParameterParser.new({ "goodnight-moon", help = "Prepare to sleep or sleep." })
-        local subparsers =
-            parser:add_subparsers({ destination = "commands", help = "All commands for goodnight-moon." })
-        subparsers.required = true
+        local subparsers = parser:add_subparsers({
+            destination = "commands",
+            help = "All commands for goodnight-moon.",
+            required = true,
+        })
 
         local sleep = subparsers:add_parser({ "sleep", help = "Sleep tight!" })
         sleep:add_parameter({
@@ -378,7 +380,7 @@ describe("scenarios", function()
             creator:add_subparsers({ destination = "creator", help = "Some options for creating" })
         local create_book = creator_subparsers:add_parser({ name = "book", help = "Create a book!" })
 
-        create_book:add_parameter({ names = "book", help = "The book name" })
+        create_book:add_parameter({ name = "book", help = "The book name" })
         create_book:add_parameter({
             names = { "--author" },
             help = "The author of the book",
@@ -410,7 +412,7 @@ describe("type", function()
     it("works with a known type function", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
         parser:add_parameter({
-            names = "foo",
+            name = "foo",
             type = function(value)
                 return value .. "tt"
             end,
@@ -422,7 +424,7 @@ describe("type", function()
 
     it("works with a known type name", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
-        parser:add_parameter({ names = "foo", type = "number" })
+        parser:add_parameter({ name = "foo", type = "number" })
 
         local namespace = parser:parse_arguments("12")
         assert.same({ foo = 12 }, namespace)
