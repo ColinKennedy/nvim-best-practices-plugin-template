@@ -7,11 +7,7 @@ local argparse = require("plugin_template._cli.argparse")
 local argparse2 = require("plugin_template._cli.argparse2")
 local completion = require("plugin_template._cli.completion")
 
--- TODO: Docstring
-
 -- TODO: Allow ++foo arguments instead of --
-
---- @diagnostic disable: undefined-field
 
 local _parse = argparse.parse_arguments
 

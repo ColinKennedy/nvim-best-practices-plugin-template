@@ -9,11 +9,6 @@
 
 local plugin_template = require("plugin_template")
 
--- NOTE: We disable `undefined-field` for llscheck. There might be a cleaner
--- way to do this and still keep the check.
---
---- @diagnostic disable: undefined-field
-
 local _DATA = {}
 local _ORIGINAL_NOTIFY = vim.notify
 
