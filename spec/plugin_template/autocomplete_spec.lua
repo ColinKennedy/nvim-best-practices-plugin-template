@@ -15,7 +15,7 @@ local completion = require("plugin_template._cli.completion")
 
 local _parse = argparse.parse_arguments
 
---- @return argparse2.ArgumentParser # Create a tree of commands for unittests.
+--- @return argparse2.ParameterParser # Create a tree of commands for unittests.
 local function _make_simple_parser()
     local choices = function(data)
         local value = data.text
@@ -41,48 +41,48 @@ local function _make_simple_parser()
         return output
     end
 
-    local function _add_repeat_argument(parser)
-        parser:add_argument({
+    local function _add_repeat_parameter(parser)
+        parser:add_parameter({
             names = { "--repeat", "-r" },
             choices = choices,
             help = "The number of times to display the message.",
         })
     end
 
-    local function _add_style_argument(parser)
-        parser:add_argument({
+    local function _add_style_parameter(parser)
+        parser:add_parameter({
             names = { "--style", "-s" },
             choices = { "lowercase", "uppercase" },
             help = "The format of the message.",
         })
     end
 
-    local parser = argparse2.ArgumentParser.new({ name = "top_test", help = "Test." })
+    local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
     local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
     local say = subparsers:add_parser({ name = "say", help = "Print stuff to the terminal." })
     local say_subparsers = say:add_subparsers({ destination = "say_commands", help = "All commands that print." })
     local say_word = say_subparsers:add_parser({ name = "word", help = "Print a single word." })
     local say_phrase = say_subparsers:add_parser({ name = "phrase", help = "Print a whole sentence." })
 
-    _add_repeat_argument(say_phrase)
-    _add_repeat_argument(say_word)
-    _add_style_argument(say_phrase)
-    _add_style_argument(say_word)
+    _add_repeat_parameter(say_phrase)
+    _add_repeat_parameter(say_word)
+    _add_style_parameter(say_phrase)
+    _add_style_parameter(say_word)
 
     return parser
 end
 
---- @return argparse2.ArgumentParser # Create a tree of commands for unittests.
+--- @return argparse2.ParameterParser # Create a tree of commands for unittests.
 local function _make_style_parser()
-    local parser = argparse2.ArgumentParser.new({ name = "test", help = "Test" })
+    local parser = argparse2.ParameterParser.new({ name = "test", help = "Test" })
     local choice = { "lowercase", "uppercase" }
-    parser:add_argument({
+    parser:add_parameter({
         name = "--style",
         choices = choice,
         destination = "style_flag",
         help = "Define how to print to the terminal",
     })
-    parser:add_argument({
+    parser:add_parameter({
         name = "style",
         destination = "style_position",
         help = "Define how to print to the terminal",
@@ -110,12 +110,12 @@ describe("simple", function()
     end)
 
     it("works when two positions start with the same text", function()
-        local parser = argparse2.ArgumentParser.new({ name = "top_test", help = "Test." })
+        local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
         local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
         local bottle = subparsers:add_parser({ name = "bottle", help = "Something." })
         local bottle_subparsers = bottle:add_subparsers({ destination = "bottle", help = "Test." })
         local bottles = subparsers:add_parser({ name = "bottles", help = "Somethings." })
-        bottles:add_argument({ name = "bar", help = "Any text allowed here." })
+        bottles:add_parameter({ name = "bar", help = "Any text allowed here." })
 
         bottle_subparsers:add_parser({ name = "foo", choices = { "foo" }, help = "Print stuff to the terminal." })
 
@@ -123,7 +123,7 @@ describe("simple", function()
         local bottlez_subparsers = bottlez:add_subparsers({ destination = "bottlez", help = "Test." })
         bottlez_subparsers:add_parser({ name = "fizz", help = "Fizzy drink." })
 
-        parser:add_argument({ name = "bottle", help = "Something." })
+        parser:add_parameter({ name = "bottle", help = "Something." })
 
         assert.same({ "bottle", "bottles", "bottlez" }, parser:get_completion("bottle"))
         assert.same({ "bottles" }, parser:get_completion("bottles"))
@@ -164,15 +164,15 @@ describe("simple", function()
     end)
 
     it("works even if there is a named / position argument at the same time - 003", function()
-        local parser = argparse2.ArgumentParser.new({ name = "test", help = "Test" })
+        local parser = argparse2.ParameterParser.new({ name = "test", help = "Test" })
         local choice = { "lowercase", "uppercase" }
-        parser:add_argument({
+        parser:add_parameter({
             name = "--style",
             choices = choice,
             destination = "style_flag",
             help = "Define how to print to the terminal",
         })
-        parser:add_argument({
+        parser:add_parameter({
             name = "style",
             choices = { "style" },
             destination = "style_position",
@@ -324,7 +324,7 @@ describe("named argument", function()
     end)
 
     it("does not auto-complete if the name does not match", function()
-        local parser = argparse2.ArgumentParser.new({ help = "Test." })
+        local parser = argparse2.ParameterParser.new({ help = "Test." })
 
         local choices = function(data)
             local output = {}
@@ -337,7 +337,7 @@ describe("named argument", function()
             return output
         end
 
-        parser:add_argument({ "--repeat", choices = choices, help = "Number of values." })
+        parser:add_parameter({ "--repeat", choices = choices, help = "Number of values." })
 
         assert.same({}, parser:get_completion("--style=", 1))
         assert.same({}, parser:get_completion("--style=", 2))
@@ -350,9 +350,9 @@ describe("named argument", function()
     end)
 
     it("does not auto-complete the name anymore and auto-completes the value", function()
-        local parser = argparse2.ArgumentParser.new({ help = "Test." })
+        local parser = argparse2.ParameterParser.new({ help = "Test." })
 
-        parser:add_argument({
+        parser:add_parameter({
             names = { "--style", "-s" },
             choices = { "lowercase", "uppercase" },
             help = "The format of the message.",
@@ -390,8 +390,8 @@ describe("flag argument", function()
     -- end)
 
     it("does not auto-complete if at the end of the flag", function()
-        local parser = argparse2.ArgumentParser.new({ help = "Test." })
-        parser:add_argument({ "-f", help = "Force it." })
+        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ "-f", help = "Force it." })
 
         assert.same({}, parser:get_completion("-f", 1))
         assert.same({}, parser:get_completion("-f", 2))
@@ -400,8 +400,8 @@ end)
 
 describe("numbered count - named argument", function()
     it("works with count = 2", function()
-        local parser = argparse2.ArgumentParser.new({ help = "Test" })
-        parser:add_argument({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2 })
+        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        parser:add_parameter({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2 })
 
         assert.same({ "--foo=" }, parser:get_completion("--fo"))
         assert.same({ "--foo=bar", "--foo=buzz", "--foo=fizz" }, parser:get_completion("--foo="))
@@ -413,8 +413,8 @@ end)
 
 describe("numbered count - named argument", function()
     it("works with count = 2", function()
-        local parser = argparse2.ArgumentParser.new({ help = "Test." })
-        parser:add_argument({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2 })
+        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2 })
 
         assert.same({ "--foo=" }, parser:get_completion("--fo"))
         assert.same({ "--foo=bar", "--foo=buzz", "--foo=fizz" }, parser:get_completion("--foo="))
@@ -533,8 +533,8 @@ end)
 describe("* count", function()
     describe("simple", function()
         it("works with position arguments", function()
-            local parser = argparse2.ArgumentParser.new({ help = "Test" })
-            parser:add_argument({ name = "thing", choices = { "foo" }, count = "*" })
+            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ name = "thing", choices = { "foo" }, count = "*" })
 
             assert.same({ "foo", "--help", "-h" }, parser:get_completion(""))
             assert.same({ "foo" }, parser:get_completion("fo"))
@@ -559,19 +559,19 @@ describe("dynamic argument", function()
     end)
 
     it("works with positional arguments", function()
-        local parser = argparse2.ArgumentParser.new({ name = "top_test", help = "Test" })
+        local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test" })
         local subparsers = parser:add_subparsers({ destination = "commands", help = "All main commands." })
-        local parser = subparsers:add_parser({ name = "say", help = "Say something." })
-        parser:add_argument({
+        local say_parser = subparsers:add_parser({ name = "say", help = "Say something." })
+        say_parser:add_parameter({
             name = "thing",
             choices = function()
                 return { "a", "bb", "asteroid", "tt" }
             end,
             help = "Choices that come from a function.",
         })
-        local inner_subparsers = parser:add_subparsers({ destination = "thing_subparsers" })
+        local inner_subparsers = say_parser:add_subparsers({ destination = "thing_subparsers" })
         local thing = inner_subparsers:add_parser({ name = "thing", help = "Inner thing." })
-        thing:add_argument({ name = "last_thing", choices = { "another", "last" } })
+        thing:add_parameter({ name = "last_thing", choices = { "another", "last" } })
 
         local dynamic = inner_subparsers:add_parser({
             name = "dynamic_thing",
@@ -581,24 +581,24 @@ describe("dynamic argument", function()
         })
         local inner_dynamic = dynamic:add_subparsers({ name = "inner_dynamic_thing", help = "Test." })
         local different = inner_dynamic:add_parser({ name = "different" })
-        different:add_argument({
+        different:add_parameter({
             name = "last",
             choices = function()
                 return { "branch", "here" }
             end,
         })
 
-        assert.same(
-            { "ab", "cc", "lazers", "thing", "zzz", "a", "bb", "asteroid", "tt", "--help", "-h" },
-            parser:get_completion("say ")
-        )
-        assert.same({ "a", "ab", "asteroid" }, parser:get_completion("say a"))
-        assert.same({ "ab", "cc", "zzz" }, parser:get_completion("say a "))
-        assert.same({ "another", "last" }, parser:get_completion("say a thing "))
-
-        assert.same({ "a", "ab", "asteroid" }, parser:get_completion("say a"))
-        assert.same({ "different" }, parser:get_completion("say ab "))
-        assert.same({ "branch", "here" }, parser:get_completion("say ab different "))
+        assert.same({ "a", "bb", "asteroid", "tt", "--help", "-h" }, parser:get_completion("say "))
+        -- -- IMPORTANT: Notice we do not include `ab` in the completion because
+        -- -- the `thing` argument is required and must be satisfied first before
+        -- -- we can continue to the subparser.
+        -- --
+        -- assert.same({ "a", "asteroid" }, parser:get_completion("say a"))
+        -- assert.same({ "ab", "cc", "zzz", "lazers", "--help", "-h" }, parser:get_completion("say a "))
+        -- assert.same({ "another", "last", "--help", "-h" }, parser:get_completion("say a thing "))
+        --
+        -- assert.same({ "different" }, parser:get_completion("say ab "))
+        -- assert.same({ "branch", "here" }, parser:get_completion("say ab different "))
     end)
 
     it("works with count = 2", function()

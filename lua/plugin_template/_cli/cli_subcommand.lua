@@ -14,7 +14,7 @@ local M = {}
 ---     preferred way to make parsers).
 --- @field complete (fun(data: string): string[])?
 ---     Command completions callback, the `data` are  the lead of the subcommand's arguments
---- @field parser (fun(): ArgumentParser)?
+--- @field parser (fun(): argparse2.ParameterParser)?
 ---     The primary parser used for subcommands. It handles auto-complete,
 ---     expression-evaluation, and running a user's code.
 --- @field run (fun(data: PluginTemplateSubcommandRun): nil)?
@@ -41,6 +41,8 @@ end
 --- @param subcommands plugin_template.Subcommands All allowed commands.
 ---
 local function _get_subcommand_completion(text, prefix, subcommands)
+    local argparse = require("plugin_template._cli.argparse")
+
     local expression = "^" .. prefix .. "*%s(%S+)%s(.*)$"
     local subcommand_key, arguments = text:match(expression)
 
@@ -88,7 +90,7 @@ local function _get_subcommand_completion(text, prefix, subcommands)
 
     if subcommand.complete then
         -- TODO: Make sure this works still
-        local result = subcommand.complete({ parsed_arguments = results })
+        local result = subcommand.complete({ parsed_arguments = argparse.parse_arguments(arguments) })
 
         if result == nil or vim.islist(result) then
             if arguments == "" then
@@ -270,8 +272,9 @@ function M.make_triager(subcommands)
 
         if subcommand.run then
             -- TODO: Add a unittest. Make sure this still works
-            local results = argparse.parse_arguments(stripped_text)
-            subcommand.run(vim.tbl_deep_extend("force", opts, { parsed_arguments = results }))
+            subcommand.run(vim.tbl_deep_extend("force", opts, {
+                parsed_arguments = argparse.parse_arguments(stripped_text),
+            }))
         end
 
         vim.notify(string.format('Subcommand "%s" must define `parser` or `run`.', vim.log.levels.ERROR))

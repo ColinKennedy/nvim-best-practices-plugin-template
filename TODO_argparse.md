@@ -9,6 +9,6 @@
 
 - Consider adding validation. e.g. error if the user tries to add overlapping arguments
 
-- Add general validation for all public functions (add_argument, add_subparsers, add_parser, etc)
+- Add general validation for all public functions (add_parameter, add_subparsers, add_parser, etc)
 
 Do TODO notes

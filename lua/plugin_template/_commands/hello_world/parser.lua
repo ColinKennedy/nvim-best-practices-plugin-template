@@ -5,8 +5,8 @@ local constant = require("plugin_template._commands.hello_world.say.constant")
 
 local M = {}
 
-local function _add_repeat_argument(parser)
-    parser:add_argument({
+local function _add_repeat_parameter(parser)
+    parser:add_parameter({
         names = { "--repeat", "-r" },
         choices = function(data)
             local value = data.text
@@ -36,8 +36,8 @@ local function _add_repeat_argument(parser)
     })
 end
 
-local function _add_style_argument(parser)
-    parser:add_argument({
+local function _add_style_parameter(parser)
+    parser:add_parameter({
         names = { "--style", "-s" },
         choices = {
             constant.Keyword.style.lowercase,
@@ -48,7 +48,7 @@ local function _add_style_argument(parser)
 end
 
 function M.make_parser()
-    local parser = argparse2.ArgumentParser.new({ "hello-world", help = "Print hello to the user." })
+    local parser = argparse2.ParameterParser.new({ "hello-world", help = "Print hello to the user." })
     local top_subparsers = parser:add_subparsers({ destination = "commands", help = "All allowed commands." })
     top_subparsers.required = true
 
@@ -57,14 +57,14 @@ function M.make_parser()
     subparsers.required = true
 
     local phrase = subparsers:add_parser({ "phrase", help = "Print everything that the user types." })
-    phrase:add_argument({ "phrases", count = "*", action = "append", help = "All of the text to print." })
-    _add_repeat_argument(phrase)
-    _add_style_argument(phrase)
+    phrase:add_parameter({ "phrases", count = "*", action = "append", help = "All of the text to print." })
+    _add_repeat_parameter(phrase)
+    _add_style_parameter(phrase)
 
     local word = subparsers:add_parser({ "word", help = "Print only the first word that the user types." })
-    word:add_argument({ "word", help = "The word to print." })
-    _add_repeat_argument(word)
-    _add_style_argument(word)
+    word:add_parameter({ "word", help = "The word to print." })
+    _add_repeat_parameter(word)
+    _add_style_parameter(word)
 
     phrase:set_execute(function(data)
         local runner = require("plugin_template._commands.hello_world.say.runner")

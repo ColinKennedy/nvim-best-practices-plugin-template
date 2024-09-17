@@ -1,12 +1,13 @@
 - Get current CI luacheck / llscheck to pass
 - Auto-complete should include `--foo=` if a flag requires `nargs=1` but `--foo` if `nargs` is different
 
-- Rename "argument" to "option", for consistency
 - Allow all `choices` to get context information (current argument, current text, etc etc)
 
 - "works with nested parsers where a parent also defines a default" is bugged. Selecting a subparser should immediately get its value(s).
 
 - Change the file structure to make it easier to generate API documentation
+
+- replace PluginTemplate (PluginTemplateSubcommandRun) with namespace
 
 - Somehow the `--style=low|cursor|` auto-completion isn't working anymore. Fix!
 

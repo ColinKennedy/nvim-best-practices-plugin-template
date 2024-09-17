@@ -5,10 +5,10 @@ local argparse2 = require("plugin_template._cli.argparse2")
 local M = {}
 
 function M.make_parser()
-    local parser = argparse2.ArgumentParser.new({ "copy-logs", help = "Get debug logs for PluginTemplate." })
+    local parser = argparse2.ParameterParser.new({ "copy-logs", help = "Get debug logs for PluginTemplate." })
 
     -- TODO: Make sure this argument works
-    parser:add_argument({
+    parser:add_parameter({
         "log",
         required = false,
         default = "",
