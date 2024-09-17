@@ -7,12 +7,22 @@ local M = {}
 
 -- TODO: Fix documentation here later
 
+--- @class plugin_template.CompleteData
+---     The data that gets passed when `plugin_template.Subcommand.complete` is called.
+--- @field parsed_arguments argparse.ArgparseResults
+---     All information that was found from parsing some user's input.
+
+--- @class plugin_template.RunData
+---     The data that gets passed when `plugin_template.Subcommand.run` is called.
+--- @field parsed_arguments argparse.ArgparseResults
+---     All information that was found from parsing some user's input.
+
 --- @class plugin_template.Subcommand
 ---     A subparser's definition. At minimum you need to define `parser` or
 ---     `run` or code will error when you try to run commands. If you define
 ---     `parser`, you don't need to define `complete` or `run` (`parser` is the
 ---     preferred way to make parsers).
---- @field complete (fun(data: string): string[])?
+--- @field complete (fun(data: plugin_template.CompleteData): string[])?
 ---     Command completions callback, the `data` are  the lead of the subcommand's arguments
 --- @field parser (fun(): argparse2.ParameterParser)?
 ---     The primary parser used for subcommands. It handles auto-complete,
@@ -238,7 +248,6 @@ function M.make_triager(subcommands)
         configuration.initialize_data_if_needed()
 
         local subcommand_key = opts.fargs[1]
-        --- @type plugin_template.Subcommand?
         local subcommand = subcommands[subcommand_key]
 
         if not subcommand then

@@ -35,7 +35,7 @@ local texter = require("plugin_template._core.texter")
 --- @field value any
 ---     A value to add into `namespace`.
 
---- @class argparse2.ParameterOptions
+--- @class argparse2.ParameterInputOptions
 ---     All of the settings to include in a new parameter.
 --- @field action argparse2.Action?
 ---     This controls the behavior of how parsed arguments are added into the
@@ -44,6 +44,9 @@ local texter = require("plugin_template._core.texter")
 ---     If included, the parameter can only accept these choices as values.
 --- @field count argparse2.MultiNumber?
 ---     The number of times that this parameter must be written.
+--- @field default any?
+---     When this parameter is visited, this value is added to the returned
+---     `argparse2.Namespace` assuming no other value overwrites it.
 --- @field destination string?
 ---     When a parsed `argparse2.Namespace` is created, this field is used to store
 ---     the final parsed value(s). If no `destination` is given an
@@ -63,9 +66,52 @@ local texter = require("plugin_template._core.texter")
 ---     The expected output type. If a function is given, assume that the user
 ---     knows what they're doing and use their function's return value.
 
---- @class argparse2.ParameterParserOptions
+--- @class argparse2.ParameterOptions
+---     All of the settings to include in a new parameter.
+--- @field action argparse2.Action?
+---     This controls the behavior of how parsed arguments are added into the
+---     final parsed `argparse2.Namespace`.
+--- @field choices (string[] | fun(): string[])?
+---     If included, the parameter can only accept these choices as values.
+--- @field count argparse2.MultiNumber?
+---     The number of times that this parameter must be written.
+--- @field default any?
+---     When this parameter is visited, this value is added to the returned
+---     `argparse2.Namespace` assuming no other value overwrites it.
+--- @field destination string?
+---     When a parsed `argparse2.Namespace` is created, this field is used to store
+---     the final parsed value(s). If no `destination` is given an
+---     automatically assigned name is used instead.
+--- @field help string?
+---     Explain what this parser is meant to do and the parameter(s) it needs.
+---     Keep it brief (< 88 characters).
+--- @field name? string
+---     The ways to refer to this instance.
+--- @field names? string[]
+---     The ways to refer to this instance.
+--- @field nargs argparse2.MultiNumber?
+---     The number of elements that this parameter consumes at once.
+--- @field parent argparse2.ParameterParser?
+---     The parser that owns this instance.
+--- @field type (fun(value: string): any)?
+---     The expected output type. If a function is given, assume that the user
+---     knows what they're doing and use their function's return value.
+
+--- @class argparse2.ParameterParserInputOptions
 ---     The options that we might pass to `argparse2.ParameterParser.new`.
 --- @field choices (string[] | fun(): string[])?
+---     If included, the parameter can only accept these choices as values.
+--- @field help string
+---     Explain what this parser is meant to do and the parameter(s) it needs.
+---     Keep it brief (< 88 characters).
+--- @field name string?
+---     The parser name. This only needed if this parser has a parent subparser.
+--- @field parent argparse2.Subparsers?
+---     A subparser that own this `argparse2.ParameterParser`, if any.
+
+--- @class argparse2.ParameterParserOptions
+---     The options that we might pass to `argparse2.ParameterParser.new`.
+--- @field choices (fun(): string[])?
 ---     If included, the parameter can only accept these choices as values.
 --- @field help string
 ---     Explain what this parser is meant to do and the parameter(s) it needs.
@@ -82,6 +128,8 @@ local texter = require("plugin_template._core.texter")
 --- @field help string
 ---     Explain what types of parsers this object is meant to hold Keep it
 ---     brief (< 88 characters).
+--- @field parent argparse2.ParameterParser?
+---     The parser that owns this instance, if any.
 --- @field required boolean?
 ---     If `true` then one of the parser children must be matched or the user's
 ---     argument input is considered invalid. If `false` then the inner parser
@@ -913,12 +961,16 @@ end
 --- @return string # The found data.
 ---
 local function _concise_inspect(data)
+    --- NOTE: Not sure why llscheck doesn't like this line. Maybe the
+    --- annotations for `vim.inspect` are incorret.
+    ---
+    --- @diagnostic disable-next-line redundant-parameter
     return vim.inspect(data, { depth = 1 }) or ""
 end
 
 --- Find a proper type converter from `options`.
 ---
---- @param options argparse2.ParameterOptions The suggested type for an parameter.
+--- @param options argparse2.ParameterInputOptions | argparse2.ParameterOptions The suggested type for an parameter.
 ---
 local function _expand_type_options(options)
     if not options.type then
@@ -947,7 +999,7 @@ end
 --- a `string` or `string[]`, handle that. If it's a function, assume the user
 --- knows what they're doing and include it.
 ---
---- @param options argparse2.ParameterOptions The user-written options. (sparse or not).
+--- @param options argparse2.ParameterInputOptions | argparse2.ParameterOptions | argparse2.ParameterParserOptions | argparse2.ParameterParserInputOptions The user-written options. (sparse or not).
 ---
 local function _expand_choices_options(options)
     if not options.choices then
@@ -981,7 +1033,8 @@ end
 
 --- If `options` is sparsely written, "expand" all of its values. so we can use it.
 ---
---- @param options argparse2.ParameterOptions The user-written options. (sparse or not).
+--- @param options argparse2.ParameterInputOptions | argparse2.ParameterOptions
+---     The user-written options. (sparse or not).
 ---
 local function _expand_parameter_options(options)
     _expand_type_options(options)
@@ -1035,7 +1088,7 @@ end
 ---
 --- If `names` is `{"foo", "-f"}` then this function will error.
 ---
---- @param options argparse2.ParameterOptions All data to check.
+--- @param options argparse2.ParameterInputOptions | argparse2.ParameterOptions All data to check.
 ---
 local function _validate_parameter_names(options)
     local function _get_type(name)
@@ -1092,6 +1145,7 @@ end
 --- @return argparse2.Subparsers # A group of parsers (which will be filled with parsers later).
 ---
 function M.Subparsers.new(options)
+    --- @class argparse2.Subparsers
     local self = setmetatable({}, M.Subparsers)
 
     self._parent = options.parent
@@ -1107,8 +1161,10 @@ end
 
 --- Create a new `argparse2.ParameterParser` using `options`.
 ---
---- @param options argparse2.ParameterParserOptions The options to pass to `argparse2.ParameterParser.new`.
---- @return argparse2.ParameterParser # The created parser.
+--- @param options argparse2.ParameterParserInputOptions | argparse2.ParameterParserOptions
+---     The options to pass to `argparse2.ParameterParser.new`.
+--- @return argparse2.ParameterParser
+---     The created parser.
 ---
 function M.Subparsers:add_parser(options)
     local new_options = vim.tbl_deep_extend("force", options, { parent = self })
@@ -1291,6 +1347,7 @@ function M.ParameterParser.new(options)
     end
 
     _expand_choices_options(options)
+    --- @cast options argparse2.ParameterParserOptions
 
     --- @class argparse2.ParameterParser
     local self = setmetatable({}, M.ParameterParser)
@@ -1380,8 +1437,18 @@ function M.ParameterParser:_get_completion(data, column)
             end
         end
     end
+
+    local last_value
+
+    if type(last) == "boolean" then
+        last_value = ""
+    else
+        last_value = last.value
+        --- @cast last_value string
+    end
+
     for _, parser in ipairs(parsers or {}) do
-        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last.value))
+        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
 
         -- TODO: Move to a function later
         -- NOTE: This case is for when there are multiple child parsers with
@@ -1572,6 +1639,8 @@ end
 --- @return argparse2.ParameterParser[]?
 ---     All matching parsers, if any. If we failed to walk the `arguments`
 ---     completely, we return nothing to indicate a failure.
+--- @return argparse2.ParameterParser?
+---     The parser that was already matched in a previous iteration.
 ---
 function M.ParameterParser:_compute_matching_parsers(arguments)
     local previous_parser = nil
@@ -1873,7 +1942,7 @@ function M.ParameterParser:get_parent_parser()
         return nil
     end
 
-    -- TODO: Maybe use a stack here. But probably fine without
+    --- @diagnostic disable-next-line undefined-field
     return self._parent._parent
 end
 
@@ -1884,12 +1953,13 @@ end
 
 --- Create a child parameter so we can use it to parse text later.
 ---
---- @param options argparse2.ParameterOptions All of the settings to include in the new parameter.
+--- @param options argparse2.ParameterInputOptions | argparse2.ParameterOptions All of the settings to include in the new parameter.
 --- @return argparse2.Parameter # The created `argparse2.Parameter` instance.
 ---
 function M.ParameterParser:add_parameter(options)
     _validate_parameter_names(options)
     _expand_parameter_options(options)
+    --- @cast options argparse2.ParameterOptions
 
     local new_options = vim.tbl_deep_extend("force", options, { parent = self })
 
