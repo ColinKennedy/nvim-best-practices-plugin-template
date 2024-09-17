@@ -25,19 +25,25 @@ jobs:
           commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
   tags:
     runs-on: ubuntu-latest
-    - uses: rhysd/action-setup-vim@v1
-      with:
-        neovim: true
-        version: stable
-      - name: Generate tags and exit
+    needs: documentation
+    steps:
+      - name: Setup Neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: stable
+
+      - name: Generate tags
         run: |
           nvim -c 'helptags doc' -c 'quit'
+
       - name: Configure Git
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
+
       - name: Commit and push changes
         run: |
           git add doc/tags
-          git commit -m "Auto-generated vimtags by GitHub Actions"
+          git commit -m "Auto-generated vimtags by GitHub Actions" || echo "No changes to commit"
           git push
