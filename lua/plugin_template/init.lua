@@ -19,12 +19,73 @@ local M = {}
 configuration.initialize_data_if_needed()
 
 -- TODO: (you) - Change this file to whatever you need. These are just examples
-M.run_arbitrary_thing = arbitrary_thing_runner.run
-M.run_copy_logs = copy_logs_runner.run
-M.run_hello_world_say_phrase = say_runner.run_say_phrase
-M.run_hello_world_say_word = say_runner.run_say_word
-M.run_goodnight_moon_read = read.run
-M.run_goodnight_moon_count_sheep = count_sheep.run
-M.run_goodnight_moon_sleep = sleep.run
+
+--- Print the `names`.
+---
+--- @param names string[]? Some text to print out. e.g. `{"a", "b", "c"}`.
+---
+function M.run_arbitrary_thing(names)
+    arbitrary_thing_runner.run(names)
+end
+
+--- Copy the log data from the given `path` to the user's clipboard.
+---
+--- @param path string?
+---     A path on-disk to look for logs. If none is given, the default fallback
+---     location is used instead.
+---
+function M.run_copy_logs(path)
+    copy_logs_runner.run(path)
+end
+
+--- Print `phrase` according to the other options.
+---
+--- @param phrase string[]
+---     The text to say.
+--- @param repeat_ number?
+---     A 1-or-more value. The number of times to print `word`.
+--- @param style string?
+---     Control how the text should be shown.
+---
+function M.run_hello_world_say_phrase(phrase, repeat_, style)
+    say_runner.run_say_phrase(phrase, repeat_, style)
+end
+
+--- Print `phrase` according to the other options.
+---
+--- @param word string
+---     The text to say.
+--- @param repeat_ number?
+---     A 1-or-more value. The number of times to print `word`.
+--- @param style string?
+---     Control how the text should be shown.
+---
+function M.run_hello_world_say_word(word, repeat_, style)
+    say_runner.run_say_word(word, repeat_, style)
+end
+
+--- Count a sheep for each `count`.
+---
+--- @param count number Prints 1 sheep per `count`. A value that is 1-or-greater.
+---
+function M.run_goodnight_moon_count_sheep(count)
+    count_sheep.run(count)
+end
+
+--- Print the name of the book.
+---
+--- @param book string The name of the book.
+---
+function M.run_goodnight_moon_read(book)
+    read.run(book)
+end
+
+--- Print Zzz each `count`.
+---
+--- @param count number? Prints 1 Zzz per `count`. A value that is 1-or-greater.
+---
+function M.run_goodnight_moon_sleep(count)
+    sleep.run(count)
+end
 
 return M
