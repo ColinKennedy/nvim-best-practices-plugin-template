@@ -66,33 +66,10 @@ local texter = require("plugin_template._core.texter")
 ---     The expected output type. If a function is given, assume that the user
 ---     knows what they're doing and use their function's return value.
 
---- @class argparse2.ParameterOptions
+--- @class argparse2.ParameterOptions: argparse2.ParameterInputOptions
 ---     All of the settings to include in a new parameter.
---- @field action argparse2.Action?
----     This controls the behavior of how parsed arguments are added into the
----     final parsed `argparse2.Namespace`.
---- @field choices (string[] | fun(): string[])?
+--- @field choices (fun(): string[])?
 ---     If included, the parameter can only accept these choices as values.
---- @field count argparse2.MultiNumber?
----     The number of times that this parameter must be written.
---- @field default any?
----     When this parameter is visited, this value is added to the returned
----     `argparse2.Namespace` assuming no other value overwrites it.
---- @field destination string?
----     When a parsed `argparse2.Namespace` is created, this field is used to store
----     the final parsed value(s). If no `destination` is given an
----     automatically assigned name is used instead.
---- @field help string?
----     Explain what this parser is meant to do and the parameter(s) it needs.
----     Keep it brief (< 88 characters).
---- @field name? string
----     The ways to refer to this instance.
---- @field names? string[]
----     The ways to refer to this instance.
---- @field nargs argparse2.MultiNumber?
----     The number of elements that this parameter consumes at once.
---- @field parent argparse2.ParameterParser?
----     The parser that owns this instance.
 --- @field type (fun(value: string): any)?
 ---     The expected output type. If a function is given, assume that the user
 ---     knows what they're doing and use their function's return value.
@@ -109,17 +86,10 @@ local texter = require("plugin_template._core.texter")
 --- @field parent argparse2.Subparsers?
 ---     A subparser that own this `argparse2.ParameterParser`, if any.
 
---- @class argparse2.ParameterParserOptions
+--- @class argparse2.ParameterParserOptions: argparse2.ParameterParserInputOptions
 ---     The options that we might pass to `argparse2.ParameterParser.new`.
 --- @field choices (fun(): string[])?
 ---     If included, the parameter can only accept these choices as values.
---- @field help string
----     Explain what this parser is meant to do and the parameter(s) it needs.
----     Keep it brief (< 88 characters).
---- @field name string?
----     The parser name. This only needed if this parser has a parent subparser.
---- @field parent argparse2.Subparsers?
----     A subparser that own this `argparse2.ParameterParser`, if any.
 
 --- @class argparse2.SubparsersOptions
 ---     Customization options for the new argparse2.Subparsers.
@@ -755,8 +725,6 @@ end
 
 --- Find the next arguments that need to be completed / used based on some partial `remainder_text`.
 ---
---- @param argument argparse.ArgparseArgument
----     The last known argument (which we will use to find the next argument(s)).
 --- @param remainder_text string
 ---     Text that we tried to parse into a valid argument but couldn't. Usually
 ---     this is empty or is just whitespace.
@@ -765,7 +733,7 @@ end
 --- @return string[]
 ---     The matching names, if any.
 ---
-local function _get_next_arguments_from_remainder(argument, remainder_text, parsers)
+local function _get_next_arguments_from_remainder(remainder_text, parsers)
     -- local name = _get_argument_name(argument)
     -- local matches = vim.iter(parsers):filter(function(parser)
     --     return vim.tbl_contains(parser:get_names(), name)
@@ -999,7 +967,11 @@ end
 --- a `string` or `string[]`, handle that. If it's a function, assume the user
 --- knows what they're doing and include it.
 ---
---- @param options argparse2.ParameterInputOptions | argparse2.ParameterOptions | argparse2.ParameterParserOptions | argparse2.ParameterParserInputOptions The user-written options. (sparse or not).
+--- @param options argparse2.ParameterInputOptions
+---     | argparse2.ParameterOptions
+---     | argparse2.ParameterParserOptions
+---     | argparse2.ParameterParserInputOptions
+---     The user-written options. (sparse or not).
 ---
 local function _expand_choices_options(options)
     if not options.choices then
@@ -1419,9 +1391,7 @@ function M.ParameterParser:_get_completion(data, column)
         --     return {}
         -- end
 
-        local last = stripped.arguments[#stripped.arguments]
-
-        return _get_next_arguments_from_remainder(last, remainder, parsers or { previous_parser })
+        return _get_next_arguments_from_remainder(remainder, parsers or { previous_parser })
     end
 
     local last = stripped.arguments[#stripped.arguments]
@@ -1953,8 +1923,10 @@ end
 
 --- Create a child parameter so we can use it to parse text later.
 ---
---- @param options argparse2.ParameterInputOptions | argparse2.ParameterOptions All of the settings to include in the new parameter.
---- @return argparse2.Parameter # The created `argparse2.Parameter` instance.
+--- @param options argparse2.ParameterInputOptions | argparse2.ParameterOptions
+---     All of the settings to include in the new parameter.
+--- @return argparse2.Parameter
+---     The created `argparse2.Parameter` instance.
 ---
 function M.ParameterParser:add_parameter(options)
     _validate_parameter_names(options)
