@@ -1,8 +1,8 @@
 --- Tell the user which command they just ran, using lualine.nvim
 ---
---- @source https://github.com/nvim-lualine/lualine.nvim
+---@source https://github.com/nvim-lualine/lualine.nvim
 ---
---- @module 'lualine.components.plugin_template'
+---@module 'lualine.components.plugin_template'
 ---
 
 local arbitrary_thing_runner = require("plugin_template._commands.arbitrary_thing.runner")
@@ -18,18 +18,18 @@ local tabler = require("plugin_template._core.tabler")
 
 local M = require("lualine.component"):extend()
 
---- @type string?
+---@type string?
 M.PREVIOUS_COMMAND = nil
 
---- @class plugin_template.LualineConfiguration
+---@class plugin_template.LualineConfiguration
 ---     The Raw user settings from lualine's configuration.
 ---     e.g. `require("lualine").setup { sections = { { "plugin_template", ... }}}`
 ---     where "..." is the user's settings.
---- @field display table<string, plugin_template.LualineDisplayData>?
+---@field display table<string, plugin_template.LualineDisplayData>?
 
---- @class plugin_template.LualineDisplayData
+---@class plugin_template.LualineDisplayData
 ---     Any text, icons, etc that will be displayed for `plugin_template` commands.
---- @field prefix string
+---@field prefix string
 ---     The text to display when a command was called. e.g. " Goodnight moon".
 
 --- Track the given `command` any time a function (`callers`) in `module` runs.
@@ -38,9 +38,9 @@ M.PREVIOUS_COMMAND = nil
 ---     To prevent unwanted behavior, only call this function one for every
 ---     unique Lua `module` + caller.
 ---
---- @param module table<any, any> A Lua file to directly edit.
---- @param callers string[] The names of each function(s) to modify.
---- @param command string The command name to track when a function `callers` runs.
+---@param module table<any, any> A Lua file to directly edit.
+---@param callers string[] The names of each function(s) to modify.
+---@param command string The command name to track when a function `callers` runs.
 ---
 local function _patch_runner_commands(module, callers, command)
     for _, name in ipairs(callers) do
@@ -63,7 +63,7 @@ _patch_runner_commands(sleep, { "run" }, "goodnight_moon")
 
 --- Setup all colors / text for lualine to display later.
 ---
---- @param options plugin_template.LualineConfiguration?
+---@param options plugin_template.LualineConfiguration?
 ---     The options to pass from lualine to `plugin_templaet`.
 ---
 function M:init(options)
@@ -114,7 +114,7 @@ function M:init(options)
     }
 end
 
---- @return string? # Get the text for the Lualine component.
+---@return string? # Get the text for the Lualine component.
 function M:update_status()
     local command = M.PREVIOUS_COMMAND
 

@@ -1,6 +1,6 @@
 --- Make sure the Telescope integration works as expected.
 ---
---- @module 'plugin_template.telescope_spec'
+---@module 'plugin_template.telescope_spec'
 ---
 
 local mock_test = require("test_utilities.mock_test")
@@ -39,7 +39,7 @@ end
 --- If you or some other API call `vim.schedule` / `vim.schedule_wrap` and want
 --- to make sure that function runs, call this function.
 ---
---- @param timeout number?
+---@param timeout number?
 ---     The milliseconds to wait before continuing. If the timeout is exceeded
 ---     then we stop waiting for all of the functions to call.
 ---
@@ -61,7 +61,7 @@ end
 
 --- Wait for our (mocked) unittest variable to get some data back.
 ---
---- @param timeout number?
+---@param timeout number?
 ---     The milliseconds to wait before continuing. If the timeout is exceeded
 ---     then we stop waiting for all of the functions to call.
 ---
@@ -77,7 +77,7 @@ end
 
 --- Create a Telescope picker for `command` and get the created "prompt" buffer back.
 ---
---- @param command string
+---@param command string
 ---     A Telescope sub-command. e.g. If the command was `:Telescope
 ---     plugin_template foo` then this function would require `"foo"`.
 ---

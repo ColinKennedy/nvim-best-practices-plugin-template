@@ -4,7 +4,7 @@
 --- likely want to delete or heavily modify this file. But it does give a quick
 --- look how to mock a test and some things you can do with Neovim/busted.
 ---
---- @module 'plugin_template.plugin_template_spec'
+---@module 'plugin_template.plugin_template_spec'
 ---
 
 local plugin_template = require("plugin_template")
@@ -14,7 +14,7 @@ local _ORIGINAL_NOTIFY = vim.notify
 
 --- Keep track of text that would have been printed. Save it to a variable instead.
 ---
---- @param data string Some text to print to stdout.
+---@param data string Some text to print to stdout.
 ---
 local function _save_prints(data)
     table.insert(_DATA, data)

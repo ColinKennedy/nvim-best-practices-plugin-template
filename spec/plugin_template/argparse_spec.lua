@@ -1,6 +1,6 @@
 --- Make sure the argument parser works as expected.
 ---
---- @module 'plugin_template.argparse_spec'
+---@module 'plugin_template.argparse_spec'
 ---
 
 local argparse = require("plugin_template._cli.argparse")

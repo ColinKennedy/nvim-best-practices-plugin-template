@@ -2,7 +2,7 @@
 
 local argparse2 = require("plugin_template._cli.argparse2")
 
---- @return argparse2.ParameterParser # Create a tree of commands for unittests.
+---@return argparse2.ParameterParser # Create a tree of commands for unittests.
 local function _make_simple_parser()
     local choices = function(data)
         local value = data.text

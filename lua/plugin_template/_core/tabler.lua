@@ -1,21 +1,21 @@
 --- Make dealing with Lua tables a bit easier.
 ---
---- @module 'plugin_template._core.tabler'
+---@module 'plugin_template._core.tabler'
 ---
 
 local M = {}
 
 --- Get a sub-section copy of `table_` as a new table.
 ---
---- @param table_ table<any, any>
+---@param table_ table<any, any>
 ---     A list / array / dictionary / sequence to copy + reduce.
---- @param first? number
+---@param first? number
 ---     The start index to use. This value is *inclusive* (the given index
 ---     will be returned). Uses `table_`'s first index if not provided.
---- @param last? number
+---@param last? number
 ---     The end index to use. This value is *inclusive* (the given index will
 ---     be returned). Uses every index to the end of `table_`' if not provided.
---- @param step? number
+---@param step? number
 ---     The step size between elements in the slice. Defaults to 1 if not provided.
 ---
 function M.get_slice(table_, first, last, step)
@@ -30,9 +30,9 @@ end
 
 --- Access the attribute(s) within `data` from `items`.
 ---
---- @param data any Some nested data to query. e.g. `{a={b={c=true}}}`.
---- @param items string[] Some attributes to query. e.g. `{"a", "b", "c"}`.
---- @return any? # The found value, if any.
+---@param data any Some nested data to query. e.g. `{a={b={c=true}}}`.
+---@param items string[] Some attributes to query. e.g. `{"a", "b", "c"}`.
+---@return any? # The found value, if any.
 ---
 function M.get_value(data, items)
     local current = data
@@ -50,8 +50,8 @@ end
 
 --- Iterate over all of the given arrays.
 ---
---- @param ... table<any, any>[] All of the tables to expand
---- @return any # Every element of each table, in order.
+---@param ... table<any, any>[] All of the tables to expand
+---@return any # Every element of each table, in order.
 ---
 function M.chain(...)
     local lists = { ... }
@@ -75,7 +75,7 @@ end
 
 --- Delete the contents of `data`.
 ---
---- @param data table<any, any> A dictionary or array to clear.
+---@param data table<any, any> A dictionary or array to clear.
 ---
 function M.clear(data)
     -- Clear the table
@@ -86,8 +86,8 @@ end
 
 --- Append all of `items` to `table_`.
 ---
---- @param table_ any[] Any values to add.
---- @param items any The values to add.
+---@param table_ any[] Any values to add.
+---@param items any The values to add.
 ---
 function M.extend(table_, items)
     for _, item in ipairs(items) do
@@ -97,8 +97,8 @@ end
 
 --- Create a copy of `array` with its items in reverse order.
 ---
---- @param array table<any, any> Some (non-dictionary) items e.g. `{"a", "b", "c"}`.
---- @return table<any, any> # The reversed items e.g. `{"c", "b", "a"}`.
+---@param array table<any, any> Some (non-dictionary) items e.g. `{"a", "b", "c"}`.
+---@return table<any, any> # The reversed items e.g. `{"c", "b", "a"}`.
 ---
 function M.reverse_array(array)
     local output = {}

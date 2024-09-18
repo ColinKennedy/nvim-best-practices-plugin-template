@@ -1,45 +1,45 @@
 --- Connect Neovim's COMMAND mode to our Lua functions.
 ---
---- @module 'plugin_template._cli.cli_subcommand'
+---@module 'plugin_template._cli.cli_subcommand'
 ---
 
 local M = {}
 
 -- TODO: Fix documentation here later
 
---- @class plugin_template.CompleteData
+---@class plugin_template.CompleteData
 ---     The data that gets passed when `plugin_template.Subcommand.complete` is called.
---- @field parsed_arguments argparse.ArgparseResults
+---@field parsed_arguments argparse.ArgparseResults
 ---     All information that was found from parsing some user's input.
 
---- @class plugin_template.RunData
+---@class plugin_template.RunData
 ---     The data that gets passed when `plugin_template.Subcommand.run` is called.
---- @field parsed_arguments argparse.ArgparseResults
+---@field parsed_arguments argparse.ArgparseResults
 ---     All information that was found from parsing some user's input.
 
---- @class plugin_template.Subcommand
+---@class plugin_template.Subcommand
 ---     A subparser's definition. At minimum you need to define `parser` or
 ---     `run` or code will error when you try to run commands. If you define
 ---     `parser`, you don't need to define `complete` or `run` (`parser` is the
 ---     preferred way to make parsers).
---- @field complete (fun(data: plugin_template.CompleteData): string[])?
+---@field complete (fun(data: plugin_template.CompleteData): string[])?
 ---     Command completions callback, the `data` are  the lead of the subcommand's arguments
---- @field parser (fun(): argparse2.ParameterParser)?
+---@field parser (fun(): argparse2.ParameterParser)?
 ---     The primary parser used for subcommands. It handles auto-complete,
 ---     expression-evaluation, and running a user's code.
---- @field run (fun(data: plugin_template.SubcommandRun): nil)?
+---@field run (fun(data: plugin_template.SubcommandRun): nil)?
 ---     The function to run when the subcommand is called.
 
---- @class plugin_template.SubcommandRun
+---@class plugin_template.SubcommandRun
 ---     TODO Finish this later
 
---- @alias plugin_template.Subcommands table<string, plugin_template.Subcommand | fun(): argparse2.ParameterParser>
+---@alias plugin_template.Subcommands table<string, plugin_template.Subcommand | fun(): argparse2.ParameterParser>
 
 --- Check if `full` contains `prefix` + whitespace.
 ---
---- @param full string Some full text like `"PluginTemplate blah"`.
---- @param prefix string The expected starting text. e.g. `"PluginTemplate"`.
---- @return boolean # If a subcommand syntax was found, return true.
+---@param full string Some full text like `"PluginTemplate blah"`.
+---@param prefix string The expected starting text. e.g. `"PluginTemplate"`.
+---@return boolean # If a subcommand syntax was found, return true.
 ---
 local function _is_subcommand(full, prefix)
     local expression = "^" .. prefix .. "%s+.*$"
@@ -49,9 +49,9 @@ end
 
 --- Get the auto-complete, if any, for a subcommand.
 ---
---- @param text string Some full text like `"PluginTemplate blah"`.
---- @param prefix string The expected starting text. e.g. `"PluginTemplate"`.
---- @param subcommands plugin_template.Subcommands All allowed commands.
+---@param text string Some full text like `"PluginTemplate blah"`.
+---@param prefix string The expected starting text. e.g. `"PluginTemplate"`.
+---@param subcommands plugin_template.Subcommands All allowed commands.
 ---
 local function _get_subcommand_completion(text, prefix, subcommands)
     local argparse = require("plugin_template._cli.argparse")
@@ -130,8 +130,8 @@ end
 
 --- Change `text` to something that will work with Lua regex.
 ---
---- @param text string Some raw text. e.g. `"foo-bar"`.
---- @return string # Escaped text, e.g. `"foo%-bar"`.
+---@param text string Some raw text. e.g. `"foo-bar"`.
+---@return string # Escaped text, e.g. `"foo%-bar"`.
 ---
 local function _escape(text)
     local escaped = text:gsub("%-", "%%-")
@@ -174,9 +174,9 @@ end
 --- Basically it's a function that returns a function that makes `:PluginTemplate
 --- hello` auto-complete to makes `:PluginTemplate hello-world`.
 ---
---- @param prefix string The command to exclude from auto-complete. e.g. `"PluginTemplate"`.
---- @param subcommands plugin_template.Subcommands All allowed commands.
---- @return function # The generated auto-complete function.
+---@param prefix string The command to exclude from auto-complete. e.g. `"PluginTemplate"`.
+---@param subcommands plugin_template.Subcommands All allowed commands.
+---@return function # The generated auto-complete function.
 ---
 function M.make_command_completer(prefix, subcommands)
     local function runner(args, text, _)
@@ -210,7 +210,7 @@ end
 -- TODO: Fix this doc + the others
 --- If anything in `subcommands` is missing data, define default value(s) for it.
 ---
---- @param subcommands plugin_template.Subcommands
+---@param subcommands plugin_template.Subcommands
 ---     All registered commands for `plugin_template` to possibly modify.
 ---
 function M.initialize_missing_values(subcommands)
@@ -231,7 +231,7 @@ end
 ---
 --- This function handles that process, which we call "triage".
 ---
---- @param subcommands plugin_template.Subcommands
+---@param subcommands plugin_template.Subcommands
 ---     All registered commands for `plugin_template` which we will let users run.
 ---     If the user gives an incorrect subcommand name, an error is displayed instead.
 ---

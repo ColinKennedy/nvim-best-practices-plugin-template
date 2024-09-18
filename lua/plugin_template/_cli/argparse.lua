@@ -1,6 +1,6 @@
 --- Parse text into positional / named arguments.
 ---
---- @module 'plugin_template._cli.argparse'
+---@module 'plugin_template._cli.argparse'
 ---
 
 local vlog = require("plugin_template._vendors.vlog")
@@ -9,7 +9,7 @@ local M = {}
 
 local _PREFIX_CHARACTERS = { "-", "+" }
 
---- @enum argparse.ArgumentType
+---@enum argparse.ArgumentType
 M.ArgumentType = {
     dynamic = "__dynamic",
     flag = "__flag",
@@ -17,57 +17,57 @@ M.ArgumentType = {
     position = "__position",
 }
 
---- @class argparse.BaseArgument
+---@class argparse.BaseArgument
 ---     A base class to inherit from.
---- @field argument_type argparse.ArgumentType
+---@field argument_type argparse.ArgumentType
 ---     An type indicator for this argument.
---- @field range argparse.ArgumentRange
+---@field range argparse.ArgumentRange
 ---     The start and end index (both are inclusive) of the argument.
 
---- @class argparse.ArgumentRange
+---@class argparse.ArgumentRange
 ---     The start and end index (both are inclusive) of the argument.
---- @field start_column number
+---@field start_column number
 ---     The first index of the argument (inclusive).
---- @field end_column number
+---@field end_column number
 ---     The last index of the argument (inclusive).
 
---- @class argparse.FlagArgument : argparse.BaseArgument
+---@class argparse.FlagArgument : argparse.BaseArgument
 ---     An argument that has a name but no value. It starts with either - or --
 ---     Examples: `-f` or `--foo` or `--foo-bar`
---- @field name string
+---@field name string
 ---     The text of the flag. e.g. The `"foo"` part of `"--foo"`.
 
---- @class argparse.PositionArgument : argparse.BaseArgument
+---@class argparse.PositionArgument : argparse.BaseArgument
 ---     An argument that is just text. e.g. `"foo bar"` is two positions, foo and bar.
---- @field value string
+---@field value string
 ---     The position's label.
 
---- @class argparse.NamedArgument : argparse.FlagArgument
+---@class argparse.NamedArgument : argparse.FlagArgument
 ---     A --key=value pair. Basically it's a argparse.FlagArgument that has an extra value.
---- @field needs_choice_completion boolean
+---@field needs_choice_completion boolean
 ---     If `true`, it means that we've typed `"--foo="` and are ready to
 ---     auto-complete for `"--foo=bar"`. If `false`, it means we've typed
 ---     `"--"`, `"--f"`, `"--fo"`, `"--foo"`, and we are still auto-completing
 ---     the name and aren't ready to auto-complete for the choices yet.
---- @field value string | boolean
+---@field value string | boolean
 ---     The second-hand side of the argument. e.g. The `"bar"` part of
 ---     `"--foo=bar"`. If the argument is partially written like `"--foo="`
 ---     then this will be an empty string.
 
---- @alias argparse.ArgparseArgument argparse.FlagArgument | argparse.PositionArgument | argparse.NamedArgument
+---@alias argparse.ArgparseArgument argparse.FlagArgument | argparse.PositionArgument | argparse.NamedArgument
 
---- @class argparse.ArgparseResults
+---@class argparse.ArgparseResults
 ---     All information that was found from parsing some user's input.
---- @field arguments argparse.ArgparseArgument[]
+---@field arguments argparse.ArgparseArgument[]
 ---     The arguments that were able to be parsed
---- @field remainder argparse.ArgparseRemainder
+---@field remainder argparse.ArgparseRemainder
 ---     Any leftover text during parsing that didn't match an argument.
---- @field text string
+---@field text string
 ---     The original, raw, unparsed user arguments.
 
---- @class argparse.ArgparseRemainder
+---@class argparse.ArgparseRemainder
 ---     Any leftover text during parsing that didn't match an argument.
---- @field value string
+---@field value string
 ---     The raw, unparsed text.
 
 --- An internal tracker for the arguments.
@@ -83,8 +83,8 @@ local _State = {
 
 --- Check if `character` is a typical a-zA-Z0-9 character.
 ---
---- @param character string Basically any non-special character.
---- @return boolean # If a-zA-Z0-9, return `true`.
+---@param character string Basically any non-special character.
+---@return boolean # If a-zA-Z0-9, return `true`.
 ---
 local function is_alpha_numeric(character)
     return character:match("[^='\"%s]") ~= nil
@@ -92,8 +92,8 @@ end
 
 --- Check if `character` marks the start of a `argparse.FlagArgument` or `argparse.NamedArgument`.
 ---
---- @param character string A starting character. e.g. `-`, `+`, etc.
---- @return boolean # If `character` is a `argparse.PositionArgument` character, return `true`.
+---@param character string A starting character. e.g. `-`, `+`, etc.
+---@return boolean # If `character` is a `argparse.PositionArgument` character, return `true`.
 ---
 local function _is_prefix(character)
     return vim.tbl_contains(_PREFIX_CHARACTERS, character)
@@ -101,8 +101,8 @@ end
 
 --- Check if `character` is a space, tab, or newline.
 ---
---- @param character string Basically `" "`, `\n`, `\t`.
---- @return boolean # If it's any whitespace, return `true`.
+---@param character string Basically `" "`, `\n`, `\t`.
+---@return boolean # If it's any whitespace, return `true`.
 ---
 local function _is_whitespace(character)
     return character:match("%s")
@@ -110,8 +110,8 @@ end
 
 --- Check if `character` starts a multi-word quote.
 ---
---- @param character string Basically ' or ".
---- @return boolean # If ' or ", return `true`.
+---@param character string Basically ' or ".
+---@return boolean # If ' or ", return `true`.
 ---
 local function _is_quote(character)
     return character == '"' or character == "'"
@@ -125,9 +125,9 @@ end
 ---     - `--buzz` is a multi-letter flag
 ---     - `--some="thing else" is a named argument whose value is "thing else"
 ---
---- @param text string
+---@param text string
 ---     Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
---- @return argparse.ArgparseResults
+---@return argparse.ArgparseResults
 ---     All found for positional arguments, named arguments, and flag arguments.
 ---
 function M.parse_arguments(text)

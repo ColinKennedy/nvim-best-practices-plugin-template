@@ -1,6 +1,6 @@
 --- Make sure auto-complete works as expected.
 ---
---- @module 'plugin_template.autocomplete_spec'
+---@module 'plugin_template.autocomplete_spec'
 ---
 
 local argparse = require("plugin_template._cli.argparse")
@@ -11,7 +11,7 @@ local completion = require("plugin_template._cli.completion")
 
 local _parse = argparse.parse_arguments
 
---- @return argparse2.ParameterParser # Create a tree of commands for unittests.
+---@return argparse2.ParameterParser # Create a tree of commands for unittests.
 local function _make_simple_parser()
     local choices = function(data)
         local value = data.text
@@ -68,7 +68,7 @@ local function _make_simple_parser()
     return parser
 end
 
---- @return argparse2.ParameterParser # Create a tree of commands for unittests.
+---@return argparse2.ParameterParser # Create a tree of commands for unittests.
 local function _make_style_parser()
     local parser = argparse2.ParameterParser.new({ name = "test", help = "Test" })
     local choice = { "lowercase", "uppercase" }

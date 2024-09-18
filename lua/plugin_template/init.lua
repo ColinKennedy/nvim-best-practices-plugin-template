@@ -3,7 +3,7 @@
 --- If a function's signature here changes in some incompatible way, this
 --- package must get a new *major* version.
 ---
---- @module 'plugin_template'
+---@module 'plugin_template'
 ---
 
 local configuration = require("plugin_template._core.configuration")
@@ -22,7 +22,7 @@ configuration.initialize_data_if_needed()
 
 --- Print the `names`.
 ---
---- @param names string[]? Some text to print out. e.g. `{"a", "b", "c"}`.
+---@param names string[]? Some text to print out. e.g. `{"a", "b", "c"}`.
 ---
 function M.run_arbitrary_thing(names)
     arbitrary_thing_runner.run(names)
@@ -30,7 +30,7 @@ end
 
 --- Copy the log data from the given `path` to the user's clipboard.
 ---
---- @param path string?
+---@param path string?
 ---     A path on-disk to look for logs. If none is given, the default fallback
 ---     location is used instead.
 ---
@@ -40,11 +40,11 @@ end
 
 --- Print `phrase` according to the other options.
 ---
---- @param phrase string[]
+---@param phrase string[]
 ---     The text to say.
---- @param repeat_ number?
+---@param repeat_ number?
 ---     A 1-or-more value. The number of times to print `word`.
---- @param style string?
+---@param style string?
 ---     Control how the text should be shown.
 ---
 function M.run_hello_world_say_phrase(phrase, repeat_, style)
@@ -53,11 +53,11 @@ end
 
 --- Print `phrase` according to the other options.
 ---
---- @param word string
+---@param word string
 ---     The text to say.
---- @param repeat_ number?
+---@param repeat_ number?
 ---     A 1-or-more value. The number of times to print `word`.
---- @param style string?
+---@param style string?
 ---     Control how the text should be shown.
 ---
 function M.run_hello_world_say_word(word, repeat_, style)
@@ -66,7 +66,7 @@ end
 
 --- Count a sheep for each `count`.
 ---
---- @param count number Prints 1 sheep per `count`. A value that is 1-or-greater.
+---@param count number Prints 1 sheep per `count`. A value that is 1-or-greater.
 ---
 function M.run_goodnight_moon_count_sheep(count)
     count_sheep.run(count)
@@ -74,7 +74,7 @@ end
 
 --- Print the name of the book.
 ---
---- @param book string The name of the book.
+---@param book string The name of the book.
 ---
 function M.run_goodnight_moon_read(book)
     read.run(book)
@@ -82,7 +82,7 @@ end
 
 --- Print Zzz each `count`.
 ---
---- @param count number? Prints 1 Zzz per `count`. A value that is 1-or-greater.
+---@param count number? Prints 1 Zzz per `count`. A value that is 1-or-greater.
 ---
 function M.run_goodnight_moon_sleep(count)
     sleep.run(count)

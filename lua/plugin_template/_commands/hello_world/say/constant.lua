@@ -1,6 +1,6 @@
 --- Symbolic variables to use for all `hello-world say`-related commands.
 ---
---- @module 'plugin_template._commands.hello_world.say.constant'
+---@module 'plugin_template._commands.hello_world.say.constant'
 ---
 
 return {

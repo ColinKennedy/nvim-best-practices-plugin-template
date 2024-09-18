@@ -1,14 +1,14 @@
 --- Make manipulating Lua text easier.
 ---
---- @module 'plugin_template._core.texter'
+---@module 'plugin_template._core.texter'
 ---
 
 local M = {}
 
 --- Check if `items` is a flat array/list of string values.
 ---
---- @param items any An array to check.
---- @return boolean # If found, return `true`.
+---@param items any An array to check.
+---@return boolean # If found, return `true`.
 ---
 function M.is_string_list(items)
     if type(items) ~= "table" then
