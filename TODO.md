@@ -1,5 +1,8 @@
 - Follow up on - https://github.com/jeffzi/llscheck/issues/7#issuecomment-2352981951
 - Get unittests to pass
+- Get all linters / etc to pass
+- Make sure CI works
+
 - Auto-complete should include `--foo=` if a flag requires `nargs=1` but `--foo` if `nargs` is different
 
 - Allow all `choices` to get context information (current argument, current text, etc etc)
@@ -36,15 +39,11 @@
 - Add a unittest to makes sure that position `choices` can maintain another table and remove possible matches each time the argument is used
  - Same test but for flag arguments
 
-- Allow ++foo arguments instead of --
-
 Replace all foo._bar code with actual accessors / functions
 
 - replace all `_subparsers` with a get_subparsers() method
 - replace the subparsers / parser nested for-loop with a "parser iterator" instead
 - Add unittests for invalid arguments. e.g. `say word 'asdfasd`
-
-- Adjust all docstrings so they're as LuaCATS expects
 
 
 
@@ -56,11 +55,5 @@ allow fuzzy matching too
 
 
 
-- See if there's a way to make llscheck work with busted attributes
- - https://github.com/jeffzi/llscheck/issues/7
-
-
-
 ## Extra Features
-- lemmy-help to generate vimdocs from .lua files
 - Check files for syntax errors using tree-sitter parsers (via Neovim)?
