@@ -4,11 +4,9 @@ local success, doc = pcall(require, "mini.doc")
 
 if not success then
     error(
-        "mini.doc is required to run this script. "
-        .. "Please clone + source https://github.com/echasnovski/mini.doc"
+        "mini.doc is required to run this script. Please clone + source https://github.com/echasnovski/mini.doc"
     )
 end
-
 
 if _G.MiniDoc == nil then
     doc.setup()
@@ -20,7 +18,7 @@ end
 ---@return string # The wrapped text, e.g. `"*plugin_template.ClassName*"`.
 ---
 local function _add_tag(text)
-    return (text:gsub('(%S+)', '%*%1%*'))
+    return (text:gsub("(%S+)", "%*%1%*"))
 end
 
 --- Remove any quotes around `text`.
@@ -34,7 +32,6 @@ end
 local function _strip_quotes(text)
     return (text:gsub("^['\"](.-)['\"]$", "%1"))
 end
-
 
 --- Get the last (contiguous) key in `data` that is numbered.
 ---
@@ -61,7 +58,6 @@ local function _get_last_numeric_key(data)
 
     return found
 end
-
 
 --- Ensure there is one blank space around `section` by modifying it.
 ---
@@ -126,7 +122,9 @@ local function _get_module_enabled_hooks(module_identifier)
     local hooks = vim.deepcopy(doc.default_hooks)
 
     hooks.sections["@class"] = function(section)
-        if #section == 0 or section.type ~= "section" then return end
+        if #section == 0 or section.type ~= "section" then
+            return
+        end
 
         section[1] = _add_tag(section[1])
     end
@@ -158,10 +156,7 @@ local function _get_module_enabled_hooks(module_identifier)
 
     hooks.sections["@tag"] = function(section)
         if module_identifier and module_name then
-            _replace_function_name( section,
-                module_identifier,
-                module_name
-            )
+            _replace_function_name(section, module_identifier, module_name)
         end
 
         original_tag_hook(section)
@@ -226,12 +221,12 @@ local function main()
     local root = vim.fs.normalize(vim.fs.joinpath(current_directory, ".."))
     local paths = {
         {
-            source = vim.fs.joinpath( root, "lua", "plugin_template", "init.lua" ),
-            destination = vim.fs.joinpath( root, "doc", "plugin_template_api.txt" ),
+            source = vim.fs.joinpath(root, "lua", "plugin_template", "init.lua"),
+            destination = vim.fs.joinpath(root, "doc", "plugin_template_api.txt"),
         },
         {
-            source = vim.fs.joinpath( root, "lua", "plugin_template", "types.lua" ),
-            destination = vim.fs.joinpath( root, "doc", "plugin_template_types.txt" ),
+            source = vim.fs.joinpath(root, "lua", "plugin_template", "types.lua"),
+            destination = vim.fs.joinpath(root, "doc", "plugin_template_types.txt"),
         },
     }
 
@@ -244,9 +239,8 @@ local function main()
         local module_identifier = _get_module_identifier(source)
         local hooks = _get_module_enabled_hooks(module_identifier)
 
-        doc.generate({source}, destination, { hooks = hooks })
+        doc.generate({ source }, destination, { hooks = hooks })
     end
 end
-
 
 main()
