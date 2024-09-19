@@ -1,5 +1,4 @@
 - Follow up on - https://github.com/jeffzi/llscheck/issues/7#issuecomment-2352981951
-
 - Get unittests to pass
 - Auto-complete should include `--foo=` if a flag requires `nargs=1` but `--foo` if `nargs` is different
 
