@@ -1,3 +1,11 @@
+M.run_arbitrary_thing()	plugin_template_api.txt	/*M.run_arbitrary_thing()*
+M.run_copy_logs()	plugin_template_api.txt	/*M.run_copy_logs()*
+M.run_goodnight_moon_count_sheep()	plugin_template_api.txt	/*M.run_goodnight_moon_count_sheep()*
+M.run_goodnight_moon_read()	plugin_template_api.txt	/*M.run_goodnight_moon_read()*
+M.run_goodnight_moon_sleep()	plugin_template_api.txt	/*M.run_goodnight_moon_sleep()*
+M.run_hello_world_say_phrase()	plugin_template_api.txt	/*M.run_hello_world_say_phrase()*
+M.run_hello_world_say_word()	plugin_template_api.txt	/*M.run_hello_world_say_word()*
+major	plugin_template_api.txt	/*major*
 plugin-template-a-neovim-plugin-template	plugin-template.txt	/*plugin-template-a-neovim-plugin-template*
 plugin-template-configuration	plugin-template.txt	/*plugin-template-configuration*
 plugin-template-configuration-colors	plugin-template.txt	/*plugin-template-configuration-colors*

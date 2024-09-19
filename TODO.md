@@ -1,7 +1,19 @@
-- Follow up on - https://github.com/jeffzi/llscheck/issues/7#issuecomment-2352981951
-- Change the docstrings to make it easier to generate API documentation (lemmy-help)
 - Change the file structure to make it easier to generate API documentation
-- Get unittess to pass
+ - Make  specific "types" file so that it's included in the API
+  - e.g. the configuration
+
+- Make sure @class also replace the M. namespace
+- Bug fix - the doc/tags is still generating the M. namespace. Fix it!
+
+- Add warning to the bottom of the generated API file - "dont change this file"
+
+- Add API documentation github CI workflow
+ - Have it run on each major / minor, I guess
+- Add command to Makefile for making user / API documentation
+
+- Follow up on - https://github.com/jeffzi/llscheck/issues/7#issuecomment-2352981951
+
+- Get unittests to pass
 - Auto-complete should include `--foo=` if a flag requires `nargs=1` but `--foo` if `nargs` is different
 
 - Allow all `choices` to get context information (current argument, current text, etc etc)

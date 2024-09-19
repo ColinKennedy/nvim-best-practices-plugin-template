@@ -1,4 +1,7 @@
-.PHONY: llscheck luacheck stylua test
+.PHONY: documentation llscheck luacheck stylua test
+
+documentation:
+	nvim -l scripts/make_api_documentation.lua
 
 llscheck:
 	llscheck --configpath .luarc.json .

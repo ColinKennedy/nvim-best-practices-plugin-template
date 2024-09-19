@@ -2,10 +2,8 @@
     "Lua.diagnostics.libraryFiles": "Disable",
     "Lua.workspace.checkThirdParty": "Disable",
     "Lua.workspace.library": [
-        "../.dependencies/busted/library",
-        "../.dependencies/luassert/library",
-        "/home/runner/work/nvim-best-practices-plugin-template/nvim-best-practices-plugin-template/deps/neovim/runtime/lua",
-        "/home/runner/work/nvim-best-practices-plugin-template/nvim-best-practices-plugin-template/deps/neodev.nvim/types/stable"
+        ".dependencies/busted/library",
+        ".dependencies/luassert/library"
     ],
     "diagnostics.globals": [
         "vim"
