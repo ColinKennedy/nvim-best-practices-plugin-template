@@ -12,6 +12,26 @@ if _G.MiniDoc == nil then
     doc.setup()
 end
 
+--- Check if `text` is the start of a function's parameters.
+---
+---@param text string Some text. e.g. `"Parameters ~"`.
+---@return boolean # If it's a section return `true`.
+---
+local function _is_parameter_section(text)
+    return text:match("%s*Parameters%s*~%s*")
+end
+
+
+--- Check if `text` is the start of a function's parameters.
+---
+---@param text string Some text. e.g. `"Return ~"`.
+---@return boolean # If it's a section return `true`.
+---
+local function _is_return_section(text)
+    return text:match("%s*Return%s*~%s*")
+end
+
+
 --- Add the text that Vimdoc uses to generate doc/tags (basically surround the text with *s).
 ---
 ---@param text string Any text, e.g. `"plugin_template.ClassName"`.
@@ -19,6 +39,21 @@ end
 ---
 local function _add_tag(text)
     return (text:gsub("(%S+)", "%*%1%*"))
+end
+
+--- Run `caller` on `section` and all of its children recursively.
+---
+---@param caller fun(section: MiniDoc.Section): nil A callback used to modify its given `section`.
+---@param section MiniDoc.Section The starting point to traverse underneath.
+---
+local function _apply_recursively(caller, section)
+  caller(section)
+
+  if type(section) == 'table' then
+      for _, t in ipairs(section) do
+          _apply_recursively(caller, t)
+      end
+  end
 end
 
 --- Remove any quotes around `text`.
@@ -101,6 +136,46 @@ local function _replace_function_name(section, module_identifier, module_name)
     for index, line in ipairs(section) do
         line = line:gsub(prefix, replacement)
         section[index] = line
+    end
+end
+
+--- Add newlines around `section` if needed.
+---
+---@param section MiniDoc.Section
+---    The object to possibly modify.
+---@param count number
+---    The number of lines to put before `section` if needed. If the section
+---    has more newlines than `count`, it is converted back to `count`.
+---
+local function _set_trailing_newline(section, count)
+    local function _is_not_whitespace(text)
+        return text:match("%S+")
+    end
+
+    count = count or 1
+    local found_text = false
+    local lines = 0
+
+    for _, line in ipairs(section) do
+        if not found_text then
+            if _is_not_whitespace(line) then
+                found_text = true
+            end
+        elseif _is_not_whitespace(line) then
+            lines = 0
+        else
+            lines = lines + 1
+        end
+    end
+
+    if count > lines then
+        for _=1,count - lines do
+            section:insert(1, "")
+        end
+    else
+        for _=1,lines - count do
+            section:remove(1)
+        end
     end
 end
 
@@ -193,6 +268,37 @@ local function _get_module_enabled_hooks(module_identifier)
         end
 
         original_tag_hook(section)
+    end
+
+    local original_block_post_hook = hooks.block_post
+
+    hooks.block_post = function(block)
+        original_block_post_hook(block)
+
+        if not block:has_lines() then return end
+
+        _apply_recursively(
+            function(section)
+                if not (type(section) == 'table' and section.type == 'section') then return end
+
+                if section.info.id == '@param' and _is_parameter_section(section[1]) then
+                    local previous_section = section.parent[section.parent_index - 1]
+
+                    if previous_section then
+                        _set_trailing_newline(previous_section)
+                    end
+                end
+
+                if section.info.id == '@return' and _is_return_section(section[1]) then
+                    local previous_section = section.parent[section.parent_index - 1]
+
+                    if previous_section then
+                        _set_trailing_newline(section)
+                    end
+                end
+            end,
+            block
+        )
     end
 
     -- TODO: Add alias support. These lines effectively clear aliases, which is a shame.
