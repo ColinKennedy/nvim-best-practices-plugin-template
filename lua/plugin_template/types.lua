@@ -76,9 +76,6 @@
 ---@field lualine plugin_template.ConfigurationToolsLualine?
 ---     A Vim statusline replacement that will show the command that the user just ran.
 
----@alias plugin_template.ConfigurationToolsLualine table<string, plugin_template.ConfigurationToolsLualineData>
----     Each runnable command and its display text.
-
 ---@class plugin_template.ConfigurationToolsLualineData
 ---     The display values that will be used when a specific `plugin_template`
 ---     command runs.

@@ -24,7 +24,7 @@ plugin_template.ConfigurationGoodnightMoonRead	plugin_template_types.txt	/*plugi
 plugin_template.ConfigurationHelloWorld	plugin_template_types.txt	/*plugin_template.ConfigurationHelloWorld*
 plugin_template.ConfigurationHelloWorldSay	plugin_template_types.txt	/*plugin_template.ConfigurationHelloWorldSay*
 plugin_template.ConfigurationTools	plugin_template_types.txt	/*plugin_template.ConfigurationTools*
-plugin_template.ConfigurationToolsLualineData>	plugin_template_types.txt	/*plugin_template.ConfigurationToolsLualineData>*
+plugin_template.ConfigurationToolsLualineData	plugin_template_types.txt	/*plugin_template.ConfigurationToolsLualineData*
 plugin_template.LoggingConfiguration	plugin_template_types.txt	/*plugin_template.LoggingConfiguration*
 plugin_template.run_arbitrary_thing()	plugin_template_api.txt	/*plugin_template.run_arbitrary_thing()*
 plugin_template.run_copy_logs()	plugin_template_api.txt	/*plugin_template.run_copy_logs()*

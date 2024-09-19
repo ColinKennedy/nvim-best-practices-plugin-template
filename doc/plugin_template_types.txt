@@ -79,15 +79,14 @@ Fields ~
     Control how the text is displayed. e.g. "uppercase" changes "hello" to "HELLO".
 
 ------------------------------------------------------------------------------
-plugin_template.ConfigurationTools
+*plugin_template.ConfigurationTools*
     Optional third-party tool integrations.
 Fields ~
 {lualine} plugin_template.ConfigurationToolsLualine?
     A Vim statusline replacement that will show the command that the user just ran.
 
 ------------------------------------------------------------------------------
-table<string, plugin_template.ConfigurationToolsLualineData>
-    Each runnable command and its display text.Data
+*plugin_template.ConfigurationToolsLualineData*
     The display values that will be used when a specific `plugin_template`
     command runs.
 Fields ~
