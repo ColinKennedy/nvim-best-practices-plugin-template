@@ -17,6 +17,16 @@ end
 ---@param text string Some text. e.g. `"Parameters ~"`.
 ---@return boolean # If it's a section return `true`.
 ---
+local function _is_field_section(text)
+    return text:match("%s*Fields%s*~%s*")
+end
+
+
+--- Check if `text` is the start of a function's parameters.
+---
+---@param text string Some text. e.g. `"Parameters ~"`.
+---@return boolean # If it's a section return `true`.
+---
 local function _is_parameter_section(text)
     return text:match("%s*Parameters%s*~%s*")
 end
@@ -280,6 +290,14 @@ local function _get_module_enabled_hooks(module_identifier)
         _apply_recursively(
             function(section)
                 if not (type(section) == 'table' and section.type == 'section') then return end
+
+                if section.info.id == '@field' and _is_field_section(section[1]) then
+                    local previous_section = section.parent[section.parent_index - 1]
+
+                    if previous_section then
+                        _set_trailing_newline(section)
+                    end
+                end
 
                 if section.info.id == '@param' and _is_parameter_section(section[1]) then
                     local previous_section = section.parent[section.parent_index - 1]

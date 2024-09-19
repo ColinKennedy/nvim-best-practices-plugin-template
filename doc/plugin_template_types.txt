@@ -8,6 +8,7 @@ operation of this Lua plugin.
 ------------------------------------------------------------------------------
 *plugin_template.Configuration*
     The user's customizations for this plugin.
+
 Fields ~
     {commands} plugin_template.ConfigurationCommands?
         Customize the fallback behavior of all `:PluginTemplate` commands.
@@ -19,6 +20,7 @@ Fields ~
 ------------------------------------------------------------------------------
 *plugin_template.ConfigurationCommands*
    Customize the fallback behavior of all `:PluginTemplate` commands.
+
 Fields ~
     {goodnight_moon} plugin_template.ConfigurationGoodnightMoon?
        The default values when a user calls `:PluginTemplate goodnight-moon`.
@@ -28,6 +30,7 @@ Fields ~
 ------------------------------------------------------------------------------
 *plugin_template.ConfigurationGoodnightMoon*
    The default values when a user calls `:PluginTemplate goodnight-moon`.
+
 Fields ~
     {read} plugin_template.ConfigurationGoodnightMoonRead?
        The default values when a user calls `:PluginTemplate goodnight-moon read`.
@@ -35,6 +38,7 @@ Fields ~
 ------------------------------------------------------------------------------
 *plugin_template.LoggingConfiguration*
     Control whether or not logging is printed to the console or to disk.
+
 Fields ~
     {level}
         | "trace"?
@@ -58,6 +62,7 @@ Fields ~
 ------------------------------------------------------------------------------
 *plugin_template.ConfigurationGoodnightMoonRead*
     The default values when a user calls `:PluginTemplate goodnight-moon read`.
+
 Fields ~
     {phrase} `(string)`
         The book to read if no book is given by the user.
@@ -65,6 +70,7 @@ Fields ~
 ------------------------------------------------------------------------------
 *plugin_template.ConfigurationHelloWorld*
     The default values when a user calls `:PluginTemplate hello-world`.
+
 Fields ~
     {say} plugin_template.ConfigurationHelloWorldSay?
         The default values when a user calls `:PluginTemplate hello-world say`.
@@ -72,6 +78,7 @@ Fields ~
 ------------------------------------------------------------------------------
 *plugin_template.ConfigurationHelloWorldSay*
     The default values when a user calls `:PluginTemplate hello-world say`.
+
 Fields ~
     {repeat} `(number)`
         A 1-or-more value. When 1, the phrase is said once. When 2+, the phrase
@@ -82,6 +89,7 @@ Fields ~
 ------------------------------------------------------------------------------
 *plugin_template.ConfigurationTools*
     Optional third-party tool integrations.
+
 Fields ~
     {lualine} plugin_template.ConfigurationToolsLualine?
         A Vim statusline replacement that will show the command that the user just ran.
@@ -90,6 +98,7 @@ Fields ~
 *plugin_template.ConfigurationToolsLualineData*
     The display values that will be used when a specific `plugin_template`
     command runs.
+
 Fields ~
     {color} vim.api.keyset.highlight?
         The foreground/background color to use for the Lualine status.
