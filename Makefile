@@ -1,6 +1,6 @@
 .PHONY: documentation llscheck luacheck stylua test
 
-documentation:
+api_documentation:
 	nvim -l scripts/make_api_documentation.lua
 
 llscheck:
