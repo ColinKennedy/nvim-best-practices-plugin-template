@@ -14,6 +14,14 @@ if _G.MiniDoc == nil then
     doc.setup()
 end
 
+--- Add the text that Vimdoc uses to generate doc/tags (basically surround the text with *s).
+---
+---@param text string Any text, e.g. `"plugin_template.ClassName"`.
+---@return string # The wrapped text, e.g. `"*plugin_template.ClassName*"`.
+---
+local function _add_tag(text)
+    return (text:gsub('(%S+)', '%*%1%*'))
+end
 
 --- Remove any quotes around `text`.
 ---
@@ -116,6 +124,12 @@ local function _get_module_enabled_hooks(module_identifier)
     local module_name = nil
 
     local hooks = vim.deepcopy(doc.default_hooks)
+
+    hooks.sections["@class"] = function(section)
+        if #section == 0 or section.type ~= "section" then return end
+
+        section[1] = _add_tag(section[1])
+    end
 
     hooks.sections["@module"] = function(section)
         module_name = _strip_quotes(section[1])

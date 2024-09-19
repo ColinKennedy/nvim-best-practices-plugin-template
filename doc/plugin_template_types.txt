@@ -6,7 +6,7 @@ These types are either required by the Lua API or required for the normal
 operation of this Lua plugin.
 
 ------------------------------------------------------------------------------
-plugin_template.Configuration
+*plugin_template.Configuration*
     The user's customizations for this plugin.
 Fields ~
 {commands} plugin_template.ConfigurationCommands?
@@ -17,7 +17,7 @@ Fields ~
    Optional third-party tool integrations.
 
 ------------------------------------------------------------------------------
-plugin_template.ConfigurationCommands
+*plugin_template.ConfigurationCommands*
    Customize the fallback behavior of all `:PluginTemplate` commands.
 Fields ~
 {goodnight_moon} plugin_template.ConfigurationGoodnightMoon?
@@ -26,14 +26,14 @@ Fields ~
    The default values when a user calls `:PluginTemplate hello-world`.
 
 ------------------------------------------------------------------------------
-plugin_template.ConfigurationGoodnightMoon
+*plugin_template.ConfigurationGoodnightMoon*
    The default values when a user calls `:PluginTemplate goodnight-moon`.
 Fields ~
 {read} plugin_template.ConfigurationGoodnightMoonRead?
    The default values when a user calls `:PluginTemplate goodnight-moon read`.
 
 ------------------------------------------------------------------------------
-plugin_template.LoggingConfiguration
+*plugin_template.LoggingConfiguration*
     Control whether or not logging is printed to the console or to disk.
 Fields ~
 {level} ("trace"
@@ -55,21 +55,21 @@ Fields ~
     Should write to a file.
 
 ------------------------------------------------------------------------------
-plugin_template.ConfigurationGoodnightMoonRead
+*plugin_template.ConfigurationGoodnightMoonRead*
     The default values when a user calls `:PluginTemplate goodnight-moon read`.
 Fields ~
 {phrase} `(string)`
     The book to read if no book is given by the user.
 
 ------------------------------------------------------------------------------
-plugin_template.ConfigurationHelloWorld
+*plugin_template.ConfigurationHelloWorld*
     The default values when a user calls `:PluginTemplate hello-world`.
 Fields ~
 {say} plugin_template.ConfigurationHelloWorldSay?
     The default values when a user calls `:PluginTemplate hello-world say`.
 
 ------------------------------------------------------------------------------
-plugin_template.ConfigurationHelloWorldSay
+*plugin_template.ConfigurationHelloWorldSay*
     The default values when a user calls `:PluginTemplate hello-world say`.
 Fields ~
 {repeat} `(number)`

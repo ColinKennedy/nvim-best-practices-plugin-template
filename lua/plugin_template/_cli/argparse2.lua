@@ -692,7 +692,7 @@ end
 
 --- Find all all child parsers that start with `prefix`, starting from `parser`.
 ---
---- This function is *exclusive* - `parser` cannot be returned from this function.
+--- This function is **exclusive** - `parser` cannot be returned from this function.
 ---
 ---@param prefix string Some text to search for.
 ---@param parser argparse2.ParameterParser The starting point to search within.
