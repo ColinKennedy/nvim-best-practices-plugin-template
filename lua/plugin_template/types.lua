@@ -35,8 +35,7 @@
 
 ---@class plugin_template.LoggingConfiguration
 ---     Control whether or not logging is printed to the console or to disk.
----@field level (
----     | "trace"
+---@field level ("trace"
 ---     | "debug"
 ---     | "info"
 ---     | "warn"

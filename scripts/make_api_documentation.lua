@@ -87,6 +87,23 @@ local function _replace_function_name(section, module_identifier, module_name)
     end
 end
 
+--- Remove the prefix identifier (usually `"M"`, from `"M.get_foo"`).
+---
+---@param section MiniDoc.Section
+---    A renderable blob of text (which will later auto-create into documentation).
+---@param module_identifier string
+---    If provided, any reference to this identifier (e.g. `M`) will be
+---    replaced with the real import path.
+---
+local function _strip_function_identifier(section, module_identifier)
+    local prefix = string.format("^%s%%.", module_identifier)
+
+    for index, line in ipairs(section) do
+        line = line:gsub(prefix, "")
+        section[index] = line
+    end
+end
+
 --- Create the callbacks that we need to create our documentation.
 ---
 ---@param module_identifier string?
@@ -99,22 +116,47 @@ local function _get_module_enabled_hooks(module_identifier)
     local module_name = nil
 
     local hooks = vim.deepcopy(doc.default_hooks)
+
     hooks.sections["@module"] = function(section)
         module_name = _strip_quotes(section[1])
 
         section:clear_lines()
     end
 
-    local original = hooks.sections["@signature"]
+    local original_signature_hook = hooks.sections["@signature"]
 
     hooks.sections["@signature"] = function(section)
-        if module_identifier and module_name then
-            _replace_function_name(section, module_identifier, module_name)
+        if module_identifier then
+            _strip_function_identifier(section, module_identifier)
         end
 
         _add_before_after_whitespace(section)
 
-        return original(section)
+        original_signature_hook(section)
+
+        -- NOTE: Remove the leading whitespace caused by MiniDoc
+        for index, text in ipairs(section) do
+            section[index] = (text:gsub("^%s+", ""))
+        end
+    end
+
+    local original_tag_hook = hooks.sections["@tag"]
+
+    hooks.sections["@tag"] = function(section)
+        if module_identifier and module_name then
+            _replace_function_name( section,
+                module_identifier,
+                module_name
+            )
+        end
+
+        original_tag_hook(section)
+    end
+
+    hooks.write_pre = function(lines)
+        table.insert(lines, #lines - 1, "WARNING: This file is auto-generated. Do not edit it!")
+
+        return lines
     end
 
     return hooks

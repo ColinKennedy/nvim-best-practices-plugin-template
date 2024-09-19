@@ -2,10 +2,31 @@
  - Make  specific "types" file so that it's included in the API
   - e.g. the configuration
 
-- Make sure @class also replace the M. namespace
-- Bug fix - the doc/tags is still generating the M. namespace. Fix it!
-
 - Add warning to the bottom of the generated API file - "dont change this file"
+
+- Classes need to generate tags too
+- Add whitespace between sections / class / function information. It's too
+bunched up.
+
+```
+---@class plugin_template.LoggingConfiguration
+---     Control whether or not logging is printed to the console or to disk.
+---@field level (
+---     | "trace"
+---     | "debug"
+---     | "info"
+---     | "warn"
+---     | "error"
+---     | "fatal"
+---     | vim.log.levels.DEBUG
+---     | vim.log.levels.ERROR
+---     | vim.log.levels.INFO
+---     | vim.log.levels.TRACE
+---     | vim.log.levels.WARN)?
+---     Any messages above this level will be logged.
+```
+
+This doesn't parse as expected
 
 - Add API documentation github CI workflow
  - Have it run on each major / minor, I guess
