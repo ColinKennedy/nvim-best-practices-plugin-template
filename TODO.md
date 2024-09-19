@@ -2,9 +2,6 @@
  - Make  specific "types" file so that it's included in the API
   - e.g. the configuration
 
-- Add warning to the bottom of the generated API file - "dont change this file"
-
-- Classes need to generate tags too
 - Add whitespace between sections / class / function information. It's too
 bunched up.
 

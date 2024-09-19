@@ -13,7 +13,7 @@ package must get a new **major** version.
 Print the `names`.
 
 Parameters ~
-{names} `(string[]?)` Some text to print out. e.g. `{"a", "b", "c"}`.
+    {names} `(string[]?)` Some text to print out. e.g. `{"a", "b", "c"}`.
 
 ------------------------------------------------------------------------------
                                                *plugin_template.run_copy_logs()*
@@ -23,9 +23,9 @@ Parameters ~
 Copy the log data from the given `path` to the user's clipboard.
 
 Parameters ~
-{path} `(string?)`
-    A path on-disk to look for logs. If none is given, the default fallback
-    location is used instead.
+    {path} `(string?)`
+        A path on-disk to look for logs. If none is given, the default fallback
+        location is used instead.
 
 ------------------------------------------------------------------------------
                                   *plugin_template.run_hello_world_say_phrase()*
@@ -35,12 +35,12 @@ Parameters ~
 Print `phrase` according to the other options.
 
 Parameters ~
-{phrase} `(string[])`
-    The text to say.
-{repeat_} `(number?)`
-    A 1-or-more value. The number of times to print `word`.
-{style} `(string?)`
-    Control how the text should be shown.
+    {phrase} `(string[])`
+        The text to say.
+    {repeat_} `(number?)`
+        A 1-or-more value. The number of times to print `word`.
+    {style} `(string?)`
+        Control how the text should be shown.
 
 ------------------------------------------------------------------------------
                                     *plugin_template.run_hello_world_say_word()*
@@ -50,12 +50,12 @@ Parameters ~
 Print `phrase` according to the other options.
 
 Parameters ~
-{word} `(string)`
-    The text to say.
-{repeat_} `(number?)`
-    A 1-or-more value. The number of times to print `word`.
-{style} `(string?)`
-    Control how the text should be shown.
+    {word} `(string)`
+        The text to say.
+    {repeat_} `(number?)`
+        A 1-or-more value. The number of times to print `word`.
+    {style} `(string?)`
+        Control how the text should be shown.
 
 ------------------------------------------------------------------------------
                               *plugin_template.run_goodnight_moon_count_sheep()*
@@ -65,7 +65,7 @@ Parameters ~
 Count a sheep for each `count`.
 
 Parameters ~
-{count} `(number)` Prints 1 sheep per `count`. A value that is 1-or-greater.
+    {count} `(number)` Prints 1 sheep per `count`. A value that is 1-or-greater.
 
 ------------------------------------------------------------------------------
                                      *plugin_template.run_goodnight_moon_read()*
@@ -75,7 +75,7 @@ Parameters ~
 Print the name of the book.
 
 Parameters ~
-{book} `(string)` The name of the book.
+    {book} `(string)` The name of the book.
 
 ------------------------------------------------------------------------------
                                     *plugin_template.run_goodnight_moon_sleep()*
@@ -85,7 +85,7 @@ Parameters ~
 Print Zzz each `count`.
 
 Parameters ~
-{count} `(number?)` Prints 1 Zzz per `count`. A value that is 1-or-greater.
+    {count} `(number?)` Prints 1 Zzz per `count`. A value that is 1-or-greater.
 
 WARNING: This file is auto-generated. Do not edit it!
 

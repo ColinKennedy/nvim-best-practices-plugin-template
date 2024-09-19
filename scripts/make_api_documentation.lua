@@ -70,6 +70,19 @@ local function _add_before_after_whitespace(section)
     section:insert(last + 1, "")
 end
 
+--- Add leading whitespace to `text`, if `text` is not an empty line.
+---
+---@param text string The text to modify, maybe.
+---@return string # The modified `text`, as needed.
+---
+local function _indent(text)
+    if not text or text == "" then
+        return text
+    end
+
+    return "    " .. text
+end
+
 --- Change the function name in `section` from `module_identifier` to `module_name`.
 ---
 ---@param section MiniDoc.Section
@@ -129,10 +142,30 @@ local function _get_module_enabled_hooks(module_identifier)
         section[1] = _add_tag(section[1])
     end
 
+    local original_field_hook = hooks.sections["@field"]
+
+    hooks.sections["@field"] = function(section)
+        original_field_hook(section)
+
+        for index, line in ipairs(section) do
+            section[index] = _indent(line)
+        end
+    end
+
     hooks.sections["@module"] = function(section)
         module_name = _strip_quotes(section[1])
 
         section:clear_lines()
+    end
+
+    local original_param_hook = hooks.sections["@param"]
+
+    hooks.sections["@param"] = function(section)
+        original_param_hook(section)
+
+        for index, line in ipairs(section) do
+            section[index] = _indent(line)
+        end
     end
 
     local original_signature_hook = hooks.sections["@signature"]
@@ -160,6 +193,10 @@ local function _get_module_enabled_hooks(module_identifier)
         end
 
         original_tag_hook(section)
+    end
+
+    -- TODO: Add alias support. These lines effectively clear aliases, which is a shame.
+    hooks.section_pre = function(section)
     end
 
     hooks.write_pre = function(lines)
