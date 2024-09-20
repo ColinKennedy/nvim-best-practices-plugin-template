@@ -121,6 +121,7 @@ describe("bad input", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
         parser:add_parameter({ name = "foo" })
 
+        -- TODO: Finish
         assert.same({ "ASDADSASDADS" }, parser:get_errors(""))
     end)
 
