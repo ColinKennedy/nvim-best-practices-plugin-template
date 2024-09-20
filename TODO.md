@@ -1,3 +1,24 @@
+- If a named arguiment is an nargs=1 argument then it should auto-complete to be --foo=, I guess
+ - If it it's nargs=2+ then it should auto-complete not with =
+
+`PluginTemplate hello-world say phrase --repeat=`
+```
+E5108: Error executing Lua function: ...ate/lua/plugin_template/_commands/hello_world/parser.lua:12: attempt to index local 'data' (a nil va
+lue)
+stack traceback:
+        ...ate/lua/plugin_template/_commands/hello_world/parser.lua:12: in function 'choices'
+        ...s-plugin-template/lua/plugin_template/_cli/argparse2.lua:221: in function '_is_single_nargs_and_named_parameter'
+        ...s-plugin-template/lua/plugin_template/_cli/argparse2.lua:228: in function '_has_satisfying_value'
+        ...s-plugin-template/lua/plugin_template/_cli/argparse2.lua:331: in function '_compute_exact_flag_match'
+        ...s-plugin-template/lua/plugin_template/_cli/argparse2.lua:1641: in function '_compute_matching_parsers'
+        ...s-plugin-template/lua/plugin_template/_cli/argparse2.lua:1381: in function '_get_completion'
+        ...s-plugin-template/lua/plugin_template/_cli/argparse2.lua:1835: in function '_get_subcommand_completion'
+        ...gin-template/lua/plugin_template/_cli/cli_subcommand.lua:185: in function <...gin-template/lua/plugin_template/_cli/cli_subcomman
+d.lua:182>
+```
+
+Typing `-` or `--` doesn't auto-complete to `--repeat`
+
 - Follow up on - https://github.com/jeffzi/llscheck/issues/7#issuecomment-2352981951
 - Get unittests to pass
 - Get all linters / etc to pass

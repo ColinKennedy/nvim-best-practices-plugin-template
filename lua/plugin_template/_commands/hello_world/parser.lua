@@ -9,21 +9,23 @@ local function _add_repeat_parameter(parser)
     parser:add_parameter({
         names = { "--repeat", "-r" },
         choices = function(data)
-            local value = data.text
-
-            if value == "" then
-                value = 0
-            else
-                value = tonumber(value)
-
-                if type(value) ~= "number" then
-                    return {}
-                end
-            end
-
-            --- @cast value number
+            --- @cast data argparse2.ChoiceData?
 
             local output = {}
+
+            if not data then
+                for index = 1, 5 do
+                    table.insert(output, tostring(index))
+                end
+
+                return output
+            end
+
+            local value = tonumber(data.current_value)
+
+            if not value then
+                return {}
+            end
 
             for index = 1, 5 do
                 table.insert(output, tostring(value + index))

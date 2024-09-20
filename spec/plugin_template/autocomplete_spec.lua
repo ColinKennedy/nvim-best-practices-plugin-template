@@ -409,7 +409,16 @@ describe("named argument", function()
 
         _add_repeat_parameter(parser)
 
-        assert.same({"4", "5", "6", "7", "8"}, parser:get_completion("--repeat=3"))
+        assert.same(
+            {
+                "--repeat=4",
+                "--repeat=5",
+                "--repeat=6",
+                "--repeat=7",
+                "--repeat=8",
+            },
+            parser:get_completion("--repeat=3")
+        )
     end)
 end)
 

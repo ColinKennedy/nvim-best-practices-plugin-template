@@ -16,9 +16,9 @@ A template repository for Neovim plugins.
 
 # Features
 - Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices)
-- Fast start-up (the plugin is defer-loaded)
+- Fast start-up (the plugin is super defer-loaded. < 1 ms guarantee)
 - Auto-release to [luarocks](https://luarocks.org)
-- Automated User documentation
+- Automated User documentation (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
 - Automated API documentation (using [mini.doc](https://github.com/echasnovski/mini.doc))
 - Vimtags generation
 - Built-in Vim commands

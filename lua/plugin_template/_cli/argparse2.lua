@@ -4,6 +4,8 @@
 ---
 
 -- TODO: DOCSTRINGS
+ -- - finish all docstrings
+ -- - dedent properly (multiples of 4, not 5)
 -- TODO: Clean-up code
 
 -- TODO: Add unittest for required subparsers
@@ -35,12 +37,18 @@ local texter = require("plugin_template._core.texter")
 ---@field value any
 ---     A value to add into `namespace`.
 
+---@class argparse2.ChoiceData
+---     The information that gets passed to a typical `option.choices(...)` call.
+---@field current_value string
+---     If the argument has an existing-written value written by the user, this
+---     text is passed as `current_value`.
+
 ---@class argparse2.ParameterInputOptions
 ---     All of the settings to include in a new parameter.
 ---@field action argparse2.Action?
 ---     This controls the behavior of how parsed arguments are added into the
 ---     final parsed `argparse2.Namespace`.
----@field choices (string[] | fun(): string[])?
+---@field choices (string[] | fun(data: argparse2.ChoiceData?): string[])?
 ---     If included, the parameter can only accept these choices as values.
 ---@field count argparse2.MultiNumber?
 ---     The number of times that this parameter must be written.
@@ -68,7 +76,7 @@ local texter = require("plugin_template._core.texter")
 
 ---@class argparse2.ParameterOptions: argparse2.ParameterInputOptions
 ---     All of the settings to include in a new parameter.
----@field choices (fun(): string[])?
+---@field choices (fun(data: argparse2.ChoiceData?): string[])?
 ---     If included, the parameter can only accept these choices as values.
 ---@field type (fun(value: string): any)?
 ---     The expected output type. If a function is given, assume that the user
@@ -76,7 +84,7 @@ local texter = require("plugin_template._core.texter")
 
 ---@class argparse2.ParameterParserInputOptions
 ---     The options that we might pass to `argparse2.ParameterParser.new`.
----@field choices (string[] | fun(): string[])?
+---@field choices (string[] | fun(data: argparse2.ChoiceData?): string[])?
 ---     If included, the parameter can only accept these choices as values.
 ---@field help string
 ---     Explain what this parser is meant to do and the parameter(s) it needs.
@@ -88,7 +96,7 @@ local texter = require("plugin_template._core.texter")
 
 ---@class argparse2.ParameterParserOptions: argparse2.ParameterParserInputOptions
 ---     The options that we might pass to `argparse2.ParameterParser.new`.
----@field choices (fun(): string[])?
+---@field choices (fun(data: argparse2.ChoiceData?): string[])?
 ---     If included, the parameter can only accept these choices as values.
 
 ---@class argparse2.SubparsersOptions
@@ -191,11 +199,19 @@ local function _has_position_parameter_match(name, parameter)
         return true
     end
 
-    if vim.tbl_contains(parameter.choices(), name) then
+    if vim.tbl_contains(parameter.choices({current_value = name}), name) then
         return true
     end
 
     return false
+end
+
+local function _get_argument_value_text(argument)
+    if type(argument.value) == "boolean" then
+        return ""
+    end
+
+    return argument.value
 end
 
 -- --- Check if `parameter` is expected to have exactly one value.
@@ -217,9 +233,12 @@ local function _is_single_nargs_and_named_parameter(parameter, arguments)
         return false
     end
 
-    if parameter.choices then
-        return vim.tbl_contains(parameter.choices(), argument.value)
-    end
+    -- TODO: Not sure fi I actually need this code
+    -- local value = _get_argument_value_text(argument)
+    --
+    -- if parameter.choices then
+    --     return parameter.choices({current_value=value})
+    -- end
 
     return vim.tbl_contains(parameter.names, argument.name)
 end
@@ -430,10 +449,8 @@ local function _get_single_choices_text(parameter, value)
 
     local output = {}
 
-    for _, choice in ipairs(parameter.choices()) do
-        if vim.startswith(choice, value) then
-            table.insert(output, parameter.names[1] .. "=" .. choice)
-        end
+    for _, choice in ipairs(parameter.choices({current_value=value})) do
+        table.insert(output, parameter.names[1] .. "=" .. choice)
     end
 
     return output
@@ -510,7 +527,7 @@ local function _get_matching_position_parameters(name, parameters)
 
     for _, parameter in ipairs(_sort_parameters(parameters)) do
         if not parameter:is_exhausted() and parameter.choices then
-            vim.list_extend(output, _get_array_startswith(parameter.choices(), name))
+            vim.list_extend(output, _get_array_startswith(parameter.choices({current_value=name}), name))
         end
     end
 
@@ -988,9 +1005,16 @@ local function _expand_choices_options(options)
         choices = function()
             return { input }
         end
-    elseif texter.is_string_list(options.choices) then
-        choices = function()
-            return input
+    elseif texter.is_string_list(input) then
+        ---@cast input string[]
+        choices = function(data)
+            ---@cast data argparse2.ChoiceData
+
+            if not data then
+                return input
+            end
+
+            return _get_array_startswith(input, data.current_value)
         end
     elseif type(options.choices) == "function" then
         choices = input
@@ -1379,6 +1403,8 @@ function M.ParameterParser:_get_completion(data, column)
     end
 
     local parsers, previous_parser = self:_compute_matching_parsers(stripped.arguments)
+    local last = stripped.arguments[#stripped.arguments]
+    local last_name = _get_argument_name(last)
 
     if remainder ~= "" then
         -- if not parsers then
@@ -1397,17 +1423,6 @@ function M.ParameterParser:_get_completion(data, column)
     local last = stripped.arguments[#stripped.arguments]
     local last_name = _get_argument_name(last)
 
-    -- TODO: Make this all into a function. Simplify the code
-    if not parsers and previous_parser then
-        vim.list_extend(output, _get_exact_or_partial_matches(last_name, previous_parser))
-
-        if not _is_whitespace(last_name) then
-            for parser_ in _iter_parsers(previous_parser) do
-                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
-            end
-        end
-    end
-
     local last_value
 
     if type(last) == "boolean" then
@@ -1415,6 +1430,17 @@ function M.ParameterParser:_get_completion(data, column)
     else
         last_value = last.value
         --- @cast last_value string
+    end
+
+    -- TODO: Make this all into a function. Simplify the code
+    if not parsers and previous_parser then
+        vim.list_extend(output, _get_exact_or_partial_matches(last_name, previous_parser, last_value))
+
+        if not _is_whitespace(last_name) then
+            for parser_ in _iter_parsers(previous_parser) do
+                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+            end
+        end
     end
 
     for _, parser in ipairs(parsers or {}) do
@@ -1897,7 +1923,7 @@ function M.ParameterParser:get_flag_parameters()
     return self._flag_parameters
 end
 
----@return string[] # Get all of auto-complete options for this instance.
+---@return string[] # Get all of the (initial) auto-complete options for this instance.
 function M.ParameterParser:get_names()
     if self.choices then
         return self.choices()
