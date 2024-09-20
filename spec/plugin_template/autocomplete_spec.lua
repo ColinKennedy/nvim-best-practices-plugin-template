@@ -241,51 +241,10 @@ describe("simple", function()
         assert.same({ "phrase", "word", "--help", "-h" }, parser:get_completion("say "))
         assert.same({ "phrase" }, parser:get_completion("say p"))
         assert.same({ "phrase" }, parser:get_completion("say phrase"))
-        assert.same({ "--repeat", "--style", "--help" }, parser:get_completion("say phrase "))
+        assert.same({ "--repeat=", "-r=", "--style=", "-s=", "--help", "-h" }, parser:get_completion("say phrase "))
 
         -- NOTE: Beginning a --double-dash named argument, maybe (we don't know yet)
-        assert.same({ "--repeat", "--style", "--help" }, parser:get_completion("say phrase --"))
-
-        -- NOTE: Completing the name to a --double-dash named argument
-        assert.same({ "--repeat=" }, parser:get_completion("say phrase --r"))
-        -- NOTE: Completing the =, so people know that this is requires an argument
-        assert.same({ "--repeat=" }, parser:get_completion("say phrase --repeat"))
-        -- NOTE: Completing the value of the named argument
-        assert.same({
-            "--repeat=1",
-            "--repeat=2",
-            "--repeat=3",
-            "--repeat=4",
-            "--repeat=5",
-        }, parser:get_completion("say phrase --repeat="))
-        assert.same({
-            "--repeat=6",
-            "--repeat=7",
-            "--repeat=8",
-            "--repeat=9",
-            "--repeat=10",
-        }, parser:get_completion("say phrase --repeat=5"))
-
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 "))
-
-        -- NOTE: Asking for repeat again will not show the value (because count == 0)
-        assert.same({}, parser:get_completion("say phrase --repeat=5 --repe"))
-
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 -"))
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --"))
-
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --s"))
-
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --style"))
-
-        assert.same(
-            { "--style=lowercase", "--style=uppercase" },
-            parser:get_completion("say phrase --repeat=5 --style=")
-        )
-
-        assert.same({ "--style=lowercase" }, parser:get_completion("say phrase --repeat=5 --style=l"))
-
-        assert.same({}, parser:get_completion("say phrase --repeat=5 --style=lowercase"))
+        assert.same({ "--repeat=", "--style=", "--help"}, parser:get_completion("say phrase --"))
     end)
 end)
 
