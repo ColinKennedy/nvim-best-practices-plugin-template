@@ -648,8 +648,8 @@ describe("dynamic argument", function()
         assert.same({ "ab", "cc", "lazers", "thing_parser", "zzz", "--help", "-h" }, parser:get_completion("say a "))
         assert.same({ "another", "last", "--help", "-h" }, parser:get_completion("say a thing_parser "))
 
-        -- assert.same({ "different" }, parser:get_completion("say ab "))
-        -- assert.same({ "branch", "here" }, parser:get_completion("say ab different "))
+        assert.same({ "different", "--help", "-h" }, parser:get_completion("say ab "))
+        -- assert.same({ "branch", "here", "--help", "-h" }, parser:get_completion("say ab different "))
     end)
 
     it("works with count = 2", function()

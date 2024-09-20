@@ -611,6 +611,28 @@ local function _iter_parsers(parser, inclusive)
     end
 end
 
+local function _get_all_parsers(parser)
+    local stack = {parser}
+    local output = {}
+
+    while #stack > 0 do
+        local current = table.remove(stack)
+
+        if not current then
+            break
+        end
+
+        table.insert(output, current)
+
+        for _, subparsers in ipairs(current._subparsers) do
+            vim.list_extend(stack, subparsers:get_parsers())
+        end
+    end
+
+    return output
+end
+
+
 --- Find all Argments starting with `prefix`.
 ---
 ---@param prefix string
@@ -1862,8 +1884,10 @@ end
 
 --- (Assuming parameter counts were modified by any function) Reset counts back to zero.
 function M.ParameterParser:_reset_used()
-    for parameter in tabler.chain(self:get_position_parameters(), self:get_flag_parameters()) do
-        parameter._used = 0
+    for _, parser in ipairs(_get_all_parsers(self)) do
+        for parameter in tabler.chain(parser:get_position_parameters(), parser:get_flag_parameters()) do
+            parameter._used = 0
+        end
     end
 end
 
