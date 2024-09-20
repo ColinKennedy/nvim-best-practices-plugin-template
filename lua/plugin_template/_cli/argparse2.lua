@@ -651,17 +651,17 @@ local function _get_exact_or_partial_matches(prefix, parser, value)
     vim.list_extend(output, _get_matching_position_parameters(prefix, parser:get_position_parameters()))
     vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value))
 
-    -- TODO: Move to a function later
-    -- NOTE: This case is for when there are multiple child parsers with
-    -- similar names. e.g. `get-asset` & `get-assets` might both auto-complete here.
+    -- -- TODO: Move to a function later
+    -- -- NOTE: This case is for when there are multiple child parsers with
+    -- -- similar names. e.g. `get-asset` & `get-assets` might both auto-complete here.
+    -- --
+    -- local parent_parser = parser:get_parent_parser() or parser
     --
-    local parent_parser = parser:get_parent_parser() or parser
-
-    if parent_parser and not _is_whitespace(prefix) then
-        for parser_ in _iter_parsers(parent_parser) do
-            vim.list_extend(output, _get_array_startswith(parser_:get_names(), prefix))
-        end
-    end
+    -- if parent_parser and not _is_whitespace(prefix) then
+    --     for parser_ in _iter_parsers(parent_parser) do
+    --         vim.list_extend(output, _get_array_startswith(parser_:get_names(), prefix))
+    --     end
+    -- end
 
     -- for _, parser in ipairs(parsers) do
     --     for parser_ in _iter_parsers(parser) do
@@ -1511,6 +1511,12 @@ function M.ParameterParser:_get_completion(data, column)
         end
 
         vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
+
+        if parser:is_satisfied() then
+            for parser_ in _iter_parsers(parser) do
+                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+            end
+        end
 
         return output
     else

@@ -121,14 +121,62 @@ describe("simple", function()
         local bottlez_subparsers = bottlez:add_subparsers({ destination = "bottlez", help = "Test." })
         bottlez_subparsers:add_parser({ name = "fizz", help = "Fizzy drink." })
 
-        parser:add_parameter({ name = "bottle", help = "Something." })
-
         assert.same({ "bottle", "bottles", "bottlez" }, parser:get_completion("bottle"))
         assert.same({ "bottles" }, parser:get_completion("bottles"))
         assert.same({ "bottlez" }, parser:get_completion("bottlez"))
         assert.same({ "foo", "--help", "-h" }, parser:get_completion("bottle "))
         assert.same({ "--help", "-h" }, parser:get_completion("bottles "))
         assert.same({ "fizz", "--help", "-h" }, parser:get_completion("bottlez "))
+    end)
+
+    it("works when two positions start with the same text - 002", function()
+        local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
+        local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
+        local bottle = subparsers:add_parser({ name = "bottle", help = "Something." })
+        local bottle_subparsers = bottle:add_subparsers({ destination = "bottle", help = "Test." })
+        local bottles = subparsers:add_parser({ name = "bottles", help = "Somethings." })
+        bottles:add_parameter({ name = "bar", help = "Any text allowed here." })
+
+        bottle_subparsers:add_parser({ name = "foo", choices = { "foo" }, help = "Print stuff to the terminal." })
+
+        local bottlez = subparsers:add_parser({ name = "bottlez", destination = "weird_name", help = "Test." })
+        local bottlez_subparsers = bottlez:add_subparsers({ destination = "bottlez", help = "Test." })
+        bottlez_subparsers:add_parser({ name = "fizz", help = "Fizzy drink." })
+
+        parser:add_parameter({ name = "bottle", help = "Something." })
+
+        -- IMPORTANT: This is a rare case where a required parameter is in
+        -- `top_test` but a subparser has the same name. We prefer the current
+        -- parser in this case which means preferring the required parameter.
+        -- So instead of auto-completing like `"bottle"` is a partial name of
+        -- some subparsers, we treat it as a parameter.
+        --
+        assert.same({  }, parser:get_completion("bottle"))
+    end)
+
+    it("works when two positions start with the same text - 003", function()
+        local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
+        local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
+        local bottle = subparsers:add_parser({ name = "bottle", help = "Something." })
+        local bottle_subparsers = bottle:add_subparsers({ destination = "bottle", help = "Test." })
+        local bottles = subparsers:add_parser({ name = "bottles", help = "Somethings." })
+        bottles:add_parameter({ name = "bar", help = "Any text allowed here." })
+
+        bottle_subparsers:add_parser({ name = "foo", choices = { "foo" }, help = "Print stuff to the terminal." })
+
+        local bottlez = subparsers:add_parser({ name = "bottlez", destination = "weird_name", help = "Test." })
+        local bottlez_subparsers = bottlez:add_subparsers({ destination = "bottlez", help = "Test." })
+        bottlez_subparsers:add_parser({ name = "fizz", help = "Fizzy drink." })
+
+        parser:add_parameter({ name = "bottle", choices = {"bots", "botz"}, help = "Something." })
+
+        -- IMPORTANT: This is a rare case where a required parameter is in
+        -- `top_test` but a subparser has the same name. We prefer the current
+        -- parser in this case which means preferring the required parameter.
+        -- So instead of auto-completing like `"bottle"` is a partial name of
+        -- some subparsers, we treat it as a parameter.
+        --
+        assert.same({ "bots", "botz" }, parser:get_completion("bot"))
     end)
 
     it("works with a basic multi-key example", function()
