@@ -1736,7 +1736,7 @@ function M.ParameterParser:_compute_matching_parsers(arguments)
         local found = false
 
         for parser_ in _iter_parsers(current_parser) do
-            if parser_.name == argument_name then
+            if vim.tbl_contains(parser_:get_names(), argument_name) then
                 found = true
                 previous_parser = current_parser
                 current_parser = parser_
