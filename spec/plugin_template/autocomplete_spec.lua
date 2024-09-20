@@ -151,7 +151,7 @@ describe("simple", function()
         -- So instead of auto-completing like `"bottle"` is a partial name of
         -- some subparsers, we treat it as a parameter.
         --
-        assert.same({  }, parser:get_completion("bottle"))
+        assert.same({}, parser:get_completion("bottle"))
     end)
 
     it("works when two positions start with the same text - 003", function()
@@ -168,7 +168,7 @@ describe("simple", function()
         local bottlez_subparsers = bottlez:add_subparsers({ destination = "bottlez", help = "Test." })
         bottlez_subparsers:add_parser({ name = "fizz", help = "Fizzy drink." })
 
-        parser:add_parameter({ name = "bottle", choices = {"bots", "botz"}, help = "Something." })
+        parser:add_parameter({ name = "bottle", choices = { "bots", "botz" }, help = "Something." })
 
         -- IMPORTANT: This is a rare case where a required parameter is in
         -- `top_test` but a subparser has the same name. We prefer the current
@@ -418,16 +418,13 @@ describe("named argument", function()
 
         _add_repeat_parameter(parser)
 
-        assert.same(
-            {
-                "--repeat=4",
-                "--repeat=5",
-                "--repeat=6",
-                "--repeat=7",
-                "--repeat=8",
-            },
-            parser:get_completion("--repeat=3")
-        )
+        assert.same({
+            "--repeat=4",
+            "--repeat=5",
+            "--repeat=6",
+            "--repeat=7",
+            "--repeat=8",
+        }, parser:get_completion("--repeat=3"))
     end)
 end)
 

@@ -4,8 +4,8 @@
 ---
 
 -- TODO: DOCSTRINGS
- -- - finish all docstrings
- -- - dedent properly (multiples of 4, not 5)
+-- - finish all docstrings
+-- - dedent properly (multiples of 4, not 5)
 -- TODO: Clean-up code
 
 -- TODO: Add unittest for required subparsers
@@ -136,7 +136,7 @@ M.Parameter = {
     __tostring = function(parameter)
         return string.format(
             "argparse2.Parameter({names=%s, help=%s, type=%s, action=%s, "
-            .. "nargs=%s, choices=%s, count=%s, required=%s, used=%s})",
+                .. "nargs=%s, choices=%s, count=%s, required=%s, used=%s})",
             vim.inspect(parameter.names),
             vim.inspect(parameter.help),
             vim.inspect(parameter.type),
@@ -201,7 +201,7 @@ local function _has_position_parameter_match(name, parameter)
         return true
     end
 
-    if vim.tbl_contains(parameter.choices({current_value = name}), name) then
+    if vim.tbl_contains(parameter.choices({ current_value = name }), name) then
         return true
     end
 
@@ -451,7 +451,7 @@ local function _get_single_choices_text(parameter, value)
 
     local output = {}
 
-    for _, choice in ipairs(parameter.choices({current_value=value})) do
+    for _, choice in ipairs(parameter.choices({ current_value = value })) do
         table.insert(output, parameter.names[1] .. "=" .. choice)
     end
 
@@ -529,7 +529,7 @@ local function _get_matching_position_parameters(name, parameters)
 
     for _, parameter in ipairs(_sort_parameters(parameters)) do
         if not parameter:is_exhausted() and parameter.choices then
-            vim.list_extend(output, _get_array_startswith(parameter.choices({current_value=name}), name))
+            vim.list_extend(output, _get_array_startswith(parameter.choices({ current_value = name }), name))
         end
     end
 
@@ -613,7 +613,7 @@ local function _iter_parsers(parser, inclusive)
 end
 
 local function _get_all_parsers(parser)
-    local stack = {parser}
+    local stack = { parser }
     local output = {}
 
     while #stack > 0 do
@@ -632,7 +632,6 @@ local function _get_all_parsers(parser)
 
     return output
 end
-
 
 --- Find all Argments starting with `prefix`.
 ---
@@ -1431,7 +1430,6 @@ local function _compute_and_increment_parameter(argument_name, parser, arguments
     return _compute_exact_position_match(argument_name, parser)
 end
 
-
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
 ---@param data argparse.ArgparseResults | string The user input.
@@ -1754,11 +1752,7 @@ function M.ParameterParser:_compute_matching_parsers(arguments)
         end
 
         if not found then
-            found = _compute_and_increment_parameter(
-                argument_name,
-                current_parser,
-                tabler.get_slice(arguments, index)
-            )
+            found = _compute_and_increment_parameter(argument_name, current_parser, tabler.get_slice(arguments, index))
 
             if not found then
                 return previous_parser or self, index
