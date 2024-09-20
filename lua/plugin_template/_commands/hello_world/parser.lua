@@ -13,7 +13,7 @@ local function _add_repeat_parameter(parser)
 
             local output = {}
 
-            if not data then
+            if not data or data.current_value == "" then
                 for index = 1, 5 do
                     table.insert(output, tostring(index))
                 end

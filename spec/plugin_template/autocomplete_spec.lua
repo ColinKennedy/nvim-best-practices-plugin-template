@@ -14,21 +14,23 @@ local _parse = argparse.parse_arguments
 ---@return argparse2.ParameterParser # Create a tree of commands for unittests.
 local function _make_simple_parser()
     local choices = function(data)
-        local value = data.text
-
-        if value == "" then
-            value = 0
-        else
-            value = tonumber(value)
-
-            if type(value) ~= "number" then
-                return {}
-            end
-        end
-
-        --- @cast value number
+        --- @cast data argparse2.ChoiceData?
 
         local output = {}
+
+        if not data or data.current_value == "" then
+            for index = 1, 5 do
+                table.insert(output, tostring(index))
+            end
+
+            return output
+        end
+
+        local value = tonumber(data.current_value)
+
+        if not value then
+            return {}
+        end
 
         for index = 1, 5 do
             table.insert(output, tostring(value + index))
@@ -368,7 +370,7 @@ describe("named argument", function()
 
         -- TODO: Add this check later
         -- assert.same({"--repeat="}, parser:get_completion("hello-world say word --repeat= --repe", 30))
-        assert.same({}, parser:get_completion("hello-world say word --repeat= --repe"))
+        assert.same({}, parser:get_completion("say word --repeat= --repe"))
     end)
 
     it("suggests new named argument values based on the current value", function()
