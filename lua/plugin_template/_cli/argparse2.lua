@@ -135,7 +135,7 @@ local _SHORT_HELP_FLAG = "-h"
 M.Parameter = {
     __tostring = function(parameter)
         return string.format(
-            "argparse2.Parameter({names=%s, help=%s, type=%s, action=%s, nargs=%s, choices=%s, count=%s, used=%s})",
+            "argparse2.Parameter({names=%s, help=%s, type=%s, action=%s, nargs=%s, choices=%s, count=%s, required=%s, used=%s})",
             vim.inspect(parameter.names),
             vim.inspect(parameter.help),
             vim.inspect(parameter.type),
@@ -143,6 +143,7 @@ M.Parameter = {
             vim.inspect(parameter._nargs),
             vim.inspect(parameter.choices),
             vim.inspect(parameter._count),
+            parameter.required,
             vim.inspect(parameter._used)
         )
     end,
@@ -699,7 +700,7 @@ local function _get_help_command_labels(labels)
     return string.format("{%s}", vim.fn.join(vim.fn.sort(labels), ", "))
 end
 
---- Find all required parameters in `parser` that still need value(s).
+--- Find all required parameters in `parsers` that still need value(s).
 ---
 ---@param parsers argparse2.ParameterParser[] All child / leaf parsers to check.
 ---@return argparse2.Parameter[] # The parameters that are still unused.
@@ -732,6 +733,8 @@ local function _get_matching_subparser_names(prefix, parser)
     for parser_ in _iter_parsers(parser) do
         local names = parser_:get_names()
 
+        -- TODO: All current uses of this function ended up with `prefix` ==
+        -- whitespace. If so, remove this if condition later
         if _is_whitespace(prefix) then
             vim.list_extend(output, names)
         else
@@ -753,15 +756,14 @@ end
 
 --- Find the next arguments that need to be completed / used based on some partial `remainder_text`.
 ---
----@param remainder_text string
----     Text that we tried to parse into a valid argument but couldn't. Usually
----     this is empty or is just whitespace.
 ---@param parsers argparse2.ParameterParser
 ---     The subparser to consider for the next parameter(s).
 ---@return string[]
 ---     The matching names, if any.
 ---
-local function _get_next_arguments_from_remainder(remainder_text, parser)
+local function _get_next_arguments_from_remainder(parser)
+    -- TODO: Consider removing this text
+    local remainder_text = ""
     -- local name = _get_argument_name(argument)
     -- local matches = vim.iter(parsers):filter(function(parser)
     --     return vim.tbl_contains(parser:get_names(), name)
@@ -774,7 +776,10 @@ local function _get_next_arguments_from_remainder(remainder_text, parser)
     -- TODO: Fix the argument4 sorting here. It's broken
     -- See "dynamic argument - works with positional arguments" test
     --
-    vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(remainder_text, parser)))
+    if parser:is_satisfied() then
+        vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(remainder_text, parser)))
+    end
+
     vim.list_extend(output, _get_exact_or_partial_matches(remainder_text, parser))
 
     -- TODO: There's a bug here. We may not be able to assume the last argument like this
@@ -1033,14 +1038,23 @@ local function _expand_choices_options(options)
     options.choices = choices
 end
 
+-- TODO: Docstring
 --- If `options` is sparsely written, "expand" all of its values. so we can use it.
 ---
 ---@param options argparse2.ParameterInputOptions | argparse2.ParameterOptions
 ---     The user-written options. (sparse or not).
 ---
-local function _expand_parameter_options(options)
+local function _expand_parameter_options(options, is_position)
     _expand_type_options(options)
     _expand_choices_options(options)
+
+    if options.required == nil then
+        if is_position then
+            options.required = true
+        else
+            options.required = false
+        end
+    end
 end
 
 --- Combined `namespace` with all other `...` namespaces.
@@ -1202,6 +1216,7 @@ function M.Parameter.new(options)
     self.help = options.help
     self.destination = _get_nice_name(options.destination or options.names[1])
     self:set_action(options.action)
+    self.required = options.required
     self._parent = options.parent
 
     return self
@@ -1470,7 +1485,7 @@ function M.ParameterParser:_get_completion(data, column)
                 end
             end
 
-            return _get_next_arguments_from_remainder(remainder, parser)
+            return _get_next_arguments_from_remainder(parser)
         end
 
         vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
@@ -1852,6 +1867,16 @@ function M.ParameterParser:_reset_used()
     end
 end
 
+function M.ParameterParser:is_satisfied()
+    for parameter in tabler.chain(self:get_flag_parameters(), self:get_position_parameters()) do
+        if parameter.required and not parameter:is_exhausted() then
+            return false
+        end
+    end
+
+    return true
+end
+
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
 ---@param data argparse.ArgparseResults | string The user input.
@@ -2001,11 +2026,11 @@ end
 ---
 function M.ParameterParser:add_parameter(options)
     _validate_parameter_names(options)
-    _expand_parameter_options(options)
+    local is_position = _is_position_name(options.names[1])
+    _expand_parameter_options(options, is_position)
     --- @cast options argparse2.ParameterOptions
 
     local new_options = vim.tbl_deep_extend("force", options, { parent = self })
-
     local parameter = M.Parameter.new(new_options)
 
     if _is_position_name(options.names[1]) then

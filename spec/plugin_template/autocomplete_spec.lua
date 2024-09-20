@@ -616,7 +616,7 @@ describe("dynamic argument", function()
             help = "Choices that come from a function.",
         })
         local inner_subparsers = say_parser:add_subparsers({ destination = "thing_subparsers", help = "Test." })
-        local thing = inner_subparsers:add_parser({ name = "thing", help = "Inner thing." })
+        local thing = inner_subparsers:add_parser({ name = "thing_parser", help = "Inner thing." })
         thing:add_parameter({ name = "last_thing", choices = { "another", "last" } })
 
         local dynamic = inner_subparsers:add_parser({
@@ -635,15 +635,19 @@ describe("dynamic argument", function()
             end,
         })
 
-        assert.same({ "a", "bb", "asteroid", "tt", "--help", "-h" }, parser:get_completion("say "))
-        -- -- IMPORTANT: Notice we do not include `ab` in the completion because
-        -- -- the `thing` argument is required and must be satisfied first before
-        -- -- we can continue to the subparser.
-        -- --
-        -- assert.same({ "a", "asteroid" }, parser:get_completion("say a"))
-        -- assert.same({ "ab", "cc", "zzz", "lazers", "--help", "-h" }, parser:get_completion("say a "))
-        -- assert.same({ "another", "last", "--help", "-h" }, parser:get_completion("say a thing "))
+        -- TODO: Improve the (default) sorting here
+        -- NOTE: We don't complete the next subparsers because required
+        -- parameter(s) from the `say` subparser have no been satisfied yet.
         --
+        assert.same({ "a", "bb", "asteroid", "tt", "--help", "-h" }, parser:get_completion("say "))
+        -- IMPORTANT: Notice we do not include `ab` in the completion because
+        -- the `thing` argument is required and must be satisfied first before
+        -- we can continue to the subparser.
+        --
+        assert.same({ "a", "asteroid" }, parser:get_completion("say a"))
+        assert.same({ "ab", "cc", "lazers", "thing_parser", "zzz", "--help", "-h" }, parser:get_completion("say a "))
+        assert.same({ "another", "last", "--help", "-h" }, parser:get_completion("say a thing_parser "))
+
         -- assert.same({ "different" }, parser:get_completion("say ab "))
         -- assert.same({ "branch", "here" }, parser:get_completion("say ab different "))
     end)
