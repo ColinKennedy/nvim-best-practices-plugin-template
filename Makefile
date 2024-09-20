@@ -1,4 +1,4 @@
-.PHONY: documentation llscheck luacheck stylua test
+.PHONY: api_documentation llscheck luacheck stylua test
 
 api_documentation:
 	nvim -l scripts/make_api_documentation.lua
