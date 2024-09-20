@@ -135,7 +135,8 @@ local _SHORT_HELP_FLAG = "-h"
 M.Parameter = {
     __tostring = function(parameter)
         return string.format(
-            "argparse2.Parameter({names=%s, help=%s, type=%s, action=%s, nargs=%s, choices=%s, count=%s, required=%s, used=%s})",
+            "argparse2.Parameter({names=%s, help=%s, type=%s, action=%s, "
+            .. "nargs=%s, choices=%s, count=%s, required=%s, used=%s})",
             vim.inspect(parameter.names),
             vim.inspect(parameter.help),
             vim.inspect(parameter.type),
@@ -1496,15 +1497,16 @@ function M.ParameterParser:_get_completion(data, column)
                 -- a argument that matches a parameter. Find it and make sure
                 -- that parameter calls `increment_used()`!
                 --
-                local found = _compute_and_increment_parameter(
+                _compute_and_increment_parameter(
                     argument_name,
                     parser,
                     tabler.get_slice(stripped.arguments, next_index)
                 )
 
-                if not found then
-                    -- TODO: Need to handle this case. Not sure how. Error?
-                end
+                -- local found = _compute_and_increment_parameter(...
+                -- if not found then
+                --     -- TODO: Need to handle this case. Not sure how. Error?
+                -- end
             end
 
             return _get_next_arguments_from_remainder(parser)
