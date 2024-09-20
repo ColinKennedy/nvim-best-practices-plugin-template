@@ -1383,6 +1383,17 @@ local function _get_exact_subparser_child(name, parser)
     return nil
 end
 
+local function _compute_and_increment_parameter(argument_name, parser, arguments)
+    local found = _compute_exact_flag_match(argument_name, parser, arguments)
+
+    if found then
+        return found
+    end
+
+    return _compute_exact_position_match(argument_name, parser)
+end
+
+
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
 ---@param data argparse.ArgparseResults | string The user input.
@@ -1441,10 +1452,22 @@ function M.ParameterParser:_get_completion(data, column)
             if child_parser then
                 parser = child_parser
             else
+                local next_index = index + 1
+                local argument_name = _get_argument_name(stripped.arguments[next_index])
+
                 -- NOTE: If the last argument isn't a parser then it has to be
                 -- a argument that matches a parameter. Find it and make sure
                 -- that parameter calls `increment_used()`!
                 --
+                local found = _compute_and_increment_parameter(
+                    argument_name,
+                    parser,
+                    tabler.get_slice(stripped.arguments, next_index)
+                )
+
+                if not found then
+                    -- TODO: Need to handle this case. Not sure how. Error?
+                end
             end
 
             return _get_next_arguments_from_remainder(remainder, parser)
@@ -1648,16 +1671,6 @@ function M.ParameterParser:_handle_subparsers(data, argument_name, namespace)
     return false, nil
 end
 
-local function _compute_and_increment_parameter(argument_name, arguments)
-    found = _compute_exact_flag_match(argument_name, current_parser, arguments)
-
-    if found then
-        return found
-    end
-
-    return _compute_exact_position_match(argument_name, current_parser)
-end
-
 -- TODO: Consider returning just 1 parser, not a list
 --- Traverse the parsers, marking arguments as used / exhausted as we traverse down.
 ---
@@ -1696,7 +1709,11 @@ function M.ParameterParser:_compute_matching_parsers(arguments)
         end
 
         if not found then
-            found = _compute_and_increment_parameter(argument_name, tabler.get_slice(arguments, index))
+            found = _compute_and_increment_parameter(
+                argument_name,
+                current_parser,
+                tabler.get_slice(arguments, index)
+            )
 
             if not found then
                 return previous_parser or self, index
