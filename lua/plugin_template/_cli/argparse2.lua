@@ -626,8 +626,19 @@ local function _get_exact_or_partial_matches(prefix, parser, value)
     local output = {}
 
     vim.list_extend(output, _get_matching_position_parameters(prefix, parser:get_position_parameters()))
-
     vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value))
+
+    -- TODO: Move to a function later
+    -- NOTE: This case is for when there are multiple child parsers with
+    -- similar names. e.g. `get-asset` & `get-assets` might both auto-complete here.
+    --
+    local parent_parser = parser:get_parent_parser() or parser
+
+    if parent_parser and not _is_whitespace(prefix) then
+        for parser_ in _iter_parsers(parent_parser) do
+            vim.list_extend(output, _get_array_startswith(parser_:get_names(), prefix))
+        end
+    end
 
     -- for _, parser in ipairs(parsers) do
     --     for parser_ in _iter_parsers(parser) do
@@ -745,12 +756,12 @@ end
 ---@param remainder_text string
 ---     Text that we tried to parse into a valid argument but couldn't. Usually
 ---     this is empty or is just whitespace.
----@param parsers argparse2.ParameterParser[]
----     Any subparsers that we need to consider for the next parameter(s).
+---@param parsers argparse2.ParameterParser
+---     The subparser to consider for the next parameter(s).
 ---@return string[]
 ---     The matching names, if any.
 ---
-local function _get_next_arguments_from_remainder(remainder_text, parsers)
+local function _get_next_arguments_from_remainder(remainder_text, parser)
     -- local name = _get_argument_name(argument)
     -- local matches = vim.iter(parsers):filter(function(parser)
     --     return vim.tbl_contains(parser:get_names(), name)
@@ -760,16 +771,11 @@ local function _get_next_arguments_from_remainder(remainder_text, parsers)
 
     local output = {}
 
-    local match = parsers[#parsers]
-
     -- TODO: Fix the argument4 sorting here. It's broken
     -- See "dynamic argument - works with positional arguments" test
     --
-    if match then
-        vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(remainder_text, match)))
-    end
-
-    vim.list_extend(output, _get_exact_or_partial_matches(remainder_text, match))
+    vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(remainder_text, parser)))
+    vim.list_extend(output, _get_exact_or_partial_matches(remainder_text, parser))
 
     -- TODO: There's a bug here. We may not be able to assume the last argument like this
     -- local last = stripped.arguments[#stripped.arguments]
@@ -1367,6 +1373,16 @@ function M.ParameterParser.new(options)
     return self
 end
 
+local function _get_exact_subparser_child(name, parser)
+    for child_parser in _iter_parsers(parser) do
+        if vim.tbl_contains(child_parser:get_names(), name) then
+            return child_parser
+        end
+    end
+
+    return nil
+end
+
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
 ---@param data argparse.ArgparseResults | string The user input.
@@ -1402,59 +1418,64 @@ function M.ParameterParser:_get_completion(data, column)
         return output
     end
 
-    local parsers, previous_parser = self:_compute_matching_parsers(stripped.arguments)
+    local parser, index = self:_compute_matching_parsers(stripped.arguments)
+    local finished = index == #stripped.arguments - 1
     local last = stripped.arguments[#stripped.arguments]
     local last_name = _get_argument_name(last)
+    local last_value = _get_argument_value_text(last)
 
-    if remainder ~= "" then
-        -- if not parsers then
-        --     -- NOTE: Something went wrong during parsing. We don't know where
-        --     -- the user is in the tree so we need to exit early.
-        --     --
-        --     -- TODO: Check if this situation actually happens in the unittests.
-        --     -- If so, add a log.
-        --     --
-        --     return {}
-        -- end
+    if finished then
+        if remainder ~= "" then
+            -- if not parsers then
+            --     -- NOTE: Something went wrong during parsing. We don't know where
+            --     -- the user is in the tree so we need to exit early.
+            --     --
+            --     -- TODO: Check if this situation actually happens in the unittests.
+            --     -- If so, add a log.
+            --     --
+            --     return {}
+            -- end
 
-        return _get_next_arguments_from_remainder(remainder, parsers or { previous_parser })
-    end
+            local child_parser = _get_exact_subparser_child(last_name, parser)
 
-    local last = stripped.arguments[#stripped.arguments]
-    local last_name = _get_argument_name(last)
+            if child_parser then
+                parser = child_parser
+            else
+                -- NOTE: If the last argument isn't a parser then it has to be
+                -- a argument that matches a parameter. Find it and make sure
+                -- that parameter calls `increment_used()`!
+                --
+            end
 
-    local last_value
+            return _get_next_arguments_from_remainder(remainder, parser)
+        end
 
-    if type(last) == "boolean" then
-        last_value = ""
+        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
+
+        return output
     else
-        last_value = last.value
-        --- @cast last_value string
+        error("TODO: Add support for this, somehow")
     end
 
     -- TODO: Make this all into a function. Simplify the code
-    if not parsers and previous_parser then
-        vim.list_extend(output, _get_exact_or_partial_matches(last_name, previous_parser, last_value))
+    vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
 
-        if not _is_whitespace(last_name) then
-            for parser_ in _iter_parsers(previous_parser) do
-                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
-            end
+    if not _is_whitespace(last_name) then
+        for parser_ in _iter_parsers(parser) do
+            vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
         end
     end
 
-    for _, parser in ipairs(parsers or {}) do
-        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
+    vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
 
-        -- TODO: Move to a function later
-        -- NOTE: This case is for when there are multiple child parsers with
-        -- similar names. e.g. `get-asset` & `get-assets` might both auto-complete here.
-        --
-        local parent_parser = parser:get_parent_parser()
-        if parent_parser and not _is_whitespace(last_name) then
-            for parser_ in _iter_parsers(parent_parser) do
-                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
-            end
+    -- TODO: Move to a function later
+    -- NOTE: This case is for when there are multiple child parsers with
+    -- similar names. e.g. `get-asset` & `get-assets` might both auto-complete here.
+    --
+    local parent_parser = parser:get_parent_parser()
+    if parent_parser and not _is_whitespace(last_name) then
+        for parser_ in _iter_parsers(parent_parser) do
+            vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
         end
     end
 
@@ -1627,27 +1648,38 @@ function M.ParameterParser:_handle_subparsers(data, argument_name, namespace)
     return false, nil
 end
 
+local function _compute_and_increment_parameter(argument_name, arguments)
+    found = _compute_exact_flag_match(argument_name, current_parser, arguments)
+
+    if found then
+        return found
+    end
+
+    return _compute_exact_position_match(argument_name, current_parser)
+end
+
 -- TODO: Consider returning just 1 parser, not a list
 --- Traverse the parsers, marking arguments as used / exhausted as we traverse down.
 ---
 ---@param arguments argparse.ArgparseArgument[]
 ---     All user inputs to walk through.
----@return argparse2.ParameterParser[]?
----     All matching parsers, if any. If we failed to walk the `arguments`
----     completely, we return nothing to indicate a failure.
----@return argparse2.ParameterParser?
----     The parser that was already matched in a previous iteration.
+---@return argparse2.ParameterParser
+---     The parser that was found in a current or previous iteration.
+---@return number
+---     A 1-or-more index value of the argument that we stopped parsing on.
 ---
 function M.ParameterParser:_compute_matching_parsers(arguments)
     local previous_parser = nil
     local current_parser = self
     local count = #arguments
 
+    local last_index = count - 1
+
     -- NOTE: We search all but the last argument here.
     -- IMPORTANT: Every argument must have a match or it means the `arguments`
     -- failed to match something in the parser tree.
     --
-    for index = 1, count do
+    for index = 1, last_index do
         local argument = arguments[index]
         local argument_name = _get_argument_name(argument)
 
@@ -1664,19 +1696,15 @@ function M.ParameterParser:_compute_matching_parsers(arguments)
         end
 
         if not found then
-            found = _compute_exact_flag_match(argument_name, current_parser, tabler.get_slice(arguments, index))
+            found = _compute_and_increment_parameter(argument_name, tabler.get_slice(arguments, index))
 
             if not found then
-                found = _compute_exact_position_match(argument_name, current_parser)
-            end
-
-            if not found then
-                return nil, previous_parser or self
+                return previous_parser or self, index
             end
         end
     end
 
-    return { current_parser }, previous_parser
+    return current_parser, last_index
 
     -- -- NOTE: The last user argument is special because it might be partially written.
     -- local last = arguments[count]
@@ -1821,7 +1849,7 @@ function M.ParameterParser:get_errors(data, column)
     column = column or #data.text
     local stripped = _rstrip_input(data, column)
 
-    local parsers = self:_compute_matching_parsers(stripped.arguments)
+    local parsers, _ = self:_compute_matching_parsers(stripped.arguments)
 
     if not parsers then
         -- TODO: Need to handle this case (when there's bad user input)
