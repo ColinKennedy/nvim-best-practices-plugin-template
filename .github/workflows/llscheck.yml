@@ -25,6 +25,18 @@ jobs:
         run: |
           luarocks install llscheck
 
+      - name: Checkout dependency neodev # Get neodev and neovim/runtime for builtin types
+        uses: actions/checkout@v3
+        with:
+          repository: folke/neodev.nvim
+          path: .dependencies/neodev.nvim
+
+      - name: Checkout Neovim for type annotations
+        uses: actions/checkout@v3
+        with:
+          repository: neovim/neovim
+          path: .dependencies/neovim
+
       - name: Checkout plugin-template
         uses: actions/checkout@v4
         with:
@@ -32,19 +44,19 @@ jobs:
 
       - name: Setup .dependencies
         run: |
-          mkdir ../.dependencies
+          mkdir .dependencies
 
       - name: Checkout busted
         uses: actions/checkout@v4
         with:
           repository: LuaCATS/busted
-          path: ../.dependencies/busted
+          path: .dependencies/busted
 
       - name: Checkout luassert
         uses: actions/checkout@v4
         with:
           repository: LuaCATS/luassert
-          path: ../.dependencies/luassert
+          path: .dependencies/luassert
 
       - name: Run llscheck
         run: |
