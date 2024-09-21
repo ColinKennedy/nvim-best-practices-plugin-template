@@ -1,0 +1,38 @@
+# TODO: Remove this later
+name: Busted
+
+on: [ push, pull_request ]
+
+jobs:
+
+  busted:
+    strategy:
+      fail-fast: false
+      matrix:
+        luaVersion: [ "luajit" ]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup ‘lua’
+        uses: hishamhm/gh-actions-lua@master
+        with:
+          luaVersion: ${{ matrix.luaVersion }}
+
+      - name: Setup ‘luarocks’
+        uses: hishamhm/gh-actions-luarocks@master
+
+      - name: Setup dependencies
+        run: |
+          luarocks install --deps-only luacheck-dev-1.rockspec
+          luarocks install busted
+          luarocks install lanes # required for parallel execution
+          luarocks install luautf8 # required for decoder unit test
+          luarocks install luasocket # required for profiler unit test
+          luarocks install luacov-coveralls
+
+      - name: Run regression tests
+        run: |
+          eval $(luarocks path --lua-version 5.1 --bin)
+          make test
