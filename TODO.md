@@ -24,8 +24,6 @@ Typing `-` or `--` doesn't auto-complete to `--repeat`
 
 - Follow up on - https://github.com/jeffzi/llscheck/issues/7#issuecomment-2352981951
 - Get unittests to pass
-- Get all linters / etc to pass
-- Make sure CI works
 
 - Auto-complete should include `--foo=` if a flag requires `nargs=1` but `--foo` if `nargs` is different
 
@@ -77,3 +75,7 @@ allow fuzzy matching too
 
 ## Extra Features
 - Check files for syntax errors using tree-sitter parsers (via Neovim)?
+
+
+Update news.txt at the end
+ - Make sure to increment the version
