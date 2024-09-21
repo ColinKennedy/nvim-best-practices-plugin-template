@@ -1,19 +1,35 @@
 ---
-on: [pull_request]
+on: [push, pull_request]
 name: llscheck
 
 jobs:
   llscheck:
-    name: llscheck
+    strategy:
+      fail-fast: false
+      matrix:
+        luaVersion: [ "luajit" ]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Prepare
+      - name: Setup ‘lua’
+        uses: hishamhm/gh-actions-lua@master
+        with:
+          luaVersion: ${{ matrix.luaVersion }}
+
+      - name: Setup ‘luarocks’
+        uses: hishamhm/gh-actions-luarocks@master
+
+      - name: Setup dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y luarocks
-          sudo luarocks install llscheck
+          luarocks install llscheck
 
-      - name: Lint
+      - name: Checkout plugin-template
+        uses: actions/checkout@v4
+        with:
+          repository: ColinKennedy/nvim-best-practices-plugin-template
+          path: neovim_plugin
+
+      - name: Run llscheck
         run: make llscheck
