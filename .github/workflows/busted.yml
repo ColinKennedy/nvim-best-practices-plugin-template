@@ -25,7 +25,7 @@ jobs:
 
       - name: Setup dependencies
         run: |
-          luarocks install --deps-only plugin-template-scm-1.rockspec
+          luarocks install --only-deps plugin-template-scm-1.rockspec
           luarocks install busted
 
       - name: Run regression tests
