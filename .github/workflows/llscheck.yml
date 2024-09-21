@@ -20,6 +20,9 @@ jobs:
 
       - name: Setup ‘luarocks’
         uses: hishamhm/gh-actions-luarocks@master
+        run: |
+          luarocks install --only-deps plugin-template-scm-1.rockspec
+          luarocks install llscheck
 
       - name: Checkout neodev.nvim type annotations
         uses: actions/checkout@v3
@@ -50,7 +53,7 @@ jobs:
           repository: LuaCATS/luassert
           path: .dependencies/luassert
 
+      # TODO: Find a way to move the install up
       - name: Run llscheck
         run: |
-          luarocks install llscheck
           llscheck --configpath .github/workflows/.luarc.json .
