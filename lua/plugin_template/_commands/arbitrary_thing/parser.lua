@@ -1,9 +1,13 @@
--- TODO: Docstring
+--- The main parser for the `:PluginTemplate arbitrary-thing` command.
+---
+---@module 'plugin_template._commands.arbitrary_thing.parser'
+---
 
 local argparse2 = require("plugin_template._cli.argparse2")
 
 local M = {}
 
+---@return argparse2.ParameterParser # The main parser for the `:PluginTemplate arbitrary-thing` command.
 function M.make_parser()
     local parser = argparse2.ParameterParser.new({ "arbitrary-thing", help = "Prepare to sleep or sleep." })
 

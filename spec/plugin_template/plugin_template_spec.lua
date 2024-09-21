@@ -64,6 +64,22 @@ describe("arbitrary-thing commands", function()
     end)
 end)
 
+-- -- TODO: Fill it out
+-- describe("copy-logs API", function()
+-- end)
+--
+-- -- TODO: Fill it out
+-- describe("copy-logs commands", function()
+--     it("runs #copy-logs with #default arguments", function()
+--         vim.cmd([[PluginTemplate copy-logs]])
+--     end)
+--
+--     it("runs #copy-logs with with arguments", function()
+--         local path = vim.fn.tempname() .. ".log"
+--         vim.cmd(string.format("PluginTemplate copy-logs %s", path))
+--     end)
+-- end)
+
 describe("hello world API - say phrase/word", function()
     before_each(_initialize_all)
     after_each(_reset_all)

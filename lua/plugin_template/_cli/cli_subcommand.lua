@@ -97,6 +97,7 @@ local function _get_subcommand_completion(text, prefix, subcommands)
     end
 
     if subcommand.parser then
+        -- TODO: Add type
         local parser = subcommand.parser()
         local column = vim.fn.getcmdpos()
 
