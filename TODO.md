@@ -1,3 +1,5 @@
+- Do a round of finishing TODO notes
+
 - Make sre the CI works
  - llscheck
  - release

@@ -1119,7 +1119,7 @@ local function _rstrip_input(input, column)
     local last = stripped.arguments[#stripped.arguments]
 
     if last then
-        stripped.remainder.value = input.text:sub(last.range.end_column + 1, #input.text)
+        stripped.remainder.value = input.text:sub(last.range.end_column + 1, column)
     else
         stripped.remainder.value = input.text:sub(1, column)
     end

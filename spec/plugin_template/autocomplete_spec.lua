@@ -98,7 +98,7 @@ describe("default", function()
 end)
 
 describe("plugin", function()
-    it("works with a telescope-like plugin CLI #asdf", function()
+    it("works with a telescope-like plugin CLI", function()
         ---@class TeleskopePluginData
         ---    Data that would come from other Lua plugins.
         ---@field name string
@@ -439,8 +439,16 @@ describe("named argument", function()
     it("should only auto-complete --repeat once", function()
         local parser = _make_simple_parser()
 
-        -- TODO: Add this check later
-        -- assert.same({"--repeat="}, parser:get_completion("hello-world say word --repeat= --repe", 30))
+        assert.same(
+            {
+                "--repeat=1",
+                "--repeat=2",
+                "--repeat=3",
+                "--repeat=4",
+                "--repeat=5",
+            },
+            parser:get_completion("say word --repeat= --repe", 18)
+        )
         assert.same({}, parser:get_completion("say word --repeat= --repe"))
     end)
 
@@ -720,9 +728,5 @@ describe("dynamic argument", function()
 
         assert.same({ "different", "--help", "-h" }, parser:get_completion("say ab "))
         assert.same({ "branch", "here", "--help", "-h" }, parser:get_completion("say ab different "))
-    end)
-
-    it("works with count = 2", function()
-        -- TODO: Add
     end)
 end)
