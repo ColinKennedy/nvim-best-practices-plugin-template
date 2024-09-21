@@ -29,7 +29,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ColinKennedy/nvim-best-practices-plugin-template
-          path: neovim_plugin
+
+      - name: Setup .dependencies
+        run: |
+          mkdir ../.dependencies
+
+      - name: Checkout busted
+        uses: actions/checkout@v4
+        with:
+          repository: LuaCATS/busted
+          path: ../.dependencies/busted
+
+      - name: Checkout luassert
+        uses: actions/checkout@v4
+        with:
+          repository: LuaCATS/luassert
+          path: ../.dependencies/luassert
 
       - name: Run llscheck
-        run: make llscheck
+        run: |
+          llscheck --configpath .github/workflows/.luarc.json .

@@ -1,0 +1,14 @@
+{
+    "Lua.diagnostics.libraryFiles": "Disable",
+    "Lua.workspace.checkThirdParty": "Disable",
+    "Lua.workspace.library": [
+        "../.dependencies/busted/library",
+        "../.dependencies/luassert/library"
+    ],
+    "diagnostics.globals": [
+        "vim"
+    ],
+    "runtime.version": "LuaJIT",
+    "workspace.checkThirdParty": "Disable"
+}
+
