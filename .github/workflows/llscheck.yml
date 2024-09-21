@@ -18,8 +18,8 @@ jobs:
 
       - name: Install luarocks modules
         run: |
-          luarocks install --only-deps plugin-template-scm-1.rockspec
-          luarocks install llscheck
+          sudo luarocks install --only-deps plugin-template-scm-1.rockspec
+          sudo luarocks install llscheck
 
       - name: Checkout neodev.nvim type annotations
         uses: actions/checkout@v3
