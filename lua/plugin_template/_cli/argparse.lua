@@ -11,7 +11,6 @@ local _PREFIX_CHARACTERS = { "-", "+" }
 
 ---@enum argparse.ArgumentType
 M.ArgumentType = {
-    dynamic = "__dynamic",
     flag = "__flag",
     named = "__named",
     position = "__position",

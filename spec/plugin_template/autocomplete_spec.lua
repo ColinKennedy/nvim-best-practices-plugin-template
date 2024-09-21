@@ -97,6 +97,66 @@ describe("default", function()
     end)
 end)
 
+describe("plugin", function()
+    it("works with a telescope-like plugin CLI #asdf", function()
+        ---@class TeleskopePluginData
+        ---    Data that would come from other Lua plugins.
+        ---@field name string
+        ---    The name of the parser to register.
+        ---@field help string
+        ---    A description of what this plugin does. Keep it brief! < 80 characters.
+        ---@field add_parameters (fun(parser: argparse2.ParameterParser): nil)?
+        ---    The callback used to add extra
+
+        ---@return TeleskopePluginData[] # All of the Teleskope-registered plugin.
+        local function _get_plugin_registry()
+            return {
+                {
+                    name="colorscheme",
+                    help="Preview / Select other colorschemes.",
+                    add_parameters = function(parser)
+                        parser:add_parameter({"name", required=false})
+                    end
+                },
+                {
+                    name="jumplist",
+                    help="Jump up, jump up, and get down jump! Jump! Jump! Jump!",
+                    add_parameters = function(parser)
+                        local subparsers = parser:add_subparsers({"jumplist_commands", help="Test."})
+                        local cursor = subparsers:add_parser({"cursor", help="Jump to the last cursor."})
+                        cursor:set_execute(function() return 8 end)
+                        local tab = subparsers:add_parser({"tab", help="Jump to the last tab."})
+                        tab:set_execute(function() return 10 end)
+                    end
+                },
+            }
+        end
+
+        local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
+        local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
+        local teleskope = subparsers:add_parser({ name = "Teleskope", help = "Something." })
+        local teleskope_subparsers = teleskope:add_subparsers({ "teleskope_commands", help="Test." })
+
+        for _, data in ipairs(_get_plugin_registry()) do
+            local inner_parser = teleskope_subparsers:add_parser({data.name, help=data.help})
+
+            if data.add_parameters then
+                data.add_parameters(inner_parser)
+            end
+        end
+
+        assert.same({name="light"}, parser:parse_arguments("Teleskope colorscheme light"))
+        assert.same({}, parser:parse_arguments("Teleskope jumplist"))
+        local cursor_namespace = parser:parse_arguments("Teleskope jumplist cursor")
+        local tab_namespace = parser:parse_arguments("Teleskope jumplist tab")
+        assert.equal(8, cursor_namespace.execute())
+        assert.equal(10, tab_namespace.execute())
+
+        assert.same({"jumplist"}, parser:get_completion("Teleskope ju"))
+        assert.same({"cursor", "tab", "--help", "-h"}, parser:get_completion("Teleskope jumplist "))
+    end)
+end)
+
 describe("simple", function()
     it("works with multiple position arguments", function()
         local parser = _make_simple_parser()

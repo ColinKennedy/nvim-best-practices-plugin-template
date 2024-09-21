@@ -1,3 +1,4 @@
+- Make sure that a "dynamic plugin" command-line parse is possible. e.g. Telescope
 - Get api_documentation working (needs a minimal init)
 - Fix llscheck
 
@@ -33,8 +34,6 @@ Typing `-` or `--` doesn't auto-complete to `--repeat`
 
 - "works with nested parsers where a parent also defines a default" is bugged. Selecting a subparser should immediately get its value(s).
 
-- Somehow the `--style=low|cursor|` auto-completion isn't working anymore. Fix!
-
 - Remove subcommand-related files
  - Make sure the GitHub wiki + documentation still works
 
@@ -42,8 +41,6 @@ Typing `-` or `--` doesn't auto-complete to `--repeat`
  - Make sure the documentation tellsthe user to delete this folder
 
 - Make sure help text allows a parser choices() to be represented as text
-
-- Make sure that a "dynamic plugin" command-line parse is possible. e.g. Telescope
 
 - Is there really any need to auto-complete the short flags if the long flag is there? Remove?
 
