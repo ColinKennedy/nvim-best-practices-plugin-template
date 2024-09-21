@@ -18,7 +18,6 @@ jobs:
     - name: build
       run: |
         luarocks install --only-deps plugin-template-scm-1.rockspec
-        luarocks install lua-language-server
         luarocks install llscheck
 
     - name: test
