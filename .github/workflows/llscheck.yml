@@ -17,9 +17,9 @@ jobs:
 
     - name: build
       run: |
-        luarocks install busted
-        luarocks make
+        luarocks install --only-deps plugin-template-scm-1.rockspec
+        luarocks install llscheck
 
     - name: test
       run: |
-        busted -o utfTerminal
+        .luarocks/bin/llscheck --configpath .github/workflows/.luarc.json .
