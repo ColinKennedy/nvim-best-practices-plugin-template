@@ -7,10 +7,10 @@ llscheck:
 	llscheck --configpath .luarc.json .
 
 luacheck:
-	luacheck lua plugin spec
+	luacheck lua plugin scripts spec
 
 stylua:
-	stylua lua plugin spec
+	stylua lua plugin scripts spec
 
 test:
 	eval $(luarocks path --lua-version 5.1 --bin)

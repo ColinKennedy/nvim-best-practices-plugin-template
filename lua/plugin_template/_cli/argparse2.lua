@@ -1012,7 +1012,7 @@ local function _get_parsers_names(parsers)
     local output = {}
 
     for _, parser in ipairs(parsers) do
-        vim.list_extend(parser:get_names())
+        vim.list_extend(output, parser:get_names())
     end
 
     return output
