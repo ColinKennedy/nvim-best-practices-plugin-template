@@ -3,8 +3,6 @@
 ---@module 'plugin_template._cli.argparse2'
 ---
 
--- TODO: DOCSTRINGS
--- - finish all docstrings
 -- TODO: Clean-up code
 
 -- TODO: Add unittest for required subparsers
@@ -215,18 +213,32 @@ local function _has_position_parameter_match(name, parameter)
     return false
 end
 
+--- If the `argument` is a Named Argument with a value, get it.
+---
+---@param argument argparse.ArgparseArgument Some user input argument to check.
+---@return string # The found value, if any.
+---
 local function _get_argument_value_text(argument)
-    if type(argument.value) == "boolean" then
+    local value = argument.value
+
+    if type(value) == "boolean" then
         return ""
     end
 
-    return argument.value
+    ---@cast value string
+
+    return value
 end
 
--- --- Check if `parameter` is expected to have exactly one value.
--- ---
--- --- @param
--- ---
+--- Check if `parameter` is expected to have exactly one value.
+---
+---@param parameter argparse2.Parameter
+---    A parser parameter that may expect 0-or-more values.
+---@param arguments argparse.ArgparseArgument
+---    User inputs to check.
+---@return boolean
+---    If `parameter` needs exactly one value, return `true`.
+---
 local function _is_single_nargs_and_named_parameter(parameter, arguments)
     if parameter:get_nargs() ~= 1 then
         return false
@@ -252,6 +264,15 @@ local function _is_single_nargs_and_named_parameter(parameter, arguments)
     return vim.tbl_contains(parameter.names, argument.name)
 end
 
+--- Check if `arguments` is valid data for `parameter`.
+---
+---@param parameter argparse2.Parameter
+---    A parser parameter that may expect 0-or-more values.
+---@param arguments argparse.ArgparseArgument
+---    User inputs to check to check against `parameter`.
+---@return boolean
+---    If `parameter` is satisified by is satisified by `arguments`, return `true`.
+---
 local function _has_satisfying_value(parameter, arguments)
     if _is_single_nargs_and_named_parameter(parameter, arguments) then
         return true
@@ -351,7 +372,19 @@ local function _get_array_startswith(values, prefix)
     return output
 end
 
-local function _compute_exact_flag_match(argument_name, parser, arguments)
+--- Find + increment all flag parameters of `parser` that match the other inputs.
+---
+---@param parser argparse2.ParameterParser
+---    A parser whose parameters may be modified.
+---@param argument_name string
+---    The expected flag argument name.
+---@param arguments argparse.ArgparseArgument
+---    All of the upcoming argumenst after `argument_name`. We use these to figure out
+---    if `parser` is an exact match.
+---@return boolean
+---    If `true` a flag argument was matched and incremented.
+---
+local function _compute_exact_flag_match(parser, argument_name, arguments)
     for _, parameter in ipairs(parser:get_flag_parameters()) do
         if
             not parameter:is_exhausted()
@@ -367,6 +400,16 @@ local function _compute_exact_flag_match(argument_name, parser, arguments)
     return false
 end
 
+--- Find + increment all position parameters of `parser` that match the other inputs.
+---
+---@param parser argparse2.ParameterParser
+---    A parser whose parameters may be modified.
+---@param argument_name string
+---    The expected position argument name. Most of the time position arguments
+---    don't even have an expected name so this value is not always used.
+---@return boolean
+---    If `true` a position argument was matched and incremented.
+---
 local function _compute_exact_position_match(argument_name, parser)
     for _, parameter in ipairs(parser:get_position_parameters()) do
         if not parameter:is_exhausted() then
@@ -449,6 +492,17 @@ local function _get_parameters_names(parameters)
         :totable()
 end
 
+--- Create auto-complete text for `parameter`, given some `value`.
+---
+---@param parameter argparse2.Parameter
+---    A parameter that (we assume) takes exactly one value that we need
+---    auto-completion options for.
+---@param value string?
+---    The user-provided (exact or partial) value for the flag / named argument
+---    value, if any. e.g. the `"bar"` part of `"--foo=bar"`.
+---@return string[]
+---    All auto-complete values, if any.
+---
 local function _get_single_choices_text(parameter, value)
     if not parameter.choices then
         return { parameter.names[1] .. "=" }
@@ -472,8 +526,8 @@ end
 ---@param flags argparse2.Parameter[]
 ---    All position / flag / named parameters.
 ---@param value string?
----    If the user provided a (exact or partial) value for the flag / named
----    argument, the text is given here.
+---    The user-provided (exact or partial) value for the flag / named argument
+---    value, if any. e.g. the `"bar"` part of `"--foo=bar"`.
 ---@return argparse2.Parameter[]
 ---    The matched parameters, if any.
 ---
@@ -1427,8 +1481,8 @@ local function _get_exact_subparser_child(name, parser)
     return nil
 end
 
-local function _compute_and_increment_parameter(argument_name, parser, arguments)
-    local found = _compute_exact_flag_match(argument_name, parser, arguments)
+local function _compute_and_increment_parameter(parser, argument_name, arguments)
+    local found = _compute_exact_flag_match(parser, argument_name, arguments)
 
     if found then
         return found
@@ -1503,8 +1557,8 @@ function M.ParameterParser:_get_completion(data, column)
                 -- that parameter calls `increment_used()`!
                 --
                 _compute_and_increment_parameter(
-                    argument_name,
                     parser,
+                    argument_name,
                     tabler.get_slice(stripped.arguments, next_index)
                 )
 
@@ -1759,7 +1813,7 @@ function M.ParameterParser:_compute_matching_parsers(arguments)
         end
 
         if not found then
-            found = _compute_and_increment_parameter(argument_name, current_parser, tabler.get_slice(arguments, index))
+            found = _compute_and_increment_parameter(current_parser, argument_name, tabler.get_slice(arguments, index))
 
             if not found then
                 return previous_parser or self, index
