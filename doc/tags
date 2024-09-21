@@ -1,7 +1,7 @@
 plugin-template-a-neovim-plugin-template	plugin-template.txt	/*plugin-template-a-neovim-plugin-template*
+plugin-template-commands	plugin-template.txt	/*plugin-template-commands*
 plugin-template-configuration	plugin-template.txt	/*plugin-template-configuration*
 plugin-template-configuration-colors	plugin-template.txt	/*plugin-template-configuration-colors*
-plugin-template-configuration-commands	plugin-template.txt	/*plugin-template-configuration-commands*
 plugin-template-configuration-lualine	plugin-template.txt	/*plugin-template-configuration-lualine*
 plugin-template-configuration-telescope	plugin-template.txt	/*plugin-template-configuration-telescope*
 plugin-template-features	plugin-template.txt	/*plugin-template-features*
@@ -15,6 +15,7 @@ plugin-template-tests	plugin-template.txt	/*plugin-template-tests*
 plugin-template-tests-initialization	plugin-template.txt	/*plugin-template-tests-initialization*
 plugin-template-tests-running	plugin-template.txt	/*plugin-template-tests-running*
 plugin-template-tracking-updates	plugin-template.txt	/*plugin-template-tracking-updates*
+plugin-template-under-construction-	plugin-template.txt	/*plugin-template-under-construction-*
 plugin-template-using-this-template	plugin-template.txt	/*plugin-template-using-this-template*
 plugin-template.txt	plugin-template.txt	/*plugin-template.txt*
 plugin_template.Configuration	plugin_template_types.txt	/*plugin_template.Configuration*
