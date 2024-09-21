@@ -23,11 +23,24 @@ jobs:
       - name: Setup ‘luarocks’
         uses: hishamhm/gh-actions-luarocks@master
 
+      # TODO: Figure out how to remove the explicit `install nlua` here, later
       - name: Setup dependencies
         run: |
           luarocks install --only-deps plugin-template-scm-1.rockspec
           luarocks install nlua
           luarocks install busted
+
+    - name: Checkout plugin-template
+      uses: actions/checkout@v4
+      with:
+        repository: ColinKennedy/nvim-best-practices-plugin-template
+        path: neovim_plugin
+
+    - name: Install Neovim
+    - uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: ${{ matrix.neovim }}
 
       - name: Run regression tests
         run: |
