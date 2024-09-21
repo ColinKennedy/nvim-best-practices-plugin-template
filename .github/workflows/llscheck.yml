@@ -12,11 +12,12 @@ jobs:
     - uses: leafo/gh-actions-lua@master
     - uses: leafo/gh-actions-luarocks@master
 
-    - name: build
+    - name: install
       run: |
         lua -v
         luarocks install --only-deps plugin-template-scm-1.rockspec
         luarocks install llscheck
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         brew install lua-language-server
 
     - name: test
