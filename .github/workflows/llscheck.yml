@@ -12,7 +12,31 @@ jobs:
     - uses: leafo/gh-actions-lua@master
     - uses: leafo/gh-actions-luarocks@master
 
-    - name: install
+    - name: Checkout neodev.nvim type annotations
+      uses: actions/checkout@v3
+      with:
+        repository: folke/neodev.nvim
+        path: .dependencies/neodev.nvim
+
+    - name: Checkout Neovim type annotations
+      uses: actions/checkout@v3
+      with:
+        repository: neovim/neovim
+        path: .dependencies/neovim
+
+    - name: Checkout busted
+      uses: actions/checkout@v4
+      with:
+        repository: LuaCATS/busted
+        path: .dependencies/busted
+
+    - name: Checkout luassert
+      uses: actions/checkout@v4
+      with:
+        repository: LuaCATS/luassert
+        path: .dependencies/luassert
+
+    - name: install luarocks
       run: |
         lua -v
         luarocks install --only-deps plugin-template-scm-1.rockspec
