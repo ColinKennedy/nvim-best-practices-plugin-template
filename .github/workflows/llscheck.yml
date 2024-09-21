@@ -1,56 +1,27 @@
----
-on: [push, pull_request]
-name: llscheck
+name: test
+
+on: [push]
 
 jobs:
-  llscheck:
-    runs-on: ubuntu-22.04
+  test:
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    - uses: actions/checkout@master
 
-      - name: Setup lua
-        uses: hishamhm/gh-actions-lua@master
-        with:
-          luaVersion: luajit
-      - name: Setup luarocks
-        uses: hishamhm/gh-actions-luarocks@master
+    - uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: luajit
 
-      - name: Install luarocks modules
-        run: |
-          sudo luarocks install --only-deps plugin-template-scm-1.rockspec
-          sudo luarocks install llscheck
+    - uses: leafo/gh-actions-luarocks@v4
 
-      - name: Checkout neodev.nvim type annotations
-        uses: actions/checkout@v3
-        with:
-          repository: folke/neodev.nvim
-          path: .dependencies/neodev.nvim
+    - name: build
+      run: |
+        sudo luarocks install --only-deps plugin-template-scm-1.rockspec
+        luarocks install busted
+        luarocks install nlua
+        luarocks make
 
-      - name: Checkout Neovim type annotations
-        uses: actions/checkout@v3
-        with:
-          repository: neovim/neovim
-          path: .dependencies/neovim
-
-      - name: Checkout plugin-template
-        uses: actions/checkout@v4
-        with:
-          repository: ColinKennedy/nvim-best-practices-plugin-template
-
-      - name: Checkout busted
-        uses: actions/checkout@v4
-        with:
-          repository: LuaCATS/busted
-          path: .dependencies/busted
-
-      - name: Checkout luassert
-        uses: actions/checkout@v4
-        with:
-          repository: LuaCATS/luassert
-          path: .dependencies/luassert
-
-      # TODO: Find a way to move the install up
-      - name: Run llscheck
-        run: |
-          llscheck --configpath .github/workflows/.luarc.json .
+    - name: test
+      run: |
+        busted -o utfTerminal
