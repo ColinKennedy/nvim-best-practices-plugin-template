@@ -1,8 +1,5 @@
 ---
-on:
-  push:
-    branches:
-      - parser_refactor
+on: [pull_request]
 name: luacheck
 
 jobs:
