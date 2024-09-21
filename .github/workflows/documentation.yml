@@ -18,7 +18,6 @@ jobs:
           demojify: true
           treesitter: true
       - name: Create API Documentation
-        working-directory: ./neovim_plugin
         run: |
           nvim --version
           make api_documentation
