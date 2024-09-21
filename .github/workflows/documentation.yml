@@ -10,14 +10,17 @@ jobs:
   api_documentation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: panvimdoc
-        uses: kdheepak/panvimdoc@main
+      - name: Checkout plugin-template
+        uses: actions/checkout@v4
         with:
-          version: "Neovim >= 0.8.0"
-          demojify: true
-          treesitter: true
+          repository: ColinKennedy/nvim-best-practices-plugin-template
+          path: neovim_plugin
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: stable
       - name: Create API Documentation
+        working-directory: ./neovim_plugin
         run: |
           nvim --version
           make api_documentation
