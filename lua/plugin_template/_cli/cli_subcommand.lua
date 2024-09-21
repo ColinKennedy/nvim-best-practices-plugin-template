@@ -5,8 +5,6 @@
 
 local M = {}
 
--- TODO: Fix documentation here later
-
 ---@class plugin_template.CompleteData
 ---    The data that gets passed when `plugin_template.Subcommand.complete` is called.
 ---@field parsed_arguments argparse.ArgparseResults
@@ -31,7 +29,11 @@ local M = {}
 ---    The function to run when the subcommand is called.
 
 ---@class plugin_template.SubcommandRun
----    TODO Finish this later
+---    The data that gets passed to the `run` function. Most of the time,
+---    a user never needs or touches this data. It's only for people who need
+---    absolute control over the CLI or some unsupported behavior.
+---@field parsed_arguments argparse.ArgparseResults
+---    The parsed arguments (that the user is now trying to execute some function with).
 
 ---@alias plugin_template.Subcommands table<string, plugin_template.Subcommand | fun(): argparse2.ParameterParser>
 
@@ -139,6 +141,11 @@ local function _escape(text)
     return escaped
 end
 
+--- Run `parser` and pass it the user's raw input `text`.
+---
+---@param parser argparse2.ParameterParser The decision tree that parses and runs `text`.
+---@param text string The (unparsed) text that user provides from COMMAND mode.
+---
 local function _run_subcommand(parser, text)
     local argparse = require("plugin_template._cli.argparse")
 
@@ -165,6 +172,12 @@ local function _run_subcommand(parser, text)
     )
 end
 
+--- Remove `prefix` from `text` if needed.
+---
+---@param prefix string A character / phrase to remove from `text`.
+---@param text string The text that might start with `prefix`.
+---@return string # Basically `text.lstrip(prefix)`.
+---
 local function _strip_prefix(prefix, text)
     return (text:gsub("^" .. _escape(prefix) .. "%s*", ""))
 end
@@ -207,7 +220,6 @@ function M.make_command_completer(prefix, subcommands)
     return runner
 end
 
--- TODO: Fix this doc + the others
 --- If anything in `subcommands` is missing data, define default value(s) for it.
 ---
 ---@param subcommands plugin_template.Subcommands

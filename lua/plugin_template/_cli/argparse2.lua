@@ -5,9 +5,6 @@
 
 -- TODO: Clean-up code
 
--- TODO: Add unittest for required subparsers
--- - set_required must fail if subparsers has no dest
-
 local argparse = require("plugin_template._cli.argparse")
 local argparse_helper = require("plugin_template._cli.argparse_helper")
 local tabler = require("plugin_template._core.tabler")
@@ -419,6 +416,8 @@ local function _compute_exact_position_match(argument_name, parser)
 
                 return true
             end
+
+            return false
         end
     end
 
@@ -673,6 +672,14 @@ local function _iter_parsers(parser, inclusive)
     end
 end
 
+--- Find all child parsers, recursively.
+---
+--- Note:
+---     This function is **inclusive**, meaning `parser` will be returned.
+---
+---@param parser argparse2.ParameterParser The starting point to look for parsers.
+---@return argparse2.ParameterParser[] # All found `parser` + child parsers.
+---
 local function _get_all_parsers(parser)
     local stack = { parser }
     local output = {}
@@ -1471,6 +1478,12 @@ function M.ParameterParser.new(options)
     return self
 end
 
+--- Find the child parser that matches `name`.
+---
+---@param name string The name of a child parser within `parser`.
+---@param parser argparse2.ParameterParser The parent parser to search within.
+---@return argparse2.ParameterParser? # The matching child parser, if any.
+---
 local function _get_exact_subparser_child(name, parser)
     for child_parser in _iter_parsers(parser) do
         if vim.tbl_contains(child_parser:get_names(), name) then
@@ -1481,6 +1494,18 @@ local function _get_exact_subparser_child(name, parser)
     return nil
 end
 
+--- Find + increment the parameter(s) of `parser` that match the other inputs.
+---
+---@param parser argparse2.ParameterParser
+---    A parser whose parameters may be modified.
+---@param argument_name string
+---    The expected flag argument name.
+---@param arguments argparse.ArgparseArgument
+---    All of the upcoming argumenst after `argument_name`. We use these to figure out
+---    if `parser` is an exact match.
+---@return boolean
+---    If `true` a flag argument was matched and incremented.
+---
 local function _compute_and_increment_parameter(parser, argument_name, arguments)
     local found = _compute_exact_flag_match(parser, argument_name, arguments)
 
@@ -1954,6 +1979,7 @@ function M.ParameterParser:_reset_used()
     end
 end
 
+---@return boolean # If all required parameters of this instance have values.
 function M.ParameterParser:is_satisfied()
     for parameter in tabler.chain(self:get_flag_parameters(), self:get_position_parameters()) do
         if parameter.required and not parameter:is_exhausted() then
