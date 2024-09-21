@@ -308,7 +308,7 @@ describe("simple", function()
         assert.same({ "--repeat=", "-r=", "--style=", "-s=", "--help", "-h" }, parser:get_completion("say phrase "))
 
         -- NOTE: Beginning a --double-dash named argument, maybe (we don't know yet)
-        assert.same({ "--repeat=", "--style=", "--help"}, parser:get_completion("say phrase --"))
+        assert.same({ "--repeat=", "--style=", "--help" }, parser:get_completion("say phrase --"))
     end)
 end)
 
