@@ -29,17 +29,17 @@ jobs:
           luarocks install nlua
           luarocks install busted
 
-    - name: Checkout plugin-template
-      uses: actions/checkout@v4
-      with:
-        repository: ColinKennedy/nvim-best-practices-plugin-template
-        path: neovim_plugin
+      - name: Checkout plugin-template
+        uses: actions/checkout@v4
+        with:
+          repository: ColinKennedy/nvim-best-practices-plugin-template
+          path: neovim_plugin
 
-    - name: Install Neovim
-      uses: rhysd/action-setup-vim@v1
-      with:
-        neovim: true
-        version: ${{ matrix.neovim }}
+      - name: Install Neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: ${{ matrix.neovim }}
 
       - name: Run regression tests
         run: |
