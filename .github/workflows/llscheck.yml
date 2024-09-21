@@ -4,22 +4,19 @@ name: llscheck
 
 jobs:
   llscheck:
-    strategy:
-      fail-fast: false
-      matrix:
-        luaVersion: [ "luajit" ]
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup ‘lua’
+      - name: Setup lua
         uses: hishamhm/gh-actions-lua@master
         with:
-          luaVersion: ${{ matrix.luaVersion }}
-
-      - name: Setup ‘luarocks’
+          luaVersion: luajit
+      - name: Setup luarocks
         uses: hishamhm/gh-actions-luarocks@master
+
+      - name: Install luarocks modules
         run: |
           luarocks install --only-deps plugin-template-scm-1.rockspec
           luarocks install llscheck
