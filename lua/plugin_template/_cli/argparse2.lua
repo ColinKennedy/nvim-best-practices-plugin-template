@@ -5,7 +5,6 @@
 
 -- TODO: DOCSTRINGS
 -- - finish all docstrings
--- - dedent properly (multiples of 4, not 5)
 -- TODO: Clean-up code
 
 -- TODO: Add unittest for required subparsers
@@ -17,109 +16,109 @@ local tabler = require("plugin_template._core.tabler")
 local texter = require("plugin_template._core.texter")
 
 ---@alias argparse2.Action "append" | "count" | "store_false" | "store_true" | fun(data: argparse2.ActionData): nil
----     This controls the behavior of how parsed arguments are added into the
----     final parsed `argparse2.Namespace`.
+---    This controls the behavior of how parsed arguments are added into the
+---    final parsed `argparse2.Namespace`.
 
 ---@alias argparse2.Namespace table<string, any> All parsed values.
 
 ---@alias argparse2.MultiNumber number | "*" | "+"
----     The number of elements needed to satisfy a parameter. * == 0-or-more.
----     + == 1-or-more. A number means "we need exactly this number of
----     elements".
+---    The number of elements needed to satisfy a parameter. * == 0-or-more.
+---    + == 1-or-more. A number means "we need exactly this number of
+---    elements".
 
 ---@class argparse2.ActionData
----     A struct of data that gets passed to an Parameter's action.
+---    A struct of data that gets passed to an Parameter's action.
 ---@field name string
----     The parameter name to set/append/etc some `value`.
+---    The parameter name to set/append/etc some `value`.
 ---@field namespace argparse2.Namespace
----     The container where a parsed argument + value will go into. This
----     object gets directly modified when an action is called.
+---    The container where a parsed argument + value will go into. This
+---    object gets directly modified when an action is called.
 ---@field value any
----     A value to add into `namespace`.
+---    A value to add into `namespace`.
 
 ---@class argparse2.ChoiceData
----     The information that gets passed to a typical `option.choices(...)` call.
+---    The information that gets passed to a typical `option.choices(...)` call.
 ---@field current_value string
----     If the argument has an existing-written value written by the user, this
----     text is passed as `current_value`.
+---    If the argument has an existing-written value written by the user, this
+---    text is passed as `current_value`.
 
 ---@class argparse2.ParameterInputOptions
----     All of the settings to include in a new parameter.
+---    All of the settings to include in a new parameter.
 ---@field action argparse2.Action?
----     This controls the behavior of how parsed arguments are added into the
----     final parsed `argparse2.Namespace`.
+---    This controls the behavior of how parsed arguments are added into the
+---    final parsed `argparse2.Namespace`.
 ---@field choices (string[] | fun(data: argparse2.ChoiceData?): string[])?
----     If included, the parameter can only accept these choices as values.
+---    If included, the parameter can only accept these choices as values.
 ---@field count argparse2.MultiNumber?
----     The number of times that this parameter must be written.
+---    The number of times that this parameter must be written.
 ---@field default any?
----     When this parameter is visited, this value is added to the returned
----     `argparse2.Namespace` assuming no other value overwrites it.
+---    When this parameter is visited, this value is added to the returned
+---    `argparse2.Namespace` assuming no other value overwrites it.
 ---@field destination string?
----     When a parsed `argparse2.Namespace` is created, this field is used to store
----     the final parsed value(s). If no `destination` is given an
----     automatically assigned name is used instead.
+---    When a parsed `argparse2.Namespace` is created, this field is used to store
+---    the final parsed value(s). If no `destination` is given an
+---    automatically assigned name is used instead.
 ---@field help string?
----     Explain what this parser is meant to do and the parameter(s) it needs.
----     Keep it brief (< 88 characters).
+---    Explain what this parser is meant to do and the parameter(s) it needs.
+---    Keep it brief (< 88 characters).
 ---@field name? string
----     The ways to refer to this instance.
+---    The ways to refer to this instance.
 ---@field names? string[]
----     The ways to refer to this instance.
+---    The ways to refer to this instance.
 ---@field nargs argparse2.MultiNumber?
----     The number of elements that this parameter consumes at once.
+---    The number of elements that this parameter consumes at once.
 ---@field parent argparse2.ParameterParser?
----     The parser that owns this instance.
+---    The parser that owns this instance.
 ---@field required boolean?
----     If `true`, this parameter must get satisfying value(s) before the
----     parser is complete. If `false` then the parameter doesn't need to be
----     defined as an argument.
+---    If `true`, this parameter must get satisfying value(s) before the
+---    parser is complete. If `false` then the parameter doesn't need to be
+---    defined as an argument.
 ---@field type ("number" | "string" | fun(value: string): any)?
----     The expected output type. If a function is given, assume that the user
----     knows what they're doing and use their function's return value.
+---    The expected output type. If a function is given, assume that the user
+---    knows what they're doing and use their function's return value.
 
 ---@class argparse2.ParameterOptions: argparse2.ParameterInputOptions
----     All of the settings to include in a new parameter.
+---    All of the settings to include in a new parameter.
 ---@field choices (fun(data: argparse2.ChoiceData?): string[])?
----     If included, the parameter can only accept these choices as values.
+---    If included, the parameter can only accept these choices as values.
 ---@field required boolean
----     If `true`, this parameter must get satisfying value(s) before the
----     parser is complete. If `false` then the parameter doesn't need to be
----     defined as an argument.
+---    If `true`, this parameter must get satisfying value(s) before the
+---    parser is complete. If `false` then the parameter doesn't need to be
+---    defined as an argument.
 ---@field type (fun(value: string): any)?
----     The expected output type. If a function is given, assume that the user
----     knows what they're doing and use their function's return value.
+---    The expected output type. If a function is given, assume that the user
+---    knows what they're doing and use their function's return value.
 
 ---@class argparse2.ParameterParserInputOptions
----     The options that we might pass to `argparse2.ParameterParser.new`.
+---    The options that we might pass to `argparse2.ParameterParser.new`.
 ---@field choices (string[] | fun(data: argparse2.ChoiceData?): string[])?
----     If included, the parameter can only accept these choices as values.
+---    If included, the parameter can only accept these choices as values.
 ---@field help string
----     Explain what this parser is meant to do and the parameter(s) it needs.
----     Keep it brief (< 88 characters).
+---    Explain what this parser is meant to do and the parameter(s) it needs.
+---    Keep it brief (< 88 characters).
 ---@field name string?
----     The parser name. This only needed if this parser has a parent subparser.
+---    The parser name. This only needed if this parser has a parent subparser.
 ---@field parent argparse2.Subparsers?
----     A subparser that own this `argparse2.ParameterParser`, if any.
+---    A subparser that own this `argparse2.ParameterParser`, if any.
 
 ---@class argparse2.ParameterParserOptions: argparse2.ParameterParserInputOptions
----     The options that we might pass to `argparse2.ParameterParser.new`.
+---    The options that we might pass to `argparse2.ParameterParser.new`.
 ---@field choices (fun(data: argparse2.ChoiceData?): string[])?
----     If included, the parameter can only accept these choices as values.
+---    If included, the parameter can only accept these choices as values.
 
 ---@class argparse2.SubparsersOptions
----     Customization options for the new argparse2.Subparsers.
+---    Customization options for the new argparse2.Subparsers.
 ---@field destination string?
----     An internal name to track this subparser group.
+---    An internal name to track this subparser group.
 ---@field help string
----     Explain what types of parsers this object is meant to hold Keep it
----     brief (< 88 characters).
+---    Explain what types of parsers this object is meant to hold Keep it
+---    brief (< 88 characters).
 ---@field parent argparse2.ParameterParser?
----     The parser that owns this instance, if any.
+---    The parser that owns this instance, if any.
 ---@field required boolean?
----     If `true` then one of the parser children must be matched or the user's
----     argument input is considered invalid. If `false` then the inner parser
----     does not have to be explicitly written. Defaults to false.
+---    If `true` then one of the parser children must be matched or the user's
+---    argument input is considered invalid. If `false` then the inner parser
+---    does not have to be explicitly written. Defaults to false.
 
 local M = {}
 
@@ -131,14 +130,14 @@ local _FULL_HELP_FLAG = "--help"
 local _SHORT_HELP_FLAG = "-h"
 
 ---@class argparse2.Parameter
----     An optional / required parameter for some parser.
+---    An optional / required parameter for some parser.
 ---@field action argparse2.Action?
----     This controls the behavior of how parsed parameters are added into the
----     final parsed `argparse2.Namespace`.
+---    This controls the behavior of how parsed parameters are added into the
+---    final parsed `argparse2.Namespace`.
 ---@field destination string?
----     When a parsed `argparse2.Namespace` is created, this field is used to store
----     the final parsed value(s). If no `destination` is given an
----     automatically assigned name is used instead.
+---    When a parsed `argparse2.Namespace` is created, this field is used to store
+---    the final parsed value(s). If no `destination` is given an
+---    automatically assigned name is used instead.
 ---
 M.Parameter = {
     __tostring = function(parameter)
@@ -160,14 +159,14 @@ M.Parameter = {
 M.Parameter.__index = M.Parameter
 
 ---@class argparse2.ParameterParser
----     A starting point for parameters (positional parameters, flag parameters, etc).
+---    A starting point for parameters (positional parameters, flag parameters, etc).
 ---@field choices (fun(): string[])?
----     If included, this parser can be referred to using these names instead of its expected name.
+---    If included, this parser can be referred to using these names instead of its expected name.
 ---@field help string
----     Explain what this parser is meant to do and the parameter(s) it needs.
----     Keep it brief (< 88 characters).
+---    Explain what this parser is meant to do and the parameter(s) it needs.
+---    Keep it brief (< 88 characters).
 ---@field name string?
----     The parser name. This only needed if this parser has a parent subparser.
+---    The parser name. This only needed if this parser has a parent subparser.
 ---
 M.ParameterParser = {
     __tostring = function(parser)
@@ -196,12 +195,12 @@ M.Subparsers.__index = M.Subparsers
 --- Check if `name` is a possible value of `parameter`.
 ---
 ---@param name string
----     The written user text. e.g. `"foo"`.
+---    The written user text. e.g. `"foo"`.
 ---@param parameter argparse2.Parameter
----     Some position parameter to check. e.g. `{choices={"foo", "bar"}}`.
+---    Some position parameter to check. e.g. `{choices={"foo", "bar"}}`.
 ---@return boolean
----     If `parameter` has defined `parameter.choices` and `name` matches one of
----     them, return `true`.
+---    If `parameter` has defined `parameter.choices` and `name` matches one of
+---    them, return `true`.
 ---
 local function _has_position_parameter_match(name, parameter)
     if not parameter.choices then
@@ -325,7 +324,7 @@ end
 --- Get the raw argument name. e.g. `"--foo"`.
 ---
 --- Important:
----     If `argument` is a flag, this function must return back the prefix character(s) too.
+---    If `argument` is a flag, this function must return back the prefix character(s) too.
 ---
 ---@param argument argparse.ArgparseArgument Some named argument to get text from.
 ---@return string # The found name.
@@ -418,12 +417,12 @@ end
 --- Scan `input` and stop processing arguments after `column`.
 ---
 ---@param input argparse.ArgparseResults
----     The user's parsed text.
+---    The user's parsed text.
 ---@param column number
----     The point to stop checking for arguments. Must be a 1-or-greater value.
+---    The point to stop checking for arguments. Must be a 1-or-greater value.
 ---@return number
----     The found index. If all arguments are < `column` then the returning
----     index will cover all of `input.arguments`.
+---    The found index. If all arguments are < `column` then the returning
+---    index will cover all of `input.arguments`.
 ---
 local function _get_cursor_offset(input, column)
     for index, argument in ipairs(input.arguments) do
@@ -469,14 +468,14 @@ end
 --- Check all `flags` that match `prefix` and `value`.
 ---
 ---@param prefix string
----     The name of the flag that must match, exactly or partially.
+---    The name of the flag that must match, exactly or partially.
 ---@param flags argparse2.Parameter[]
----     All position / flag / named parameters.
+---    All position / flag / named parameters.
 ---@param value string?
----     If the user provided a (exact or partial) value for the flag / named
----     argument, the text is given here.
+---    If the user provided a (exact or partial) value for the flag / named
+---    argument, the text is given here.
 ---@return argparse2.Parameter[]
----     The matched parameters, if any.
+---    The matched parameters, if any.
 ---
 local function _get_matching_partial_flag_text(prefix, flags, value)
     local output = {}
@@ -547,15 +546,15 @@ end
 --- Find all direct-children parsers of `parser`.
 ---
 --- Note:
----     This is not recursive. It just gets the direct children.
+---    This is not recursive. It just gets the direct children.
 ---
 ---@param parser argparse2.ParameterParser
----     The starting point ot saerch for child parsers.
+---    The starting point ot saerch for child parsers.
 ---@param inclusive boolean?
----     If `true`, `parser` will be the first returned value. If `false` then
----     only the children are returned.
+---    If `true`, `parser` will be the first returned value. If `false` then
+---    only the children are returned.
 ---@return fun(): argparse2.ParameterParser?
----     An iterator that find all child parsers.
+---    An iterator that find all child parsers.
 ---
 local function _iter_parsers(parser, inclusive)
     -- TODO: Audit this variable. Maybe remove / make default
@@ -644,12 +643,12 @@ end
 --- Find all Argments starting with `prefix`.
 ---
 ---@param prefix string
----     The name of the flag that must match, exactly or partially.
+---    The name of the flag that must match, exactly or partially.
 ---@param parser argparse2.ParameterParser
----     The starting point to search within.
+---    The starting point to search within.
 ---@param value string?
----     If the user provided a (exact or partial) value for the flag / named
----     position, the text is given here.
+---    If the user provided a (exact or partial) value for the flag / named
+---    position, the text is given here.
 ---@return string[] # The matching names, if any.
 ---
 local function _get_exact_or_partial_matches(prefix, parser, value)
@@ -787,9 +786,9 @@ end
 --- Find the next arguments that need to be completed / used based on some partial `remainder_text`.
 ---
 ---@param parser argparse2.ParameterParser
----     The subparser to consider for the next parameter(s).
+---    The subparser to consider for the next parameter(s).
 ---@return string[]
----     The matching names, if any.
+---    The matching names, if any.
 ---
 local function _get_next_arguments_from_remainder(parser)
     -- TODO: Consider removing this text
@@ -1026,10 +1025,10 @@ end
 --- knows what they're doing and include it.
 ---
 ---@param options argparse2.ParameterInputOptions
----     | argparse2.ParameterOptions
----     | argparse2.ParameterParserOptions
----     | argparse2.ParameterParserInputOptions
----     The user-written options. (sparse or not).
+---    | argparse2.ParameterOptions
+---    | argparse2.ParameterParserOptions
+---    | argparse2.ParameterParserInputOptions
+---    The user-written options. (sparse or not).
 ---
 local function _expand_choices_options(options)
     if not options.choices then
@@ -1072,7 +1071,7 @@ end
 --- If `options` is sparsely written, "expand" all of its values. so we can use it.
 ---
 ---@param options argparse2.ParameterInputOptions | argparse2.ParameterOptions
----     The user-written options. (sparse or not).
+---    The user-written options. (sparse or not).
 ---
 local function _expand_parameter_options(options, is_position)
     _expand_type_options(options)
@@ -1090,10 +1089,10 @@ end
 --- Combined `namespace` with all other `...` namespaces.
 ---
 ---@param namespace argparse2.Namespace
----     The starting namespace that will be modified.
+---    The starting namespace that will be modified.
 ---@param ... argparse2.Namespace[]
----     All other namespaces to merge into `namespace`. Later entries will
----     override previous entries.
+---    All other namespaces to merge into `namespace`. Later entries will
+---    override previous entries.
 ---
 local function _merge_namespaces(namespace, ...)
     for _, override in ipairs({ ... }) do
@@ -1106,12 +1105,12 @@ end
 --- Remove the ending `index` options from `input`.
 ---
 ---@param input argparse.ArgparseResults
----     The parsed arguments + any remainder text.
+---    The parsed arguments + any remainder text.
 ---@param column number
----     The found index. If all arguments are < `column` then the returning
----     index will cover all of `input.arguments`.
+---    The found index. If all arguments are < `column` then the returning
+---    index will cover all of `input.arguments`.
 ---@return argparse.ArgparseResults
----     The stripped copy from `input`.
+---    The stripped copy from `input`.
 ---
 local function _rstrip_input(input, column)
     local stripped = argparse_helper.rstrip_arguments(input, _get_cursor_offset(input, column))
@@ -1208,9 +1207,9 @@ end
 --- Create a new `argparse2.ParameterParser` using `options`.
 ---
 ---@param options argparse2.ParameterParserInputOptions | argparse2.ParameterParserOptions
----     The options to pass to `argparse2.ParameterParser.new`.
+---    The options to pass to `argparse2.ParameterParser.new`.
 ---@return argparse2.ParameterParser
----     The created parser.
+---    The created parser.
 ---
 function M.Subparsers:add_parser(options)
     local new_options = vim.tbl_deep_extend("force", options, { parent = self })
@@ -1266,7 +1265,7 @@ end
 --- Get a function that mutates the namespace with a new parsed argument.
 ---
 ---@return fun(data: argparse2.ActionData): nil
----     A function that directly modifies the contents of `data`.
+---    A function that directly modifies the contents of `data`.
 ---
 function M.Parameter:get_action()
     return self._action
@@ -1360,9 +1359,9 @@ end
 --- be at least 2 values to ingest or it is not valid CLI input.
 ---
 ---@param count string | number
----     The number of values we need for this instance. `"*"` ==  0-or-more,
----     `"+"` == 1-or-more. A number means there needs to exactly that many
----     arguments (no less no more).
+---    The number of values we need for this instance. `"*"` ==  0-or-more,
+---    `"+"` == 1-or-more. A number means there needs to exactly that many
+---    arguments (no less no more).
 ---
 function M.Parameter:set_nargs(count)
     if count == "*" then
@@ -1380,9 +1379,9 @@ end
 --- a name via `{name="foo"}` or this function will error.
 ---
 ---@param options argparse2.ParameterParserOptions
----     The options that we might pass to `argparse2.ParameterParser.new`.
+---    The options that we might pass to `argparse2.ParameterParser.new`.
 ---@return argparse2.ParameterParser
----     The created instance.
+---    The created instance.
 ---
 function M.ParameterParser.new(options)
     if options[1] and not options.name then
@@ -1726,11 +1725,11 @@ end
 --- Traverse the parsers, marking arguments as used / exhausted as we traverse down.
 ---
 ---@param arguments argparse.ArgparseArgument[]
----     All user inputs to walk through.
+---    All user inputs to walk through.
 ---@return argparse2.ParameterParser
----     The parser that was found in a current or previous iteration.
+---    The parser that was found in a current or previous iteration.
 ---@return number
----     A 1-or-more index value of the argument that we stopped parsing on.
+---    A 1-or-more index value of the argument that we stopped parsing on.
 ---
 function M.ParameterParser:_compute_matching_parsers(arguments)
     local previous_parser = nil
@@ -1826,14 +1825,14 @@ end
 --- Parse user text `data`.
 ---
 ---@param data string | argparse.ArgparseResults
----     User text that needs to be parsed. e.g. `hello "World!"`
+---    User text that needs to be parsed. e.g. `hello "World!"`
 ---@param namespace argparse2.Namespace?
----     All pre-existing, default parsed values. If this is the first
----     argparse2.ParameterParser then this `namespace` will always be empty
----     but a nested parser will usually have the parsed arguments of the
----     parent subparsers that were before it.
+---    All pre-existing, default parsed values. If this is the first
+---    argparse2.ParameterParser then this `namespace` will always be empty
+---    but a nested parser will usually have the parsed arguments of the
+---    parent subparsers that were before it.
 ---@return argparse2.Namespace
----     All of the parsed data as one group.
+---    All of the parsed data as one group.
 ---
 function M.ParameterParser:_parse_arguments(data, namespace)
     if type(data) == "string" then
@@ -1972,10 +1971,10 @@ end
 --- Get a 1-to-2 line summary on how to run the CLI.
 ---
 ---@param data string | argparse.ArgparseResults
----     User text that needs to be parsed. e.g. `hello "World!"`
----     If `data` includes subparsers, that subparser's help message is returned instead.
+---    User text that needs to be parsed. e.g. `hello "World!"`
+---    If `data` includes subparsers, that subparser's help message is returned instead.
 ---@return string
----     A one/two liner explanation of this instance's expected arguments.
+---    A one/two liner explanation of this instance's expected arguments.
 ---
 function M.ParameterParser:get_concise_help(data)
     if type(data) == "string" then
@@ -1991,10 +1990,10 @@ end
 --- Get all of information on how to run the CLI.
 ---
 ---@param data string | argparse.ArgparseResults
----     User text that needs to be parsed. e.g. `hello "World!"`
----     If `data` includes subparsers, that subparser's help message is returned instead.
+---    User text that needs to be parsed. e.g. `hello "World!"`
+---    If `data` includes subparsers, that subparser's help message is returned instead.
 ---@return string
----     The full explanation of this instance's expected arguments (can be pretty long).
+---    The full explanation of this instance's expected arguments (can be pretty long).
 ---
 function M.ParameterParser:get_full_help(data)
     if type(data) == "string" then
@@ -2054,9 +2053,9 @@ end
 --- Create a child parameter so we can use it to parse text later.
 ---
 ---@param options argparse2.ParameterInputOptions | argparse2.ParameterOptions
----     All of the settings to include in the new parameter.
+---    All of the settings to include in the new parameter.
 ---@return argparse2.Parameter
----     The created `argparse2.Parameter` instance.
+---    The created `argparse2.Parameter` instance.
 ---
 function M.ParameterParser:add_parameter(options)
     _validate_parameter_names(options)
@@ -2093,9 +2092,9 @@ end
 --- Parse user text `data`.
 ---
 ---@param data string | argparse.ArgparseResults
----     User text that needs to be parsed. e.g. `hello "World!"`
+---    User text that needs to be parsed. e.g. `hello "World!"`
 ---@return argparse2.Namespace
----     All of the parsed data as one group.
+---    All of the parsed data as one group.
 ---
 function M.ParameterParser:parse_arguments(data)
     local results = self:_parse_arguments(data, {})
@@ -2108,7 +2107,7 @@ end
 --- Whenever this parser is visited add all of these values to the resulting namespace.
 ---
 ---@param data table<string, any>
----     All of the data to set onto the namespace when it's found.
+---    All of the data to set onto the namespace when it's found.
 ---
 function M.ParameterParser:set_defaults(data)
     self._defaults = data
@@ -2116,8 +2115,8 @@ end
 
 --- Whenever this parser is visited, return `{execute=caller}` so people can use it.
 ---
----@param caller fun(any): any
----     A function that runs a specific parser command. e.g. a "Hello, World!" program.
+---@param caller fun(any: any): any
+---    A function that runs a specific parser command. e.g. a "Hello, World!" program.
 ---
 function M.ParameterParser:set_execute(caller)
     self._defaults.execute = caller

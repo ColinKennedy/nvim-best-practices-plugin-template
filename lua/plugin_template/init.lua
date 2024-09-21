@@ -31,8 +31,8 @@ end
 --- Copy the log data from the given `path` to the user's clipboard.
 ---
 ---@param path string?
----     A path on-disk to look for logs. If none is given, the default fallback
----     location is used instead.
+---    A path on-disk to look for logs. If none is given, the default fallback
+---    location is used instead.
 ---
 function M.run_copy_logs(path)
     copy_logs_runner.run(path)
@@ -41,11 +41,11 @@ end
 --- Print `phrase` according to the other options.
 ---
 ---@param phrase string[]
----     The text to say.
+---    The text to say.
 ---@param repeat_ number?
----     A 1-or-more value. The number of times to print `word`.
+---    A 1-or-more value. The number of times to print `word`.
 ---@param style string?
----     Control how the text should be shown.
+---    Control how the text should be shown.
 ---
 function M.run_hello_world_say_phrase(phrase, repeat_, style)
     say_runner.run_say_phrase(phrase, repeat_, style)
@@ -54,11 +54,11 @@ end
 --- Print `phrase` according to the other options.
 ---
 ---@param word string
----     The text to say.
+---    The text to say.
 ---@param repeat_ number?
----     A 1-or-more value. The number of times to print `word`.
+---    A 1-or-more value. The number of times to print `word`.
 ---@param style string?
----     Control how the text should be shown.
+---    Control how the text should be shown.
 ---
 function M.run_hello_world_say_word(word, repeat_, style)
     say_runner.run_say_word(word, repeat_, style)

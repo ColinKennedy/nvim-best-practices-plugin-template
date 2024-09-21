@@ -8,15 +8,15 @@ local M = {}
 --- Get a sub-section copy of `table_` as a new table.
 ---
 ---@param table_ table<any, any>
----     A list / array / dictionary / sequence to copy + reduce.
+---    A list / array / dictionary / sequence to copy + reduce.
 ---@param first? number
----     The start index to use. This value is **inclusive** (the given index
----     will be returned). Uses `table_`'s first index if not provided.
+---    The start index to use. This value is **inclusive** (the given index
+---    will be returned). Uses `table_`'s first index if not provided.
 ---@param last? number
----     The end index to use. This value is **inclusive** (the given index will
----     be returned). Uses every index to the end of `table_`' if not provided.
+---    The end index to use. This value is **inclusive** (the given index will
+---    be returned). Uses every index to the end of `table_`' if not provided.
 ---@param step? number
----     The step size between elements in the slice. Defaults to 1 if not provided.
+---    The step size between elements in the slice. Defaults to 1 if not provided.
 ---
 function M.get_slice(table_, first, last, step)
     local sliced = {}

@@ -12,10 +12,10 @@ local M = {}
 --- This function is useful for handling "subcommand triage".
 ---
 ---@param results argparse.ArgparseResults
----     The parsed arguments + any remainder text.
+---    The parsed arguments + any remainder text.
 ---@param index number
----     A 1-or-more value. 1 has not effect. 2-or-more will start removing
----     arguments from the left-hand side of `results`.
+---    A 1-or-more value. 1 has not effect. 2-or-more will start removing
+---    arguments from the left-hand side of `results`.
 ---
 function M.lstrip_arguments(results, index)
     local copy = vim.tbl_deep_extend("force", {}, results)
@@ -30,12 +30,12 @@ end
 --- This function is useful for handling "subcommand triage".
 ---
 ---@param results argparse.ArgparseResults
----     The parsed arguments + any remainder text.
+---    The parsed arguments + any remainder text.
 ---@param index number
----     A 1-or-more value. 1 has not effect. 2-or-more will remove arguments
----     from the right-hand side of `results`.
+---    A 1-or-more value. 1 has not effect. 2-or-more will remove arguments
+---    from the right-hand side of `results`.
 ---@return argparse.ArgparseResults
----     The stripped copy from `results`.
+---    The stripped copy from `results`.
 ---
 function M.rstrip_arguments(results, index)
     local copy = vim.tbl_deep_extend("force", {}, results)

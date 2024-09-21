@@ -18,13 +18,13 @@ local M = {}
 configuration_.initialize_data_if_needed()
 
 ---@class lualine.ColorHex
----     The table that Lualine expects when it sets colors.
+---    The table that Lualine expects when it sets colors.
 ---@field bg string
----     The background hex color. e.g. `"#444444"`.
+---    The background hex color. e.g. `"#444444"`.
 ---@field fg string
----     The text hex color. e.g. `"#DD0000"`.
+---    The text hex color. e.g. `"#DD0000"`.
 ---@field gui string
----     The background hex color. e.g. `"#444444"`.
+---    The background hex color. e.g. `"#444444"`.
 
 --- Check if `value` has keys that it should not.
 ---

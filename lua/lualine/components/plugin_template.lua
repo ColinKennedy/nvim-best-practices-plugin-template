@@ -22,21 +22,21 @@ local M = require("lualine.component"):extend()
 M.PREVIOUS_COMMAND = nil
 
 ---@class plugin_template.LualineConfiguration
----     The Raw user settings from lualine's configuration.
----     e.g. `require("lualine").setup { sections = { { "plugin_template", ... }}}`
----     where "..." is the user's settings.
+---    The Raw user settings from lualine's configuration.
+---    e.g. `require("lualine").setup { sections = { { "plugin_template", ... }}}`
+---    where "..." is the user's settings.
 ---@field display table<string, plugin_template.LualineDisplayData>?
 
 ---@class plugin_template.LualineDisplayData
----     Any text, icons, etc that will be displayed for `plugin_template` commands.
+---    Any text, icons, etc that will be displayed for `plugin_template` commands.
 ---@field prefix string
----     The text to display when a command was called. e.g. " Goodnight moon".
+---    The text to display when a command was called. e.g. " Goodnight moon".
 
 --- Track the given `command` any time a function (`callers`) in `module` runs.
 ---
 --- Warning:
----     To prevent unwanted behavior, only call this function one for every
----     unique Lua `module` + caller.
+---    To prevent unwanted behavior, only call this function one for every
+---    unique Lua `module` + caller.
 ---
 ---@param module table<any, any> A Lua file to directly edit.
 ---@param callers string[] The names of each function(s) to modify.
@@ -64,7 +64,7 @@ _patch_runner_commands(sleep, { "run" }, "goodnight_moon")
 --- Setup all colors / text for lualine to display later.
 ---
 ---@param options plugin_template.LualineConfiguration?
----     The options to pass from lualine to `plugin_templaet`.
+---    The options to pass from lualine to `plugin_templaet`.
 ---
 function M:init(options)
     configuration.initialize_data_if_needed()

@@ -8,11 +8,11 @@ local vlog = require("plugin_template._vendors.vlog")
 local M = {}
 
 ---@class plugin_template.ReadFileResult
----     A file path + its contents.
+---    A file path + its contents.
 ---@field data string
----     The blob of text that was read from `path`.
+---    The blob of text that was read from `path`.
 ---@field path string
----     An absolute path to a file on-disk.
+---    An absolute path to a file on-disk.
 
 --- Read the contents of `path` and pass its contents to `callback`.
 ---
@@ -53,8 +53,8 @@ end
 --- Copy the log data from the given `path` to the user's clipboard.
 ---
 ---@param path string?
----     A path on-disk to look for logs. If none is given, the default fallback
----     location is used instead.
+---    A path on-disk to look for logs. If none is given, the default fallback
+---    location is used instead.
 ---
 function M.run(path)
     path = path or vlog:get_log_path()

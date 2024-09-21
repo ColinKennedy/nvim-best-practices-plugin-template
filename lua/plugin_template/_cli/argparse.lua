@@ -17,52 +17,52 @@ M.ArgumentType = {
 }
 
 ---@class argparse.BaseArgument
----     A base class to inherit from.
+---    A base class to inherit from.
 ---@field argument_type argparse.ArgumentType
----     An type indicator for this argument.
+---    An type indicator for this argument.
 ---@field range argparse.ArgumentRange
----     The start and end index (both are inclusive) of the argument.
+---    The start and end index (both are inclusive) of the argument.
 
 ---@class argparse.ArgumentRange
----     The start and end index (both are inclusive) of the argument.
+---    The start and end index (both are inclusive) of the argument.
 ---@field start_column number
----     The first index of the argument (inclusive).
+---    The first index of the argument (inclusive).
 ---@field end_column number
----     The last index of the argument (inclusive).
+---    The last index of the argument (inclusive).
 
 ---@class argparse.FlagArgument : argparse.BaseArgument
----     An argument that has a name but no value. It starts with either - or --
----     Examples: `-f` or `--foo` or `--foo-bar`
+---    An argument that has a name but no value. It starts with either - or --
+---    Examples: `-f` or `--foo` or `--foo-bar`
 ---@field name string
----     The text of the flag. e.g. The `"foo"` part of `"--foo"`.
+---    The text of the flag. e.g. The `"foo"` part of `"--foo"`.
 
 ---@class argparse.PositionArgument : argparse.BaseArgument
----     An argument that is just text. e.g. `"foo bar"` is two positions, foo and bar.
+---    An argument that is just text. e.g. `"foo bar"` is two positions, foo and bar.
 ---@field value string
----     The position's label.
+---    The position's label.
 
 ---@class argparse.NamedArgument : argparse.FlagArgument
----     A --key=value pair. Basically it's a argparse.FlagArgument that has an extra value.
+---    A --key=value pair. Basically it's a argparse.FlagArgument that has an extra value.
 ---@field value string | boolean
----     The second-hand side of the argument. e.g. The `"bar"` part of
----     `"--foo=bar"`. If the argument is partially written like `"--foo="`
----     then this will be an empty string.
+---    The second-hand side of the argument. e.g. The `"bar"` part of
+---    `"--foo=bar"`. If the argument is partially written like `"--foo="`
+---    then this will be an empty string.
 
 ---@alias argparse.ArgparseArgument argparse.FlagArgument | argparse.PositionArgument | argparse.NamedArgument
 
 ---@class argparse.ArgparseResults
----     All information that was found from parsing some user's input.
+---    All information that was found from parsing some user's input.
 ---@field arguments argparse.ArgparseArgument[]
----     The arguments that were able to be parsed
+---    The arguments that were able to be parsed
 ---@field remainder argparse.ArgparseRemainder
----     Any leftover text during parsing that didn't match an argument.
+---    Any leftover text during parsing that didn't match an argument.
 ---@field text string
----     The original, raw, unparsed user arguments.
+---    The original, raw, unparsed user arguments.
 
 ---@class argparse.ArgparseRemainder
----     Any leftover text during parsing that didn't match an argument.
+---    Any leftover text during parsing that didn't match an argument.
 ---@field value string
----     The raw, unparsed text.
+---    The raw, unparsed text.
 
 --- An internal tracker for the arguments.
 local _State = {
@@ -114,15 +114,15 @@ end
 --- Parse for positional arguments, named arguments, and flag arguments.
 ---
 --- In a command like `bar -f --buzz --some="thing else"`...
----     - `bar` is positional
----     - `-f` is a single-letter flag
----     - `--buzz` is a multi-letter flag
----     - `--some="thing else" is a named argument whose value is "thing else"
+---    - `bar` is positional
+---    - `-f` is a single-letter flag
+---    - `--buzz` is a multi-letter flag
+---    - `--some="thing else" is a named argument whose value is "thing else"
 ---
 ---@param text string
----     Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
+---    Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
 ---@return argparse.ArgparseResults
----     All found for positional arguments, named arguments, and flag arguments.
+---    All found for positional arguments, named arguments, and flag arguments.
 ---
 function M.parse_arguments(text)
     local output = {}

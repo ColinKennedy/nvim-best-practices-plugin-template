@@ -40,8 +40,8 @@ end
 --- to make sure that function runs, call this function.
 ---
 ---@param timeout number?
----     The milliseconds to wait before continuing. If the timeout is exceeded
----     then we stop waiting for all of the functions to call.
+---    The milliseconds to wait before continuing. If the timeout is exceeded
+---    then we stop waiting for all of the functions to call.
 ---
 local function _wait_for_picker_to_initialize(timeout)
     if timeout == nil then
@@ -62,8 +62,8 @@ end
 --- Wait for our (mocked) unittest variable to get some data back.
 ---
 ---@param timeout number?
----     The milliseconds to wait before continuing. If the timeout is exceeded
----     then we stop waiting for all of the functions to call.
+---    The milliseconds to wait before continuing. If the timeout is exceeded
+---    then we stop waiting for all of the functions to call.
 ---
 local function _wait_for_result(timeout)
     if timeout == nil then
@@ -78,8 +78,8 @@ end
 --- Create a Telescope picker for `command` and get the created "prompt" buffer back.
 ---
 ---@param command string
----     A Telescope sub-command. e.g. If the command was `:Telescope
----     plugin_template foo` then this function would require `"foo"`.
+---    A Telescope sub-command. e.g. If the command was `:Telescope
+---    plugin_template foo` then this function would require `"foo"`.
 ---
 local function _make_telescope_picker(command)
     plugin_template.exports[command]()

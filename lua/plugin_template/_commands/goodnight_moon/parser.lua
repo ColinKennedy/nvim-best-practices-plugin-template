@@ -1,9 +1,13 @@
--- TODO: Docstring
+--- The main parser for the `:PluginTemplate goodnight-moon` command.
+---
+---@module 'plugin_template._commands.goodnight_moon.parser'
+---
 
 local argparse2 = require("plugin_template._cli.argparse2")
 
 local M = {}
 
+---@return argparse2.ParameterParser # The main parser for the `:PluginTemplate goodnight-moon` command.
 function M.make_parser()
     local parser = argparse2.ParameterParser.new({ "goodnight-moon", help = "Prepare to sleep or sleep." })
     local subparsers =

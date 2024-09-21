@@ -1,10 +1,17 @@
--- TODO: Docstring
+--- The main parser for the `:PluginTemplate hello-world` command.
+---
+---@module 'plugin_template._commands.hello_world.parser'
+---
 
 local argparse2 = require("plugin_template._cli.argparse2")
 local constant = require("plugin_template._commands.hello_world.say.constant")
 
 local M = {}
 
+--- Add the `--repeat` parameter onto `parser`.
+---
+---@param parser argparse2.ParameterParser The parent parser to add the parameter onto.
+---
 local function _add_repeat_parameter(parser)
     parser:add_parameter({
         names = { "--repeat", "-r" },
@@ -38,6 +45,10 @@ local function _add_repeat_parameter(parser)
     })
 end
 
+--- Add the `--style` parameter onto `parser`.
+---
+---@param parser argparse2.ParameterParser The parent parser to add the parameter onto.
+---
 local function _add_style_parameter(parser)
     parser:add_parameter({
         names = { "--style", "-s" },
@@ -49,6 +60,7 @@ local function _add_style_parameter(parser)
     })
 end
 
+---@return argparse2.ParameterParser # The main parser for the `:PluginTemplate hello-world` command.
 function M.make_parser()
     local parser = argparse2.ParameterParser.new({ "hello-world", help = "Print hello to the user." })
     local top_subparsers =

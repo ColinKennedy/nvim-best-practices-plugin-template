@@ -8,30 +8,30 @@ local M = {}
 -- TODO: Fix documentation here later
 
 ---@class plugin_template.CompleteData
----     The data that gets passed when `plugin_template.Subcommand.complete` is called.
+---    The data that gets passed when `plugin_template.Subcommand.complete` is called.
 ---@field parsed_arguments argparse.ArgparseResults
----     All information that was found from parsing some user's input.
+---    All information that was found from parsing some user's input.
 
 ---@class plugin_template.RunData
----     The data that gets passed when `plugin_template.Subcommand.run` is called.
+---    The data that gets passed when `plugin_template.Subcommand.run` is called.
 ---@field parsed_arguments argparse.ArgparseResults
----     All information that was found from parsing some user's input.
+---    All information that was found from parsing some user's input.
 
 ---@class plugin_template.Subcommand
----     A subparser's definition. At minimum you need to define `parser` or
----     `run` or code will error when you try to run commands. If you define
----     `parser`, you don't need to define `complete` or `run` (`parser` is the
----     preferred way to make parsers).
+---    A subparser's definition. At minimum you need to define `parser` or
+---    `run` or code will error when you try to run commands. If you define
+---    `parser`, you don't need to define `complete` or `run` (`parser` is the
+---    preferred way to make parsers).
 ---@field complete (fun(data: plugin_template.CompleteData): string[])?
----     Command completions callback, the `data` are  the lead of the subcommand's arguments
+---    Command completions callback, the `data` are  the lead of the subcommand's arguments
 ---@field parser (fun(): argparse2.ParameterParser)?
----     The primary parser used for subcommands. It handles auto-complete,
----     expression-evaluation, and running a user's code.
+---    The primary parser used for subcommands. It handles auto-complete,
+---    expression-evaluation, and running a user's code.
 ---@field run (fun(data: plugin_template.SubcommandRun): nil)?
----     The function to run when the subcommand is called.
+---    The function to run when the subcommand is called.
 
 ---@class plugin_template.SubcommandRun
----     TODO Finish this later
+---    TODO Finish this later
 
 ---@alias plugin_template.Subcommands table<string, plugin_template.Subcommand | fun(): argparse2.ParameterParser>
 
@@ -211,7 +211,7 @@ end
 --- If anything in `subcommands` is missing data, define default value(s) for it.
 ---
 ---@param subcommands plugin_template.Subcommands
----     All registered commands for `plugin_template` to possibly modify.
+---    All registered commands for `plugin_template` to possibly modify.
 ---
 function M.initialize_missing_values(subcommands)
     for _, subcommand in pairs(subcommands) do
@@ -232,8 +232,8 @@ end
 --- This function handles that process, which we call "triage".
 ---
 ---@param subcommands plugin_template.Subcommands
----     All registered commands for `plugin_template` which we will let users run.
----     If the user gives an incorrect subcommand name, an error is displayed instead.
+---    All registered commands for `plugin_template` which we will let users run.
+---    If the user gives an incorrect subcommand name, an error is displayed instead.
 ---
 function M.make_triager(subcommands)
     --- Check for a subcommand and, if found, call its `run` caller field.
