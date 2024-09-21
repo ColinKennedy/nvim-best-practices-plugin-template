@@ -11,8 +11,7 @@ jobs:
 
     - uses: leafo/gh-actions-lua@master
       with:
-        luaVersion: "5.1.5"
-
+        luaVersion: luajit
     - uses: leafo/gh-actions-luarocks@master
 
     - name: build
