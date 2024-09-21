@@ -1,5 +1,11 @@
-- Get api_documentation working (needs a minimal init)
-- Fix llscheck
+- Make sre the CI works
+ - llscheck
+ - release
+ - test
+ --- lintcommit
+ --- luacheck
+ --- news
+ --- stylua
 
 - If a named arguiment is an nargs=1 argument then it should auto-complete to be --foo=, I guess
  - If it it's nargs=2+ then it should auto-complete not with =

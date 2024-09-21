@@ -2,7 +2,7 @@
 on:
   push:
     branches:
-      - parser_refactor
+      - main
 name: stylua
 
 jobs:
