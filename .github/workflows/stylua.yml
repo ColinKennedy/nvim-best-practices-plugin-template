@@ -1,5 +1,8 @@
 ---
-on: [pull_request]
+on:
+  push:
+    branches:
+      - parser_refactor
 name: stylua
 
 jobs:
