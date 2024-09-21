@@ -112,22 +112,26 @@ describe("plugin", function()
         local function _get_plugin_registry()
             return {
                 {
-                    name="colorscheme",
-                    help="Preview / Select other colorschemes.",
+                    name = "colorscheme",
+                    help = "Preview / Select other colorschemes.",
                     add_parameters = function(parser)
-                        parser:add_parameter({"name", required=false})
-                    end
+                        parser:add_parameter({ "name", required = false })
+                    end,
                 },
                 {
-                    name="jumplist",
-                    help="Jump up, jump up, and get down jump! Jump! Jump! Jump!",
+                    name = "jumplist",
+                    help = "Jump up, jump up, and get down jump! Jump! Jump! Jump!",
                     add_parameters = function(parser)
-                        local subparsers = parser:add_subparsers({"jumplist_commands", help="Test."})
-                        local cursor = subparsers:add_parser({"cursor", help="Jump to the last cursor."})
-                        cursor:set_execute(function() return 8 end)
-                        local tab = subparsers:add_parser({"tab", help="Jump to the last tab."})
-                        tab:set_execute(function() return 10 end)
-                    end
+                        local subparsers = parser:add_subparsers({ "jumplist_commands", help = "Test." })
+                        local cursor = subparsers:add_parser({ "cursor", help = "Jump to the last cursor." })
+                        cursor:set_execute(function()
+                            return 8
+                        end)
+                        local tab = subparsers:add_parser({ "tab", help = "Jump to the last tab." })
+                        tab:set_execute(function()
+                            return 10
+                        end)
+                    end,
                 },
             }
         end
@@ -135,25 +139,25 @@ describe("plugin", function()
         local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
         local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
         local teleskope = subparsers:add_parser({ name = "Teleskope", help = "Something." })
-        local teleskope_subparsers = teleskope:add_subparsers({ "teleskope_commands", help="Test." })
+        local teleskope_subparsers = teleskope:add_subparsers({ "teleskope_commands", help = "Test." })
 
         for _, data in ipairs(_get_plugin_registry()) do
-            local inner_parser = teleskope_subparsers:add_parser({data.name, help=data.help})
+            local inner_parser = teleskope_subparsers:add_parser({ data.name, help = data.help })
 
             if data.add_parameters then
                 data.add_parameters(inner_parser)
             end
         end
 
-        assert.same({name="light"}, parser:parse_arguments("Teleskope colorscheme light"))
+        assert.same({ name = "light" }, parser:parse_arguments("Teleskope colorscheme light"))
         assert.same({}, parser:parse_arguments("Teleskope jumplist"))
         local cursor_namespace = parser:parse_arguments("Teleskope jumplist cursor")
         local tab_namespace = parser:parse_arguments("Teleskope jumplist tab")
         assert.equal(8, cursor_namespace.execute())
         assert.equal(10, tab_namespace.execute())
 
-        assert.same({"jumplist"}, parser:get_completion("Teleskope ju"))
-        assert.same({"cursor", "tab", "--help", "-h"}, parser:get_completion("Teleskope jumplist "))
+        assert.same({ "jumplist" }, parser:get_completion("Teleskope ju"))
+        assert.same({ "cursor", "tab", "--help", "-h" }, parser:get_completion("Teleskope jumplist "))
     end)
 end)
 
