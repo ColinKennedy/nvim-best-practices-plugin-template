@@ -1,7 +1,7 @@
 .PHONY: api_documentation llscheck luacheck stylua test
 
 api_documentation:
-	nvim -l scripts/make_api_documentation.lua
+	nvim -u scripts/make_api_documentation/minimal_init.lua -l scripts/make_api_documentation/main.lua
 
 llscheck:
 	llscheck --configpath .luarc.json .

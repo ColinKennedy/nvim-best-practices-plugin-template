@@ -421,7 +421,7 @@ end
 --- Convert the files in this plug-in from Lua docstrings to Vimdoc documentation.
 local function main()
     local current_directory = _get_script_directory()
-    local root = vim.fs.normalize(vim.fs.joinpath(current_directory, ".."))
+    local root = vim.fs.normalize(vim.fs.joinpath(current_directory, "..", ".."))
     local paths = {
         {
             source = vim.fs.joinpath(root, "lua", "plugin_template", "init.lua"),
