@@ -3,12 +3,9 @@
 ---@module 'plugin_template.autocomplete_spec'
 ---
 
-local argparse = require("plugin_template._cli.argparse")
 local argparse2 = require("plugin_template._cli.argparse2")
 
 -- TODO: Allow ++foo arguments instead of --
-
-local _parse = argparse.parse_arguments
 
 ---@return argparse2.ParameterParser # Create a tree of commands for unittests.
 local function _make_simple_parser()
