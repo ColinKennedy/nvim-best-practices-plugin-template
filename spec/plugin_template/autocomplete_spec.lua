@@ -593,29 +593,29 @@ describe("validate arguments", function()
     end)
 
     it("errors if a named argument in the middle of parse that is not given a value", function()
-        TODO: Finish
-        local parser = {
-            foo = {
-                [{
-                    option_type = argparse.ArgumentType.named,
-                    name = "bar",
-                }] = {
-                    {
-                        option_type = argparse.ArgumentType.named,
-                        name = "fizz",
-                    },
-                    {
-                        option_type = argparse.ArgumentType.named,
-                        name = "thing",
-                    },
-                },
-            },
-        }
-
-        assert.same(
-            { success = false, messages = { 'Named argument "--bar" needs a value.' } },
-            completion.validate_options(parser, _parse("foo --bar= --fizz=123"))
-        )
+        -- TODO: Finish
+        -- local parser = {
+        --     foo = {
+        --         [{
+        --             option_type = argparse.ArgumentType.named,
+        --             name = "bar",
+        --         }] = {
+        --             {
+        --                 option_type = argparse.ArgumentType.named,
+        --                 name = "fizz",
+        --             },
+        --             {
+        --                 option_type = argparse.ArgumentType.named,
+        --                 name = "thing",
+        --             },
+        --         },
+        --     },
+        -- }
+        --
+        -- assert.same(
+        --     { success = false, messages = { 'Named argument "--bar" needs a value.' } },
+        --     completion.validate_options(parser, _parse("foo --bar= --fizz=123"))
+        -- )
     end)
 
     it("errors if a position argument in the middle of parse that is not given a value", function()
