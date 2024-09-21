@@ -2,6 +2,8 @@ on:
   push:
     branches:
       - main
+      # TODO: Remove this branch later
+      - parser_refactor
 name: documentation
 
 jobs:
