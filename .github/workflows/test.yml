@@ -62,8 +62,21 @@ jobs:
       uses: leafo/gh-actions-luarocks@v4
     - name: Install Busted
       run: luarocks install busted
-    - name: Run Tests
-      run: busted specs
+    - name: Checkout plugin-template
+      uses: actions/checkout@v4
+      with:
+        repository: ColinKennedy/nvim-best-practices-plugin-template
+        path: neovim_plugin
+    - uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: ${{ matrix.neovim }}
+    - name: Run tests
+      working-directory: ./neovim_plugin
+      run: |
+        nvim --version
+        eval $(luarocks path --lua-version 5.1 --bin)
+        busted --helper spec/minimal_init.lua .
 
 
   # test_unix:
