@@ -884,7 +884,7 @@ local function _fill_missing_data(tree)
             end
 
             if option.choices and texter.is_string_list(option.choices) then
-                --- @diagnostic disable-next-line param-type-mismatch
+                ---@diagnostic disable-next-line param-type-mismatch
                 option.choices = _get_startswith_auto_complete_function(option.choices)
             end
         elseif option.option_type == M.OptionType.flag then

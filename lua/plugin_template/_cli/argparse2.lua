@@ -70,6 +70,10 @@ local texter = require("plugin_template._core.texter")
 ---     The number of elements that this parameter consumes at once.
 ---@field parent argparse2.ParameterParser?
 ---     The parser that owns this instance.
+---@field required boolean?
+---     If `true`, this parameter must get satisfying value(s) before the
+---     parser is complete. If `false` then the parameter doesn't need to be
+---     defined as an argument.
 ---@field type ("number" | "string" | fun(value: string): any)?
 ---     The expected output type. If a function is given, assume that the user
 ---     knows what they're doing and use their function's return value.
@@ -78,6 +82,10 @@ local texter = require("plugin_template._core.texter")
 ---     All of the settings to include in a new parameter.
 ---@field choices (fun(data: argparse2.ChoiceData?): string[])?
 ---     If included, the parameter can only accept these choices as values.
+---@field required boolean
+---     If `true`, this parameter must get satisfying value(s) before the
+---     parser is complete. If `false` then the parameter doesn't need to be
+---     defined as an argument.
 ---@field type (fun(value: string): any)?
 ---     The expected output type. If a function is given, assume that the user
 ---     knows what they're doing and use their function's return value.
@@ -778,7 +786,7 @@ end
 
 --- Find the next arguments that need to be completed / used based on some partial `remainder_text`.
 ---
----@param parsers argparse2.ParameterParser
+---@param parser argparse2.ParameterParser
 ---     The subparser to consider for the next parameter(s).
 ---@return string[]
 ---     The matching names, if any.
@@ -982,7 +990,7 @@ local function _concise_inspect(data)
     --- NOTE: Not sure why llscheck doesn't like this line. Maybe the
     --- annotations for `vim.inspect` are incorret.
     ---
-    --- @diagnostic disable-next-line redundant-parameter
+    ---@diagnostic disable-next-line redundant-parameter
     return vim.inspect(data, { depth = 1 }) or ""
 end
 
@@ -2034,7 +2042,7 @@ function M.ParameterParser:get_parent_parser()
         return nil
     end
 
-    --- @diagnostic disable-next-line undefined-field
+    ---@diagnostic disable-next-line undefined-field
     return self._parent._parent
 end
 

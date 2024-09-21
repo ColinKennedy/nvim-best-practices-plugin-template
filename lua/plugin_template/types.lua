@@ -35,18 +35,17 @@
 
 ---@class plugin_template.LoggingConfiguration
 ---     Control whether or not logging is printed to the console or to disk.
----@field level
----     | "trace"?
----     | "debug"?
----     | "info"?
----     | "warn"?
----     | "error"?
----     | "fatal"?
----     | vim.log.levels.DEBUG?
----     | vim.log.levels.ERROR?
----     | vim.log.levels.INFO?
----     | vim.log.levels.TRACE?
----     | vim.log.levels.WARN?
+---@field level (
+---     | "trace"
+---     | "debug"
+---     | "info"
+---     | "warn" | "error"
+---     | "fatal"
+---     | vim.log.levels.DEBUG
+---     | vim.log.levels.ERROR
+---     | vim.log.levels.INFO
+---     | vim.log.levels.TRACE
+---     | vim.log.levels.WARN)?
 ---     Any messages above this level will be logged.
 ---@field use_console boolean?
 ---     Should print the output to neovim while running. Warning: This is very

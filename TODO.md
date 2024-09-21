@@ -1,4 +1,3 @@
-- Make sure that a "dynamic plugin" command-line parse is possible. e.g. Telescope
 - Get api_documentation working (needs a minimal init)
 - Fix llscheck
 

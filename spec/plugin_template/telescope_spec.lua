@@ -15,7 +15,7 @@ local _RESULT = nil
 --- Tempoarily wrap `runner.get_selection` so we can use it for unittests.
 local function _mock_get_selection()
     local function _mock(caller)
-        --- @diagnostic disable-next-line: duplicate-set-field
+        ---@diagnostic disable-next-line: duplicate-set-field
         runner.get_selection = function(...)
             local selection = caller(...)
             _RESULT = selection
