@@ -25,12 +25,8 @@ jobs:
 
       - name: Setup dependencies
         run: |
-          luarocks install --deps-only luacheck-dev-1.rockspec
+          luarocks install --deps-only plugin-template-scm-1.rockspec
           luarocks install busted
-          luarocks install lanes # required for parallel execution
-          luarocks install luautf8 # required for decoder unit test
-          luarocks install luasocket # required for profiler unit test
-          luarocks install luacov-coveralls
 
       - name: Run regression tests
         run: |
