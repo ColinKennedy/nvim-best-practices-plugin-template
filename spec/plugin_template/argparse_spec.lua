@@ -359,7 +359,6 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "--foo-bar",
-                    needs_choice_completion = true,
                     range = { start_column = 1, end_column = 10 },
                     value = false,
                 },
@@ -395,14 +394,12 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "--repeat",
-                    needs_choice_completion = true,
                     range = { start_column = 27, end_column = 36 },
                     value = "2",
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "--style",
-                    needs_choice_completion = true,
                     range = { start_column = 38, end_column = 54 },
                     value = "uppercase",
                 },
@@ -417,7 +414,6 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "--foo-bar",
-                    needs_choice_completion = true,
                     range = { start_column = 1, end_column = 10 },
                     value = false,
                 },
@@ -429,14 +425,12 @@ describe("double-dash flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "--fizz-buzz",
-                    needs_choice_completion = true,
                     range = { start_column = 17, end_column = 28 },
                     value = false,
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "--one-more",
-                    needs_choice_completion = true,
                     range = { start_column = 30, end_column = 40 },
                     value = false,
                 },
@@ -498,14 +492,12 @@ describe("double-dash equal-flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "--foo",
-                    needs_choice_completion = true,
                     range = { start_column = 1, end_column = 12 },
                     value = "text",
                 },
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "--bar",
-                    needs_choice_completion = true,
                     range = { start_column = 14, end_column = 31 },
                     value = "some thing",
                 },
@@ -517,7 +509,6 @@ describe("double-dash equal-flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "--buzz",
-                    needs_choice_completion = true,
                     range = { start_column = 40, end_column = 52 },
                     value = "blah",
                 },
@@ -907,7 +898,6 @@ describe("+ flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "++double",
-                    needs_choice_completion = true,
                     range = {
                         end_column = 12,
                         start_column = 1,
@@ -944,7 +934,6 @@ describe("+ flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "++double",
-                    needs_choice_completion = true,
                     range = {
                         end_column = 18,
                         start_column = 7,
@@ -981,8 +970,6 @@ describe("+ flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "++double",
-                    -- TODO: Do I actually need needs_choice_completion anymore?
-                    needs_choice_completion = true,
                     range = {
                         end_column = 18,
                         start_column = 7,
@@ -1003,7 +990,6 @@ describe("+ flags", function()
                 {
                     argument_type = argparse.ArgumentType.named,
                     name = "++named",
-                    needs_choice_completion = true,
                     range = {
                         end_column = 11,
                         start_column = 1,
