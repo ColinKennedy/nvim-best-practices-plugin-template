@@ -1581,53 +1581,54 @@ function M.ParameterParser:_get_completion(data, column)
     local last_value = _get_argument_value_text(last)
 
     if finished then
-        if remainder ~= "" then
-            -- if not parsers then
-            --     -- NOTE: Something went wrong during parsing. We don't know where
-            --     -- the user is in the tree so we need to exit early.
-            --     --
-            --     -- TODO: Check if this situation actually happens in the unittests.
-            --     -- If so, add a log.
-            --     --
-            --     return {}
+        if remainder == "" then
+
+            vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
+
+            if parser:is_satisfied() then
+                for parser_ in _iter_parsers(parser) do
+                    vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+                end
+            end
+
+            return output
+        end
+
+        -- if not parsers then
+        --     -- NOTE: Something went wrong during parsing. We don't know where
+        --     -- the user is in the tree so we need to exit early.
+        --     --
+        --     -- TODO: Check if this situation actually happens in the unittests.
+        --     -- If so, add a log.
+        --     --
+        --     return {}
+        -- end
+
+        local child_parser = _get_exact_subparser_child(last_name, parser)
+
+        if child_parser then
+            parser = child_parser
+        else
+            local next_index = index + 1
+            local argument_name = _get_argument_name(stripped.arguments[next_index])
+
+            -- NOTE: If the last argument isn't a parser then it has to be
+            -- a argument that matches a parameter. Find it and make sure
+            -- that parameter calls `increment_used()`!
+            --
+            _compute_and_increment_parameter(
+                parser,
+                argument_name,
+                tabler.get_slice(stripped.arguments, next_index)
+            )
+
+            -- local found = _compute_and_increment_parameter(...
+            -- if not found then
+            --     -- TODO: Need to handle this case. Not sure how. Error?
             -- end
-
-            local child_parser = _get_exact_subparser_child(last_name, parser)
-
-            if child_parser then
-                parser = child_parser
-            else
-                local next_index = index + 1
-                local argument_name = _get_argument_name(stripped.arguments[next_index])
-
-                -- NOTE: If the last argument isn't a parser then it has to be
-                -- a argument that matches a parameter. Find it and make sure
-                -- that parameter calls `increment_used()`!
-                --
-                _compute_and_increment_parameter(
-                    parser,
-                    argument_name,
-                    tabler.get_slice(stripped.arguments, next_index)
-                )
-
-                -- local found = _compute_and_increment_parameter(...
-                -- if not found then
-                --     -- TODO: Need to handle this case. Not sure how. Error?
-                -- end
-            end
-
-            return _get_next_parameters_from_remainder(parser, remainder)
         end
 
-        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
-
-        if parser:is_satisfied() then
-            for parser_ in _iter_parsers(parser) do
-                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
-            end
-        end
-
-        return output
+        return _get_next_parameters_from_remainder(parser, remainder)
     else
         error("TODO: Add support for this, somehow")
     end
