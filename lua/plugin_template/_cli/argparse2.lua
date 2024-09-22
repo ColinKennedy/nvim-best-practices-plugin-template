@@ -1542,12 +1542,17 @@ function M.ParameterParser:_get_completion(data, column)
 
     self:_reset_used()
 
-    column = column or #data.text
+    local count = #data.text
+    column = column or count
     local stripped = _rstrip_input(data, column)
     local remainder = stripped.remainder.value
     local output = {}
 
     if vim.tbl_isempty(stripped.arguments) then
+        if column ~= count then
+            return {}
+        end
+
         if not _is_whitespace(remainder) then
             vim.list_extend(
                 output,
