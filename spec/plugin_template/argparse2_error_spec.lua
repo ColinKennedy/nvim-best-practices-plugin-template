@@ -8,7 +8,7 @@ local argparse2 = require("plugin_template._cli.argparse2")
 
 
 describe("bad input", function()
-    it("knows if the user is #missing a required flag argument", function()
+    it("knows if the user is #missing a required flag argument #asdf", function()
         local parser = argparse2.ParameterParser.new({help="Test."})
 
         parser:add_parameter({"--foo", action="store_true"})
@@ -16,7 +16,7 @@ describe("bad input", function()
         local success, result = parser:get_completion("")
 
         assert.is_false(success)
-        assert.equal("TTTTTT", result)
+        assert.equal("Tasdfasfasdf", result)
     end)
 
     it("knows if the user is #missing a required named argument", function()
