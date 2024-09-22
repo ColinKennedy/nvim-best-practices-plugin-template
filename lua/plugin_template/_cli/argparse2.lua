@@ -1990,8 +1990,8 @@ local function _get_used_arguments_count(flag, arguments)
         -- TODO: Add support here
         error("TODO: Need to write this")
 
-        for index, argument in ipairs(arguments) do
-            if argument.argument_type ~= argparse.ArgumentType.position then
+        for index, argument_ in ipairs(arguments) do
+            if argument_.argument_type ~= argparse.ArgumentType.position then
                 return index
             end
         end
@@ -2053,9 +2053,9 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
         return parameter._nargs ~= 0
     end
 
-    local function _get_values(arguments, count)
+    local function _get_values(arguments_, count)
         if count == 1 then
-            local argument = arguments[1]
+            local argument = arguments_[1]
 
             if argument.argument_type == argparse.ArgumentType.named then
                 return argument.value
@@ -2064,7 +2064,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             return argument.name
         end
 
-        return vim.iter(tabler.get_slice(arguments, 1, count))
+        return vim.iter(tabler.get_slice(arguments_, 1, count))
             :map(function(argument_)
                 return argument_.name
             end)

@@ -26,7 +26,7 @@ describe("bad input", function()
             assert.is_false(success)
             assert.equal('Parameter "--foo" failed to find a value. Please fix your bug!', result)
 
-            local success, result = pcall(function()
+            success, result = pcall(function()
                 return parser:parse_arguments("--foo=123")
             end)
 
@@ -39,7 +39,7 @@ describe("bad input", function()
             parser:add_parameter({
                 "--foo",
                 nargs = 1,
-                type = function(...)
+                type = function(_)
                     return nil
                 end,
                 help = "Test.",
@@ -52,7 +52,7 @@ describe("bad input", function()
             assert.is_false(success)
             assert.equal('Parameter "--foo" failed to find a value. Please fix your bug!', result)
 
-            local success, result = pcall(function()
+            success, result = pcall(function()
                 return parser:parse_arguments("--foo=123")
             end)
 
