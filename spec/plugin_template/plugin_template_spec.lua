@@ -268,11 +268,11 @@ Options:
 Usage: arbitrary-thing [-a] [-b] [-c] [-f] [-v] [--help]
 
 Options:
-    -a
-    -b
-    -c
-    -f
-    -v
+    -a    The -a flag.
+    -b    The -b flag.
+    -c    The -c flag.
+    -f    The -f flag.
+    -v    The -v flag.
     --help -h    Show this help message and exit.
 ]],
         }, _DATA)
