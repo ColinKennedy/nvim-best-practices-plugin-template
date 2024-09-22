@@ -319,25 +319,25 @@ local function _is_whitespace(text)
     return text == "" or text:match("%s+")
 end
 
---- Find all parsers / sub-parsers starting from `parsers`.
----
----@param parsers argparse2.ParameterParser[] All child / leaf parsers to start traversing from.
----
-local function _get_all_parent_parsers(parsers)
-    local output = {}
-
-    for _, parser in ipairs(parsers) do
-        --- @type argparse2.ParameterParser | argparse2.Subparsers
-        local current = parser
-
-        while current do
-            table.insert(output, current)
-            current = parser._parent
-        end
-    end
-
-    return output
-end
+-- --- Find all parsers / sub-parsers starting from `parsers`.
+-- ---
+-- ---@param parsers argparse2.ParameterParser[] All child / leaf parsers to start traversing from.
+-- ---
+-- local function _get_all_parent_parsers(parsers)
+--     local output = {}
+--
+--     for _, parser in ipairs(parsers) do
+--         --- @type argparse2.ParameterParser | argparse2.Subparsers
+--         local current = parser
+--
+--         while current do
+--             table.insert(output, current)
+--             current = parser._parent
+--         end
+--     end
+--
+--     return output
+-- end
 
 --- Get the raw argument name. e.g. `"--foo"`.
 ---
@@ -456,6 +456,91 @@ local function _sort_parameters(parameters)
     return output
 end
 
+--- Find all direct-children parsers of `parser`.
+---
+--- Note:
+---    This is not recursive. It just gets the direct children.
+---
+---@param parser argparse2.ParameterParser
+---    The starting point ot saerch for child parsers.
+---@param inclusive boolean?
+---    If `true`, `parser` will be the first returned value. If `false` then
+---    only the children are returned.
+---@return fun(): argparse2.ParameterParser?
+---    An iterator that find all child parsers.
+---
+local function _iter_parsers(parser, inclusive)
+    -- TODO: Audit this variable. Maybe remove / make default
+    if inclusive == nil then
+        inclusive = false
+    end
+
+    local subparsers_index = 1
+    local subparsers = parser._subparsers[subparsers_index]
+    local returned_parser = false
+
+    -- TODO: Remove?
+    -- if not subparsers then
+    --     if inclusive then
+    --         return function() return nil end
+    --     end
+    --
+    --     return function()
+    --         if not returned_parser then
+    --             returned_parser = true
+    --
+    --             return parser
+    --         end
+    --
+    --         return nil
+    --     end
+    -- end
+
+    local parser_index = 1
+    local parsers = {}
+
+    if subparsers then
+        parsers = subparsers:get_parsers()
+    end
+
+    local parser_count = #parsers
+
+    return function()
+        if inclusive and not returned_parser then
+            return parser
+        end
+
+        if parser_index > parser_count then
+            -- NOTE: Get the next subparsers.
+            parser_index = 1
+            subparsers_index = subparsers_index + 1
+            parsers = parser._subparsers[subparsers_index]
+
+            if not parsers then
+                -- NOTE: We reached the end.
+                return nil
+            end
+
+            return parsers[parser_index]
+        end
+
+        local result = parsers[parser_index]
+
+        parser_index = parser_index + 1
+
+        return result
+    end
+end
+
+--- Find all child parser names under `parser`.
+---
+---@param parser argparse2.ParameterParser The starting point to look for child parsers.
+---@return string[] # All parser names, if any are defined.
+---
+local function _get_child_parser_names(parser)
+    return vim.iter(_iter_parsers(parser)):map(function(parser_) return parser_:get_names()[1] end):totable()
+end
+
 --- Scan `input` and stop processing arguments after `column`.
 ---
 ---@param input argparse.ArgparseResults
@@ -478,18 +563,18 @@ local function _get_cursor_offset(input, column)
     return #input.arguments
 end
 
---- Get the recommended name(s) of all `parameters`.
----
----@param parameters argparse2.Parameter[] All flag / position parameters to get names for.
----@return string[] # The found names.
----
-local function _get_parameters_names(parameters)
-    return vim:iter(parameters)
-        :map(function(parameter)
-            return parameter.names[1]
-        end)
-        :totable()
-end
+-- --- Get the recommended name(s) of all `parameters`.
+-- ---
+-- ---@param parameters argparse2.Parameter[] All flag / position parameters to get names for.
+-- ---@return string[] # The found names.
+-- ---
+-- local function _get_parameters_names(parameters)
+--     return vim:iter(parameters)
+--         :map(function(parameter)
+--             return parameter.names[1]
+--         end)
+--         :totable()
+-- end
 
 --- Create auto-complete text for `parameter`, given some `value`.
 ---
@@ -596,82 +681,6 @@ local function _get_matching_position_parameters(name, parameters)
     end
 
     return output
-end
-
---- Find all direct-children parsers of `parser`.
----
---- Note:
----    This is not recursive. It just gets the direct children.
----
----@param parser argparse2.ParameterParser
----    The starting point ot saerch for child parsers.
----@param inclusive boolean?
----    If `true`, `parser` will be the first returned value. If `false` then
----    only the children are returned.
----@return fun(): argparse2.ParameterParser?
----    An iterator that find all child parsers.
----
-local function _iter_parsers(parser, inclusive)
-    -- TODO: Audit this variable. Maybe remove / make default
-    if inclusive == nil then
-        inclusive = false
-    end
-
-    local subparsers_index = 1
-    local subparsers = parser._subparsers[subparsers_index]
-    local returned_parser = false
-
-    -- TODO: Remove?
-    -- if not subparsers then
-    --     if inclusive then
-    --         return function() return nil end
-    --     end
-    --
-    --     return function()
-    --         if not returned_parser then
-    --             returned_parser = true
-    --
-    --             return parser
-    --         end
-    --
-    --         return nil
-    --     end
-    -- end
-
-    local parser_index = 1
-    local parsers = {}
-
-    if subparsers then
-        parsers = subparsers:get_parsers()
-    end
-
-    local parser_count = #parsers
-
-    return function()
-        if inclusive and not returned_parser then
-            return parser
-        end
-
-        if parser_index > parser_count then
-            -- NOTE: Get the next subparsers.
-            parser_index = 1
-            subparsers_index = subparsers_index + 1
-            parsers = parser._subparsers[subparsers_index]
-
-            if not parsers then
-                -- NOTE: We reached the end.
-                return nil
-            end
-
-            return parsers[parser_index]
-        end
-
-        local result = parsers[parser_index]
-
-        parser_index = parser_index + 1
-
-        return result
-    end
 end
 
 --- Find all child parsers, recursively.
@@ -792,24 +801,24 @@ local function _get_help_command_labels(labels)
     return string.format("{%s}", vim.fn.join(vim.fn.sort(labels), ", "))
 end
 
---- Find all required parameters in `parsers` that still need value(s).
----
----@param parsers argparse2.ParameterParser[] All child / leaf parsers to check.
----@return argparse2.Parameter[] # The parameters that are still unused.
----
-local function _get_incomplete_parameters(parsers)
-    local output = {}
-
-    for _, parser in ipairs(_get_all_parent_parsers(parsers)) do
-        for _, parameter in ipairs(parser:get_all_parameters()) do
-            if parameter.required and not parameter:is_exhausted() then
-                table.insert(output, parameter)
-            end
-        end
-    end
-
-    return output
-end
+-- --- Find all required parameters in `parsers` that still need value(s).
+-- ---
+-- ---@param parsers argparse2.ParameterParser[] All child / leaf parsers to check.
+-- ---@return argparse2.Parameter[] # The parameters that are still unused.
+-- ---
+-- local function _get_incomplete_parameters(parsers)
+--     local output = {}
+--
+--     for _, parser in ipairs(_get_all_parent_parsers(parsers)) do
+--         for _, parameter in ipairs(parser:get_all_parameters()) do
+--             if parameter.required and not parameter:is_exhausted() then
+--                 table.insert(output, parameter)
+--             end
+--         end
+--     end
+--
+--     return output
+-- end
 
 --- Find all all child parsers that start with `prefix`, starting from `parser`.
 ---
@@ -922,7 +931,7 @@ end
 ---@param position argparse2.Parameter Some (non-flag) parameter to get text for.
 ---@return string # The found label.
 ---
-local function _get_position_help_text(position)
+local function _get_position_long_help_text(position)
     local text
 
     if position.choices then
@@ -1020,7 +1029,7 @@ local function _get_parser_position_help_text(parser)
     local output = {}
 
     for _, position in ipairs(parser:get_position_parameters()) do
-        local text = _get_position_help_text(position)
+        local text = _get_position_long_help_text(position)
 
         table.insert(output, _indent(text))
     end
@@ -1034,44 +1043,60 @@ local function _get_parser_position_help_text(parser)
     return output
 end
 
---- Get the name(s) used to refer to `parsers`.
----
---- Usually a parser can only be referred to by one name, in which case this
---- function returns one string for every parser in `parsers`. But sometimes
---- parsers can be referred to by several names. If that happens then the
---- output string will have more elements than `parsers`.
----
----@param parsers argparse2.ParameterParser[] The parsers to get names from.
----@return string[] # All ways to refer to `parsers`.
----
-local function _get_parsers_names(parsers)
-    local output = {}
+-- --- Get the name(s) used to refer to `parsers`.
+-- ---
+-- --- Usually a parser can only be referred to by one name, in which case this
+-- --- function returns one string for every parser in `parsers`. But sometimes
+-- --- parsers can be referred to by several names. If that happens then the
+-- --- output string will have more elements than `parsers`.
+-- ---
+-- ---@param parsers argparse2.ParameterParser[] The parsers to get names from.
+-- ---@return string[] # All ways to refer to `parsers`.
+-- ---
+-- local function _get_parsers_names(parsers)
+--     local output = {}
+--
+--     for _, parser in ipairs(parsers) do
+--         vim.list_extend(output, parser:get_names())
+--     end
+--
+--     return output
+-- end
 
-    for _, parser in ipairs(parsers) do
-        vim.list_extend(output, parser:get_names())
+local function _get_position_help_text(position)
+    local text
+
+    if position.choices then
+        text = _get_help_command_labels(position.choices())
+    else
+        text = position:get_nice_name()
     end
 
-    return output
-end
-
---- Find all required child parsers from `parsers`.
----
----@param parsers argparse2.ParameterParser[] Each parser to search within.
----@return argparse2.ParameterParser[] # The found required child parsers, if any.
----
-local function _get_unused_required_subparsers(parsers)
-    local output = {}
-
-    for _, parser in ipairs(parsers) do
-        for _, subparser in ipairs(parser._subparsers) do
-            if subparser.required then
-                vim.list_extend(output, subparser:get_parsers())
-            end
-        end
+    if type(position._count) == "string" then
+        text = text .. position._count
     end
 
-    return output
+    return text
 end
+
+-- --- Find all required child parsers from `parsers`.
+-- ---
+-- ---@param parsers argparse2.ParameterParser[] Each parser to search within.
+-- ---@return argparse2.ParameterParser[] # The found required child parsers, if any.
+-- ---
+-- local function _get_unused_required_subparsers(parsers)
+--     local output = {}
+--
+--     for _, parser in ipairs(parsers) do
+--         for _, subparser in ipairs(parser._subparsers) do
+--             if subparser.required then
+--                 vim.list_extend(output, subparser:get_parsers())
+--             end
+--         end
+--     end
+--
+--     return output
+-- end
 
 --- Print `data` but don't recurse.
 ---
@@ -1537,7 +1562,7 @@ end
 function M.ParameterParser:_add_help_parameter()
     local parameter = self:add_parameter({
         action = function(data)
-            data.namespace.execute = function(...)
+            data.namespace.execute = function(...)  -- luacheck: ignore 212 unused argument
                 vim.notify(self:get_full_help(""), vim.log.levels.INFO)
             end
         end,
@@ -1790,28 +1815,6 @@ end
 
 ---@return string # A one/two liner explanation of this instance's expected parameters.
 function M.ParameterParser:_get_usage_summary(parser)
-
-    ---@return string[] # All parser names, if any are defined.
-    local function _get_child_parser_names(parser)
-        return vim.iter(_iter_parsers(parser)):map(function(parser_) return parser_:get_names()[1] end):totable()
-    end
-
-    local function _get_position_help_text(position)
-        local text = ""
-
-        if position.choices then
-            text = _get_help_command_labels(position.choices())
-        else
-            text = position:get_nice_name()
-        end
-
-        if type(position._count) == "string" then
-            text = text .. position._count
-        end
-
-        return text
-    end
-
     local output = {}
 
     local names = parser:get_names()
@@ -2102,7 +2105,7 @@ end
 --- (Assuming parameter counts were modified by any function) Reset counts back to zero.
 function M.ParameterParser:_reset_used()
     for _, parser in ipairs(_get_all_parsers(self)) do
-        for parameter in tabler.chain(parser:get_position_parameters(), parser:get_flag_parameters()) do
+        for parameter in tabler.chain({parser:get_position_parameters(), parser:get_flag_parameters()}) do
             parameter._used = 0
         end
     end
@@ -2110,7 +2113,7 @@ end
 
 ---@return boolean # If all required parameters of this instance have values.
 function M.ParameterParser:is_satisfied()
-    for parameter in tabler.chain(self:get_flag_parameters(), self:get_position_parameters()) do
+    for parameter in tabler.chain({self:get_flag_parameters(), self:get_position_parameters()}) do
         if parameter.required and not parameter:is_exhausted() then
             return false
         end
@@ -2119,49 +2122,50 @@ function M.ParameterParser:is_satisfied()
     return true
 end
 
---- Get auto-complete options based on this instance + the user's `data` input.
----
----@param data argparse.ArgparseResults | string The user input.
----@param column number? A 1-or-more value that represents the user's cursor.
----@return string[] # All found auto-complete options, if any.
----
-function M.ParameterParser:get_errors(data, column)
-    if type(data) == "string" then
-        data = argparse.parse_arguments(data)
-    end
-
-    column = column or #data.text
-    local stripped = _rstrip_input(data, column)
-
-    local parser, _ = self:_compute_matching_parsers(stripped.arguments)
-
-    if not parser then
-        -- TODO: Need to handle this case (when there's bad user input)
-        return { "TODO: Need to write for this case" }
-    end
-
-    local unused_parsers = _get_unused_required_subparsers(parser)
-
-    if not vim.tbl_isempty(unused_parsers) then
-        local names = _get_parsers_names(unused_parsers)
-
-        return {
-            string.format(
-                'Your command is incomplete. Please choose one of these sub-commands "%s" to continue.',
-                vim.fn.join(vim.fn.sort(names))
-            ),
-        }
-    end
-
-    local parameters = _get_incomplete_parameters(parsers)
-
-    if not vim.tbl_isempty(parameters) then
-        local names = _get_parameters_names(parameters)
-        return { string.format('Required parameters "%s" were not given.', vim.fn.sort(names)) }
-    end
-
-    return {}
-end
+-- TODO: Remove later
+-- --- Get auto-complete options based on this instance + the user's `data` input.
+-- ---
+-- ---@param data argparse.ArgparseResults | string The user input.
+-- ---@param column number? A 1-or-more value that represents the user's cursor.
+-- ---@return string[] # All found auto-complete options, if any.
+-- ---
+-- function M.ParameterParser:get_errors(data, column)
+--     if type(data) == "string" then
+--         data = argparse.parse_arguments(data)
+--     end
+--
+--     column = column or #data.text
+--     local stripped = _rstrip_input(data, column)
+--
+--     local parser, _ = self:_compute_matching_parsers(stripped.arguments)
+--
+--     if not parser then
+--         -- TODO: Need to handle this case (when there's bad user input)
+--         return { "TODO: Need to write for this case" }
+--     end
+--
+--     local unused_parsers = _get_unused_required_subparsers(parser)
+--
+--     if not vim.tbl_isempty(unused_parsers) then
+--         local names = _get_parsers_names(unused_parsers)
+--
+--         return {
+--             string.format(
+--                 'Your command is incomplete. Please choose one of these sub-commands "%s" to continue.',
+--                 vim.fn.join(vim.fn.sort(names))
+--             ),
+--         }
+--     end
+--
+--     local parameters = _get_incomplete_parameters(parser)
+--
+--     if not vim.tbl_isempty(parameters) then
+--         local names = _get_parameters_names(parameters)
+--         return { string.format('Required parameters "%s" were not given.', vim.fn.sort(names)) }
+--     end
+--
+--     return {}
+-- end
 
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
@@ -2266,7 +2270,7 @@ end
 
 --- Get the `--foo` style parameters from this instance.
 ---
----@param options {hide_implicits: boolean?}
+---@param options {hide_implicits: boolean?}?
 ---    If `hide_implicits` is true, only the flag parameters that a user
 ---    explicitly added are returned. If `false` or not defined, all flags are
 ---    returned.

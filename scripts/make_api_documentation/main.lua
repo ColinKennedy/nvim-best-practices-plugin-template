@@ -39,20 +39,20 @@ end
 ---    A description about what this object is. Is it a section or a block or
 ---    something else? Stuff like that.
 ---
-local _Section = {}
+local _Section = {}  -- luacheck: ignore 241 -- variable never accessed
 
 --- Add `child` to this instance at `index`.
 ---
 ---@param index number The 1-or-more position to add `child` into.
 ---@param child string The text to add.
 ---
-function _Section:insert(index, child) end
+function _Section:insert(index, child) end  -- luacheck: ignore 212 -- unused argument
 
 --- Remove a child from this instance at `index`.
 ---
 ---@param index number? The 1-or-more position to remove `child` from.
 ---
-function _Section:remove(index) end
+function _Section:remove(index) end  -- luacheck: ignore 212 -- unused argument
 
 --- Check if `text` is the start of a function's parameters.
 ---
@@ -362,7 +362,7 @@ local function _get_module_enabled_hooks(module_identifier)
     end
 
     -- TODO: Add alias support. These lines effectively clear aliases, which is a shame.
-    hooks.section_pre = function(section)
+    hooks.section_pre = function(...)  -- luacheck: ignore 212 -- unused argument
     end
 
     hooks.write_pre = function(lines)
@@ -389,7 +389,7 @@ end
 ---@return string?
 ---    The found identifier. By convention it's usually `"M"` or nothing.
 ---
-local function _get_module_identifier(path)
+local function _get_module_identifier(path)  -- luacheck: ignore 212 -- unused argument
     -- TODO: Need to replace this later
     -- Ignore weird returns
     -- Only get the last return

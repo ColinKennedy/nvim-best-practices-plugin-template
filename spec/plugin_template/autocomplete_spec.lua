@@ -496,39 +496,6 @@ describe("named argument", function()
     end)
 
     it("suggests new named argument values based on the current value", function()
-        local function _add_repeat_parameter(parser)
-            parser:add_parameter({
-                names = { "--repeat", "-r" },
-                choices = function(data)
-                    --- @cast data argparse2.ChoiceData?
-
-                    local output = {}
-
-                    if not data then
-                        for index = 1, 5 do
-                            table.insert(output, tostring(index))
-                        end
-
-                        return output
-                    end
-
-                    local value = tonumber(data.current_value)
-
-                    if not value then
-                        return {}
-                    end
-
-                    for index = 1, 5 do
-                        table.insert(output, tostring(value + index))
-                    end
-
-                    return output
-                end,
-                default = 1,
-                help = "Print to the user X number of times (default=1).",
-            })
-        end
-
         local parser = argparse2.ParameterParser.new({ help = "Test" })
 
         _add_repeat_parameter(parser)

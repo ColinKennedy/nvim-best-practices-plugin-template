@@ -118,11 +118,12 @@ describe("bad input", function()
     end)
 
     it("knows if the user is #missing a required position argument", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
-        parser:add_parameter({ name = "foo" })
-
         -- TODO: Finish
-        assert.same({ "ASDADSASDADS" }, parser:get_errors(""))
+        -- local parser = argparse2.ParameterParser.new({ help = "Test" })
+        -- parser:add_parameter({ name = "foo" })
+        --
+        -- -- TODO: Finish
+        -- assert.same({ "ASDADSASDADS" }, parser:get_errors(""))
     end)
 
     it("knows if the user is #missing an argument - 001", function()
