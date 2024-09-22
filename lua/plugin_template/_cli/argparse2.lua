@@ -2105,7 +2105,7 @@ end
 --- (Assuming parameter counts were modified by any function) Reset counts back to zero.
 function M.ParameterParser:_reset_used()
     for _, parser in ipairs(_get_all_parsers(self)) do
-        for parameter in tabler.chain({parser:get_position_parameters(), parser:get_flag_parameters()}) do
+        for parameter in tabler.chain(parser:get_position_parameters(), parser:get_flag_parameters()) do
             parameter._used = 0
         end
     end
@@ -2113,7 +2113,7 @@ end
 
 ---@return boolean # If all required parameters of this instance have values.
 function M.ParameterParser:is_satisfied()
-    for parameter in tabler.chain({self:get_flag_parameters(), self:get_position_parameters()}) do
+    for parameter in tabler.chain(self:get_flag_parameters(), self:get_position_parameters()) do
         if parameter.required and not parameter:is_exhausted() then
             return false
         end
