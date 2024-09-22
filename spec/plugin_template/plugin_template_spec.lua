@@ -184,7 +184,6 @@ describe("goodnight-moon commands", function()
     end)
 end)
 
-
 describe("--help flag", function()
     before_each(_initialize_all)
     after_each(_reset_all)
@@ -196,7 +195,7 @@ describe("--help flag", function()
 [[
 Usage: PluginTemplate {arbitrary-thing, copy-logs, goodnight-moon, hello-world} [--help]
 
-Positional Arguments:
+Commands:
     arbitrary-thing    Prepare to sleep or sleep.
     copy-logs    Get debug logs for PluginTemplate.
     goodnight-moon    Prepare to sleep or sleep.
@@ -215,7 +214,7 @@ Options:
 [[
 Usage: say {phrase, word} [--help]
 
-Positional Arguments:
+Commands:
     phrase    Print everything that the user types.
     word    Print only the first word that the user types.
 
@@ -225,7 +224,7 @@ Options:
         }, _DATA)
     end)
 
-    it("works on a nested subparser - 002 #asdf", function()
+    it("works on a nested subparser - 002", function()
         vim.cmd([[PluginTemplate hello-world say phrase --help]])
 
         assert.same({
@@ -233,12 +232,12 @@ Options:
 Usage: phrase phrases [--repeat] [--style] [--help]
 
 Positional Arguments:
-   phrases    All of the text to print.
+    phrases    All of the text to print.
 
 Options:
-   --repeat -r    Print to the user X number of times (default=1).
-   --style -s    lowercase modifies all capital letters. uppercase modifies all non-capital letter.
-   --help -h    Show this help message and exit.
+    --repeat -r    Print to the user X number of times (default=1).
+    --style -s    lowercase modifies all capital letters. uppercase modifies all non-capital letter.
+    --help -h    Show this help message and exit.
 ]],
         }, _DATA)
     end)
@@ -251,17 +250,17 @@ Options:
 Usage: word word [--repeat] [--style] [--help]
 
 Positional Arguments:
-   word    The word to print.
+    word    The word to print.
 
 Options:
-   --repeat -r    Print to the user X number of times (default=1).
-   --style -s    lowercase modifies all capital letters. uppercase modifies all non-capital letter.
-   --help -h    Show this help message and exit.
+    --repeat -r    Print to the user X number of times (default=1).
+    --style -s    lowercase modifies all capital letters. uppercase modifies all non-capital letter.
+    --help -h    Show this help message and exit.
 ]],
         }, _DATA)
     end)
 
-    it("works on the subparsers", function()
+    it("works on the subparsers - 001", function()
         vim.cmd([[PluginTemplate arbitrary-thing --help]])
 
         assert.same({
@@ -269,33 +268,62 @@ Options:
 Usage: arbitrary-thing [-a] [-b] [-c] [-f] [-v] [--help]
 
 Options:
-   -a
-   -b
-   -c
-   -f
-   -v
-   --help -h    Show this help message and exit.
+    -a
+    -b
+    -c
+    -f
+    -v
+    --help -h    Show this help message and exit.
 ]],
         }, _DATA)
+    end)
 
+    it("works on the subparsers - 002", function()
         vim.cmd([[PluginTemplate copy-logs --help]])
 
         assert.same({
 [[
+Usage: copy-logs log [--help]
+
+Positional Arguments:
+    log    The path on-disk to look for logs. If no path is given, a fallback log path is used instead.
+
+Options:
+    --help -h    Show this help message and exit.
 ]],
         }, _DATA)
+    end)
 
+    it("works on the subparsers - 003", function()
         vim.cmd([[PluginTemplate goodnight-moon --help]])
 
         assert.same({
 [[
+Usage: goodnight-moon {count-sheep, read, sleep} [--help]
+
+Commands:
+    count-sheep    Count some sheep to help you sleep.
+    read    Read a book in bed.
+    sleep    Sleep tight!
+
+Options:
+    --help -h    Show this help message and exit.
 ]],
         }, _DATA)
+    end)
 
+    it("works on the subparsers - 004", function()
         vim.cmd([[PluginTemplate hello-world --help]])
 
         assert.same({
 [[
+Usage: hello-world {say} [--help]
+
+Commands:
+    say    Print something to the user.
+
+Options:
+    --help -h    Show this help message and exit.
 ]],
         }, _DATA)
     end)

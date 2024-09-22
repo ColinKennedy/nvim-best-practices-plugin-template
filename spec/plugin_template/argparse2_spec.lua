@@ -142,7 +142,7 @@ describe("default", function()
     it("works with a #default", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
 
-        assert.equal("Usage: [--help]\n", parser:get_concise_help(""))
+        assert.equal("Usage: [--help]", parser:get_concise_help(""))
     end)
 
     it("works with a #empty type", function()
@@ -175,9 +175,9 @@ describe("help", function()
             local parser = _make_simple_parser()
 
             assert.equal(
-                [[Usage: [--help]
+[[Usage: top_test {say} [--help]
 
-Positional Arguments:
+Commands:
     say    Print stuff to the terminal.
 
 Options:
@@ -187,11 +187,11 @@ Options:
             )
         end)
 
-        it("shows all of the options for a #basic parser - 002", function()
+        it("shows all of the options for a #basic parser - 002 #asdf", function()
             local parser = _make_simple_parser()
 
             assert.equal(
-                [[Usage: [--repeat] [--style] [--help]
+[[Usage: word [--repeat] [--style] [--help]
 
 Options:
     --repeat -r    The number of times to display the message.
@@ -206,9 +206,9 @@ Options:
             local parser = _make_simple_parser()
 
             assert.equal(
-                [[Usage: [--help]
+[[Usage: say {phrase, word} [--help]
 
-Positional Arguments:
+Commands:
     phrase    Print a whole sentence.
     word    Print a single word.
 
@@ -223,7 +223,7 @@ Options:
             local parser = _make_simple_parser()
 
             assert.equal(
-                [[Usage: [--repeat] [--style] [--help]
+[[Usage: phrase [--repeat] [--style] [--help]
 
 Options:
     --repeat -r    The number of times to display the message.
@@ -240,9 +240,9 @@ Options:
             subparsers:add_parser({ name = "thing", choices = { "aaa", "bbb", "ccc" }, help = "Do a thing." })
 
             assert.equal(
-                [[Usage: [--help]
+[[Usage: {aaa} [--help]
 
-Positional Arguments:
+Commands:
     {aaa, bbb, ccc}    Do a thing.
 
 Options:

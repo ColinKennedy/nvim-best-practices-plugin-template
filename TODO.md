@@ -1,6 +1,3 @@
-The --help is not working. Fix
- - Add unittests for all pof PluginTemplate
-
 - Consider adding * or + to the help messages to speople know which things are 0-or-more and whjich are 1-or-more
 
 - Do a round of finishing TODO notes

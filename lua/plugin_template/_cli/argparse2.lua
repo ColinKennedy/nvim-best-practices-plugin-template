@@ -947,6 +947,38 @@ local function _indent(text)
     return string.format("    %s", text)
 end
 
+--- Get all subcomands (child parsers) from `parser`.
+---
+---@param parser argparse2.ParameterParser Some runnable command to get parameters from.
+---@return string[] # The labels of all of the flags.
+---
+local function _get_parser_child_parser_help_text(parser)
+    local output = {}
+
+    for parser_ in _iter_parsers(parser) do
+        local names = parser_:get_names()
+        local text = names[1]
+
+        if #names ~= 1 then
+            text = _get_help_command_labels(names)
+        end
+
+        if parser_.help then
+            text = text .. "    " .. parser_.help
+        end
+
+        table.insert(output, _indent(text))
+    end
+
+    output = vim.fn.sort(output)
+
+    if not vim.tbl_isempty(output) then
+        table.insert(output, 1, "Commands:")
+    end
+
+    return output
+end
+
 --- Get all option flag / named parameter --help text from `parser`.
 ---
 ---@param parser argparse2.ParameterParser Some runnable command to get parameters from.
@@ -985,21 +1017,6 @@ local function _get_parser_position_help_text(parser)
 
     for _, position in ipairs(parser:get_position_parameters()) do
         local text = _get_position_help_text(position)
-
-        table.insert(output, _indent(text))
-    end
-
-    for parser_ in _iter_parsers(parser) do
-        local names = parser_:get_names()
-        local text = names[1]
-
-        if #names ~= 1 then
-            text = _get_help_command_labels(names)
-        end
-
-        if parser_.help then
-            text = text .. "    " .. parser_.help
-        end
 
         table.insert(output, _indent(text))
     end
@@ -1771,8 +1788,8 @@ end
 function M.ParameterParser:_get_usage_summary(parser)
 
     ---@return string[] # All parser names, if any are defined.
-    local function _get_child_parser_names()
-        return vim.iter(_iter_parsers(self)):map(function(parser) return parser:get_names()[1] end):totable()
+    local function _get_child_parser_names(parser)
+        return vim.iter(_iter_parsers(parser)):map(function(parser_) return parser_:get_names()[1] end):totable()
     end
 
     local text = {}
@@ -1799,7 +1816,7 @@ function M.ParameterParser:_get_usage_summary(parser)
         table.insert(text, string.format("[%s]", flag:get_raw_name()))
     end
 
-    local parser_names = _get_child_parser_names()
+    local parser_names = _get_child_parser_names(parser)
 
     if not vim.tbl_isempty(parser_names) then
         table.insert(text, string.format("{%s}", vim.fn.join(vim.fn.sort(parser_names), ", ")))
@@ -2100,14 +2117,14 @@ function M.ParameterParser:get_errors(data, column)
     column = column or #data.text
     local stripped = _rstrip_input(data, column)
 
-    local parsers, _ = self:_compute_matching_parsers(stripped.arguments)
+    local parser, _ = self:_compute_matching_parsers(stripped.arguments)
 
-    if not parsers then
+    if not parser then
         -- TODO: Need to handle this case (when there's bad user input)
         return { "TODO: Need to write for this case" }
     end
 
-    local unused_parsers = _get_unused_required_subparsers(parsers)
+    local unused_parsers = _get_unused_required_subparsers(parser)
 
     if not vim.tbl_isempty(unused_parsers) then
         local names = _get_parsers_names(unused_parsers)
@@ -2157,7 +2174,7 @@ function M.ParameterParser:get_concise_help(data)
         data = argparse.parse_arguments(data)
     end
 
-    local parser = self:_get_leaf_parser(data)
+    local parser, _ = self:_compute_matching_parsers(data.arguments)
 
     return self:_get_usage_summary(parser)
 end
@@ -2171,20 +2188,45 @@ end
 ---    The full explanation of this instance's expected arguments (can be pretty long).
 ---
 function M.ParameterParser:get_full_help(data)
+    local function _get_child_parser_by_name(parser, prefix)
+        for parser_ in _iter_parsers(parser) do
+            if vim.tbl_contains(parser_:get_names(), prefix) then
+                return parser_
+            end
+        end
+
+        return nil
+    end
+
     if type(data) == "string" then
         data = argparse.parse_arguments(data)
     end
 
-    local parser = self:_get_leaf_parser(data)
+    local parser, _ = self:_compute_matching_parsers(data.arguments)
+
+    if parser:is_satisfied() then
+        local last = data.arguments[#data.arguments]
+
+        if last then
+            local last_name = _get_argument_name(last)
+            parser = _get_child_parser_by_name(parser, last_name) or parser
+        end
+    end
+
     local summary = self:_get_usage_summary(parser)
 
     local position_text = _get_parser_position_help_text(parser)
     local flag_text = _get_parser_flag_help_text(parser)
+    local child_parser_text = _get_parser_child_parser_help_text(parser)
 
     local output = summary
 
     if not vim.tbl_isempty(position_text) then
         output = output .. "\n\n" .. vim.fn.join(position_text, "\n")
+    end
+
+    if not vim.tbl_isempty(child_parser_text) then
+        output = output .. "\n\n" .. vim.fn.join(child_parser_text, "\n")
     end
 
     if not vim.tbl_isempty(flag_text) then
