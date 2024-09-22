@@ -131,17 +131,6 @@ local function _get_subcommand_completion(text, prefix, subcommands)
     return nil
 end
 
---- Change `text` to something that will work with Lua regex.
----
----@param text string Some raw text. e.g. `"foo-bar"`.
----@return string # Escaped text, e.g. `"foo%-bar"`.
----
-local function _escape(text)
-    local escaped = text:gsub("%-", "%%-")
-
-    return escaped
-end
-
 --- Run `parser` and pass it the user's raw input `text`.
 ---
 ---@param parser argparse2.ParameterParser The decision tree that parses and runs `text`.
@@ -180,7 +169,7 @@ end
 ---@return string # Basically `text.lstrip(prefix)`.
 ---
 local function _strip_prefix(prefix, text)
-    return (text:gsub("^" .. _escape(prefix) .. "%s*", ""))
+    return (text:gsub("^" .. vim.pesc(prefix) .. "%s*", ""))
 end
 
 --- Create a function that implements "Vim COMMAND mode auto-complete".
@@ -190,24 +179,25 @@ end
 ---
 ---@param prefix string The command to exclude from auto-complete. e.g. `"PluginTemplate"`.
 ---@param subcommands plugin_template.Subcommands All allowed commands.
----@return function # The generated auto-complete function.
+---@return fun(latest_text: string, all_text: string): string[]? # The generated auto-complete function.
 ---
 function M.make_command_completer(prefix, subcommands)
-    local function runner(args, text, _)
+    local function runner(latest_text, all_text, _)
         local configuration = require("plugin_template._core.configuration")
         configuration.initialize_data_if_needed()
-        local completion = _get_subcommand_completion(text, prefix, subcommands)
+        local completion = _get_subcommand_completion(all_text, prefix, subcommands)
 
         if completion then
             return completion
         end
 
-        if _is_subcommand(text, prefix) then
+        if _is_subcommand(all_text, prefix) then
+            local escaped_latest_text = vim.pesc(latest_text)
             local keys = vim.tbl_keys(subcommands)
             local output = {}
 
             for _, key in ipairs(keys) do
-                if key:find(_escape(args)) ~= nil then
+                if key:find(escaped_latest_text) ~= nil then
                     table.insert(output, key)
                 end
             end
