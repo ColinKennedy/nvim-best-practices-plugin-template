@@ -8,7 +8,7 @@ local argparse2 = require("plugin_template._cli.argparse2")
 
 
 describe("bad input", function()
-    it("knows if the user is #missing a required flag argument #asdf", function()
+    it("knows if the user is #missing a required flag argument", function()
         local parser = argparse2.ParameterParser.new({help="Test."})
 
         parser:add_parameter({"--foo", action="store_true"})
