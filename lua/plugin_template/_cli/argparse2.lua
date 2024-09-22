@@ -844,16 +844,28 @@ local function _get_nice_name(text)
     return text:match("%W*(%w+)")
 end
 
---- Find the next arguments that need to be completed / used based on some partial `remainder_text`.
+--- Remove leading (left) whitespace `text`, if there is any.
+---
+---@param text string Some text e.g. `" -- "`.
+---@return string # The removed text e.g. `"-- "`.
+---
+local function _lstrip(text)
+    return (text:gsub("^%s*", ""))
+end
+
+--- Find the next arguments that need to be completed / used based on some partial `prefix`.
 ---
 ---@param parser argparse2.ParameterParser
 ---    The subparser to consider for the next parameter(s).
+---@param prefix string
+---    Prefix text to match against for. Usually it's empty but if there's
+---    a command like `foo --`, as in they started to write a flag but hasn't
+---    completed, then `prefix` would be `"--"`.
 ---@return string[]
 ---    The matching names, if any.
 ---
-local function _get_next_arguments_from_remainder(parser)
+local function _get_next_parameters_from_remainder(parser, prefix)
     -- TODO: Consider removing this text
-    local remainder_text = ""
     -- local name = _get_argument_name(argument)
     -- local matches = vim.iter(parsers):filter(function(parser)
     --     return vim.tbl_contains(parser:get_names(), name)
@@ -867,10 +879,11 @@ local function _get_next_arguments_from_remainder(parser)
     -- See "dynamic argument - works with positional arguments" test
     --
     if parser:is_satisfied() then
-        vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(remainder_text, parser)))
+        vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(prefix, parser)))
     end
 
-    vim.list_extend(output, _get_exact_or_partial_matches(remainder_text, parser))
+    prefix = _lstrip(prefix)
+    vim.list_extend(output, _get_exact_or_partial_matches(prefix, parser))
 
     -- TODO: There's a bug here. We may not be able to assume the last argument like this
     -- local last = stripped.arguments[#stripped.arguments]
@@ -1593,7 +1606,7 @@ function M.ParameterParser:_get_completion(data, column)
                 -- end
             end
 
-            return _get_next_arguments_from_remainder(parser)
+            return _get_next_parameters_from_remainder(parser, remainder)
         end
 
         vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
