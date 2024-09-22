@@ -229,10 +229,10 @@ Options:
 
         assert.same({
 [[
-Usage: phrase phrases [--repeat] [--style] [--help]
+Usage: phrase phrases* [--repeat] [--style] [--help]
 
 Positional Arguments:
-    phrases    All of the text to print.
+    phrases*    All of the text to print.
 
 Options:
     --repeat -r    Print to the user X number of times (default=1).

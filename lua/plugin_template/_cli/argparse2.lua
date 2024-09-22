@@ -931,6 +931,10 @@ local function _get_position_help_text(position)
         text = position:get_nice_name()
     end
 
+    if type(position._count) == "string" then
+        text = text .. position._count
+    end
+
     if position.help then
         text = text .. "    " .. position.help
     end
@@ -1792,42 +1796,54 @@ function M.ParameterParser:_get_usage_summary(parser)
         return vim.iter(_iter_parsers(parser)):map(function(parser_) return parser_:get_names()[1] end):totable()
     end
 
-    local text = {}
+    local function _get_position_help_text(position)
+        local text = ""
+
+        if position.choices then
+            text = _get_help_command_labels(position.choices())
+        else
+            text = position:get_nice_name()
+        end
+
+        if type(position._count) == "string" then
+            text = text .. position._count
+        end
+
+        return text
+    end
+
+    local output = {}
 
     local names = parser:get_names()
 
     if #names == 1 then
-        table.insert(text, names[1])
+        table.insert(output, names[1])
     else
         if not vim.tbl_isempty(names) then
-            table.insert(text, _get_help_command_labels(names))
+            table.insert(output, _get_help_command_labels(names))
         end
     end
 
     for _, position in ipairs(parser:get_position_parameters()) do
-        if position.choices then
-            table.insert(text, _get_help_command_labels(position.choices()))
-        else
-            table.insert(text, position:get_nice_name())
-        end
+        table.insert(output, _get_position_help_text(position))
     end
 
     for _, flag in ipairs(_sort_parameters(parser:get_flag_parameters({hide_implicits=true}))) do
-        table.insert(text, string.format("[%s]", flag:get_raw_name()))
+        table.insert(output, string.format("[%s]", flag:get_raw_name()))
     end
 
     local parser_names = _get_child_parser_names(parser)
 
     if not vim.tbl_isempty(parser_names) then
-        table.insert(text, string.format("{%s}", vim.fn.join(vim.fn.sort(parser_names), ", ")))
+        table.insert(output, string.format("{%s}", vim.fn.join(vim.fn.sort(parser_names), ", ")))
     end
 
     for _, flag in ipairs(_sort_parameters(parser:get_implicit_flag_parameters())) do
-        table.insert(text, string.format("[%s]", flag:get_raw_name()))
+        table.insert(output, string.format("[%s]", flag:get_raw_name()))
     end
 
     -- TODO: Need to finish the concise args and also give advice on the next line
-    return string.format("Usage: %s", vim.fn.join(text, " "))
+    return string.format("Usage: %s", vim.fn.join(output, " "))
 end
 
 --- Add `flags` to `namespace` if they match `argument`.

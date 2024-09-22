@@ -1,5 +1,3 @@
-- Consider adding * or + to the help messages to speople know which things are 0-or-more and whjich are 1-or-more
-
 - Do a round of finishing TODO notes
 
 - Make sre the CI works
