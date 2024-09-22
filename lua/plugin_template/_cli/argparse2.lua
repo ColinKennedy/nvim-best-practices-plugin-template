@@ -1391,6 +1391,11 @@ function M.Parameter.new(options)
     return self
 end
 
+---@return boolean # Check if this parameter expects a fixed number of uses.
+function M.Parameter:has_numeric_count()
+    return type(self._count) == "number"
+end
+
 ---@return boolean # Check if this instance cannot be used anymore.
 function M.Parameter:is_exhausted()
     if self._count == _ZERO_OR_MORE then
@@ -1615,6 +1620,46 @@ local function _compute_and_increment_parameter(parser, argument_name, arguments
     end
 
     return _compute_exact_position_match(argument_name, parser)
+end
+
+---@return string[] # Find all unfinished parameters in this instance.
+function M.ParameterParser:_get_issues()
+    local output = {}
+
+    for parameter in tabler.chain(self:get_flag_parameters(), self:get_position_parameters()) do
+        if parameter.required and not parameter:is_exhausted() then
+            if parameter:has_numeric_count() then
+                local used = parameter._used
+                local text
+
+                if used == 0 then
+                    text = string.format(
+                        'Parameter "%s" must be defined.',
+                        parameter.names[1]
+                    )
+                else
+                    text = string.format(
+                        'Parameter "%s" used "%s" times but must be used "%s" times.',
+                        parameter.names[1],
+                        parameter._used,
+                        parameter._count
+                    )
+                end
+
+                if parameter.choices then
+                    text = string.format(
+                        '%s Valid choices are "%s"',
+                        text,
+                        vim.fn.join(vim.fn.sorted(parameter.choices()), ", ")
+                    )
+                end
+
+                table.insert(output, text)
+            end
+        end
+    end
+
+    return output
 end
 
 --- Get auto-complete options based on this instance + the user's `data` input.
@@ -1863,6 +1908,10 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, argument, namesp
 
             local value
 
+            if argument.argument_type == argparse.ArgumentType.named and not argument.value or argument.value == "" then
+                error(string.format('Parameter "%s" requires 1 value.', argument.name), 0)
+            end
+
             -- TODO: Replace this with a real nargs check later
             if argument.value then
                 value = flag:get_type()(argument.value)
@@ -1923,6 +1972,12 @@ end
 function M.ParameterParser:_handle_subparsers(data, argument_name, namespace)
     for parser in _iter_parsers(self) do
         if vim.tbl_contains(parser:get_names(), argument_name) then
+            local issues = self:_get_issues()
+
+            if not vim.tbl_isempty(issues) then
+                error(vim.fn.join(issues, "\n"), 0)
+            end
+
             parser:_parse_arguments(data, namespace)
 
             return true, parser
@@ -2054,8 +2109,8 @@ function M.ParameterParser:_parse_arguments(data, namespace)
     namespace = namespace or {}
     _merge_namespaces(namespace, self._defaults, self:_get_default_namespace())
 
-    local position_parameters = vim.deepcopy(self:get_position_parameters())
-    local flag_parameters = vim.deepcopy(self:get_flag_parameters())
+    local position_parameters = self:get_position_parameters()
+    local flag_parameters = self:get_flag_parameters()
     local found = false
 
     -- TODO: Need to handle nargs-related code here
@@ -2097,6 +2152,12 @@ function M.ParameterParser:_parse_arguments(data, namespace)
             -- NOTE: We lost our place in the parse so we can't continue.
             return {}
         end
+    end
+
+    local issues = self:_get_issues()
+
+    if not vim.tbl_isempty(issues) then
+        error(vim.fn.join(issues, "\n"), 0)
     end
 
     return namespace

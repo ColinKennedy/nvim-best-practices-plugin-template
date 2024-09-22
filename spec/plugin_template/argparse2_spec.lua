@@ -157,7 +157,7 @@ Options:
             )
         end)
 
-        it("shows all of the options for a #basic parser - 002 #asdf", function()
+        it("shows all of the options for a #basic parser - 002", function()
             local parser = _make_simple_parser()
 
             assert.equal(

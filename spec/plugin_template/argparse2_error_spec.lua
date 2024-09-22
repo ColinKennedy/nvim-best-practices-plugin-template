@@ -7,41 +7,88 @@
 local argparse2 = require("plugin_template._cli.argparse2")
 
 
+-- TODO: Add a test for missing, required subparser
 describe("bad input", function()
-    it("knows if the user is #missing a required flag argument", function()
+    it("knows if the user is #missing a required flag argument - 001", function()
         local parser = argparse2.ParameterParser.new({help="Test."})
 
-        parser:add_parameter({"--foo", action="store_true"})
+        parser:add_parameter({"--foo", action="store_true", required=true})
 
-        local success, result = parser:get_completion("")
+        local success, result = pcall(function() parser:parse_arguments("") end)
 
         assert.is_false(success)
-        assert.equal("Tasdfasfasdf", result)
+        assert.equal('Parameter "--foo" must be defined.', result)
     end)
 
-    it("knows if the user is #missing a required named argument", function()
-        -- TODO: Finish
+    it("knows if the user is #missing a required flag argument - 002", function()
+        local parser = argparse2.ParameterParser.new({help="Test."})
+        parser:add_parameter({"thing", help="Test."})
+        parser:add_parameter({"--foo", action="store_true", required=true, help="Test."})
+
+        assert.same({foo=true, thing="blah"}, parser:parse_arguments("blah --foo"))
+
+        local success, result = pcall(function() parser:parse_arguments("blah ") end)
+
+        assert.is_false(success)
+        assert.equal('Parameter "--foo" must be defined.', result)
+    end)
+
+    it("knows if the user is #missing a required named argument - 001", function()
+        local parser = argparse2.ParameterParser.new({help="Test."})
+        parser:add_parameter({"--foo", required=true, help="Test."})
+
+        local success, result = pcall(function() parser:parse_arguments("") end)
+
+        assert.is_false(success)
+        assert.equal('Parameter "--foo" must be defined.', result)
+    end)
+
+    it("knows if the user is #missing a required named argument - 002", function()
+        local parser = argparse2.ParameterParser.new({help="Test."})
+        parser:add_parameter({"--foo", required=true, help="Test."})
+
+        local success, result = pcall(function() parser:parse_arguments("--foo= ") end)
+
+        assert.is_false(success)
+        assert.equal('Parameter "--foo" requires 1 value.', result)
     end)
 
     it("knows if the user is #missing a required position argument", function()
-        -- TODO: Finish
-        -- local parser = argparse2.ParameterParser.new({ help = "Test" })
-        -- parser:add_parameter({ name = "foo" })
-        --
-        -- -- TODO: Finish
-        -- assert.same({ "ASDADSASDADS" }, parser:get_errors(""))
+        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        parser:add_parameter({ name = "foo" })
+
+        local success, result = pcall(function() parser:parse_arguments("") end)
+
+        assert.is_false(success)
+        assert.equal('Parameter "foo" must be defined.', result)
     end)
 
-    it("knows if the user is #missing an argument - 001", function()
-        -- TODO: Add argparse.NamedArgument check
+    it("ignores an optional position argument", function()
+        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        parser:add_parameter({ name = "foo", required = false})
+
+        parser:parse_arguments("")
     end)
 
-    it("knows if the user is #missing an argument - 002", function()
-        -- TODO: Add argparse.FlagArgument + argparse.PositionArgument check
-    end)
+    -- TODO: Consider if we need this
+    -- it("knows if the user is #missing one of several arguments - 003 - position argument", function()
+    --     local parser = argparse2.ParameterParser.new({ help = "Test" })
+    --     parser:add_parameter({ name = "foo", nargs=2})
+    --
+    --     local success, result = pcall(function() parser:parse_arguments("thing") end)
+    --
+    --     assert.is_false(success)
+    --     assert.equal('Parameter "--foo" expects 2 values.', result)
+    -- end)
 
-    it("knows if the user is #missing one of several argumentis - 003", function()
-        -- TODO: Add argparse.FlagArgument + argparse.PositionArgument + nargs = 2 check
+    it("knows if the user is #missing one of several arguments - 004 - flag-value argument", function()
+        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        parser:add_parameter({ name = "--foo", nargs=2})
+
+        local success, result = pcall(function() parser:parse_arguments("--foo blah") end)
+
+        assert.is_false(success)
+        assert.equal('Parameter "--foo" expects 2 values.', result)
     end)
 end)
 
