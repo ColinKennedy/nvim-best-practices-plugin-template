@@ -9,7 +9,7 @@ local argparse2 = require("plugin_template._cli.argparse2")
 
 -- TODO: Add a test for missing, required subparser
 describe("bad input", function()
-    it("knows if the user is #missing a required flag argument - 001", function()
+    it("errors if the user is #missing a required flag argument - 001", function()
         local parser = argparse2.ParameterParser.new({help="Test."})
 
         parser:add_parameter({"--foo", action="store_true", required=true})
@@ -20,7 +20,7 @@ describe("bad input", function()
         assert.equal('Parameter "--foo" must be defined.', result)
     end)
 
-    it("knows if the user is #missing a required flag argument - 002", function()
+    it("errors if the user is #missing a required flag argument - 002", function()
         local parser = argparse2.ParameterParser.new({help="Test."})
         parser:add_parameter({"thing", help="Test."})
         parser:add_parameter({"--foo", action="store_true", required=true, help="Test."})
@@ -33,7 +33,7 @@ describe("bad input", function()
         assert.equal('Parameter "--foo" must be defined.', result)
     end)
 
-    it("knows if the user is #missing a required named argument - 001", function()
+    it("errors if the user is #missing a required named argument - 001", function()
         local parser = argparse2.ParameterParser.new({help="Test."})
         parser:add_parameter({"--foo", required=true, help="Test."})
 
@@ -43,7 +43,7 @@ describe("bad input", function()
         assert.equal('Parameter "--foo" must be defined.', result)
     end)
 
-    it("knows if the user is #missing a required named argument - 002", function()
+    it("errors if the user is #missing a required named argument - 002", function()
         local parser = argparse2.ParameterParser.new({help="Test."})
         parser:add_parameter({"--foo", required=true, help="Test."})
 
@@ -53,7 +53,7 @@ describe("bad input", function()
         assert.equal('Parameter "--foo" requires 1 value.', result)
     end)
 
-    it("knows if the user is #missing a required position argument", function()
+    it("errors if the user is #missing a required position argument", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
         parser:add_parameter({ name = "foo" })
 
@@ -71,7 +71,7 @@ describe("bad input", function()
     end)
 
     -- TODO: Consider if we need this
-    -- it("knows if the user is #missing one of several arguments - 003 - position argument", function()
+    -- it("errors if the user is #missing one of several arguments - 003 - position argument", function()
     --     local parser = argparse2.ParameterParser.new({ help = "Test" })
     --     parser:add_parameter({ name = "foo", nargs=2})
     --
@@ -81,7 +81,7 @@ describe("bad input", function()
     --     assert.equal('Parameter "--foo" expects 2 values.', result)
     -- end)
 
-    it("knows if the user is #missing one of several arguments - 004 - flag-value argument", function()
+    it("errors if the user is #missing one of several arguments - 004 - flag-value argument", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
         parser:add_parameter({ name = "--foo", nargs=2})
 
