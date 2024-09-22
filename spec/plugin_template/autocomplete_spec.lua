@@ -336,13 +336,13 @@ describe("simple", function()
             "--repeat=10",
         }, parser:get_completion("say phrase --repeat=5"))
 
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 "))
+        assert.same({ "--style=", "-s=", "--help", "-h" }, parser:get_completion("say phrase --repeat=5 "))
 
         -- NOTE: Asking for repeat again will not show the value (because count == 0)
         assert.same({}, parser:get_completion("say phrase --repeat=5 --repea"))
 
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 -"))
-        assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --"))
+        assert.same({ "--style=", "-s=", "--help", "-h" }, parser:get_completion("say phrase --repeat=5 -"))
+        assert.same({ "--style=", "--help" }, parser:get_completion("say phrase --repeat=5 --"))
 
         assert.same({ "--style=" }, parser:get_completion("say phrase --repeat=5 --s"))
 
@@ -358,7 +358,7 @@ describe("simple", function()
             parser:get_completion("say phrase --repeat=5 --style=l")
         )
 
-        assert.same({}, parser:get_completion("say phrase --repeat=5 --style=lowercase"))
+        assert.same({"--style=lowercase"}, parser:get_completion("say phrase --repeat=5 --style=lowercase"))
     end)
 end)
 

@@ -507,8 +507,6 @@ local function _get_single_choices_text(parameter, value)
         return { parameter.names[1] .. "=" }
     end
 
-    value = value or ""
-
     local output = {}
 
     for _, choice in ipairs(parameter.choices({ current_value = value })) do
@@ -538,7 +536,11 @@ local function _get_matching_partial_flag_text(prefix, flags, value)
             for _, name in ipairs(parameter.names) do
                 if name == prefix then
                     if parameter:get_nargs() == 1 then
-                        vim.list_extend(output, _get_single_choices_text(parameter, value))
+                        if not value then
+                            table.insert(output, parameter.names[1] .. "=")
+                        else
+                            vim.list_extend(output, _get_single_choices_text(parameter, value))
+                        end
                     else
                         table.insert(output, name)
                     end
