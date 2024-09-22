@@ -538,7 +538,7 @@ end)
 describe("numbered count - named argument", function()
     it("works with count = 2", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
-        parser:add_parameter({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2 })
+        parser:add_parameter({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2, help = "Test." })
 
         assert.same({ "--foo=" }, parser:get_completion("--fo"))
         assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, parser:get_completion("--foo="))
@@ -551,7 +551,7 @@ end)
 describe("numbered count - named argument", function()
     it("works with count = 2", function()
         local parser = argparse2.ParameterParser.new({ help = "Test." })
-        parser:add_parameter({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2 })
+        parser:add_parameter({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2, help = "Test." })
 
         assert.same({ "--foo=" }, parser:get_completion("--fo"))
         assert.same({ "--foo=bar", "--foo=fizz", "--foo=buzz" }, parser:get_completion("--foo="))
@@ -565,7 +565,7 @@ describe("* count", function()
     describe("simple", function()
         it("works with position arguments", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ name = "thing", choices = { "foo" }, count = "*" })
+            parser:add_parameter({ name = "thing", choices = { "foo" }, count = "*", help = "Test." })
 
             assert.same({ "foo", "--help", "-h" }, parser:get_completion(""))
             assert.same({ "foo" }, parser:get_completion("fo"))
@@ -602,7 +602,7 @@ describe("dynamic argument", function()
         })
         local inner_subparsers = say_parser:add_subparsers({ destination = "thing_subparsers", help = "Test." })
         local thing = inner_subparsers:add_parser({ name = "thing_parser", help = "Inner thing." })
-        thing:add_parameter({ name = "last_thing", choices = { "another", "last" } })
+        thing:add_parameter({ name = "last_thing", choices = { "another", "last" }, help = "Test." })
 
         local dynamic = inner_subparsers:add_parser({
             name = "dynamic_thing",
@@ -618,6 +618,7 @@ describe("dynamic argument", function()
             choices = function()
                 return { "branch", "here" }
             end,
+            help = "Test.",
         })
 
         -- TODO: Improve the (default) sorting here

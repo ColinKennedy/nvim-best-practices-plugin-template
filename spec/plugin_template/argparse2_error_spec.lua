@@ -77,7 +77,7 @@ describe("bad input", function()
     describe("simple", function()
         it("does not error if there is no text and all arguments are optional", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ name = "foo", required = false })
+            parser:add_parameter({ name = "foo", required = false, help = "Test." })
 
             parser:parse_arguments("")
         end)
@@ -85,7 +85,7 @@ describe("bad input", function()
         it("errors if the user is #missing a required flag argument - 001", function()
             local parser = argparse2.ParameterParser.new({ help = "Test." })
 
-            parser:add_parameter({ "--foo", action = "store_true", required = true })
+            parser:add_parameter({ "--foo", action = "store_true", required = true, help = "Test." })
 
             local success, result = pcall(function()
                 parser:parse_arguments("")
@@ -136,7 +136,7 @@ describe("bad input", function()
 
         it("errors if the user is #missing a required position argument", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ name = "foo" })
+            parser:add_parameter({ name = "foo", help = "Test." })
 
             local success, result = pcall(function()
                 parser:parse_arguments("")
@@ -148,7 +148,7 @@ describe("bad input", function()
 
         it("ignores an optional position argument", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ name = "foo", required = false })
+            parser:add_parameter({ name = "foo", required = false, help = "Test." })
 
             parser:parse_arguments("")
         end)
@@ -166,7 +166,7 @@ describe("bad input", function()
 
         it("errors if the user is #missing one of several arguments - 004 - flag-value argument", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ name = "--foo", nargs = 2 })
+            parser:add_parameter({ name = "--foo", nargs = 2, help = "Test." })
 
             local success, result = pcall(function()
                 parser:parse_arguments("--foo blah")
@@ -178,8 +178,8 @@ describe("bad input", function()
 
         it("errors if a named argument in the middle of parse that is not given a value", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ name = "--foo", required = true })
-            parser:add_parameter({ name = "--bar" })
+            parser:add_parameter({ name = "--foo", required = true, help = "Test." })
+            parser:add_parameter({ name = "--bar", help = "Test." })
 
             local success, result = pcall(function()
                 parser:parse_arguments("--foo= --bar=thing")

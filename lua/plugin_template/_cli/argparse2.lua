@@ -1990,13 +1990,13 @@ local function _get_used_arguments_count(flag, arguments)
         -- TODO: Add support here
         error("TODO: Need to write this")
 
-        for index, argument_ in ipairs(arguments) do
-            if argument_.argument_type ~= argparse.ArgumentType.position then
-                return index
-            end
-        end
-
-        return nil
+        -- for index, argument_ in ipairs(arguments) do
+        --     if argument_.argument_type ~= argparse.ArgumentType.position then
+        --         return index
+        --     end
+        -- end
+        --
+        -- return nil
     end
 
     error("Unknown situation. This is a bug. Fix!")
@@ -2572,7 +2572,7 @@ end
 
 --- Create a child parameter so we can use it to parse text later.
 ---
----@param options argparse2.ParameterInputOptions | argparse2.ParameterOptions
+---@param options argparse2.ParameterInputOptions
 ---    All of the settings to include in the new parameter.
 ---@return argparse2.Parameter
 ---    The created `argparse2.Parameter` instance.

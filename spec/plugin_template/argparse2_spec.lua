@@ -63,7 +63,7 @@ describe("action", function()
     describe("action - append", function()
         it("simple", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ name = "--foo", action = "append", nargs = 1, count = "*" })
+            parser:add_parameter({ name = "--foo", action = "append", nargs = 1, count = "*", help = "Test." })
 
             assert.same({ foo = { "bar", "fizz", "buzz" } }, parser:parse_arguments("--foo=bar --foo=fizz --foo=buzz"))
         end)
@@ -83,6 +83,7 @@ describe("action", function()
                 end,
                 nargs = 1,
                 count = "*",
+                help = "Test.",
             })
 
             assert.same({ a = true, bb = true, ccc = true }, parser:parse_arguments("--foo=bar --foo=fizz --foo=buzz"))
@@ -92,7 +93,7 @@ describe("action", function()
     describe("action - store_false", function()
         it("simple", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ name = "--foo", action = "store_false" })
+            parser:add_parameter({ name = "--foo", action = "store_false", help = "Test." })
 
             assert.same({ foo = false }, parser:parse_arguments("--foo"))
         end)
@@ -101,7 +102,7 @@ describe("action", function()
     describe("action - store_true", function()
         it("simple", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ name = "--foo", action = "store_true" })
+            parser:add_parameter({ name = "--foo", action = "store_true", help = "Test." })
 
             assert.same({ foo = true }, parser:parse_arguments("--foo"))
         end)
@@ -117,7 +118,7 @@ describe("default", function()
 
     it("works with a #empty type", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
-        parser:add_parameter({ name = "foo" })
+        parser:add_parameter({ name = "foo", help = "Test." })
 
         local namespace = parser:parse_arguments("12")
         assert.same({ foo = "12" }, namespace)
@@ -382,6 +383,7 @@ describe("type", function()
             type = function(value)
                 return value .. "tt"
             end,
+            help = "Test.",
         })
 
         local namespace = parser:parse_arguments("12")
@@ -390,7 +392,7 @@ describe("type", function()
 
     it("works with a known type name", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
-        parser:add_parameter({ name = "foo", type = "number" })
+        parser:add_parameter({ name = "foo", type = "number", help = "Test." })
 
         local namespace = parser:parse_arguments("12")
         assert.same({ foo = 12 }, namespace)
@@ -400,7 +402,7 @@ end)
 describe("+ flags", function()
     it("works with ++double flags", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
-        parser:add_parameter({ "++foo", action = "store_true", destination = "blah" })
+        parser:add_parameter({ "++foo", action = "store_true", destination = "blah", help = "Test." })
 
         local namespace = parser:parse_arguments("++foo")
         assert.same({ blah = true }, namespace)
@@ -414,6 +416,7 @@ describe("+ flags", function()
             type = function(value)
                 return value .. "tt"
             end,
+            help = "Test.",
         })
 
         local namespace = parser:parse_arguments("++foo=12")
