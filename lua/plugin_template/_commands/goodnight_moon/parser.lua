@@ -11,7 +11,7 @@ local M = {}
 function M.make_parser()
     local parser = argparse2.ParameterParser.new({ "goodnight-moon", help = "Prepare to sleep or sleep." })
     local subparsers =
-        parser:add_subparsers({ destination = "commands", help = "All commands for goodnight-moon.", required = true })
+        parser:add_subparsers({ destination = "commands", help = "All goodnight-moon commands.", required = true })
 
     -- TODO: Finish this stuff later
     local count_sheep = subparsers:add_parser({ "count-sheep", help = "Count some sheep to help you sleep." })

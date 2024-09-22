@@ -183,3 +183,120 @@ describe("goodnight-moon commands", function()
         assert.same({ "Zzz", "Zzz", "Zzz" }, _DATA)
     end)
 end)
+
+
+describe("--help flag", function()
+    before_each(_initialize_all)
+    after_each(_reset_all)
+
+    it("works on the base parser", function()
+        vim.cmd([[PluginTemplate --help]])
+
+        assert.same({
+[[
+Usage: PluginTemplate {arbitrary-thing, copy-logs, goodnight-moon, hello-world} [--help]
+
+Positional Arguments:
+    arbitrary-thing    Prepare to sleep or sleep.
+    copy-logs    Get debug logs for PluginTemplate.
+    goodnight-moon    Prepare to sleep or sleep.
+    hello-world    Print hello to the user.
+
+Options:
+    --help -h    Show this help message and exit.
+]],
+        }, _DATA)
+    end)
+
+    it("works on a nested subparser - 001", function()
+        vim.cmd([[PluginTemplate hello-world say --help]])
+
+        assert.same({
+[[
+Usage: say {phrase, word} [--help]
+
+Positional Arguments:
+    phrase    Print everything that the user types.
+    word    Print only the first word that the user types.
+
+Options:
+    --help -h    Show this help message and exit.
+]],
+        }, _DATA)
+    end)
+
+    it("works on a nested subparser - 002 #asdf", function()
+        vim.cmd([[PluginTemplate hello-world say phrase --help]])
+
+        assert.same({
+[[
+Usage: phrase phrases [--repeat] [--style] [--help]
+
+Positional Arguments:
+   phrases    All of the text to print.
+
+Options:
+   --repeat -r    Print to the user X number of times (default=1).
+   --style -s    lowercase modifies all capital letters. uppercase modifies all non-capital letter.
+   --help -h    Show this help message and exit.
+]],
+        }, _DATA)
+    end)
+
+    it("works on a nested subparser - 003", function()
+        vim.cmd([[PluginTemplate hello-world say word --help]])
+
+        assert.same({
+[[
+Usage: word word [--repeat] [--style] [--help]
+
+Positional Arguments:
+   word    The word to print.
+
+Options:
+   --repeat -r    Print to the user X number of times (default=1).
+   --style -s    lowercase modifies all capital letters. uppercase modifies all non-capital letter.
+   --help -h    Show this help message and exit.
+]],
+        }, _DATA)
+    end)
+
+    it("works on the subparsers", function()
+        vim.cmd([[PluginTemplate arbitrary-thing --help]])
+
+        assert.same({
+[[
+Usage: arbitrary-thing [-a] [-b] [-c] [-f] [-v] [--help]
+
+Options:
+   -a
+   -b
+   -c
+   -f
+   -v
+   --help -h    Show this help message and exit.
+]],
+        }, _DATA)
+
+        vim.cmd([[PluginTemplate copy-logs --help]])
+
+        assert.same({
+[[
+]],
+        }, _DATA)
+
+        vim.cmd([[PluginTemplate goodnight-moon --help]])
+
+        assert.same({
+[[
+]],
+        }, _DATA)
+
+        vim.cmd([[PluginTemplate hello-world --help]])
+
+        assert.same({
+[[
+]],
+        }, _DATA)
+    end)
+end)

@@ -302,7 +302,7 @@ describe("simple", function()
         -- assert.same({ "--style=" }, parser:get_completion("--sty"))
     end)
 
-    it("works with a basic multi-position example #asdf", function()
+    it("works with a basic multi-position example", function()
         local parser = _make_simple_parser()
 
         -- NOTE: Simple examples

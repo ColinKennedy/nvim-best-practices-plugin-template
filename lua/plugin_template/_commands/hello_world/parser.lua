@@ -64,7 +64,7 @@ end
 function M.make_parser()
     local parser = argparse2.ParameterParser.new({ "hello-world", help = "Print hello to the user." })
     local top_subparsers =
-        parser:add_subparsers({ destination = "commands", help = "All allowed commands.", required = true })
+        parser:add_subparsers({ destination = "commands", help = "All hello-world commands.", required = true })
     --- @cast top_subparsers argparse2.Subparsers
 
     local say = top_subparsers:add_parser({ "say", help = "Print something to the user." })

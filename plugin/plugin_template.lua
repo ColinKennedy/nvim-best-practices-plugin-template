@@ -4,36 +4,32 @@ local cli_subcommand = require("plugin_template._cli.cli_subcommand")
 
 local _PREFIX = "PluginTemplate"
 
----@type plugin_template.Subcommands
-local _SUBCOMMANDS = {
-    ["arbitrary-thing"] = function()
-        local parser = require("plugin_template._commands.arbitrary_thing.parser")
+---@type plugin_template.ParserCreator
+local _SUBCOMMANDS = function()
+    local arbitrary_thing = require("plugin_template._commands.arbitrary_thing.parser")
+    local argparse2 = require("plugin_template._cli.argparse2")
+    local copy_logs = require("plugin_template._commands.copy_logs.parser")
+    local goodnight_moon = require("plugin_template._commands.goodnight_moon.parser")
+    local hello_world = require("plugin_template._commands.hello_world.parser")
 
-        return parser.make_parser()
-    end,
-    ["copy-logs"] = function()
-        local parser = require("plugin_template._commands.copy_logs.parser")
+    local root_parser = argparse2.ParameterParser.new({ help = "The root of all commands." })
+    local root_subparsers = root_parser:add_subparsers({"command", help="All root commands."})
 
-        return parser.make_parser()
-    end,
-    ["goodnight-moon"] = function()
-        local parser = require("plugin_template._commands.goodnight_moon.parser")
+    local parser = root_subparsers:add_parser({ name = _PREFIX, help = "The starting command." })
+    local subparsers = parser:add_subparsers({"commands", help="All runnable commands."})
 
-        return parser.make_parser()
-    end,
-    ["hello-world"] = function()
-        local parser = require("plugin_template._commands.hello_world.parser")
+    subparsers:add_parser(arbitrary_thing.make_parser())
+    subparsers:add_parser(copy_logs.make_parser())
+    subparsers:add_parser(goodnight_moon.make_parser())
+    subparsers:add_parser(hello_world.make_parser())
 
-        return parser.make_parser()
-    end,
-}
+    return root_parser
+end
 
-cli_subcommand.initialize_missing_values(_SUBCOMMANDS)
-
-vim.api.nvim_create_user_command(_PREFIX, cli_subcommand.make_triager(_SUBCOMMANDS), {
-    nargs = "+",
+vim.api.nvim_create_user_command(_PREFIX, cli_subcommand.make_parser_triager(_SUBCOMMANDS), {
+    nargs = "*",
     desc = "PluginTemplate's command API.",
-    complete = cli_subcommand.make_command_completer(_PREFIX, _SUBCOMMANDS),
+    complete = cli_subcommand.make_parser_completer(_SUBCOMMANDS),
 })
 
 vim.keymap.set("n", "<Plug>(PluginTemplateSayHi)", function()

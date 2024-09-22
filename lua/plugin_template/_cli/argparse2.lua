@@ -496,7 +496,7 @@ end
 ---@param parameter argparse2.Parameter
 ---    A parameter that (we assume) takes exactly one value that we need
 ---    auto-completion options for.
----@param value string?
+---@param value string
 ---    The user-provided (exact or partial) value for the flag / named argument
 ---    value, if any. e.g. the `"bar"` part of `"--foo=bar"`.
 ---@return string[]
@@ -1280,14 +1280,32 @@ function M.Subparsers.new(options)
     return self
 end
 
+--- Check if `object` is a `argparse2.ParameterParser`.
+---
+---@param object any Anything.
+---@return boolean # If match, return `true`.
+---
+local function _is_parser(object)
+    return object._flag_parameters ~= nil
+end
+
 --- Create a new `argparse2.ParameterParser` using `options`.
 ---
----@param options argparse2.ParameterParserInputOptions | argparse2.ParameterParserOptions
+---@param options argparse2.ParameterParserInputOptions | argparse2.ParameterParserOptions | argparse2.ParameterParser
 ---    The options to pass to `argparse2.ParameterParser.new`.
 ---@return argparse2.ParameterParser
 ---    The created parser.
 ---
 function M.Subparsers:add_parser(options)
+    if _is_parser(options) then
+        ---@cast options argparse2.ParameterParser
+        options:set_parent(self)
+        table.insert(self._parsers, options)
+
+        return options
+    end
+
+    ---@cast options argparse2.ParameterParserInputOptions | argparse2.ParameterParserOptions
     local new_options = vim.tbl_deep_extend("force", options, { parent = self })
     local parser = M.ParameterParser.new(new_options)
 
@@ -1389,14 +1407,17 @@ end
 function M.Parameter:set_action(action)
     if action == "store_false" then
         action = function(data)
+            ---@cast data argparse2.ActionData
             data.namespace[data.name] = false
         end
     elseif action == "store_true" then
         action = function(data)
+            ---@cast data argparse2.ActionData
             data.namespace[data.name] = true
         end
     elseif action == "count" then
         action = function(data)
+            ---@cast data argparse2.ActionData
             local name = data.name
             local namespace = data.namespace
 
@@ -1408,6 +1429,7 @@ function M.Parameter:set_action(action)
         end
     elseif action == "append" then
         action = function(data)
+            ---@cast data argparse2.ActionData
             local name = data.name
             local namespace = data.namespace
 
@@ -1421,6 +1443,7 @@ function M.Parameter:set_action(action)
         action = action
     else
         action = function(data)
+            ---@cast data argparse2.ActionData
             data.namespace[data.name] = data.value
         end
     end
@@ -1483,14 +1506,31 @@ function M.ParameterParser.new(options)
     self._subparsers = {}
     self._parent = options.parent
 
-    self:add_parameter({
-        action = "store_true",
+    self._implicit_flag_parameters = { }
+    self:_add_help_parameter()
+
+    return self
+end
+
+--- Make a `--help` parameter and add it to this current instance.
+function M.ParameterParser:_add_help_parameter()
+    local parameter = self:add_parameter({
+        action = function(data)
+            data.namespace.execute = function(...)
+                vim.notify(self:get_full_help(""), vim.log.levels.INFO)
+            end
+        end,
         help = "Show this help message and exit.",
         names = { "--help", "-h" },
         nargs = 0,
     })
 
-    return self
+    -- NOTE: `self:add_parameter` just added the help flag to
+    -- `self._flag_parameters` so we need to remove it (so we can add it
+    -- somewhere else).
+    --
+    table.remove(self._flag_parameters)
+    table.insert(self._implicit_flag_parameters, parameter)
 end
 
 --- Find the child parser that matches `name`.
@@ -1578,13 +1618,14 @@ function M.ParameterParser:_get_completion(data, column)
 
     local parser, index = self:_compute_matching_parsers(stripped.arguments)
     local finished = index == #stripped.arguments - 1
-    local last = stripped.arguments[#stripped.arguments]
-    local last_name = _get_argument_name(last)
-    local last_value = _get_argument_value_text(last)
 
     if not finished then
         error("TODO: Add support for this, somehow")
     end
+
+    local last = stripped.arguments[#stripped.arguments]
+    local last_name = _get_argument_name(last)
+    local last_value = _get_argument_value_text(last)
 
     if remainder == "" then
         vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
@@ -1727,14 +1768,44 @@ function M.ParameterParser:_get_leaf_parser(data)
 end
 
 ---@return string # A one/two liner explanation of this instance's expected parameters.
-function M.ParameterParser._get_usage_summary(parser)
-    local text = {}
+function M.ParameterParser:_get_usage_summary(parser)
 
-    for _, position in ipairs(parser:get_position_parameters()) do
-        table.insert(text, _get_position_help_text(position))
+    ---@return string[] # All parser names, if any are defined.
+    local function _get_child_parser_names()
+        return vim.iter(_iter_parsers(self)):map(function(parser) return parser:get_names()[1] end):totable()
     end
 
-    for _, flag in ipairs(_sort_parameters(parser:get_flag_parameters())) do
+    local text = {}
+
+    local names = parser:get_names()
+
+    if #names == 1 then
+        table.insert(text, names[1])
+    else
+        if not vim.tbl_isempty(names) then
+            table.insert(text, _get_help_command_labels(names))
+        end
+    end
+
+    for _, position in ipairs(parser:get_position_parameters()) do
+        if position.choices then
+            table.insert(text, _get_help_command_labels(position.choices()))
+        else
+            table.insert(text, position:get_nice_name())
+        end
+    end
+
+    for _, flag in ipairs(_sort_parameters(parser:get_flag_parameters({hide_implicits=true}))) do
+        table.insert(text, string.format("[%s]", flag:get_raw_name()))
+    end
+
+    local parser_names = _get_child_parser_names()
+
+    if not vim.tbl_isempty(parser_names) then
+        table.insert(text, string.format("{%s}", vim.fn.join(vim.fn.sort(parser_names), ", ")))
+    end
+
+    for _, flag in ipairs(_sort_parameters(parser:get_implicit_flag_parameters())) do
         table.insert(text, string.format("[%s]", flag:get_raw_name()))
     end
 
@@ -2087,9 +2158,8 @@ function M.ParameterParser:get_concise_help(data)
     end
 
     local parser = self:_get_leaf_parser(data)
-    local result = M.ParameterParser._get_usage_summary(parser)
 
-    return result .. "\n"
+    return self:_get_usage_summary(parser)
 end
 
 --- Get all of information on how to run the CLI.
@@ -2106,7 +2176,7 @@ function M.ParameterParser:get_full_help(data)
     end
 
     local parser = self:_get_leaf_parser(data)
-    local summary = M.ParameterParser._get_usage_summary(parser)
+    local summary = self:_get_usage_summary(parser)
 
     local position_text = _get_parser_position_help_text(parser)
     local flag_text = _get_parser_flag_help_text(parser)
@@ -2126,9 +2196,36 @@ function M.ParameterParser:get_full_help(data)
     return output
 end
 
----@return argparse2.Parameter[] # Get all arguments that can be placed in any order.
-function M.ParameterParser:get_flag_parameters()
-    return self._flag_parameters
+
+--- The flags that a user didn't add to the parser but are included anyway.
+---
+---@return argparse2.Parameter[]
+---
+function M.ParameterParser:get_implicit_flag_parameters()
+    return self._implicit_flag_parameters
+end
+
+
+--- Get the `--foo` style parameters from this instance.
+---
+---@param options {hide_implicits: boolean?}
+---    If `hide_implicits` is true, only the flag parameters that a user
+---    explicitly added are returned. If `false` or not defined, all flags are
+---    returned.
+---@return argparse2.Parameter[]
+---    Get all arguments that can be placed in any order.
+---
+function M.ParameterParser:get_flag_parameters(options)
+    if options and options.hide_implicits then
+        return self._flag_parameters
+    end
+
+    local output = {}
+
+    vim.list_extend(output, self._flag_parameters)
+    vim.list_extend(output, self._implicit_flag_parameters)
+
+    return output
 end
 
 ---@return string[] # Get all of the (initial) auto-complete options for this instance.
@@ -2225,6 +2322,11 @@ end
 ---
 function M.ParameterParser:set_execute(caller)
     self._defaults.execute = caller
+end
+
+-- TODO: Consider making _parent public.
+function M.ParameterParser:set_parent(parser)
+    self._parent = parser
 end
 
 return M

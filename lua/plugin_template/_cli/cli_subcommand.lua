@@ -35,6 +35,8 @@ local M = {}
 ---@field parsed_arguments argparse.ArgparseResults
 ---    The parsed arguments (that the user is now trying to execute some function with).
 
+---@alias plugin_template.ParserCreator fun(): argparse2.ParameterParser
+
 ---@alias plugin_template.Subcommands table<string, plugin_template.Subcommand | fun(): argparse2.ParameterParser>
 
 --- Check if `full` contains `prefix` + whitespace.
@@ -172,16 +174,77 @@ local function _strip_prefix(prefix, text)
     return (text:gsub("^" .. vim.pesc(prefix) .. "%s*", ""))
 end
 
---- Create a function that implements "Vim COMMAND mode auto-complete".
+--- If anything in `subcommands` is missing data, define default value(s) for it.
 ---
---- Basically it's a function that returns a function that makes `:PluginTemplate
---- hello` auto-complete to makes `:PluginTemplate hello-world`.
+---@param subcommands plugin_template.Subcommands
+---    All registered commands for `plugin_template` to possibly modify.
+---
+function M.initialize_missing_values(subcommands)
+    if type(subcommands) == "table" then
+        for _, subcommand in pairs(subcommands) do
+            if type(subcommand) == "table" and not subcommand.complete then
+                subcommand.complete = function()
+                    return {}
+                end
+            end
+        end
+    end
+end
+
+--- Create a deferred function that can parse and execute a user's arguments.
+---
+---@param parser_creator plugin_template.ParserCreator
+---    A function that creates the decision tree that parses text.
+---@return fun(opts: table): nil
+---    A function that will parse the user's arguments.
+---
+function M.make_parser_triager(parser_creator)
+    local function runner(opts)
+        local argparse = require("plugin_template._cli.argparse")
+
+        local text = opts.name ..  " " .. opts.args
+        local arguments = argparse.parse_arguments(text)
+        local parser = parser_creator()
+        local namespace = parser:parse_arguments(arguments)
+
+        if namespace.execute then
+            -- TODO: Make sure this has the right type-hint
+            namespace.execute({ input = arguments, namespace = namespace })
+            return
+        end
+
+        vim.notify(parser:get_concise_help(text), vim.log.levels.ERROR)
+    end
+
+    return runner
+end
+
+--- Make a function that can auto-complete based on the parser of `parser_creator`.
+---
+---@param parser_creator plugin_template.ParserCreator
+---    A function that creates the decision tree that parses text.
+---@return fun(_: any, all_text: string, _: any): string[]?
+---    A deferred function that creates the COMMAND mode parser, runs it, and
+---    gets all auto-complete values back if any were found.
+---
+function M.make_parser_completer(parser_creator)
+    local function runner(_, all_text, _)
+        local parser = parser_creator()
+        local column = vim.fn.getcmdpos()
+
+        return parser:get_completion(all_text, column)
+    end
+
+    return runner
+end
+
+--- Use `subcommands` to make a COMMAND mode auto-completer.
 ---
 ---@param prefix string The command to exclude from auto-complete. e.g. `"PluginTemplate"`.
 ---@param subcommands plugin_template.Subcommands All allowed commands.
 ---@return fun(latest_text: string, all_text: string): string[]? # The generated auto-complete function.
 ---
-function M.make_command_completer(prefix, subcommands)
+function M.make_subcommand_completer(prefix, subcommands)
     local function runner(latest_text, all_text, _)
         local configuration = require("plugin_template._core.configuration")
         configuration.initialize_data_if_needed()
@@ -211,37 +274,14 @@ function M.make_command_completer(prefix, subcommands)
     return runner
 end
 
---- If anything in `subcommands` is missing data, define default value(s) for it.
+--- Create a deferred function that creates separate parsers for each subcommand.
 ---
----@param subcommands plugin_template.Subcommands
----    All registered commands for `plugin_template` to possibly modify.
+---@param subcommands plugin_template.Subcommands Each subcommand to register.
+---@return fun(opts: table): nil # A function that will parse the user's arguments.
 ---
-function M.initialize_missing_values(subcommands)
-    for _, subcommand in pairs(subcommands) do
-        if type(subcommand) == "table" and not subcommand.complete then
-            subcommand.complete = function()
-                return {}
-            end
-        end
-    end
-end
-
---- Wrap the `plugin_template` CLI / API in a way Neovim understands.
----
---- Since `:PluginTemplate` supports multiple sub-commands like `:PluginTemplate
---- hello-world` and `:PluginTemplate goodnight-moon`, something has to make sure
---- that the right Lua function gets called depending on what the user asks for.
----
---- This function handles that process, which we call "triage".
----
----@param subcommands plugin_template.Subcommands
----    All registered commands for `plugin_template` which we will let users run.
----    If the user gives an incorrect subcommand name, an error is displayed instead.
----
-function M.make_triager(subcommands)
+function M.make_subcommand_triager(subcommands)
     --- Check for a subcommand and, if found, call its `run` caller field.
     ---
-    --- @source `:h lua-guide-commands-create`
     ---
     --- @param opts table
     ---
