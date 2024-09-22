@@ -1580,107 +1580,106 @@ function M.ParameterParser:_get_completion(data, column)
     local last_name = _get_argument_name(last)
     local last_value = _get_argument_value_text(last)
 
-    if finished then
-        if remainder == "" then
-
-            vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
-
-            if parser:is_satisfied() then
-                for parser_ in _iter_parsers(parser) do
-                    vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
-                end
-            end
-
-            return output
-        end
-
-        -- if not parsers then
-        --     -- NOTE: Something went wrong during parsing. We don't know where
-        --     -- the user is in the tree so we need to exit early.
-        --     --
-        --     -- TODO: Check if this situation actually happens in the unittests.
-        --     -- If so, add a log.
-        --     --
-        --     return {}
-        -- end
-
-        local child_parser = _get_exact_subparser_child(last_name, parser)
-
-        if child_parser then
-            parser = child_parser
-        else
-            local next_index = index + 1
-            local argument_name = _get_argument_name(stripped.arguments[next_index])
-
-            -- NOTE: If the last argument isn't a parser then it has to be
-            -- a argument that matches a parameter. Find it and make sure
-            -- that parameter calls `increment_used()`!
-            --
-            _compute_and_increment_parameter(
-                parser,
-                argument_name,
-                tabler.get_slice(stripped.arguments, next_index)
-            )
-
-            -- local found = _compute_and_increment_parameter(...
-            -- if not found then
-            --     -- TODO: Need to handle this case. Not sure how. Error?
-            -- end
-        end
-
-        return _get_next_parameters_from_remainder(parser, remainder)
-    else
+    if not finished then
         error("TODO: Add support for this, somehow")
     end
 
-    -- TODO: Make this all into a function. Simplify the code
-    vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
+    if remainder == "" then
+        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
 
-    if not _is_whitespace(last_name) then
-        for parser_ in _iter_parsers(parser) do
-            vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+        if parser:is_satisfied() then
+            for parser_ in _iter_parsers(parser) do
+                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+            end
         end
+
+        return output
     end
 
-    vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
+    -- if not parsers then
+    --     -- NOTE: Something went wrong during parsing. We don't know where
+    --     -- the user is in the tree so we need to exit early.
+    --     --
+    --     -- TODO: Check if this situation actually happens in the unittests.
+    --     -- If so, add a log.
+    --     --
+    --     return {}
+    -- end
 
-    -- TODO: Move to a function later
-    -- NOTE: This case is for when there are multiple child parsers with
-    -- similar names. e.g. `get-asset` & `get-assets` might both auto-complete here.
-    --
-    local parent_parser = parser:get_parent_parser()
-    if parent_parser and not _is_whitespace(last_name) then
-        for parser_ in _iter_parsers(parent_parser) do
-            vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
-        end
+    local child_parser = _get_exact_subparser_child(last_name, parser)
+
+    if child_parser then
+        parser = child_parser
+    else
+        local next_index = index + 1
+        local argument_name = _get_argument_name(stripped.arguments[next_index])
+
+        -- NOTE: If the last argument isn't a parser then it has to be
+        -- a argument that matches a parameter. Find it and make sure
+        -- that parameter calls `increment_used()`!
+        --
+        _compute_and_increment_parameter(
+            parser,
+            argument_name,
+            tabler.get_slice(stripped.arguments, next_index)
+        )
+
+        -- local found = _compute_and_increment_parameter(...
+        -- if not found then
+        --     -- TODO: Need to handle this case. Not sure how. Error?
+        -- end
     end
 
-    output = vim.fn.sort(output)
+    return _get_next_parameters_from_remainder(parser, remainder)
 
-    -- local remainder = stripped.remainder.value
+    -- -- TODO: Make this all into a function. Simplify the code
+    -- vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
     --
-    -- local output = {}
-    --
-    -- local last = stripped.arguments[#stripped.arguments]
-    -- local last_name = _get_argument_name(last)
-
-    -- if remainder == "" then
-    --     -- TODO: There's a bug here. We may not be able to assume the last argument like this
-    --     local last = stripped.arguments[#stripped.arguments]
-    --     local last_name = _get_argument_name(last)
-    --     output = _get_matching_position_parameters(last_name, parser)
-    --     output = vim.fn.sort(output)
-    --
-    --     return output
+    -- if not _is_whitespace(last_name) then
+    --     for parser_ in _iter_parsers(parser) do
+    --         vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+    --     end
     -- end
     --
-    -- vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(parser, remainder)))
+    -- vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
     --
-    -- for parameter in tabler.chain(_sort_parameters(parser._flag_parameters)) do
-    --     table.insert(output, parameter:get_raw_name())
+    -- -- TODO: Move to a function later
+    -- -- NOTE: This case is for when there are multiple child parsers with
+    -- -- similar names. e.g. `get-asset` & `get-assets` might both auto-complete here.
+    -- --
+    -- local parent_parser = parser:get_parent_parser()
+    -- if parent_parser and not _is_whitespace(last_name) then
+    --     for parser_ in _iter_parsers(parent_parser) do
+    --         vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+    --     end
     -- end
-
-    return output
+    --
+    -- output = vim.fn.sort(output)
+    --
+    -- -- local remainder = stripped.remainder.value
+    -- --
+    -- -- local output = {}
+    -- --
+    -- -- local last = stripped.arguments[#stripped.arguments]
+    -- -- local last_name = _get_argument_name(last)
+    --
+    -- -- if remainder == "" then
+    -- --     -- TODO: There's a bug here. We may not be able to assume the last argument like this
+    -- --     local last = stripped.arguments[#stripped.arguments]
+    -- --     local last_name = _get_argument_name(last)
+    -- --     output = _get_matching_position_parameters(last_name, parser)
+    -- --     output = vim.fn.sort(output)
+    -- --
+    -- --     return output
+    -- -- end
+    -- --
+    -- -- vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(parser, remainder)))
+    -- --
+    -- -- for parameter in tabler.chain(_sort_parameters(parser._flag_parameters)) do
+    -- --     table.insert(output, parameter:get_raw_name())
+    -- -- end
+    --
+    -- return output
 end
 
 ---@return argparse2.Namespace # All default values from all (direct) child parameters.
