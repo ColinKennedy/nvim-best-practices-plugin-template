@@ -6,6 +6,9 @@ https://github.com/cwshugg/argonaut.vim
 "foo requires a value"
 "foo needs to be used 3 times (you used it 2 times)"
 
+
+- Make sure that the `help` value is included in the `--help`
+
 etc
 - Make sure that positions-with-choices display differently from positions that can take any text
 

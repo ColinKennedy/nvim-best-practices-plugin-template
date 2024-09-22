@@ -108,37 +108,6 @@ describe("action", function()
     end)
 end)
 
-describe("bad input", function()
-    it("knows if the user is #missing a required flag argument", function()
-        -- TODO: Finish
-    end)
-
-    it("knows if the user is #missing a required named argument", function()
-        -- TODO: Finish
-    end)
-
-    it("knows if the user is #missing a required position argument", function()
-        -- TODO: Finish
-        -- local parser = argparse2.ParameterParser.new({ help = "Test" })
-        -- parser:add_parameter({ name = "foo" })
-        --
-        -- -- TODO: Finish
-        -- assert.same({ "ASDADSASDADS" }, parser:get_errors(""))
-    end)
-
-    it("knows if the user is #missing an argument - 001", function()
-        -- TODO: Add argparse.NamedArgument check
-    end)
-
-    it("knows if the user is #missing an argument - 002", function()
-        -- TODO: Add argparse.FlagArgument + argparse.PositionArgument check
-    end)
-
-    it("knows if the user is #missing one of several argumentis - 003", function()
-        -- TODO: Add argparse.FlagArgument + argparse.PositionArgument + nargs = 2 check
-    end)
-end)
-
 describe("default", function()
     it("works with a #default", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
