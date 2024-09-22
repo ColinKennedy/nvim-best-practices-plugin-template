@@ -8,7 +8,12 @@ local argparse2 = require("plugin_template._cli.argparse2")
 -- TODO: Allow ++foo arguments instead of --
 
 ---@return argparse2.ParameterParser # Create a tree of commands for unittests.
-local function _make_simple_parser()
+
+--- Add `--repeat=` to `parser`.
+---
+---@param parser argparse2.ParameterParser Some tree to add a new parameter.
+---
+local function _add_repeat_parameter(parser)
     local choices = function(data)
         --- @cast data argparse2.ChoiceData?
 
@@ -35,22 +40,27 @@ local function _make_simple_parser()
         return output
     end
 
-    local function _add_repeat_parameter(parser)
-        parser:add_parameter({
-            names = { "--repeat", "-r" },
-            choices = choices,
-            help = "The number of times to display the message.",
-        })
-    end
+    parser:add_parameter({
+        names = { "--repeat", "-r" },
+        choices = choices,
+        help = "The number of times to display the message.",
+    })
+end
 
-    local function _add_style_parameter(parser)
-        parser:add_parameter({
-            names = { "--style", "-s" },
-            choices = { "lowercase", "uppercase" },
-            help = "The format of the message.",
-        })
-    end
+--- Add `--style=` to `parser`.
+---
+---@param parser argparse2.ParameterParser Some tree to add a new parameter.
+---
+local function _add_style_parameter(parser)
+    parser:add_parameter({
+        names = { "--style", "-s" },
+        choices = { "lowercase", "uppercase" },
+        help = "The format of the message.",
+    })
+end
 
+---@return argparse2.ParameterParser # Create a `say {phrase,word} [--repeat --style]`.
+local function _make_simple_parser()
     local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
     local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
     local say = subparsers:add_parser({ name = "say", help = "Print stuff to the terminal." })
@@ -317,17 +327,10 @@ describe("named argument", function()
         assert.same({}, parser:get_completion("sty"))
     end)
 
-    -- TODO: Fix at some point
     -- it("auto-completes on the dashes - 001", function()
-    --     local parser = {
-    --         {
-    --             option_type = completion.OptionType.named,
-    --             name = "style",
-    --             choices = { "lowercase", "uppercase" },
-    --         },
-    --     }
+    --     local parser = _make_style_parser()
     --
-    --     assert.same({ "--style=" }, parser:get_completion("-"), 1))
+    --     assert.same({ "--style=" }, parser:get_completion("-"))
     -- end)
     --
     -- it("auto-completes on the dashes - 002", function()

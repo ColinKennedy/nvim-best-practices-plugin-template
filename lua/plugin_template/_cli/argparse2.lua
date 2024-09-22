@@ -1549,11 +1549,16 @@ function M.ParameterParser:_get_completion(data, column)
 
     if vim.tbl_isempty(stripped.arguments) then
         if not _is_whitespace(remainder) then
+            vim.list_extend(
+                output,
+                _get_matching_partial_flag_text(remainder, self:get_flag_parameters())
+            )
+
             -- NOTE: If there was unparsed text then it means that the user is
             -- in the middle of an argument. We don't waot to show completion
             -- options in that situation.
             --
-            return {}
+            return output
         end
 
         -- NOTE: Get all possible initial arguments
