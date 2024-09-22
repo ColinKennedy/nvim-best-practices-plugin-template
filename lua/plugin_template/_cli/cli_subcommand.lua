@@ -205,11 +205,21 @@ function M.make_parser_triager(parser_creator)
         local text = opts.name ..  " " .. opts.args
         local arguments = argparse.parse_arguments(text)
         local parser = parser_creator()
-        local namespace = parser:parse_arguments(arguments)
+        local success, result = pcall(function() return parser:parse_arguments(arguments) end)
 
-        if namespace.execute then
+        if not success then
+            ---@cast result string The error message.
+            vim.notify(result, vim.log.levels.ERROR)
+
+            return
+        end
+
+        ---@cast result argparse2.Namespace The found values.
+
+        if result.execute then
             -- TODO: Make sure this has the right type-hint
-            namespace.execute({ input = arguments, namespace = namespace })
+            result.execute({ input = arguments, namespace = result })
+
             return
         end
 

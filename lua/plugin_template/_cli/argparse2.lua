@@ -53,7 +53,7 @@ local texter = require("plugin_template._core.texter")
 ---    When a parsed `argparse2.Namespace` is created, this field is used to store
 ---    the final parsed value(s). If no `destination` is given an
 ---    automatically assigned name is used instead.
----@field help string?
+---@field help string
 ---    Explain what this parser is meant to do and the parameter(s) it needs.
 ---    Keep it brief (< 88 characters).
 ---@field name? string
@@ -123,6 +123,9 @@ local _ZERO_OR_MORE = "*"
 
 local _FULL_HELP_FLAG = "--help"
 local _SHORT_HELP_FLAG = "-h"
+
+local _ActionConstant = { count = "count", store_false = "store_false", store_true = "store_true" }
+local _FLAG_ACTIONS = {_ActionConstant.count, _ActionConstant.store_false, _ActionConstant.store_true}
 
 ---@class argparse2.Parameter
 ---    An optional / required parameter for some parser.
@@ -1206,6 +1209,10 @@ local function _expand_parameter_options(options, is_position)
             options.required = false
         end
     end
+
+    if vim.tbl_contains(_FLAG_ACTIONS, options.action) and options.nargs == nil then
+        options.nargs = 0
+    end
 end
 
 --- Combined `namespace` with all other `...` namespaces.
@@ -1415,6 +1422,8 @@ end
 function M.Parameter:get_action()
     return self._action
 end
+
+-- TODO: Consider removing this method
 
 ---@return argparse2.MultiNumber # The number of elements that this argument consumes at once.
 function M.Parameter:get_nargs()
@@ -1894,29 +1903,212 @@ function M.ParameterParser:_get_usage_summary(parser)
     return string.format("Usage: %s", vim.fn.join(output, " "))
 end
 
+--- Check if `parameter` can use `arguments`.
+---
+---@param parameter argparse2.Parameter
+---    Any position / flag / named parameter.
+---@param arguments argparse.ArgparseArgument[]
+---    All of the values that we will consider applying to `parameter`.
+---@return string?
+---    A found issue, if any.
+---
+local function _get_nargs_related_issue(parameter, arguments)
+    local nargs = parameter:get_nargs()
+
+    -- TODO: Need to check for nargs=+ here. And need unittest for it
+    -- TODO: Need to handle expressions, probably
+
+    if type(nargs) == "number" then
+        if nargs == 0 then
+            return nil
+        end
+
+        if nargs > #arguments then
+            return string.format(
+                'Parameter "%s" expects "%s" values.',
+                parameter.names[1],
+                nargs
+            )
+        end
+
+        if nargs == 1 then
+            local argument = arguments[1]
+
+            if argument.argument_type == argparse.ArgumentType.named then
+                return nil
+            end
+
+            -- TODO: Not sure what to do here just yet.
+            if vim.tbl_contains({argparse.ArgumentType.flag, argparse.ArgumentType.named}, arguments[2]) then
+                return "TODO Check if we need this implementation."
+            end
+
+            return nil
+        end
+
+        for index=1, nargs do
+            local argument = arguments[index]
+
+            if argument.argument_type == argparse.ArgumentType.flag or argument.argument_type == argparse.ArgumentType.named then
+                return string.format(
+                    'Parameter "%s" requires "%s" values. Got "%s" values.',
+                    parameter.names[1],
+                    nargs,
+                    index
+                )
+            end
+
+            if index == nargs then
+                return nil
+            end
+        end
+    end
+
+    return nil
+end
+
+--- Use `flag` to scan `arguments` for values to use / parse.
+---
+--- Note:
+---     The first argument in `arguments` could literally be equivalent to
+---     `flag` (and often is. e.g. named arguments like `--foo=bar`).
+---
+--- Raises:
+---     This function is partially implemented. Some corner cases might raise an error.
+---
+---@param flag argparse2.Parameter
+---@param arguments argparse.ArgparseArgument[] All of the possible to consider.
+---@return number # All consecutive `arguments` to include.
+---
+local function _get_used_arguments_count(flag, arguments)
+    local argument = arguments[1]
+
+    if argument.argument_type == argparse.ArgumentType.named then
+        return 1
+    end
+
+    local nargs = flag:get_nargs()
+
+    if type(nargs) == "number" then
+        return nargs
+    end
+
+    if nargs == _ONE_OR_MORE or nargs == _ZERO_OR_MORE then
+        -- TODO: Add support here
+        error("TODO: Need to write this")
+
+        for index, argument in ipairs(arguments) do
+            if argument.argument_type ~= argparse.ArgumentType.position then
+                return index
+            end
+        end
+
+        return nil
+    end
+
+    error("Unknown situation. This is a bug. Fix!")
+end
+
+--- Raise an error if `arguments` are not valid input for `flag`.
+---
+--- Raises:
+---     If an issue is found.
+---
+---@param flag argparse2.Parameter
+---    A parser option e.g. `--foo` or `--foo=bar`.
+---@param arguments argparse.ArgparseArgument[]
+---    The arguments to match against `flags`. If a match is found, the
+---    remainder of the arguments are treated as **values** for the found
+---    parameter.
+---
+local function _validate_flag(flag, arguments)
+    local argument = arguments[1]
+
+    if argument.argument_type == argparse.ArgumentType.named then
+        if not argument.value or argument.value == "" then
+            error(string.format('Parameter "%s" requires 1 value.', argument.name), 0)
+        end
+    end
+
+    local issue = _get_nargs_related_issue(flag, arguments)
+
+    if issue then
+        error(issue, 0)
+    end
+end
+
 --- Add `flags` to `namespace` if they match `argument`.
 ---
----@param flags argparse2.Parameter[] All `-f=asdf`, `--foo=asdf`, etc parameters to check.
----@param argument argparse.FlagArgument | argparse.NamedArgument The argument to check for `flags` matches.
----@param namespace argparse2.Namespace # A container for the found match(es).
----@return boolean # If a match was found, return `true`.
+--- Raises:
+---     If a flag is found and a value is expected but we fail to get a value for it.
 ---
-function M.ParameterParser:_handle_exact_flag_parameters(flags, argument, namespace)
+---@param flags argparse2.Parameter[]
+---    All `-f`, `--foo`, `-f=asdf`, and `--foo=asdf`, parameters to check.
+---@param arguments argparse.ArgparseArgument[]
+---    The arguments to match against `flags`. If a match is found, the
+---    remainder of the arguments are treated as **values** for the found
+---    parameter.
+---@param namespace argparse2.Namespace
+---    A container for the found match(es).
+---@return boolean
+---    If a match was found, return `true`.
+---@return number
+---    The number of arguments used by the found flag, if any.
+---
+function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, namespace)
+    local function _needs_a_value(parameter)
+        return parameter._nargs ~= 0
+    end
+
+    local function _get_values(arguments, count)
+        if count == 1 then
+            local argument = arguments[1]
+
+            if argument.argument_type == argparse.ArgumentType.named then
+                return argument.value
+            end
+
+            return argument.name
+        end
+
+        return vim.iter(tabler.get_slice(arguments, 1, count)):map(function(argument_)
+            return argument_.name
+        end):totable()
+    end
+
+    local argument = arguments[1]
+
     for _, flag in ipairs(flags) do
         if vim.tbl_contains(flag.names, argument.name) and not flag:is_exhausted() then
+            _validate_flag(flag, arguments)
+
+            -- TODO: Need to handle expression statements here, I think. Somehow.
+            local count = _get_used_arguments_count(flag, arguments)
+
+            if count == 0 then
+                -- NOTE: If `flag` is expected not to take arguments then we
+                -- just consume the current argument.
+                --
+                count = 1
+            end
+
+            local values = _get_values(arguments, count)
+
             local name = flag:get_nice_name()
 
             local value
 
-            if argument.argument_type == argparse.ArgumentType.named and not argument.value or argument.value == "" then
-                error(string.format('Parameter "%s" requires 1 value.', argument.name), 0)
-            end
-
             -- TODO: Replace this with a real nargs check later
             if argument.value then
-                value = flag:get_type()(argument.value)
+                value = flag:get_type()(values)
             else
                 value = flag:get_type()()
+            end
+
+            if _needs_a_value(flag) then
+                if value == nil then
+                    error(string.format('Parameter "%s" failed to find a value. Please fix your bug!', argument.name), 0)
+                end
             end
 
             local action = flag:get_action()
@@ -1929,11 +2121,11 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, argument, namesp
             --
             flag:increment_used()
 
-            return true
+            return true, count
         end
     end
 
-    return false
+    return false, 0
 end
 
 --- Add `positions` to `namespace` if they match `argument`.
@@ -2112,9 +2304,12 @@ function M.ParameterParser:_parse_arguments(data, namespace)
     local position_parameters = self:get_position_parameters()
     local flag_parameters = self:get_flag_parameters()
     local found = false
+    local count = #data.arguments
+    local index = 1
 
-    -- TODO: Need to handle nargs-related code here
-    for index, argument in ipairs(data.arguments) do
+    while index <= count do
+        local argument = data.arguments[index]
+
         if argument.argument_type == argparse.ArgumentType.position then
             --- @cast argument argparse.PositionArgument
             local argument_name = _get_argument_name(argument)
@@ -2135,16 +2330,24 @@ function M.ParameterParser:_parse_arguments(data, namespace)
             -- if not found then
             --     -- TODO: Do something about this one
             -- end
+            index = index + 1
         elseif
             argument.argument_type == argparse.ArgumentType.named
             or argument.argument_type == argparse.ArgumentType.flag
         then
             --- @cast argument argparse.FlagArgument | argparse.NamedArgument
-            found = self:_handle_exact_flag_parameters(flag_parameters, argument, namespace)
+            local arguments = tabler.get_slice(data.arguments, index)
+            local used_arguments
+            found, used_arguments = self:_handle_exact_flag_parameters(
+                flag_parameters,
+                arguments,
+                namespace
+            )
 
             -- if not found then
             --     -- TODO: Do something about this one
             -- end
+            index = index + used_arguments
         end
 
         if not found then
@@ -2384,6 +2587,7 @@ end
 ---
 function M.ParameterParser:add_parameter(options)
     _validate_parameter_names(options)
+
     local is_position = _is_position_name(options.names[1])
     _expand_parameter_options(options, is_position)
     --- @cast options argparse2.ParameterOptions

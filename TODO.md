@@ -1,3 +1,4 @@
+- validation code should include choices if there is some
 - Do a round of finishing TODO notes
 
 - Make sre the CI works
@@ -8,6 +9,10 @@
  --- luacheck
  --- news
  --- stylua
+
+- Consider changing argparse so that it registers any argument that starts with
+a non-alpha / ' / " as a flag argument. Instead of the current setup which only
+allows for - or +
 
 - If a named arguiment is an nargs=1 argument then it should auto-complete to be --foo=, I guess
  - If it it's nargs=2+ then it should auto-complete not with =
