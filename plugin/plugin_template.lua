@@ -13,10 +13,10 @@ local _SUBCOMMANDS = function()
     local hello_world = require("plugin_template._commands.hello_world.parser")
 
     local root_parser = argparse2.ParameterParser.new({ help = "The root of all commands." })
-    local root_subparsers = root_parser:add_subparsers({"command", help="All root commands."})
+    local root_subparsers = root_parser:add_subparsers({ "command", help = "All root commands." })
 
     local parser = root_subparsers:add_parser({ name = _PREFIX, help = "The starting command." })
-    local subparsers = parser:add_subparsers({"commands", help="All runnable commands."})
+    local subparsers = parser:add_subparsers({ "commands", help = "All runnable commands." })
 
     subparsers:add_parser(arbitrary_thing.make_parser())
     subparsers:add_parser(copy_logs.make_parser())

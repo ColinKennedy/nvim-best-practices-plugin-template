@@ -145,7 +145,7 @@ describe("help", function()
             local parser = _make_simple_parser()
 
             assert.equal(
-[[Usage: top_test {say} [--help]
+                [[Usage: top_test {say} [--help]
 
 Commands:
     say    Print stuff to the terminal.
@@ -161,7 +161,7 @@ Options:
             local parser = _make_simple_parser()
 
             assert.equal(
-[[Usage: word [--repeat] [--style] [--help]
+                [[Usage: word [--repeat] [--style] [--help]
 
 Options:
     --repeat -r    The number of times to display the message.
@@ -176,7 +176,7 @@ Options:
             local parser = _make_simple_parser()
 
             assert.equal(
-[[Usage: say {phrase, word} [--help]
+                [[Usage: say {phrase, word} [--help]
 
 Commands:
     phrase    Print a whole sentence.
@@ -193,7 +193,7 @@ Options:
             local parser = _make_simple_parser()
 
             assert.equal(
-[[Usage: phrase [--repeat] [--style] [--help]
+                [[Usage: phrase [--repeat] [--style] [--help]
 
 Options:
     --repeat -r    The number of times to display the message.
@@ -210,7 +210,7 @@ Options:
             subparsers:add_parser({ name = "thing", choices = { "aaa", "bbb", "ccc" }, help = "Do a thing." })
 
             assert.equal(
-[[Usage: {aaa} [--help]
+                [[Usage: {aaa} [--help]
 
 Commands:
     {aaa, bbb, ccc}    Do a thing.

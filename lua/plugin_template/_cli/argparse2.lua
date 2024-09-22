@@ -125,7 +125,7 @@ local _FULL_HELP_FLAG = "--help"
 local _SHORT_HELP_FLAG = "-h"
 
 local _ActionConstant = { count = "count", store_false = "store_false", store_true = "store_true" }
-local _FLAG_ACTIONS = {_ActionConstant.count, _ActionConstant.store_false, _ActionConstant.store_true}
+local _FLAG_ACTIONS = { _ActionConstant.count, _ActionConstant.store_false, _ActionConstant.store_true }
 
 ---@class argparse2.Parameter
 ---    An optional / required parameter for some parser.
@@ -541,7 +541,11 @@ end
 ---@return string[] # All parser names, if any are defined.
 ---
 local function _get_child_parser_names(parser)
-    return vim.iter(_iter_parsers(parser)):map(function(parser_) return parser_:get_names()[1] end):totable()
+    return vim.iter(_iter_parsers(parser))
+        :map(function(parser_)
+            return parser_:get_names()[1]
+        end)
+        :totable()
 end
 
 --- Scan `input` and stop processing arguments after `column`.
@@ -1566,7 +1570,7 @@ function M.ParameterParser.new(options)
     self._subparsers = {}
     self._parent = options.parent
 
-    self._implicit_flag_parameters = { }
+    self._implicit_flag_parameters = {}
     self:_add_help_parameter()
 
     return self
@@ -1576,7 +1580,7 @@ end
 function M.ParameterParser:_add_help_parameter()
     local parameter = self:add_parameter({
         action = function(data)
-            data.namespace.execute = function(...)  -- luacheck: ignore 212 unused argument
+            data.namespace.execute = function(...) -- luacheck: ignore 212 unused argument
                 vim.notify(self:get_full_help(""), vim.log.levels.INFO)
             end
         end,
@@ -1642,10 +1646,7 @@ function M.ParameterParser:_get_issues()
                 local text
 
                 if used == 0 then
-                    text = string.format(
-                        'Parameter "%s" must be defined.',
-                        parameter.names[1]
-                    )
+                    text = string.format('Parameter "%s" must be defined.', parameter.names[1])
                 else
                     text = string.format(
                         'Parameter "%s" used "%s" times but must be used "%s" times.',
@@ -1696,10 +1697,7 @@ function M.ParameterParser:_get_completion(data, column)
         end
 
         if not _is_whitespace(remainder) then
-            vim.list_extend(
-                output,
-                _get_matching_partial_flag_text(remainder, self:get_flag_parameters())
-            )
+            vim.list_extend(output, _get_matching_partial_flag_text(remainder, self:get_flag_parameters()))
 
             -- NOTE: If there was unparsed text then it means that the user is
             -- in the middle of an argument. We don't waot to show completion
@@ -1761,11 +1759,7 @@ function M.ParameterParser:_get_completion(data, column)
         -- a argument that matches a parameter. Find it and make sure
         -- that parameter calls `increment_used()`!
         --
-        _compute_and_increment_parameter(
-            parser,
-            argument_name,
-            tabler.get_slice(stripped.arguments, next_index)
-        )
+        _compute_and_increment_parameter(parser, argument_name, tabler.get_slice(stripped.arguments, next_index))
 
         -- local found = _compute_and_increment_parameter(...
         -- if not found then
@@ -1885,7 +1879,7 @@ function M.ParameterParser:_get_usage_summary(parser)
         table.insert(output, _get_position_help_text(position))
     end
 
-    for _, flag in ipairs(_sort_parameters(parser:get_flag_parameters({hide_implicits=true}))) do
+    for _, flag in ipairs(_sort_parameters(parser:get_flag_parameters({ hide_implicits = true }))) do
         table.insert(output, string.format("[%s]", flag:get_raw_name()))
     end
 
@@ -1924,11 +1918,7 @@ local function _get_nargs_related_issue(parameter, arguments)
         end
 
         if nargs > #arguments then
-            return string.format(
-                'Parameter "%s" expects "%s" values.',
-                parameter.names[1],
-                nargs
-            )
+            return string.format('Parameter "%s" expects "%s" values.', parameter.names[1], nargs)
         end
 
         if nargs == 1 then
@@ -1939,17 +1929,20 @@ local function _get_nargs_related_issue(parameter, arguments)
             end
 
             -- TODO: Not sure what to do here just yet.
-            if vim.tbl_contains({argparse.ArgumentType.flag, argparse.ArgumentType.named}, arguments[2]) then
+            if vim.tbl_contains({ argparse.ArgumentType.flag, argparse.ArgumentType.named }, arguments[2]) then
                 return "TODO Check if we need this implementation."
             end
 
             return nil
         end
 
-        for index=1, nargs do
+        for index = 1, nargs do
             local argument = arguments[index]
 
-            if argument.argument_type == argparse.ArgumentType.flag or argument.argument_type == argparse.ArgumentType.named then
+            if
+                argument.argument_type == argparse.ArgumentType.flag
+                or argument.argument_type == argparse.ArgumentType.named
+            then
                 return string.format(
                     'Parameter "%s" requires "%s" values. Got "%s" values.',
                     parameter.names[1],
@@ -2071,9 +2064,11 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             return argument.name
         end
 
-        return vim.iter(tabler.get_slice(arguments, 1, count)):map(function(argument_)
-            return argument_.name
-        end):totable()
+        return vim.iter(tabler.get_slice(arguments, 1, count))
+            :map(function(argument_)
+                return argument_.name
+            end)
+            :totable()
     end
 
     local argument = arguments[1]
@@ -2107,7 +2102,10 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
 
             if _needs_a_value(flag) then
                 if value == nil then
-                    error(string.format('Parameter "%s" failed to find a value. Please fix your bug!', argument.name), 0)
+                    error(
+                        string.format('Parameter "%s" failed to find a value. Please fix your bug!', argument.name),
+                        0
+                    )
                 end
             end
 
@@ -2338,11 +2336,7 @@ function M.ParameterParser:_parse_arguments(data, namespace)
             --- @cast argument argparse.FlagArgument | argparse.NamedArgument
             local arguments = tabler.get_slice(data.arguments, index)
             local used_arguments
-            found, used_arguments = self:_handle_exact_flag_parameters(
-                flag_parameters,
-                arguments,
-                namespace
-            )
+            found, used_arguments = self:_handle_exact_flag_parameters(flag_parameters, arguments, namespace)
 
             -- if not found then
             --     -- TODO: Do something about this one
@@ -2522,7 +2516,6 @@ function M.ParameterParser:get_full_help(data)
     return output
 end
 
-
 --- The flags that a user didn't add to the parser but are included anyway.
 ---
 ---@return argparse2.Parameter[]
@@ -2530,7 +2523,6 @@ end
 function M.ParameterParser:get_implicit_flag_parameters()
     return self._implicit_flag_parameters
 end
-
 
 --- Get the `--foo` style parameters from this instance.
 ---

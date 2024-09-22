@@ -3,9 +3,7 @@
 local success, doc = pcall(require, "mini.doc")
 
 if not success then
-    error(
-        "mini.doc is required to run this script. Please clone + source https://github.com/echasnovski/mini.doc"
-    )
+    error("mini.doc is required to run this script. Please clone + source https://github.com/echasnovski/mini.doc")
 end
 
 ---@diagnostic disable-next-line: undefined-field
@@ -39,20 +37,20 @@ end
 ---    A description about what this object is. Is it a section or a block or
 ---    something else? Stuff like that.
 ---
-local _Section = {}  -- luacheck: ignore 241 -- variable never accessed
+local _Section = {} -- luacheck: ignore 241 -- variable never accessed
 
 --- Add `child` to this instance at `index`.
 ---
 ---@param index number The 1-or-more position to add `child` into.
 ---@param child string The text to add.
 ---
-function _Section:insert(index, child) end  -- luacheck: ignore 212 -- unused argument
+function _Section:insert(index, child) end -- luacheck: ignore 212 -- unused argument
 
 --- Remove a child from this instance at `index`.
 ---
 ---@param index number? The 1-or-more position to remove `child` from.
 ---
-function _Section:remove(index) end  -- luacheck: ignore 212 -- unused argument
+function _Section:remove(index) end -- luacheck: ignore 212 -- unused argument
 
 --- Check if `text` is the start of a function's parameters.
 ---
@@ -63,7 +61,6 @@ local function _is_field_section(text)
     return text:match("%s*Fields%s*~%s*")
 end
 
-
 --- Check if `text` is the start of a function's parameters.
 ---
 ---@param text string Some text. e.g. `"Parameters ~"`.
@@ -73,7 +70,6 @@ local function _is_parameter_section(text)
     return text:match("%s*Parameters%s*~%s*")
 end
 
-
 --- Check if `text` is the start of a function's parameters.
 ---
 ---@param text string Some text. e.g. `"Return ~"`.
@@ -82,7 +78,6 @@ end
 local function _is_return_section(text)
     return text:match("%s*Return%s*~%s*")
 end
-
 
 --- Add the text that Vimdoc uses to generate doc/tags (basically surround the text with *s).
 ---
@@ -99,13 +94,13 @@ end
 ---@param section MiniDoc.Section The starting point to traverse underneath.
 ---
 local function _apply_recursively(caller, section)
-  caller(section)
+    caller(section)
 
-  if type(section) == 'table' then
-      for _, t in ipairs(section) do
-          _apply_recursively(caller, t)
-      end
-  end
+    if type(section) == "table" then
+        for _, t in ipairs(section) do
+            _apply_recursively(caller, t)
+        end
+    end
 end
 
 --- Remove any quotes around `text`.
@@ -221,11 +216,11 @@ local function _set_trailing_newline(section, count)
     end
 
     if count > lines then
-        for _=1,count - lines do
+        for _ = 1, count - lines do
             section:insert(1, "")
         end
     else
-        for _=1,lines - count do
+        for _ = 1, lines - count do
             section:remove(1)
         end
     end
@@ -327,42 +322,43 @@ local function _get_module_enabled_hooks(module_identifier)
     hooks.block_post = function(block)
         original_block_post_hook(block)
 
-        if not block:has_lines() then return end
+        if not block:has_lines() then
+            return
+        end
 
-        _apply_recursively(
-            function(section)
-                if not (type(section) == 'table' and section.type == 'section') then return end
+        _apply_recursively(function(section)
+            if not (type(section) == "table" and section.type == "section") then
+                return
+            end
 
-                if section.info.id == '@field' and _is_field_section(section[1]) then
-                    local previous_section = section.parent[section.parent_index - 1]
+            if section.info.id == "@field" and _is_field_section(section[1]) then
+                local previous_section = section.parent[section.parent_index - 1]
 
-                    if previous_section then
-                        _set_trailing_newline(section)
-                    end
+                if previous_section then
+                    _set_trailing_newline(section)
                 end
+            end
 
-                if section.info.id == '@param' and _is_parameter_section(section[1]) then
-                    local previous_section = section.parent[section.parent_index - 1]
+            if section.info.id == "@param" and _is_parameter_section(section[1]) then
+                local previous_section = section.parent[section.parent_index - 1]
 
-                    if previous_section then
-                        _set_trailing_newline(previous_section)
-                    end
+                if previous_section then
+                    _set_trailing_newline(previous_section)
                 end
+            end
 
-                if section.info.id == '@return' and _is_return_section(section[1]) then
-                    local previous_section = section.parent[section.parent_index - 1]
+            if section.info.id == "@return" and _is_return_section(section[1]) then
+                local previous_section = section.parent[section.parent_index - 1]
 
-                    if previous_section then
-                        _set_trailing_newline(section)
-                    end
+                if previous_section then
+                    _set_trailing_newline(section)
                 end
-            end,
-            block
-        )
+            end
+        end, block)
     end
 
     -- TODO: Add alias support. These lines effectively clear aliases, which is a shame.
-    hooks.section_pre = function(...)  -- luacheck: ignore 212 -- unused argument
+    hooks.section_pre = function(...) -- luacheck: ignore 212 -- unused argument
     end
 
     hooks.write_pre = function(lines)
@@ -389,7 +385,7 @@ end
 ---@return string?
 ---    The found identifier. By convention it's usually `"M"` or nothing.
 ---
-local function _get_module_identifier(path)  -- luacheck: ignore 212 -- unused argument
+local function _get_module_identifier(path) -- luacheck: ignore 212 -- unused argument
     -- TODO: Need to replace this later
     -- Ignore weird returns
     -- Only get the last return

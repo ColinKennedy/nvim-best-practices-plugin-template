@@ -202,10 +202,12 @@ function M.make_parser_triager(parser_creator)
     local function runner(opts)
         local argparse = require("plugin_template._cli.argparse")
 
-        local text = opts.name ..  " " .. opts.args
+        local text = opts.name .. " " .. opts.args
         local arguments = argparse.parse_arguments(text)
         local parser = parser_creator()
-        local success, result = pcall(function() return parser:parse_arguments(arguments) end)
+        local success, result = pcall(function()
+            return parser:parse_arguments(arguments)
+        end)
 
         if not success then
             ---@cast result string The error message.

@@ -11,11 +11,11 @@ local M = {}
 function M.make_parser()
     local parser = argparse2.ParameterParser.new({ "arbitrary-thing", help = "Prepare to sleep or sleep." })
 
-    parser:add_parameter({ "-a", action="store_true" })
-    parser:add_parameter({ "-b", action="store_true" })
-    parser:add_parameter({ "-c", action="store_true" })
-    parser:add_parameter({ "-v", action="store_true", count = "*", destination = "verbose" })
-    parser:add_parameter({ "-f", action="store_true", count = "*" })
+    parser:add_parameter({ "-a", action = "store_true" })
+    parser:add_parameter({ "-b", action = "store_true" })
+    parser:add_parameter({ "-c", action = "store_true" })
+    parser:add_parameter({ "-v", action = "store_true", count = "*", destination = "verbose" })
+    parser:add_parameter({ "-f", action = "store_true", count = "*" })
 
     parser:set_execute(function(data)
         local runner = require("plugin_template._commands.arbitrary_thing.runner")

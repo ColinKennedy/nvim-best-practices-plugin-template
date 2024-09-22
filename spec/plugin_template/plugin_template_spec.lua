@@ -192,7 +192,7 @@ describe("--help flag", function()
         vim.cmd([[PluginTemplate --help]])
 
         assert.same({
-[[
+            [[
 Usage: PluginTemplate {arbitrary-thing, copy-logs, goodnight-moon, hello-world} [--help]
 
 Commands:
@@ -211,7 +211,7 @@ Options:
         vim.cmd([[PluginTemplate hello-world say --help]])
 
         assert.same({
-[[
+            [[
 Usage: say {phrase, word} [--help]
 
 Commands:
@@ -228,7 +228,7 @@ Options:
         vim.cmd([[PluginTemplate hello-world say phrase --help]])
 
         assert.same({
-[[
+            [[
 Usage: phrase phrases* [--repeat] [--style] [--help]
 
 Positional Arguments:
@@ -246,7 +246,7 @@ Options:
         vim.cmd([[PluginTemplate hello-world say word --help]])
 
         assert.same({
-[[
+            [[
 Usage: word word [--repeat] [--style] [--help]
 
 Positional Arguments:
@@ -264,7 +264,7 @@ Options:
         vim.cmd([[PluginTemplate arbitrary-thing --help]])
 
         assert.same({
-[[
+            [[
 Usage: arbitrary-thing [-a] [-b] [-c] [-f] [-v] [--help]
 
 Options:
@@ -282,7 +282,7 @@ Options:
         vim.cmd([[PluginTemplate copy-logs --help]])
 
         assert.same({
-[[
+            [[
 Usage: copy-logs log [--help]
 
 Positional Arguments:
@@ -298,7 +298,7 @@ Options:
         vim.cmd([[PluginTemplate goodnight-moon --help]])
 
         assert.same({
-[[
+            [[
 Usage: goodnight-moon {count-sheep, read, sleep} [--help]
 
 Commands:
@@ -316,7 +316,7 @@ Options:
         vim.cmd([[PluginTemplate hello-world --help]])
 
         assert.same({
-[[
+            [[
 Usage: hello-world {say} [--help]
 
 Commands:

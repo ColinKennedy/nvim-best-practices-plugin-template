@@ -353,12 +353,9 @@ describe("simple", function()
             parser:get_completion("say phrase --repeat=5 --style=")
         )
 
-        assert.same(
-            { "--style=lowercase" },
-            parser:get_completion("say phrase --repeat=5 --style=l")
-        )
+        assert.same({ "--style=lowercase" }, parser:get_completion("say phrase --repeat=5 --style=l"))
 
-        assert.same({"--style=lowercase"}, parser:get_completion("say phrase --repeat=5 --style=lowercase"))
+        assert.same({ "--style=lowercase" }, parser:get_completion("say phrase --repeat=5 --style=lowercase"))
     end)
 end)
 
@@ -482,16 +479,13 @@ describe("named argument", function()
     it("should only auto-complete --repeat once", function()
         local parser = _make_simple_parser()
 
-        assert.same(
-            {
-                "--repeat=1",
-                "--repeat=2",
-                "--repeat=3",
-                "--repeat=4",
-                "--repeat=5",
-            },
-            parser:get_completion("say word --repeat= --repe", 18)
-        )
+        assert.same({
+            "--repeat=1",
+            "--repeat=2",
+            "--repeat=3",
+            "--repeat=4",
+            "--repeat=5",
+        }, parser:get_completion("say word --repeat= --repe", 18))
         assert.same({}, parser:get_completion("say word --repeat= --repe"))
     end)
 
@@ -528,7 +522,7 @@ describe("flag argument", function()
         parser:add_parameter({ "-f", help = "Force it." })
 
         assert.same({}, parser:get_completion("-f", 1))
-        assert.same({"-f="}, parser:get_completion("-f", 2))
+        assert.same({ "-f=" }, parser:get_completion("-f", 2))
     end)
 
     -- it("does not auto-complete if at the end of the flag - 002 #asdf", function()
