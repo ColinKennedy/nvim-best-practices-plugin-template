@@ -198,7 +198,7 @@ thing]],
             end)
 
             assert.is_false(success)
-            assert.equal('Parameter "--foo" tttn.', result)
+            assert.equal('Parameter "--foo" requires "3" values. Got "2" values.', result)
         end)
 
         it("errors if the user is #missing a required flag argument - 001", function()

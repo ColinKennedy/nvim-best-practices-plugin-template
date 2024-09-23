@@ -6,10 +6,6 @@
 - Make sure action (set, store_true, append, etc) work with type (make sure values are converted to number and stuff as expected)
 - make sure namesapce aggregation works as expected (default [set] vs store_true / store_false / append / etc)
 
-- Make a unittest for nargs where it fails to find values and errors ou
- - scenario B: the argument has a known set of choices and no choice matches
-  - As in a flag takes 3 arguments and only the first two match, the 3rd fails
-
 - remove private variable accesses
 
 - Add `context` key to choices so people know why the choices are being requested

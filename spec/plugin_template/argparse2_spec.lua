@@ -263,6 +263,14 @@ Options:
 end)
 
 describe("nargs", function()
+    it("flag + nargs + should parse into a string[]", function()
+        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({"--items", nargs=2, help="Test."})
+
+        local namespace = parser:parse_arguments("--items foo bar")
+        assert.same({items={"foo", "bar"}}, namespace)
+    end)
+
     it("flag + nargs + append should parse into a string[][]", function()
         local parser = argparse2.ParameterParser.new({ help = "Test." })
         parser:add_parameter({"--items", action="append", nargs=2, help="Test."})

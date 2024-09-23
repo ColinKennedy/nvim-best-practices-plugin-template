@@ -2058,18 +2058,30 @@ local function _get_nargs_related_issue(parameter, arguments)
             return nil
         end
 
+        local other_arguments = tabler.get_slice(arguments, 2)
+
         for index = 1, nargs do
-            local argument = arguments[index]
+            local argument = other_arguments[index]
 
             if
-                argument.argument_type == argparse.ArgumentType.flag
+                not argument
+                or argument.argument_type == argparse.ArgumentType.flag
                 or argument.argument_type == argparse.ArgumentType.named
             then
+                if index == 1 then
+                    return string.format(
+                        'Parameter "%s" requires "%s" values. Got "%s" value.',
+                        parameter.names[1],
+                        nargs,
+                        index - 1
+                    )
+                end
+
                 return string.format(
                     'Parameter "%s" requires "%s" values. Got "%s" values.',
                     parameter.names[1],
                     nargs,
-                    index
+                    index - 1
                 )
             end
 
@@ -2092,16 +2104,9 @@ end
 ---     This function is partially implemented. Some corner cases might raise an error.
 ---
 ---@param flag argparse2.Parameter
----@param arguments argparse.ArgparseArgument[] All of the possible to consider.
 ---@return number # All consecutive `arguments` to include.
 ---
-local function _get_used_arguments_count(flag, arguments)
-    local argument = arguments[1]
-
-    if argument.argument_type == argparse.ArgumentType.named then
-        return 1
-    end
-
+local function _get_used_arguments_count(flag)
     local nargs = flag:get_nargs()
 
     if type(nargs) == "number" then
@@ -2185,16 +2190,12 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
         if count == 1 then
             local argument = arguments_[1]
 
-            if argument.argument_type == argparse.ArgumentType.named then
-                return argument.value
-            end
-
             return argument.name
         end
 
-        return vim.iter(tabler.get_slice(arguments_, 1, count))
+        return vim.iter(tabler.get_slice(arguments_, 2, count + 1))
             :map(function(argument_)
-                return argument_.name
+                return argument_.name or argument_.value
             end)
             :totable()
     end
@@ -2206,16 +2207,18 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             _validate_flag(flag, arguments)
 
             -- TODO: Need to handle expression statements here, I think. Somehow.
-            local count = _get_used_arguments_count(flag, arguments)
 
-            if count == 0 then
-                -- NOTE: If `flag` is expected not to take arguments then we
-                -- just consume the current argument.
-                --
-                count = 1
+            local total = 1 -- NOTE: Always include the current argument in the total
+            local count = 0
+            local values
+
+            if argument.argument_type == argparse.ArgumentType.named then
+                values = argument.value
+            elseif argument.argument_type == argparse.ArgumentType.flag then
+                count = _get_used_arguments_count(flag)
+                values = _get_values(arguments, count)
+                total = total + count
             end
-
-            local values = _get_values(arguments, count)
 
             if flag.choices then
                 local choices = flag.choices()
@@ -2223,9 +2226,9 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
                 if not vim.tbl_contains(choices, values) then
                     error(
                         string.format(
-                            'Parameter "%s" got invalid "%s" value. Expected one of %s.',
+                            'Parameter "%s" got invalid %s value. Expected one of %s.',
                             argument.name,
-                            values,
+                            vim.inspect(values),
                             vim.inspect(vim.fn.sort(choices))
                         ),
                         0
@@ -2234,15 +2237,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             end
 
             local name = flag:get_nice_name()
-
-            local value
-
-            -- TODO: Replace this with a real nargs check later
-            if argument.value then
-                value = flag:get_type()(values)
-            else
-                value = flag:get_type()()
-            end
+            local value = flag:get_type()(values)
 
             if _needs_a_value(flag) then
                 if value == nil then
@@ -2263,7 +2258,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             --
             flag:increment_used()
 
-            return true, count
+            return true, total
         end
     end
 
