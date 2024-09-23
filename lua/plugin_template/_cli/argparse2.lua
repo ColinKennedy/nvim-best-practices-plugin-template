@@ -1360,7 +1360,7 @@ function M.Subparsers.new(options)
     local self = setmetatable({}, M.Subparsers)
 
     self.name = options.name
-    self.visited = false  -- NOTE: Noting when a child parser is used / touched
+    self.visited = false -- NOTE: Noting when a child parser is used / touched
     self._parent = options.parent
     self._parsers = {}
 
