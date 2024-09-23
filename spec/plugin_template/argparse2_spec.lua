@@ -262,6 +262,24 @@ Options:
     end)
 end)
 
+describe("nargs", function()
+    it("flag + nargs + append should parse into a string[][]", function()
+        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({"items", action="append", nargs=2, help="Test."})
+
+        local namespace = parser:parse_arguments("foo bar fizz buzz")
+        assert.same({{"foo", "bar"}, {"fizz", "buzz"}}, namespace)
+    end)
+
+    it("position + nargs + append should parse into a string[][]", function()
+        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({"items", action="append", nargs=2, help="Test."})
+
+        local namespace = parser:parse_arguments("foo bar fizz buzz")
+        assert.same({{"foo", "bar"}, {"fizz", "buzz"}}, namespace)
+    end)
+end)
+
 describe("set_defaults", function()
     it("works with a basic execute function", function()
         local parser = argparse2.ParameterParser.new({ help = "Test" })
