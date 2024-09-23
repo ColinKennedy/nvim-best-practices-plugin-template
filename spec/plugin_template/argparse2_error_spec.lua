@@ -1,6 +1,6 @@
 --- Make sure that `argparse2` errors when it should.
 ---
----@module 'plugin_template.argparse2_error'
+---@module 'plugin_template.argparse2_error_spec'
 ---
 
 local argparse2 = require("plugin_template._cli.argparse2")

@@ -1,4 +1,7 @@
--- TODO: Docstring
+--- Make sure that `argparse2` parses and auto-completes as expected.
+---
+---@module 'plugin_template.argparse2_spec'
+---
 
 local argparse2 = require("plugin_template._cli.argparse2")
 

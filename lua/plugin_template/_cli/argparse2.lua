@@ -2537,7 +2537,14 @@ function M.ParameterParser:_parse_arguments(data, namespace)
         end
     end
 
-    _validate_current_parser()
+    if not namespace.execute then
+        -- IMPORTANT: This is a bit of a hack to get --help to work when a user
+        -- forgets to include all arguments. It's not technically correct for
+        -- us to do that and could accidentally break stuff. But If this burns
+        -- us later, we can change it.
+        --
+        _validate_current_parser()
+    end
 
     return namespace
 end

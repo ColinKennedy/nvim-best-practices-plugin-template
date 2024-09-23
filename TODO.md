@@ -1,4 +1,21 @@
+- Help API - Allow a parameter value_hint (to show in the help)
+
+- Make sure nargs 2 and action append get proper parsed data
+
 - `:PluginTemplate hello-world say` doesn't show the right message
+- Get unittests to pass
+
+- Is there really any need to auto-complete the short flags if the long flag is there? Remove?
+
+- Make sure action (set, store_true, append, etc) work with nargs (nargs *, +, Number, etc)
+- Make sure action (set, store_true, append, etc) work with type (make sure values are converted to number and stuff as expected)
+- make sure namesapce aggregation works as expected (default [set] vs store_true / store_false / append / etc)
+
+- Make a unittest for nargs where it fails to find values and errors ou
+ - scenario B: the argument has a known set of choices and no choice matches
+  - As in a flag takes 3 arguments and only the first two match, the 3rd fails
+
+- remove private variable accesses
 
 - Add `context` key to choices so people know why the choices are being requested
 
@@ -53,10 +70,6 @@ Typing `-` or `--` doesn't auto-complete to `--repeat`
 - Add the wiki pages to this repository
  - Make sure the documentation tellsthe user to delete this folder
 
-- Make sure help text allows a parser choices() to be represented as text
-
-- Is there really any need to auto-complete the short flags if the long flag is there? Remove?
-
 - Add a configuration option to disable --help / -h from auto-completion
 
 - Need a test for when a subparser is the last argument
@@ -65,10 +78,6 @@ Typing `-` or `--` doesn't auto-complete to `--repeat`
 - Add a check when user does `--foo=bar` but foo requires 2+ arguments (the
 = would be syntactically incorrect in that case)
 - Consider renaming `nargs` to `elements_count` or something
-
-- Make a unittest for nargs where it fails to find values and errors ou
- - scenario A: nargs stops because a flag/named argument is encountered
- - scenario B: the argument has a known set of choices and no choice matches
 
 - Add a unittest to makes sure that position `choices` can maintain another table and remove possible matches each time the argument is used
  - Same test but for flag arguments
