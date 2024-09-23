@@ -89,29 +89,31 @@ describe("bad input", function()
             )
         end)
 
-        -- TODO: Finish later
-        -- it("includes nested subparsers argument choices - 001 required", function()
-        --     local parser = argparse2.ParameterParser.new({ help = "Test" })
-        --     parser:add_parameter({"thing", help="Test."})
-        --     local subparsers = parser:add_subparsers({"commands", help="Test."})
-        --     subparsers.required = true
-        --     subparsers:add_parser({"inner_command", choices={"foo", "bar", "thing"}})
-        --
-        --     local success, result = pcall(function()
-        --         parser:parse_arguments("foo")
-        --     end)
-        --
-        --     assert.is_false(success)
-        --     assert.equal('Parameter "thing" must be defined.', result)
-        --
-        --
-        --     success, result = pcall(function()
-        --         parser:parse_arguments("something not_valid")
-        --     end)
-        --
-        --     assert.is_false(success)
-        --     assert.equal('Subparser "commands" requires a name. Choices are tttta', result)
-        -- end)
+        it("includes nested subparsers argument choices - 001 required", function()
+            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({"thing", help="Test."})
+
+            local subparsers = parser:add_subparsers({"commands", help="Test."})
+            subparsers.required = true
+
+            local inner_parser = subparsers:add_parser({"inner_command", help="Test."})
+            local inner_subparsers = inner_parser:add_subparsers({"commands", help="Test."})
+            inner_subparsers.required = true
+            inner_subparsers:add_parser({"child", choices={"foo", "bar", "thing"}, help="Test."})
+
+            local success, result = pcall(function()
+                parser:parse_arguments("some_text inner_command does_not_exist")
+            end)
+
+            assert.is_false(success)
+            assert.equal(
+                [[Got unexpected "does_not_exist" value. Did you mean one of these incomplete parameters?
+foo
+bar
+thing]],
+                result
+            )
+        end)
 
         it("includes position argument choices", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
@@ -179,7 +181,6 @@ thing]],
         end)
     end)
 
-    -- TODO: Add a test for missing, required subparser
     describe("simple", function()
         it("does not error if there is no text and all arguments are optional", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
