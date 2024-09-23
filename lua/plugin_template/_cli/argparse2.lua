@@ -2400,8 +2400,9 @@ end
 ---
 --- Raises:
 ---     All issue(s) found, assuming 1+ issue was found.
-
----@param argparse.ArgparseArgument Some position / flag that we don't know what to do with.
+---
+---@param argument argparse.ArgparseArgument
+---    Some position / flag that we don't know what to do with.
 ---
 function M.ParameterParser:_raise_suggested_fix(argument)
     local names = {}
