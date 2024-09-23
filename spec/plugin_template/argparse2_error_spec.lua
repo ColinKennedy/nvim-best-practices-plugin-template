@@ -11,28 +11,22 @@ describe("bad input", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
 
             local success, result = pcall(function()
-                parser:add_parameter({ "--foo", action = "store_true", choices={"f"}, help = "Test." })
+                parser:add_parameter({ "--foo", action = "store_true", choices = { "f" }, help = "Test." })
             end)
 
             assert.is_false(success)
-            assert.equal(
-                'Parameter "--foo" cannot use action and choices at the same time.',
-                result
-            )
+            assert.equal('Parameter "--foo" cannot use action and choices at the same time.', result)
         end)
 
         it("errors if you define a nargs + flag argument", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
 
             local success, result = pcall(function()
-                parser:add_parameter({ "--foo", action="store_true", nargs=2, help = "Test." })
+                parser:add_parameter({ "--foo", action = "store_true", nargs = 2, help = "Test." })
             end)
 
             assert.is_false(success)
-            assert.equal(
-                'Parameter "--foo" cannot use action and nargs at the same time.',
-                result
-            )
+            assert.equal('Parameter "--foo" cannot use action and nargs at the same time.', result)
         end)
 
         it("errors if a custom type=foo doesn't return a value - 001", function()
@@ -82,7 +76,7 @@ describe("bad input", function()
 
         it("includes named argument choices", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ "--foo", choices={"aaa", "bbb", "zzz"}, help = "Test." })
+            parser:add_parameter({ "--foo", choices = { "aaa", "bbb", "zzz" }, help = "Test." })
 
             local success, result = pcall(function()
                 parser:parse_arguments("--foo=not_a_valid_choice")
@@ -97,7 +91,7 @@ describe("bad input", function()
 
         it("includes position argument choices", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ "foo", choices={"aaa", "bbb", "zzz"}, help = "Test." })
+            parser:add_parameter({ "foo", choices = { "aaa", "bbb", "zzz" }, help = "Test." })
 
             local success, result = pcall(function()
                 parser:parse_arguments("not_a_valid_choice")

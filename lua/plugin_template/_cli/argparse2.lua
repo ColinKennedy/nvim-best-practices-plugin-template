@@ -1315,7 +1315,6 @@ end
 ---
 local function _validate_parameter_options(options)
     if vim.tbl_contains(_FLAG_ACTIONS, options.action) then
-
         if options.choices ~= nil then
             error(string.format('Parameter "%s" cannot use action and choices at the same time.', options.names[1]), 0)
         end
