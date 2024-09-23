@@ -8,11 +8,31 @@ local argparse2 = require("plugin_template._cli.argparse2")
 describe("bad input", function()
     describe("choices", function()
         it("errors if you define a flag argument with choices", function()
-            -- TODO: Finish
+            local parser = argparse2.ParameterParser.new({ help = "Test" })
+
+            local success, result = pcall(function()
+                parser:add_parameter({ "--foo", action = "store_true", choices={"f"}, help = "Test." })
+            end)
+
+            assert.is_false(success)
+            assert.equal(
+                'Parameter "--foo" cannot use action and choices at the same time.',
+                result
+            )
         end)
 
         it("errors if you define a nargs + flag argument", function()
-            -- TODO: Finish
+            local parser = argparse2.ParameterParser.new({ help = "Test" })
+
+            local success, result = pcall(function()
+                parser:add_parameter({ "--foo", action="store_true", nargs=2, help = "Test." })
+            end)
+
+            assert.is_false(success)
+            assert.equal(
+                'Parameter "--foo" cannot use action and nargs at the same time.',
+                result
+            )
         end)
 
         it("errors if a custom type=foo doesn't return a value - 001", function()
@@ -61,11 +81,33 @@ describe("bad input", function()
         end)
 
         it("includes named argument choices", function()
-            -- TODO: Finish
+            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "--foo", choices={"aaa", "bbb", "zzz"}, help = "Test." })
+
+            local success, result = pcall(function()
+                parser:parse_arguments("--foo=not_a_valid_choice")
+            end)
+
+            assert.is_false(success)
+            assert.equal(
+                'Parameter "--foo" got invalid "not_a_valid_choice" value. Expected one of { "aaa", "bbb", "zzz" }.',
+                result
+            )
         end)
 
         it("includes position argument choices", function()
-            -- TODO: Finish
+            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "foo", choices={"aaa", "bbb", "zzz"}, help = "Test." })
+
+            local success, result = pcall(function()
+                parser:parse_arguments("not_a_valid_choice")
+            end)
+
+            assert.is_false(success)
+            assert.equal(
+                'Parameter "foo" got invalid "not_a_valid_choice" value. Expected one of { "aaa", "bbb", "zzz" }.',
+                result
+            )
         end)
 
         it("includes subparsers argument choices", function()

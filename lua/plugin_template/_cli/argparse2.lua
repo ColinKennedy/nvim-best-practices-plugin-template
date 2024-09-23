@@ -1261,14 +1261,13 @@ local function _rstrip_input(input, column)
     return stripped
 end
 
--- TODO: Add unittest for this
 --- Make sure an `argparse2.Parameter` has a name and every name is the same type.
 ---
 --- If `names` is `{"foo", "-f"}` then this function will error.
 ---
 ---@param options argparse2.ParameterInputOptions | argparse2.ParameterOptions All data to check.
 ---
-local function _validate_parameter_names(options)
+local function _expand_parameter_names(options)
     local function _get_type(name)
         if _is_position_name(name) then
             return "position"
@@ -1304,6 +1303,27 @@ local function _validate_parameter_names(options)
     end
 
     options.names = names
+end
+
+--- Make sure `options` has no conflicting / missing data.
+---
+--- Raises:
+---     If an issue is found.
+---
+---@param options argparse2.ParameterInputOptions | argparse2.ParameterOptions
+---    All data to check.
+---
+local function _validate_parameter_options(options)
+    if vim.tbl_contains(_FLAG_ACTIONS, options.action) then
+
+        if options.choices ~= nil then
+            error(string.format('Parameter "%s" cannot use action and choices at the same time.', options.names[1]), 0)
+        end
+
+        if options.nargs ~= 0 then
+            error(string.format('Parameter "%s" cannot use action and nargs at the same time.', options.names[1]), 0)
+        end
+    end
 end
 
 --- Make sure a name was provided from `options`.
@@ -1469,17 +1489,17 @@ end
 ---@param action argparse2.Action The selected functionality.
 ---
 function M.Parameter:set_action(action)
-    if action == "store_false" then
+    if action == _ActionConstant.store_false then
         action = function(data)
             ---@cast data argparse2.ActionData
             data.namespace[data.name] = false
         end
-    elseif action == "store_true" then
+    elseif action == _ActionConstant.store_true then
         action = function(data)
             ---@cast data argparse2.ActionData
             data.namespace[data.name] = true
         end
-    elseif action == "count" then
+    elseif action == _ActionConstant.count then
         action = function(data)
             ---@cast data argparse2.ActionData
             local name = data.name
@@ -2050,7 +2070,13 @@ end
 ---
 function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, namespace)
     local function _needs_a_value(parameter)
-        return parameter._nargs ~= 0
+        local nargs = parameter._nargs
+
+        if type(nargs) == "number" then
+            return nargs ~= 0
+        end
+
+        return nargs == _ONE_OR_MORE
     end
 
     local function _get_values(arguments_, count)
@@ -2088,6 +2114,22 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             end
 
             local values = _get_values(arguments, count)
+
+            if flag.choices then
+                local choices = flag.choices()
+
+                if not vim.tbl_contains(choices, values) then
+                    error(
+                        string.format(
+                            'Parameter "%s" got invalid "%s" value. Expected one of %s.',
+                            argument.name,
+                            values,
+                            vim.inspect(vim.fn.sort(choices))
+                        ),
+                        0
+                    )
+                end
+            end
 
             local name = flag:get_nice_name()
 
@@ -2137,7 +2179,25 @@ function M.ParameterParser:_handle_exact_position_parameters(positions, argument
     for _, position in ipairs(positions) do
         if not position:is_exhausted() then
             local name = position:get_nice_name()
-            local value = position:get_type()(argument.value)
+            local value = argument.value
+
+            if position.choices then
+                local choices = position.choices()
+
+                if not vim.tbl_contains(choices, value) then
+                    error(
+                        string.format(
+                            'Parameter "%s" got invalid "%s" value. Expected one of %s.',
+                            position.names[1],
+                            value,
+                            vim.inspect(vim.fn.sort(choices))
+                        ),
+                        0
+                    )
+                end
+            end
+
+            value = position:get_type()(argument.value)
             local action = position:get_action()
 
             action({ namespace = namespace, name = name, value = value })
@@ -2160,13 +2220,18 @@ end
 ---@return argparse2.ParameterParser? # The found subparser, if any.
 ---
 function M.ParameterParser:_handle_subparsers(data, argument_name, namespace)
+    --- (Before we allow running a subparser), Make sure that there are no issues.
+    local function _validate_no_issues()
+        local issues = self:_get_issues()
+
+        if not vim.tbl_isempty(issues) then
+            error(vim.fn.join(issues, "\n"), 0)
+        end
+    end
+
     for parser in _iter_parsers(self) do
         if vim.tbl_contains(parser:get_names(), argument_name) then
-            local issues = self:_get_issues()
-
-            if not vim.tbl_isempty(issues) then
-                error(vim.fn.join(issues, "\n"), 0)
-            end
+            _validate_no_issues()
 
             parser:_parse_arguments(data, namespace)
 
@@ -2351,6 +2416,9 @@ function M.ParameterParser:_parse_arguments(data, namespace)
         end
     end
 
+    -- NOTE: Because `_parse_arguments` is called recursively, this validation
+    -- runs at every subparser level.
+    --
     local issues = self:_get_issues()
 
     if not vim.tbl_isempty(issues) then
@@ -2578,11 +2646,12 @@ end
 ---    The created `argparse2.Parameter` instance.
 ---
 function M.ParameterParser:add_parameter(options)
-    _validate_parameter_names(options)
-
+    _expand_parameter_names(options)
     local is_position = _is_position_name(options.names[1])
     _expand_parameter_options(options, is_position)
     --- @cast options argparse2.ParameterOptions
+
+    _validate_parameter_options(options)
 
     local new_options = vim.tbl_deep_extend("force", options, { parent = self })
     local parameter = M.Parameter.new(new_options)

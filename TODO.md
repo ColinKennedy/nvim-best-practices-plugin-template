@@ -1,3 +1,5 @@
+- Add `context` key to choices so people know why the choices are being requested
+
 - validation code should include choices if there is some
 - Do a round of finishing TODO notes
 
