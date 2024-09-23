@@ -646,12 +646,16 @@ local function _get_matching_partial_flag_text(prefix, flags, value)
                     else
                         table.insert(output, name)
                     end
+
+                    break
                 elseif vim.startswith(name, prefix) then
                     if parameter:get_nargs() == 1 then
                         table.insert(output, name .. "=")
                     else
                         table.insert(output, name)
                     end
+
+                    break
                 end
                 -- if vim.startswith(name, prefix) then
                 --     if parameter.choices then

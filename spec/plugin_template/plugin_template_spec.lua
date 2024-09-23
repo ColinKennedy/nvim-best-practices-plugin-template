@@ -184,15 +184,14 @@ describe("goodnight-moon commands", function()
     end)
 end)
 
-
 describe("help API", function()
     before_each(_initialize_all)
     after_each(_reset_all)
 
     describe("fallback help", function()
-        it("works on a nested subparser - 003 #asdf", function()
+        it("works on a nested subparser - 003", function()
             vim.cmd("PluginTemplate hello-world say")
-            assert.same({"Usage: say {phrase, word} [--help]"}, _DATA)
+            assert.same({ "Usage: say {phrase, word} [--help]" }, _DATA)
         end)
     end)
 
@@ -201,7 +200,7 @@ describe("help API", function()
             vim.cmd("PluginTemplate --help")
 
             assert.same({
-                    [[
+                [[
 Usage: PluginTemplate {arbitrary-thing, copy-logs, goodnight-moon, hello-world} [--help]
 
 Commands:
@@ -213,7 +212,7 @@ Commands:
 Options:
     --help -h    Show this help message and exit.
 ]],
-                }, _DATA)
+            }, _DATA)
         end)
 
         it("works on a nested subparser - 001", function()

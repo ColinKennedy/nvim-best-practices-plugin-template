@@ -230,7 +230,7 @@ Options:
     describe("value_hint", function()
         it("works with named arguments", function()
             local parser = argparse2.ParameterParser.new({ help = "Test." })
-            parser:add_parameter({ "--thing", help="Test.", value_hint="FILE_PATH" })
+            parser:add_parameter({ "--thing", help = "Test.", value_hint = "FILE_PATH" })
 
             assert.equal(
                 [[Usage: [--thing] [--help]
@@ -245,7 +245,7 @@ Options:
 
         it("works with position arguments", function()
             local parser = argparse2.ParameterParser.new({ help = "Test." })
-            parser:add_parameter({ "thing", help="Test.", value_hint="FILE_PATH" })
+            parser:add_parameter({ "thing", help = "Test.", value_hint = "FILE_PATH" })
 
             assert.equal(
                 [[Usage: thing [--help]
