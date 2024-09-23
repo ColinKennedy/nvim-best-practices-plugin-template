@@ -188,6 +188,19 @@ thing]],
             parser:parse_arguments("")
         end)
 
+        it("errors if nargs doesn't get enough expected values", function()
+            local parser = argparse2.ParameterParser.new({ help = "Test." })
+
+            parser:add_parameter({ "--foo", nargs = 3, required = true, help = "Test." })
+
+            local success, result = pcall(function()
+                parser:parse_arguments("--foo thing another")
+            end)
+
+            assert.is_false(success)
+            assert.equal('Parameter "--foo" tttn.', result)
+        end)
+
         it("errors if the user is #missing a required flag argument - 001", function()
             local parser = argparse2.ParameterParser.new({ help = "Test." })
 
