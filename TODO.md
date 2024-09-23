@@ -1,9 +1,4 @@
-- Help API - Allow a parameter value_hint (to show in the help)
-
 - Make sure nargs 2 and action append get proper parsed data
-
-- `:PluginTemplate hello-world say` doesn't show the right message
-- Get unittests to pass
 
 - Is there really any need to auto-complete the short flags if the long flag is there? Remove?
 

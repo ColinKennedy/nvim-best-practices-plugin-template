@@ -56,9 +56,9 @@ local texter = require("plugin_template._core.texter")
 ---@field help string
 ---    Explain what this parser is meant to do and the parameter(s) it needs.
 ---    Keep it brief (< 88 characters).
----@field name? string
+---@field name string?
 ---    The ways to refer to this instance.
----@field names? string[]
+---@field names string[]?
 ---    The ways to refer to this instance.
 ---@field nargs argparse2.MultiNumber?
 ---    The number of elements that this parameter consumes at once.
@@ -71,6 +71,9 @@ local texter = require("plugin_template._core.texter")
 ---@field type ("number" | "string" | fun(value: string): any)?
 ---    The expected output type. If a function is given, assume that the user
 ---    knows what they're doing and use their function's return value.
+---@field value_hint string?
+---    Extra text to include in --help messages. Usually to indicate
+---    the sort of value that a position / named argument needs.
 
 ---@class argparse2.ParameterOptions: argparse2.ParameterInputOptions
 ---    All of the settings to include in a new parameter.
@@ -958,6 +961,10 @@ local function _get_position_long_help_text(position)
         text = text .. position._count
     end
 
+    if position.value_hint then
+        text = text .. " " .. position.value_hint
+    end
+
     if position.help then
         text = text .. "    " .. position.help
     end
@@ -1016,10 +1023,14 @@ local function _get_parser_flag_help_text(parser)
 
     for _, flag in ipairs(_sort_parameters(parser:get_flag_parameters())) do
         local names = vim.fn.join(flag.names, " ")
-        local text
+        local text = names
+
+        if flag.value_hint then
+            text = text .. " " .. flag.value_hint
+        end
 
         if flag.help then
-            text = string.format("%s    %s", names, flag.help)
+            text = text .. "    " .. flag.help
         else
             text = names
         end
@@ -1432,6 +1443,7 @@ function M.Parameter.new(options)
     self.destination = _get_nice_name(options.destination or options.names[1])
     self:set_action(options.action)
     self.required = options.required
+    self.value_hint = options.value_hint
     self._parent = options.parent
 
     return self
@@ -1704,6 +1716,42 @@ end
 --
 --     return output
 -- end
+
+--- Parse `arguments` and get the help summary line (the top "Usage: ..." line).
+---
+---@param arguments argparse.ArgparseArgument[]
+---    Raw user inputs to parser for subparsers, if any.
+---@return string
+---    The found "Usage: ..." line.
+---@return argparse2.ParameterParser
+---    The lowest parser that was found during parsing.
+---
+function M.ParameterParser:_get_argument_usage_summary(arguments)
+    local function _get_child_parser_by_name(parser, prefix)
+        for parser_ in _iter_parsers(parser) do
+            if vim.tbl_contains(parser_:get_names(), prefix) then
+                return parser_
+            end
+        end
+
+        return nil
+    end
+
+    local parser, _ = self:_compute_matching_parsers(arguments)
+
+    if parser:is_satisfied() then
+        local last = arguments[#arguments]
+
+        if last then
+            local last_name = _get_argument_name(last)
+            parser = _get_child_parser_by_name(parser, last_name) or parser
+        end
+    end
+
+    local summary = self:_get_usage_summary(parser)
+
+    return summary, parser
+end
 
 ---@return string[] # Find all unfinished parameters in this instance.
 function M.ParameterParser:_get_issues()
@@ -2668,9 +2716,9 @@ function M.ParameterParser:get_concise_help(data)
         data = argparse.parse_arguments(data)
     end
 
-    local parser, _ = self:_compute_matching_parsers(data.arguments)
+    local summary, _ = self:_get_argument_usage_summary(data.arguments)
 
-    return self:_get_usage_summary(parser)
+    return summary
 end
 
 --- Get all of information on how to run the CLI.
@@ -2682,32 +2730,11 @@ end
 ---    The full explanation of this instance's expected arguments (can be pretty long).
 ---
 function M.ParameterParser:get_full_help(data)
-    local function _get_child_parser_by_name(parser, prefix)
-        for parser_ in _iter_parsers(parser) do
-            if vim.tbl_contains(parser_:get_names(), prefix) then
-                return parser_
-            end
-        end
-
-        return nil
-    end
-
     if type(data) == "string" then
         data = argparse.parse_arguments(data)
     end
 
-    local parser, _ = self:_compute_matching_parsers(data.arguments)
-
-    if parser:is_satisfied() then
-        local last = data.arguments[#data.arguments]
-
-        if last then
-            local last_name = _get_argument_name(last)
-            parser = _get_child_parser_by_name(parser, last_name) or parser
-        end
-    end
-
-    local summary = self:_get_usage_summary(parser)
+    local summary, parser = self:_get_argument_usage_summary(data.arguments)
 
     local position_text = _get_parser_position_help_text(parser)
     local flag_text = _get_parser_flag_help_text(parser)

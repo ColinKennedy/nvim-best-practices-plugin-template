@@ -184,15 +184,24 @@ describe("goodnight-moon commands", function()
     end)
 end)
 
-describe("--help flag", function()
+
+describe("help API", function()
     before_each(_initialize_all)
     after_each(_reset_all)
 
-    it("works on the base parser", function()
-        vim.cmd([[PluginTemplate --help]])
+    describe("fallback help", function()
+        it("works on a nested subparser - 003 #asdf", function()
+            vim.cmd("PluginTemplate hello-world say")
+            assert.same({"Usage: say {phrase, word} [--help]"}, _DATA)
+        end)
+    end)
 
-        assert.same({
-            [[
+    describe("--help flag", function()
+        it("works on the base parser", function()
+            vim.cmd("PluginTemplate --help")
+
+            assert.same({
+                    [[
 Usage: PluginTemplate {arbitrary-thing, copy-logs, goodnight-moon, hello-world} [--help]
 
 Commands:
@@ -204,14 +213,14 @@ Commands:
 Options:
     --help -h    Show this help message and exit.
 ]],
-        }, _DATA)
-    end)
+                }, _DATA)
+        end)
 
-    it("works on a nested subparser - 001", function()
-        vim.cmd([[PluginTemplate hello-world say --help]])
+        it("works on a nested subparser - 001", function()
+            vim.cmd([[PluginTemplate hello-world say --help]])
 
-        assert.same({
-            [[
+            assert.same({
+                [[
 Usage: say {phrase, word} [--help]
 
 Commands:
@@ -221,14 +230,14 @@ Commands:
 Options:
     --help -h    Show this help message and exit.
 ]],
-        }, _DATA)
-    end)
+            }, _DATA)
+        end)
 
-    it("works on a nested subparser - 002", function()
-        vim.cmd([[PluginTemplate hello-world say phrase --help]])
+        it("works on a nested subparser - 002", function()
+            vim.cmd([[PluginTemplate hello-world say phrase --help]])
 
-        assert.same({
-            [[
+            assert.same({
+                [[
 Usage: phrase phrases* [--repeat] [--style] [--help]
 
 Positional Arguments:
@@ -239,14 +248,14 @@ Options:
     --style -s    lowercase modifies all capital letters. uppercase modifies all non-capital letter.
     --help -h    Show this help message and exit.
 ]],
-        }, _DATA)
-    end)
+            }, _DATA)
+        end)
 
-    it("works on a nested subparser - 003", function()
-        vim.cmd([[PluginTemplate hello-world say word --help]])
+        it("works on a nested subparser - 003", function()
+            vim.cmd([[PluginTemplate hello-world say word --help]])
 
-        assert.same({
-            [[
+            assert.same({
+                [[
 Usage: word word [--repeat] [--style] [--help]
 
 Positional Arguments:
@@ -257,14 +266,14 @@ Options:
     --style -s    lowercase modifies all capital letters. uppercase modifies all non-capital letter.
     --help -h    Show this help message and exit.
 ]],
-        }, _DATA)
-    end)
+            }, _DATA)
+        end)
 
-    it("works on the subparsers - 001", function()
-        vim.cmd([[PluginTemplate arbitrary-thing --help]])
+        it("works on the subparsers - 001", function()
+            vim.cmd([[PluginTemplate arbitrary-thing --help]])
 
-        assert.same({
-            [[
+            assert.same({
+                [[
 Usage: arbitrary-thing [-a] [-b] [-c] [-f] [-v] [--help]
 
 Options:
@@ -275,14 +284,14 @@ Options:
     -v    The -v flag.
     --help -h    Show this help message and exit.
 ]],
-        }, _DATA)
-    end)
+            }, _DATA)
+        end)
 
-    it("works on the subparsers - 002", function()
-        vim.cmd([[PluginTemplate copy-logs --help]])
+        it("works on the subparsers - 002", function()
+            vim.cmd([[PluginTemplate copy-logs --help]])
 
-        assert.same({
-            [[
+            assert.same({
+                [[
 Usage: copy-logs log [--help]
 
 Positional Arguments:
@@ -291,14 +300,14 @@ Positional Arguments:
 Options:
     --help -h    Show this help message and exit.
 ]],
-        }, _DATA)
-    end)
+            }, _DATA)
+        end)
 
-    it("works on the subparsers - 003", function()
-        vim.cmd([[PluginTemplate goodnight-moon --help]])
+        it("works on the subparsers - 003", function()
+            vim.cmd([[PluginTemplate goodnight-moon --help]])
 
-        assert.same({
-            [[
+            assert.same({
+                [[
 Usage: goodnight-moon {count-sheep, read, sleep} [--help]
 
 Commands:
@@ -309,14 +318,14 @@ Commands:
 Options:
     --help -h    Show this help message and exit.
 ]],
-        }, _DATA)
-    end)
+            }, _DATA)
+        end)
 
-    it("works on the subparsers - 004", function()
-        vim.cmd([[PluginTemplate hello-world --help]])
+        it("works on the subparsers - 004", function()
+            vim.cmd([[PluginTemplate hello-world --help]])
 
-        assert.same({
-            [[
+            assert.same({
+                [[
 Usage: hello-world {say} [--help]
 
 Commands:
@@ -325,6 +334,7 @@ Commands:
 Options:
     --help -h    Show this help message and exit.
 ]],
-        }, _DATA)
+            }, _DATA)
+        end)
     end)
 end)

@@ -226,6 +226,40 @@ Options:
             )
         end)
     end)
+
+    describe("value_hint", function()
+        it("works with named arguments", function()
+            local parser = argparse2.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "--thing", help="Test.", value_hint="FILE_PATH" })
+
+            assert.equal(
+                [[Usage: [--thing] [--help]
+
+Options:
+    --thing FILE_PATH    Test.
+    --help -h    Show this help message and exit.
+]],
+                parser:get_full_help("")
+            )
+        end)
+
+        it("works with position arguments", function()
+            local parser = argparse2.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "thing", help="Test.", value_hint="FILE_PATH" })
+
+            assert.equal(
+                [[Usage: thing [--help]
+
+Positional Arguments:
+    thing FILE_PATH    Test.
+
+Options:
+    --help -h    Show this help message and exit.
+]],
+                parser:get_full_help("")
+            )
+        end)
+    end)
 end)
 
 describe("set_defaults", function()
