@@ -296,43 +296,31 @@ thing]],
         end)
 
         it("errors if a position argument in the middle of parse that is not given a value", function()
-            -- TODO: Finish
-            -- local parser = {
-            --     foo = {
-            --         another = { "blah" },
-            --         bar = {
-            --             {
-            --                 option_type = argparse.ArgumentType.named,
-            --                 name = "fizz",
-            --             },
-            --         },
-            --     },
-            -- }
-            --
-            -- assert.same(
-            --     { success = false, messages = { 'Missing argument. Need one of: "another, bar".' } },
-            --     completion.validate_options(parser, _parse("foo --fizz "))
-            -- )
+            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ name = "foo", help = "Test." })
+            parser:add_parameter({ name = "bar", help = "Test." })
+            parser:add_parameter({ name = "--fizz", help = "Test." })
+
+            local success, result = pcall(function()
+                parser:parse_arguments("some --fizz=thing")
+            end)
+
+            assert.is_false(success)
+            assert.equal('Parameter "bar" must be defined.', result)
         end)
 
         it("errors if a position argument at the end of a parse that is not given a value", function()
-            -- TODO: Finish
-            -- local parser = {
-            --     foo = {
-            --         another = { "blah" },
-            --         bar = {
-            --             {
-            --                 option_type = argparse.ArgumentType.named,
-            --                 name = "fizz",
-            --             },
-            --         },
-            --     },
-            -- }
-            --
-            -- assert.same(
-            --     { success = false, messages = { 'Missing argument. Need one of: "blah".' } },
-            --     completion.validate_options(parser, _parse("foo another "))
-            -- )
+            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ name = "foo", help = "Test." })
+            parser:add_parameter({ name = "bar", help = "Test." })
+            parser:add_parameter({ name = "thing", help = "Test." })
+
+            local success, result = pcall(function()
+                parser:parse_arguments("some fizz")
+            end)
+
+            assert.is_false(success)
+            assert.equal('Parameter "thing" must be defined.', result)
         end)
     end)
 end)
