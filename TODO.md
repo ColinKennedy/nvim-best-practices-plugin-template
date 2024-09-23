@@ -87,6 +87,7 @@ allow fuzzy matching too
  - Make sure they know that explicit --help shows the full message
 
 
+- Make sure API docs generation works
 
 ## Extra Features
 - Check files for syntax errors using tree-sitter parsers (via Neovim)?
