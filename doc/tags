@@ -7,6 +7,7 @@ plugin-template-configuration-telescope	plugin-template.txt	/*plugin-template-co
 plugin-template-features	plugin-template.txt	/*plugin-template-features*
 plugin-template-installation	plugin-template.txt	/*plugin-template-installation*
 plugin-template-links	plugin-template.txt	/*plugin-template-links*
+plugin-template-new-breaking	news.txt	/*plugin-template-new-breaking*
 plugin-template-new-features	news.txt	/*plugin-template-new-features*
 plugin-template-news.txt	news.txt	/*plugin-template-news.txt*
 plugin-template-other-plugins	plugin-template.txt	/*plugin-template-other-plugins*

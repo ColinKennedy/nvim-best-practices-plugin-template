@@ -24,8 +24,8 @@ Copy the log data from the given `path` to the user's clipboard.
 
 Parameters ~
     {path} `(string?)`
-        A path on-disk to look for logs. If none is given, the default fallback
-        location is used instead.
+       A path on-disk to look for logs. If none is given, the default fallback
+       location is used instead.
 
 ------------------------------------------------------------------------------
                                   *plugin_template.run_hello_world_say_phrase()*
@@ -36,11 +36,11 @@ Print `phrase` according to the other options.
 
 Parameters ~
     {phrase} `(string[])`
-        The text to say.
+       The text to say.
     {repeat_} `(number?)`
-        A 1-or-more value. The number of times to print `word`.
+       A 1-or-more value. The number of times to print `word`.
     {style} `(string?)`
-        Control how the text should be shown.
+       Control how the text should be shown.
 
 ------------------------------------------------------------------------------
                                     *plugin_template.run_hello_world_say_word()*
@@ -51,11 +51,11 @@ Print `phrase` according to the other options.
 
 Parameters ~
     {word} `(string)`
-        The text to say.
+       The text to say.
     {repeat_} `(number?)`
-        A 1-or-more value. The number of times to print `word`.
+       A 1-or-more value. The number of times to print `word`.
     {style} `(string?)`
-        Control how the text should be shown.
+       Control how the text should be shown.
 
 ------------------------------------------------------------------------------
                               *plugin_template.run_goodnight_moon_count_sheep()*
