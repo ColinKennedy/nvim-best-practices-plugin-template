@@ -108,12 +108,19 @@ local texter = require("plugin_template._core.texter")
 ---@field help string
 ---    Explain what types of parsers this object is meant to hold Keep it
 ---    brief (< 88 characters).
+---@field name string
+---    The identifier for all parsers under this instance.
 ---@field parent argparse2.ParameterParser?
 ---    The parser that owns this instance, if any.
 ---@field required boolean?
 ---    If `true` then one of the parser children must be matched or the user's
 ---    argument input is considered invalid. If `false` then the inner parser
 ---    does not have to be explicitly written. Defaults to false.
+
+---@class argparse2.SubparsersInputOptions: argparse2.SubparsersOptions
+---    Customization options for the new argparse2.Subparsers.
+---@field [1] string?
+---    A shorthand for the subparser name.
 
 local M = {}
 
@@ -1338,13 +1345,22 @@ end
 
 --- Create a new group of parsers.
 ---
----@param options argparse2.SubparsersOptions Customization options for the new argparse2.Subparsers.
----@return argparse2.Subparsers # A group of parsers (which will be filled with parsers later).
+---@param options argparse2.SubparsersInputOptions | argparse2.SubparsersOptions
+---    Customization options for the new argparse2.Subparsers.
+---@return argparse2.Subparsers
+---    A group of parsers (which will be filled with parsers later).
 ---
 function M.Subparsers.new(options)
+    if not options.name and options[1] then
+        options.name = options[1]
+    end
+    ---@cast options argparse2.SubparsersOptions
+
     --- @class argparse2.Subparsers
     local self = setmetatable({}, M.Subparsers)
 
+    self.name = options.name
+    self.visited = false  -- NOTE: Noting when a child parser is used / touched
     self._parent = options.parent
     self._parsers = {}
 
@@ -1653,6 +1669,41 @@ local function _compute_and_increment_parameter(parser, argument_name, arguments
 
     return _compute_exact_position_match(argument_name, parser)
 end
+
+-- TODO: Remove?
+-- local function _get_subparser_issues(parser)
+--     local output = {}
+--
+--     -- NOTE: If a parser has all of its parameters filled out then we can
+--     -- assume that the user will try to get a subparser next.
+--     --
+--     for _, subparser in ipairs(parser._subparsers) do
+--         if subparser.required and not subparser.visited then
+--             local names = {}
+--
+--             for _, parser_ in ipairs(subparser:get_parsers()) do
+--                 for _, name in ipairs(parser_:get_names()) do
+--                     if not vim.tbl_contains(names, name) then
+--                         table.insert(names, name)
+--                     end
+--                 end
+--             end
+--
+--             if not vim.tbl_isempty(names) then
+--                 table.insert(
+--                     output,
+--                     string.format(
+--                         'Missing subparser "%s". Expected one of %s.',
+--                         subparser.name,
+--                         vim.inspect(names)
+--                     )
+--                 )
+--             end
+--         end
+--     end
+--
+--     return output
+-- end
 
 ---@return string[] # Find all unfinished parameters in this instance.
 function M.ParameterParser:_get_issues()
@@ -2228,13 +2279,16 @@ function M.ParameterParser:_handle_subparsers(data, argument_name, namespace)
         end
     end
 
-    for parser in _iter_parsers(self) do
-        if vim.tbl_contains(parser:get_names(), argument_name) then
-            _validate_no_issues()
+    for _, subparser in ipairs(self._subparsers) do
+        for _, parser in ipairs(subparser:get_parsers()) do
+            if vim.tbl_contains(parser:get_names(), argument_name) then
+                _validate_no_issues()
 
-            parser:_parse_arguments(data, namespace)
+                parser:_parse_arguments(data, namespace)
+                subparser.visited = true
 
-            return true, parser
+                return true, parser
+            end
         end
     end
 
@@ -2342,6 +2396,58 @@ function M.ParameterParser:_compute_matching_parsers(arguments)
     -- return output
 end
 
+--- Tell the user how to solve the unparseable `argument`
+---
+--- Raises:
+---     All issue(s) found, assuming 1+ issue was found.
+
+---@param argparse.ArgparseArgument Some position / flag that we don't know what to do with.
+---
+function M.ParameterParser:_raise_suggested_fix(argument)
+    local names = {}
+
+    for _, parameter in ipairs(self:get_all_parameters()) do
+        if parameter.required and not parameter:is_exhausted() then
+            table.insert(names, parameter.names[1])
+        end
+    end
+
+    -- TODO: Combine this duplicated code witgh the other code
+    for _, subparser in ipairs(self._subparsers) do
+        if not subparser.visited then
+            for _, parser in ipairs(subparser:get_parsers()) do
+                for _, name in ipairs(parser:get_names()) do
+                    if not vim.tbl_contains(names, name) then
+                        table.insert(names, name)
+                    end
+                end
+            end
+        end
+    end
+
+    if vim.tbl_isempty(names) then
+        return
+    end
+
+    if #names == 1 then
+        local message = string.format(
+            'Got unexpected "%s" value. Did you mean one of this incomplete parameter? %s',
+            argument.name or argument.value,
+            vim.fn.join(names, "\n")
+        )
+
+        error(message, 0)
+    end
+
+    local message = string.format(
+        'Got unexpected "%s" value. Did you mean one of these incomplete parameters?\n%s',
+        argument.name or argument.value,
+        vim.fn.join(names, "\n")
+    )
+
+    error(message, 0)
+end
+
 --- Parse user text `data`.
 ---
 ---@param data string | argparse.ArgparseResults
@@ -2355,6 +2461,17 @@ end
 ---    All of the parsed data as one group.
 ---
 function M.ParameterParser:_parse_arguments(data, namespace)
+    local function _validate_current_parser()
+        -- NOTE: Because `_parse_arguments` is called recursively, this validation
+        -- runs at every subparser level.
+        --
+        local issues = self:_get_issues()
+
+        if not vim.tbl_isempty(issues) then
+            error(vim.fn.join(issues, "\n"), 0)
+        end
+    end
+
     if type(data) == "string" then
         data = argparse.parse_arguments(data)
     end
@@ -2389,9 +2506,10 @@ function M.ParameterParser:_parse_arguments(data, namespace)
 
             found = self:_handle_exact_position_parameters(position_parameters, argument, namespace)
 
-            -- if not found then
-            --     -- TODO: Do something about this one
-            -- end
+            if not found then
+                self:_raise_suggested_fix(argument)
+            end
+
             index = index + 1
         elseif
             argument.argument_type == argparse.ArgumentType.named
@@ -2411,18 +2529,14 @@ function M.ParameterParser:_parse_arguments(data, namespace)
         if not found then
             -- TODO: Add a unittest
             -- NOTE: We lost our place in the parse so we can't continue.
+
+            _validate_current_parser()
+
             return {}
         end
     end
 
-    -- NOTE: Because `_parse_arguments` is called recursively, this validation
-    -- runs at every subparser level.
-    --
-    local issues = self:_get_issues()
-
-    if not vim.tbl_isempty(issues) then
-        error(vim.fn.join(issues, "\n"), 0)
-    end
+    _validate_current_parser()
 
     return namespace
 end
@@ -2434,7 +2548,20 @@ function M.ParameterParser:_reset_used()
             parameter._used = 0
         end
     end
+
+    -- TODO: Reset subparser.visited
 end
+
+-- TODO: Remove?
+-- function M.ParameterParser:is_exhausted()
+--     for _, parameter in ipairs(self:get_all_parameters()) do
+--         if parameter.required and not parameter:is_exhausted() then
+--             return false
+--         end
+--     end
+--
+--     return true
+-- end
 
 ---@return boolean # If all required parameters of this instance have values.
 function M.ParameterParser:is_satisfied()
@@ -2491,6 +2618,20 @@ end
 --
 --     return {}
 -- end
+
+--- Get all registered or implicit child parameters of this instance.
+---
+---@return argparse2.Parameter # All found parameters, if any.
+---
+function M.ParameterParser:get_all_parameters()
+    local output = {}
+
+    for _, parameter in tabler.chain(self:get_position_parameters(), self:get_flag_parameters()) do
+        table.insert(output, parameter)
+    end
+
+    return output
+end
 
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
@@ -2666,8 +2807,10 @@ end
 
 --- Create a group so we can add nested parsers underneath it later.
 ---
----@param options argparse2.SubparsersOptions Customization options for the new argparse2.Subparsers.
----@return argparse2.Subparsers # A new group of parsers.
+---@param options argparse2.SubparsersInputOptions | argparse2.SubparsersOptions
+---    Customization options for the new argparse2.Subparsers.
+---@return argparse2.Subparsers
+---    A new group of parsers.
 ---
 function M.ParameterParser:add_subparsers(options)
     local new_options = vim.tbl_deep_extend("force", options, { parent = self })

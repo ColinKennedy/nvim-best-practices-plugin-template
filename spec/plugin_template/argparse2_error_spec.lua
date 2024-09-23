@@ -89,6 +89,30 @@ describe("bad input", function()
             )
         end)
 
+        -- TODO: Finish later
+        -- it("includes nested subparsers argument choices - 001 required", function()
+        --     local parser = argparse2.ParameterParser.new({ help = "Test" })
+        --     parser:add_parameter({"thing", help="Test."})
+        --     local subparsers = parser:add_subparsers({"commands", help="Test."})
+        --     subparsers.required = true
+        --     subparsers:add_parser({"inner_command", choices={"foo", "bar", "thing"}})
+        --
+        --     local success, result = pcall(function()
+        --         parser:parse_arguments("foo")
+        --     end)
+        --
+        --     assert.is_false(success)
+        --     assert.equal('Parameter "thing" must be defined.', result)
+        --
+        --
+        --     success, result = pcall(function()
+        --         parser:parse_arguments("something not_valid")
+        --     end)
+        --
+        --     assert.is_false(success)
+        --     assert.equal('Subparser "commands" requires a name. Choices are tttta', result)
+        -- end)
+
         it("includes position argument choices", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ "foo", choices = { "aaa", "bbb", "zzz" }, help = "Test." })
@@ -104,8 +128,54 @@ describe("bad input", function()
             )
         end)
 
-        it("includes subparsers argument choices", function()
-            -- TODO: Finish
+        it("includes subparsers argument choices - 001 required", function()
+            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({"thing", help="Test."})
+            local subparsers = parser:add_subparsers({"commands", help="Test."})
+            subparsers.required = true
+            subparsers:add_parser({"inner_command", choices={"foo", "bar", "thing"}})
+
+            local success, result = pcall(function()
+                parser:parse_arguments("foo")
+            end)
+
+            assert.is_false(success)
+            assert.equal('Parameter "thing" must be defined.', result)
+
+
+            success, result = pcall(function()
+                parser:parse_arguments("something not_valid")
+            end)
+
+            assert.is_false(success)
+            assert.equal(
+                [[Got unexpected "not_valid" value. Did you mean one of these incomplete parameters?
+foo
+bar
+thing]],
+                result
+            )
+        end)
+
+        it("includes subparsers argument choices - 002 - required", function()
+            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({"thing", help="Test."})
+            local subparsers = parser:add_subparsers({"commands", help="Test."})
+            subparsers.required = false
+            subparsers:add_parser({"inner_command", choices={"foo", "bar", "thing"}})
+
+            local success, result = pcall(function()
+                parser:parse_arguments("something not_valid_subparser")
+            end)
+
+            assert.is_false(success)
+            assert.equal(
+            [[Got unexpected "not_valid_subparser" value. Did you mean one of these incomplete parameters?
+foo
+bar
+thing]],
+                result
+            )
         end)
     end)
 
