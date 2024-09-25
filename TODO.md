@@ -1,5 +1,34 @@
 - Try to get the CI working for Linux / Mac / Windows again
 
+- make sure namesapce aggregation works as expected (default [set] vs store_true / store_false / append / etc)
+
+- nargs 2
+ - store_true
+ - store_false
+ - append
+  - --foo bar --foo buzz = {bar, buzz}
+ - count
+  - --foo one two == 1, --foo one two --foo three four == 2,
+  - make sure it's consistent with Python
+
+- nargs *
+ - store_true
+ - store_false
+ - append
+  - --foo bar --foo buzz = {bar, buzz}
+ - count
+  - --foo one two == 1, --foo one two --foo three four == 2,
+  - make sure it's consistent with Python
+
+- nargs +
+ - store_true
+ - store_false
+ - append
+  - --foo bar --foo buzz = {bar, buzz}
+ - count
+  - --foo one two == 1, --foo one two --foo three four == 2,
+  - make sure it's consistent with Python
+
 - Make sure nargs works as it does in Python, basically
 - Make sure nargs 2 and action append get proper parsed data
 - Make sure action (set, store_true, append, etc) work with nargs (nargs *, +, Number, etc)
