@@ -2227,7 +2227,7 @@ end
 ---     If a flag is found and a value is expected but we fail to get a value for it.
 ---
 ---@param flags argparse2.Parameter[]
----    All `-f`, `--foo`, `-f=asdf`, and `--foo=asdf`, parameters to check.
+---    All `-f`, `--foo`, `-f=ttt`, and `--foo=ttt`, parameters to check.
 ---@param arguments argparse.ArgparseArgument[]
 ---    The arguments to match against `flags`. If a match is found, the
 ---    remainder of the arguments are treated as **values** for the found
