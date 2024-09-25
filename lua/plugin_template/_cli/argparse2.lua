@@ -2229,9 +2229,9 @@ end
 ---@param flags argparse2.Parameter[]
 ---    All `-f`, `--foo`, `-f=ttt`, and `--foo=ttt`, parameters to check.
 ---@param arguments argparse.ArgparseArgument[]
----    The arguments to match against `flags`. If a match is found, the
----    remainder of the arguments are treated as **values** for the found
----    parameter.
+---    The arguments to match against `flags`. If the first element in
+---    `arguments` matches one of `flags`, the **remainder** of the arguments
+---    are treated as **values** for the found parameter.
 ---@param namespace argparse2.Namespace
 ---    A container for the found match(es).
 ---@return boolean
