@@ -1343,11 +1343,11 @@ end
 local function _validate_parameter_options(options)
     if vim.tbl_contains(_FLAG_ACTIONS, options.action) then
         if options.choices ~= nil then
-            error(string.format('Parameter "%s" cannot use action and choices at the same time.', options.names[1]), 0)
+            error(string.format('Parameter "%s" cannot use action "%s" and choices at the same time.', options.names[1], options.action), 0)
         end
 
         if options.nargs ~= 0 then
-            error(string.format('Parameter "%s" cannot use action and nargs at the same time.', options.names[1]), 0)
+            error(string.format('Parameter "%s" cannot use action "%s" and nargs at the same time.', options.names[1], options.action), 0)
         end
     end
 end
@@ -2356,9 +2356,6 @@ function M.ParameterParser:_handle_exact_position_parameters(positions, argument
                 return argument_.name or argument_.value
             end)
             :totable()
-    end
-
-    local function _validate_position(position, found)
     end
 
     for _, position in ipairs(positions) do

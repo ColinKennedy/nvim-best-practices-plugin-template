@@ -1,36 +1,19 @@
-- Do flags like --foo get parsed as position arguments if "--foo"? If not, fix
+```
+- nargs 2
+ - append
+- nargs *
+ - append
+- nargs +
+ - append
+  - --foo bar --foo buzz = {bar, buzz}
+
+```
+
 - Try to get the CI working for Linux / Mac / Windows again
 
 - Fix all `choices()` calls. They're missing context
 
 - make sure namesapce aggregation works as expected (default [set] vs store_true / store_false / append / etc)
-
-- nargs 2
- - store_true
- - store_false
- - append
-  - --foo bar --foo buzz = {bar, buzz}
- - count
-  - --foo one two == 1, --foo one two --foo three four == 2,
-  - make sure it's consistent with Python
-
-- nargs *
- - store_true
- - store_false
- - append
-  - --foo bar --foo buzz = {bar, buzz}
- - count
-  - --foo one two == 1, --foo one two --foo three four == 2,
-  - make sure it's consistent with Python
-
-- nargs +
- - store_true
- - store_false
- - append
-  - --foo bar --foo buzz = {bar, buzz}
- - count
-  - --foo one two == 1, --foo one two --foo three four == 2,
-  - make sure it's consistent with Python
 
 - Make sure nargs works as it does in Python, basically
 - Make sure nargs 2 and action append get proper parsed data

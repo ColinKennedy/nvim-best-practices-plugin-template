@@ -15,7 +15,7 @@ describe("bad input", function()
             end)
 
             assert.is_false(success)
-            assert.equal('Parameter "--foo" cannot use action and choices at the same time.', result)
+            assert.equal('Parameter "--foo" cannot use action "store_true" and choices at the same time.', result)
         end)
 
         it("errors if you define a nargs + flag argument", function()
@@ -26,7 +26,7 @@ describe("bad input", function()
             end)
 
             assert.is_false(success)
-            assert.equal('Parameter "--foo" cannot use action and nargs at the same time.', result)
+            assert.equal('Parameter "--foo" cannot use action "store_true" and nargs at the same time.', result)
         end)
 
         it("errors if a custom type=foo doesn't return a value - 001", function()
@@ -177,6 +177,140 @@ bar
 thing]],
                 result
             )
+        end)
+
+        describe("nargs", function()
+            describe("nargs number", function()
+                it("works with nargs=2 + count", function()
+                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+
+                    local success, result = pcall(function()
+                        parser:add_parameter({"foo", nargs=2, action="count"})
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal(
+                        'Parameter "foo" cannot use action "count" and nargs at the same time.',
+                        result
+                    )
+                end)
+
+                it("works with nargs=2 + store_false", function()
+                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+
+                    local success, result = pcall(function()
+                        parser:add_parameter({"foo", nargs=2, action="store_false"})
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal(
+                        'Parameter "foo" cannot use action "store_false" and nargs at the same time.',
+                        result
+                    )
+                end)
+
+                it("works with nargs=2 + store_true", function()
+                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+
+                    local success, result = pcall(function()
+                        parser:add_parameter({"foo", nargs=2, action="store_true"})
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal(
+                        'Parameter "foo" cannot use action "store_true" and nargs at the same time.',
+                        result
+                    )
+                end)
+            end)
+
+            describe("nargs *", function()
+                it("works with nargs=* + count", function()
+                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+
+                    local success, result = pcall(function()
+                        parser:add_parameter({"foo", nargs="*", action="count"})
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal(
+                        'Parameter "foo" cannot use action "count" and nargs at the same time.',
+                        result
+                    )
+                end)
+
+                it("works with nargs=* + store_false", function()
+                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+
+                    local success, result = pcall(function()
+                        parser:add_parameter({"foo", nargs="*", action="store_false"})
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal(
+                        'Parameter "foo" cannot use action "store_false" and nargs at the same time.',
+                        result
+                    )
+                end)
+
+                it("works with nargs=* + store_true", function()
+                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+
+                    local success, result = pcall(function()
+                        parser:add_parameter({"foo", nargs="*", action="store_true"})
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal(
+                        'Parameter "foo" cannot use action "store_true" and nargs at the same time.',
+                        result
+                    )
+                end)
+            end)
+
+            describe("nargs +", function()
+                it("works with nargs=+ + count", function()
+                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+
+                    local success, result = pcall(function()
+                        parser:add_parameter({"foo", nargs="+", action="count"})
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal(
+                        'Parameter "foo" cannot use action "count" and nargs at the same time.',
+                        result
+                    )
+                end)
+
+                it("works with nargs=+ + store_false", function()
+                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+
+                    local success, result = pcall(function()
+                        parser:add_parameter({"foo", nargs="+", action="store_false"})
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal(
+                        'Parameter "foo" cannot use action "store_false" and nargs at the same time.',
+                        result
+                    )
+                end)
+
+                it("works with nargs=+ + store_true", function()
+                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+
+                    local success, result = pcall(function()
+                        parser:add_parameter({"foo", nargs="+", action="store_true"})
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal(
+                        'Parameter "foo" cannot use action "store_true" and nargs at the same time.',
+                        result
+                    )
+                end)
+            end)
         end)
     end)
 
