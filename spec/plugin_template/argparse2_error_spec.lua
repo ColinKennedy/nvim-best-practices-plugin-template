@@ -6,7 +6,7 @@
 local argparse2 = require("plugin_template._cli.argparse2")
 
 describe("bad input", function()
-    describe("choices", function()
+    describe("parsers definition issues", function()
         it("errors if you define a flag argument with choices", function()
             local parser = argparse2.ParameterParser.new({ help = "Test" })
 
@@ -186,6 +186,19 @@ thing]],
             parser:add_parameter({ name = "foo", required = false, help = "Test." })
 
             parser:parse_arguments("")
+        end)
+
+        it("errors if a flag is given instead of an expected position", function()
+            local parser = argparse2.ParameterParser.new({ help = "Test." })
+
+            parser:add_parameter({ "foo", help = "Test." })
+
+            local success, result = pcall(function()
+                parser:parse_arguments("--not=a_position")
+            end)
+
+            assert.is_false(success)
+            assert.equal('Parameter "foo" must be defined.', result)
         end)
 
         it("errors if nargs doesn't get enough expected values", function()

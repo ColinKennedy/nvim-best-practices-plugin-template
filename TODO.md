@@ -1,4 +1,7 @@
+- Do flags like --foo get parsed as position arguments if "--foo"? If not, fix
 - Try to get the CI working for Linux / Mac / Windows again
+
+- Fix all `choices()` calls. They're missing context
 
 - make sure namesapce aggregation works as expected (default [set] vs store_true / store_false / append / etc)
 

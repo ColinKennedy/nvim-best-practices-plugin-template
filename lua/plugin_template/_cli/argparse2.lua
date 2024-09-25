@@ -1165,7 +1165,7 @@ local function _expand_type_options(options)
         -- NOTE: Do nothing. Assume the user knows what they're doing.
         return
     else
-        error(string.format('Type "%s" is unknown. We can\'t parse it.', _concise_inspect(options)))
+        error(string.format('Type "%s" is unknown. We can\'t parse it.', _concise_inspect(options)), 0)
     end
 end
 
@@ -1211,7 +1211,11 @@ local function _expand_choices_options(options)
         choices = input
     else
         error(
-            string.format('Got invalid "%s" choices. Expected a list or a function.', _concise_inspect(options.choices))
+            string.format( -- NOTE: choices has to be a known format.
+                'Got invalid "%s" choices. Expected a string[] or a function.',
+                _concise_inspect(options.choices)
+            ),
+            0
         )
     end
 
@@ -1315,13 +1319,14 @@ local function _expand_parameter_names(options)
                     "Parameter names have to be the same type. "
                         .. 'e.g. If one name starts with "-", all names '
                         .. 'must start with "-" and vice versa.'
-                )
+                ),
+                0
             )
         end
     end
 
     if not found_type then
-        error('Options "%s" must provide at least one name.', vim.inspect(names))
+        error(string.format('Options "%s" must provide at least one name.', vim.inspect(names)), 0)
     end
 
     options.names = names
@@ -1354,7 +1359,7 @@ end
 local function _validate_name(options)
     -- TODO: name is required
     if not options.name or _is_whitespace(options.name) then
-        error(string.format('Parameter "%s" must have a name.', _concise_inspect(options)))
+        error(string.format('Parameter "%s" must have a name.', _concise_inspect(options)), 0)
     end
 end
 
@@ -1840,7 +1845,7 @@ function M.ParameterParser:_get_completion(data, column)
     local finished = index == #stripped.arguments - 1
 
     if not finished then
-        error("TODO: Add support for this, somehow")
+        error("TODO: Add support for this, somehow", 0)
     end
 
     local last = stripped.arguments[#stripped.arguments]
@@ -2115,7 +2120,7 @@ local function _get_used_arguments_count(flag)
 
     if nargs == _ONE_OR_MORE or nargs == _ZERO_OR_MORE then
         -- TODO: Add support here
-        error("TODO: Need to write this")
+        error("TODO: Need to write this", 0)
 
         -- for index, argument_ in ipairs(arguments) do
         --     if argument_.argument_type ~= argparse.ArgumentType.position then
@@ -2126,7 +2131,66 @@ local function _get_used_arguments_count(flag)
         -- return nil
     end
 
-    error("Unknown situation. This is a bug. Fix!")
+    error("Unknown situation. This is a bug. Fix!", 0)
+end
+
+--- Check `position` for matching, contiguous `arguments`.
+---
+---@param position argparse2.Parameter
+---    The `foo`, `bar`, etc parameter to check.
+---@param arguments argparse.ArgparseArgument[]
+---    The arguments to match against `positions`. Every element in `arguments`
+---    is checked.
+local function _get_used_position_arguments_count(position, arguments)
+    local nargs = position:get_nargs()
+
+    if type(nargs) == "number" then
+        for index = 1, nargs do
+            if arguments[index].argument_type ~= argparse.ArgumentType.position then
+                error(
+                    string.format(
+                        'Parameter "%s" requires "%s" values. Got "%s" values.',
+                        position.names[1],
+                        nargs,
+                        index
+                    ),
+                    0
+                )
+            end
+        end
+
+        return nargs
+    end
+
+    local found = 0
+
+    for index, argument in ipairs(arguments) do
+        if argument.argument_type ~= argparse.ArgumentType.position then
+            return found
+        end
+
+        found = index
+    end
+
+    if nargs == _ONE_OR_MORE then
+        if found == 0 then
+            error(string.format('Parameter "%s" requires a value.', position.names[1]), 0)
+        end
+    elseif type(nargs) == "number" then
+        if found < nargs then
+            error(
+                string.format(
+                    'Parameter "%s" requires "%s" values. Got "%s" value.',
+                    position.names[1],
+                    nargs,
+                    found
+                ),
+                0
+            )
+        end
+    end
+
+    return found
 end
 
 --- Raise an error if `arguments` are not valid input for `flag`.
@@ -2209,7 +2273,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             -- TODO: Need to handle expression statements here, I think. Somehow.
 
             local total = 1 -- NOTE: Always include the current argument in the total
-            local count = 0
+            local count
             local values
 
             if argument.argument_type == argparse.ArgumentType.named then
@@ -2267,45 +2331,78 @@ end
 
 --- Add `positions` to `namespace` if they match `argument`.
 ---
----@param positions argparse2.Parameter[] All `foo`, `bar`, etc parameters to check.
----@param argument argparse.ArgparseArgument The argument to check for `positions` matches.
----@param namespace argparse2.Namespace # A container for the found match(es).
----@return boolean # If a match was found, return `true`.
+---@param positions argparse2.Parameter[]
+---    All `foo`, `bar`, etc parameters to check.
+---@param arguments argparse.ArgparseArgument[]
+---    The arguments to match against `positions`. If a match is found, the
+---    remainder of the arguments are treated as **values** for the found
+---    parameter.
+---@param namespace argparse2.Namespace
+---    A container for the found match(es).
+---@return boolean
+---    If a match was found, return `true`.
+---@return number
+---    The number of arguments used by the found flag, if any.
 ---
-function M.ParameterParser:_handle_exact_position_parameters(positions, argument, namespace)
+function M.ParameterParser:_handle_exact_position_parameters(positions, arguments, namespace)
+    -- TODO: Consider combining this function with the other duplicate
+    local function _get_values(arguments_, count)
+        if count == 1 then
+            return arguments_[1].value
+        end
+
+        return vim.iter(tabler.get_slice(arguments_, 1, count + 1))
+            :map(function(argument_)
+                return argument_.name or argument_.value
+            end)
+            :totable()
+    end
+
+    local function _validate_position(position, found)
+    end
+
     for _, position in ipairs(positions) do
         if not position:is_exhausted() then
+            local total = _get_used_position_arguments_count(position, arguments)
+
             local name = position:get_nice_name()
-            local value = argument.value
+            local values = _get_values(arguments, total)
 
             if position.choices then
                 local choices = position.choices()
+                local values_ = values
 
-                if not vim.tbl_contains(choices, value) then
-                    error(
-                        string.format(
-                            'Parameter "%s" got invalid "%s" value. Expected one of %s.',
-                            position.names[1],
-                            value,
-                            vim.inspect(vim.fn.sort(choices))
-                        ),
-                        0
-                    )
+                if type(values) ~= "table" then
+                    values_ = { values }
+                end
+
+                for _, value in ipairs(values_) do
+                    if not vim.tbl_contains(choices, value) then
+                        error(
+                            string.format(
+                                'Parameter "%s" got invalid "%s" value. Expected one of %s.',
+                                position.names[1],
+                                value,
+                                vim.inspect(vim.fn.sort(choices))
+                            ),
+                            0
+                        )
+                    end
                 end
             end
 
-            value = position:get_type()(argument.value)
+            local value = position:get_type()(values)
             local action = position:get_action()
 
             action({ namespace = namespace, name = name, value = value })
 
             position:increment_used()
 
-            return true
+            return true, total
         end
     end
 
-    return false
+    return false, 0
 end
 
 --- Check if `argument_name` matches a registered subparser.
@@ -2552,13 +2649,15 @@ function M.ParameterParser:_parse_arguments(data, namespace)
                 return namespace
             end
 
-            found = self:_handle_exact_position_parameters(position_parameters, argument, namespace)
+            local arguments = tabler.get_slice(data.arguments, index)
+            local used_arguments
+            found, used_arguments = self:_handle_exact_position_parameters(position_parameters, arguments, namespace)
 
             if not found then
                 self:_raise_suggested_fix(argument)
             end
 
-            index = index + 1
+            index = index + used_arguments
         elseif
             argument.argument_type == argparse.ArgumentType.named
             or argument.argument_type == argparse.ArgumentType.flag
