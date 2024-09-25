@@ -31,9 +31,7 @@
 
 - Make sure nargs works as it does in Python, basically
 - Make sure nargs 2 and action append get proper parsed data
-- Make sure action (set, store_true, append, etc) work with nargs (nargs *, +, Number, etc)
-- Make sure action (set, store_true, append, etc) work with type (make sure values are converted to number and stuff as expected)
-- make sure namesapce aggregation works as expected (default [set] vs store_true / store_false / append / etc)
+- Double check how Python handles action + type at the same time. e.g. how does action (set, store_true, append, etc) work with type (make sure values are converted to number and stuff as expected)
 
 - remove private variable accesses
 
