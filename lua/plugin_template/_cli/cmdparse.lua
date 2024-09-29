@@ -138,9 +138,10 @@ local _ActionConstant = { count = "count", store_false = "store_false", store_tr
 local _FLAG_ACTIONS = { _ActionConstant.count, _ActionConstant.store_false, _ActionConstant.store_true }
 
 M.ChoiceContext = {
-    parameter_names = "parameter_names",
+    auto_completing = "auto_completing",
     error_message = "error_message",
     help_message = "help_message",
+    parameter_names = "parameter_names",
     position_matching = "position_matching",
     value_matching = "value_matching",
 }
