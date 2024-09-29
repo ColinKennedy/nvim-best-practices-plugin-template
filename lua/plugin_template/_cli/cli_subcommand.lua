@@ -22,7 +22,7 @@ local M = {}
 ---    preferred way to make parsers).
 ---@field complete (fun(data: plugin_template.CompleteData): string[])?
 ---    Command completions callback, the `data` are  the lead of the subcommand's arguments
----@field parser (fun(): argparse2.ParameterParser)?
+---@field parser (fun(): cmdparse.ParameterParser)?
 ---    The primary parser used for subcommands. It handles auto-complete,
 ---    expression-evaluation, and running a user's code.
 ---@field run (fun(data: plugin_template.SubcommandRun): nil)?
@@ -35,9 +35,9 @@ local M = {}
 ---@field parsed_arguments argparse.ArgparseResults
 ---    The parsed arguments (that the user is now trying to execute some function with).
 
----@alias plugin_template.ParserCreator fun(): argparse2.ParameterParser
+---@alias plugin_template.ParserCreator fun(): cmdparse.ParameterParser
 
----@alias plugin_template.Subcommands table<string, plugin_template.Subcommand | fun(): argparse2.ParameterParser>
+---@alias plugin_template.Subcommands table<string, plugin_template.Subcommand | fun(): cmdparse.ParameterParser>
 
 --- Check if `full` contains `prefix` + whitespace.
 ---
@@ -135,7 +135,7 @@ end
 
 --- Run `parser` and pass it the user's raw input `text`.
 ---
----@param parser argparse2.ParameterParser The decision tree that parses and runs `text`.
+---@param parser cmdparse.ParameterParser The decision tree that parses and runs `text`.
 ---@param text string The (unparsed) text that user provides from COMMAND mode.
 ---
 local function _run_subcommand(parser, text)
@@ -216,7 +216,7 @@ function M.make_parser_triager(parser_creator)
             return
         end
 
-        ---@cast result argparse2.Namespace The found values.
+        ---@cast result cmdparse.Namespace The found values.
 
         if result.execute then
             -- TODO: Make sure this has the right type-hint

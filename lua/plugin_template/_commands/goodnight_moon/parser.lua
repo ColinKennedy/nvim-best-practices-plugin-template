@@ -3,13 +3,13 @@
 ---@module 'plugin_template._commands.goodnight_moon.parser'
 ---
 
-local argparse2 = require("plugin_template._cli.argparse2")
+local cmdparse = require("plugin_template._cli.cmdparse")
 
 local M = {}
 
----@return argparse2.ParameterParser # The main parser for the `:PluginTemplate goodnight-moon` command.
+---@return cmdparse.ParameterParser # The main parser for the `:PluginTemplate goodnight-moon` command.
 function M.make_parser()
-    local parser = argparse2.ParameterParser.new({ "goodnight-moon", help = "Prepare to sleep or sleep." })
+    local parser = cmdparse.ParameterParser.new({ "goodnight-moon", help = "Prepare to sleep or sleep." })
     local subparsers =
         parser:add_subparsers({ destination = "commands", help = "All goodnight-moon commands.", required = true })
 

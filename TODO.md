@@ -15,9 +15,13 @@
 
 - Do a round of finishing TODO notes
 
+- Make sure the README.md commands work
+
+- The documentation.yml `tags` CI runner doesn't work. Fix!
+
 - Consider allowing unicode things
 
-- Make sre the CI works
+- Make sure the CI works
  - llscheck
  - release
  - test
@@ -25,6 +29,11 @@
  --- luacheck
  --- news
  --- stylua
+
+- Add badges to the README.md
+ - RSS
+ - Stylua
+ - etc
 
 - Consider changing argparse so that it registers any argument that starts with
 a non-alpha / ' / " as a flag argument. Instead of the current setup which only

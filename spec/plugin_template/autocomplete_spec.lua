@@ -3,19 +3,19 @@
 ---@module 'plugin_template.autocomplete_spec'
 ---
 
-local argparse2 = require("plugin_template._cli.argparse2")
+local cmdparse = require("plugin_template._cli.cmdparse")
 
 -- TODO: Allow ++foo arguments instead of --
 
----@return argparse2.ParameterParser # Create a tree of commands for unittests.
+---@return cmdparse.ParameterParser # Create a tree of commands for unittests.
 
 --- Add `--repeat=` to `parser`.
 ---
----@param parser argparse2.ParameterParser Some tree to add a new parameter.
+---@param parser cmdparse.ParameterParser Some tree to add a new parameter.
 ---
 local function _add_repeat_parameter(parser)
     local choices = function(data)
-        --- @cast data argparse2.ChoiceData?
+        --- @cast data cmdparse.ChoiceData?
 
         local output = {}
 
@@ -49,7 +49,7 @@ end
 
 --- Add `--style=` to `parser`.
 ---
----@param parser argparse2.ParameterParser Some tree to add a new parameter.
+---@param parser cmdparse.ParameterParser Some tree to add a new parameter.
 ---
 local function _add_style_parameter(parser)
     parser:add_parameter({
@@ -59,9 +59,9 @@ local function _add_style_parameter(parser)
     })
 end
 
----@return argparse2.ParameterParser # Create a `say {phrase,word} [--repeat --style]`.
+---@return cmdparse.ParameterParser # Create a `say {phrase,word} [--repeat --style]`.
 local function _make_simple_parser()
-    local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
+    local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test." })
     local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
     local say = subparsers:add_parser({ name = "say", help = "Print stuff to the terminal." })
     local say_subparsers = say:add_subparsers({ destination = "say_commands", help = "All commands that print." })
@@ -76,9 +76,9 @@ local function _make_simple_parser()
     return parser
 end
 
----@return argparse2.ParameterParser # Create a tree of commands for unittests.
+---@return cmdparse.ParameterParser # Create a tree of commands for unittests.
 local function _make_style_parser()
-    local parser = argparse2.ParameterParser.new({ name = "test", help = "Test" })
+    local parser = cmdparse.ParameterParser.new({ name = "test", help = "Test" })
     local choice = { "lowercase", "uppercase" }
     parser:add_parameter({
         name = "--style",
@@ -111,7 +111,7 @@ describe("plugin", function()
         ---    The name of the parser to register.
         ---@field help string
         ---    A description of what this plugin does. Keep it brief! < 80 characters.
-        ---@field add_parameters (fun(parser: argparse2.ParameterParser): nil)?
+        ---@field add_parameters (fun(parser: cmdparse.ParameterParser): nil)?
         ---    The callback used to add extra
 
         ---@return TeleskopePluginData[] # All of the Teleskope-registered plugin.
@@ -142,7 +142,7 @@ describe("plugin", function()
             }
         end
 
-        local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test." })
         local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
         local teleskope = subparsers:add_parser({ name = "Teleskope", help = "Something." })
         local teleskope_subparsers = teleskope:add_subparsers({ "teleskope_commands", help = "Test." })
@@ -178,7 +178,7 @@ describe("simple", function()
     end)
 
     it("works when two positions start with the same text", function()
-        local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test." })
         local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
         local bottle = subparsers:add_parser({ name = "bottle", help = "Something." })
         local bottle_subparsers = bottle:add_subparsers({ destination = "bottle", help = "Test." })
@@ -200,7 +200,7 @@ describe("simple", function()
     end)
 
     it("works when two positions start with the same text - 002", function()
-        local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test." })
         local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
         local bottle = subparsers:add_parser({ name = "bottle", help = "Something." })
         local bottle_subparsers = bottle:add_subparsers({ destination = "bottle", help = "Test." })
@@ -225,7 +225,7 @@ describe("simple", function()
     end)
 
     it("works when two positions start with the same text - 003", function()
-        local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test." })
         local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
         local bottle = subparsers:add_parser({ name = "bottle", help = "Something." })
         local bottle_subparsers = bottle:add_subparsers({ destination = "bottle", help = "Test." })
@@ -277,7 +277,7 @@ describe("simple", function()
     end)
 
     it("works even if there is a named / position argument at the same time - 003", function()
-        local parser = argparse2.ParameterParser.new({ name = "test", help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ name = "test", help = "Test" })
         local choice = { "lowercase", "uppercase" }
         parser:add_parameter({
             name = "--style",
@@ -430,7 +430,7 @@ describe("named argument", function()
     end)
 
     it("does not auto-complete if the name does not match", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
 
         local choices = function(data)
             local output = {}
@@ -456,7 +456,7 @@ describe("named argument", function()
     end)
 
     it("does not auto-complete the name anymore and auto-completes the value", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
 
         parser:add_parameter({
             names = { "--style", "-s" },
@@ -487,7 +487,7 @@ describe("named argument", function()
     end)
 
     it("suggests new named argument values based on the current value", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
         _add_repeat_parameter(parser)
 
@@ -515,7 +515,7 @@ describe("flag argument", function()
     -- end)
 
     it("does not auto-complete if at the end of the flag - 001", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "-f", help = "Force it." })
 
         assert.same({}, parser:get_completion("-f", 1))
@@ -524,7 +524,7 @@ describe("flag argument", function()
 
     -- it("does not auto-complete if at the end of the flag - 002 #asdf", function()
     --     -- TODO: action store_true is not working producing the correct auto-complete
-    --     local parser = argparse2.ParameterParser.new({ help = "Test." })
+    --     local parser = cmdparse.ParameterParser.new({ help = "Test." })
     --     parser:add_parameter({ "-f", action="store_true", help = "Force it." })
     --
     --     assert.same({}, parser:get_completion("-f", 1))
@@ -534,7 +534,7 @@ end)
 
 describe("numbered count - named argument", function()
     it("works with count = 2", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:add_parameter({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2, help = "Test." })
 
         assert.same({ "--foo=" }, parser:get_completion("--fo"))
@@ -547,7 +547,7 @@ end)
 
 describe("numbered count - named argument", function()
     it("works with count = 2", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2, help = "Test." })
 
         assert.same({ "--foo=" }, parser:get_completion("--fo"))
@@ -561,7 +561,7 @@ end)
 describe("* count", function()
     describe("simple", function()
         it("works with position arguments", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ name = "thing", choices = { "foo" }, count = "*", help = "Test." })
 
             assert.same({ "foo", "--help" }, parser:get_completion(""))
@@ -587,7 +587,7 @@ describe("dynamic argument", function()
     end)
 
     it("works with positional arguments", function()
-        local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test" })
         local subparsers = parser:add_subparsers({ destination = "commands", help = "All main commands." })
         local say_parser = subparsers:add_parser({ name = "say", help = "Say something." })
         say_parser:add_parameter({

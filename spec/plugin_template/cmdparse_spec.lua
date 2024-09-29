@@ -1,11 +1,11 @@
---- Make sure that `argparse2` parses and auto-completes as expected.
+--- Make sure that `cmdparse` parses and auto-completes as expected.
 ---
----@module 'plugin_template.argparse2_spec'
+---@module 'plugin_template.cmdparse_spec'
 ---
 
-local argparse2 = require("plugin_template._cli.argparse2")
+local cmdparse = require("plugin_template._cli.cmdparse")
 
----@return argparse2.ParameterParser # Create a tree of commands for unittests.
+---@return cmdparse.ParameterParser # Create a tree of commands for unittests.
 local function _make_simple_parser()
     local choices = function(data)
         local value = data.text
@@ -47,7 +47,7 @@ local function _make_simple_parser()
         })
     end
 
-    local parser = argparse2.ParameterParser.new({ name = "top_test", help = "Test." })
+    local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test." })
     local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
     local say = subparsers:add_parser({ name = "say", help = "Print stuff to the terminal." })
     local say_subparsers = say:add_subparsers({ destination = "say_commands", help = "All commands that print." })
@@ -65,7 +65,7 @@ end
 describe("action", function()
     describe("action - append", function()
         it("simple", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ name = "--foo", action = "append", nargs = 1, count = "*", help = "Test." })
 
             assert.same({ foo = { "bar", "fizz", "buzz" } }, parser:parse_arguments("--foo=bar --foo=fizz --foo=buzz"))
@@ -74,7 +74,7 @@ describe("action", function()
 
     describe("action - custom function", function()
         it("external table", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             local values = { "a", "bb", "ccc" }
             parser:add_parameter({
                 name = "--foo",
@@ -95,7 +95,7 @@ describe("action", function()
 
     describe("action - store_false", function()
         it("simple", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ name = "--foo", action = "store_false", help = "Test." })
 
             assert.same({ foo = false }, parser:parse_arguments("--foo"))
@@ -104,7 +104,7 @@ describe("action", function()
 
     describe("action - store_true", function()
         it("simple", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ name = "--foo", action = "store_true", help = "Test." })
 
             assert.same({ foo = true }, parser:parse_arguments("--foo"))
@@ -114,13 +114,13 @@ end)
 
 describe("default", function()
     it("works with a #default", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
         assert.equal("Usage: [--help]", parser:get_concise_help(""))
     end)
 
     it("works with a #empty type", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:add_parameter({ name = "foo", help = "Test." })
 
         local namespace = parser:parse_arguments("12")
@@ -128,7 +128,7 @@ describe("default", function()
     end)
 
     it("shows the full #help if the user asks for it", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
         assert.equal(
             [[Usage: [--help]
@@ -209,7 +209,7 @@ Options:
         end)
 
         it("works with a parser that has more than one choice for its name", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test." })
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
             local subparsers = parser:add_subparsers({ destination = "commands", help = "Test." })
             subparsers:add_parser({ name = "thing", choices = { "aaa", "bbb", "ccc" }, help = "Do a thing." })
 
@@ -229,7 +229,7 @@ Options:
 
     describe("value_hint", function()
         it("works with named arguments", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test." })
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
             parser:add_parameter({ "--thing", help = "Test.", value_hint = "FILE_PATH" })
 
             assert.equal(
@@ -244,7 +244,7 @@ Options:
         end)
 
         it("works with position arguments", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test." })
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
             parser:add_parameter({ "thing", help = "Test.", value_hint = "FILE_PATH" })
 
             assert.equal(
@@ -264,7 +264,7 @@ end)
 
 describe("nargs", function()
     it("flag + nargs + should parse into a string[]", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "--items", nargs = 2, help = "Test." })
 
         local namespace = parser:parse_arguments("--items foo bar")
@@ -272,7 +272,7 @@ describe("nargs", function()
     end)
 
     it("flag + nargs=2 + append should parse into a string[][]", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "--items", action = "append", nargs = 2, help = "Test." })
 
         local success, result = pcall(function()
@@ -287,7 +287,7 @@ describe("nargs", function()
     end)
 
     it("flag + nargs=* + append should parse into a string[][]", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "--items", action = "append", nargs = "*", help = "Test." })
 
         local namespace = parser:parse_arguments("--items foo bar fizz buzz")
@@ -295,7 +295,7 @@ describe("nargs", function()
     end)
 
     it("flag + nargs=+ + append should error if no argument is given", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "--items", action = "append", nargs = "+", help = "Test." })
 
         local success, result = pcall(function()
@@ -307,7 +307,7 @@ describe("nargs", function()
     end)
 
     it("flag + nargs=+ + append should parse into a string[][]", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "--items", action = "append", nargs = "+", help = "Test." })
 
         local namespace = parser:parse_arguments("--items foo bar fizz buzz")
@@ -315,7 +315,7 @@ describe("nargs", function()
     end)
 
     it("flag + nargs=+ + append + count + type - #complex", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({
             "--items",
             action = "append",
@@ -331,7 +331,7 @@ describe("nargs", function()
     end)
 
     it("position + nargs=2 + append should parse into a string[][]", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "items", action = "append", nargs = 2, help = "Test." })
 
         local success, result = pcall(function()
@@ -346,7 +346,7 @@ describe("nargs", function()
     end)
 
     it("position + nargs=2 + append + count should parse into a string[][]", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "items", action = "append", count = "*", nargs = 2, help = "Test." })
 
         local namespace = parser:parse_arguments("foo bar fizz buzz")
@@ -354,7 +354,7 @@ describe("nargs", function()
     end)
 
     it("position + nargs=* + append should parse into a string[][]", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "items", action = "append", nargs = "*", count = "*", help = "Test." })
         parser:add_parameter({ "--foo", help = "Test." })
 
@@ -365,7 +365,7 @@ describe("nargs", function()
     end)
 
     it("position + nargs=+ + append should parse into a string[][]", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "items", action = "append", nargs = "+", help = "Test." })
 
         local namespace = parser:parse_arguments("foo bar fizz buzz")
@@ -375,7 +375,7 @@ end)
 
 describe("set_defaults", function()
     it("works with a basic execute function", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         local count = 0
         parser:set_defaults({
             execute = function()
@@ -393,7 +393,7 @@ describe("set_defaults", function()
     end)
 
     it("works with an #empty value", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:set_defaults({})
 
         local namespace = parser:parse_arguments("")
@@ -402,7 +402,7 @@ describe("set_defaults", function()
     end)
 
     it("works with nested parsers where a parent also defines a default", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:set_defaults({ foo = "bar" })
 
         local subparsers = parser:add_subparsers({ destination = "commands", help = "The available commands" })
@@ -421,7 +421,7 @@ end)
 
 describe("scenarios", function()
     it("works with a #basic flag argument", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:add_parameter({
             names = { "--force", "-f" },
             action = "store_true",
@@ -438,7 +438,7 @@ describe("scenarios", function()
     end)
 
     it("works with a #basic named argument", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:add_parameter({
             names = { "--book" },
             help = "Write your book title here",
@@ -449,7 +449,7 @@ describe("scenarios", function()
     end)
 
     it("works with a #basic position argument", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:add_parameter({
             names = { "book" },
             help = "Write your book title here",
@@ -460,7 +460,7 @@ describe("scenarios", function()
     end)
 
     it("works with repeated flags", function()
-        local parser = argparse2.ParameterParser.new({ "goodnight-moon", help = "Prepare to sleep or sleep." })
+        local parser = cmdparse.ParameterParser.new({ "goodnight-moon", help = "Prepare to sleep or sleep." })
         local subparsers = parser:add_subparsers({
             destination = "commands",
             help = "All commands for goodnight-moon.",
@@ -486,7 +486,7 @@ describe("scenarios", function()
     end)
 
     it("works with nested subcommands", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
         local subparsers = parser:add_subparsers({ destination = "commands", help = "The available commands" })
         local creator = subparsers:add_parser({ name = "create", help = "Create stuff" })
@@ -506,7 +506,7 @@ describe("scenarios", function()
     end)
 
     it("works with subcommands", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         local subparsers = parser:add_subparsers({ destination = "commands", help = "The available commands" })
         local creator = subparsers:add_parser({ name = "create", help = "Create stuff" })
         creator:add_parameter({
@@ -525,7 +525,7 @@ end)
 
 describe("type", function()
     it("works with a known type function", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:add_parameter({
             name = "foo",
             type = function(value)
@@ -539,7 +539,7 @@ describe("type", function()
     end)
 
     it("works with a known type name", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:add_parameter({ name = "foo", type = "number", help = "Test." })
 
         local namespace = parser:parse_arguments("12")
@@ -549,7 +549,7 @@ end)
 
 describe("+ flags", function()
     it("works with ++double flags", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:add_parameter({ "++foo", action = "store_true", destination = "blah", help = "Test." })
 
         local namespace = parser:parse_arguments("++foo")
@@ -557,7 +557,7 @@ describe("+ flags", function()
     end)
 
     it("works with ++named=foo arguments", function()
-        local parser = argparse2.ParameterParser.new({ help = "Test" })
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:add_parameter({
             "++foo",
             destination = "blah",
@@ -573,7 +573,7 @@ describe("+ flags", function()
 
     -- -- TODO: Maybe support this in the future
     -- it("works with +s (single) flags", function()
-    --     local parser = argparse2.ParameterParser.new({help="Test"})
+    --     local parser = cmdparse.ParameterParser.new({help="Test"})
     --     parser:add_parameter({"+s", destination="blah", type=function(value) return value .. "tt" end})
     --
     --     local namespace = parser:parse_arguments("+s=12")

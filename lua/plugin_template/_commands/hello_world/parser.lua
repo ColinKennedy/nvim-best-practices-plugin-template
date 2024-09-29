@@ -3,20 +3,20 @@
 ---@module 'plugin_template._commands.hello_world.parser'
 ---
 
-local argparse2 = require("plugin_template._cli.argparse2")
+local cmdparse = require("plugin_template._cli.cmdparse")
 local constant = require("plugin_template._commands.hello_world.say.constant")
 
 local M = {}
 
 --- Add the `--repeat` parameter onto `parser`.
 ---
----@param parser argparse2.ParameterParser The parent parser to add the parameter onto.
+---@param parser cmdparse.ParameterParser The parent parser to add the parameter onto.
 ---
 local function _add_repeat_parameter(parser)
     parser:add_parameter({
         names = { "--repeat", "-r" },
         choices = function(data)
-            --- @cast data argparse2.ChoiceData?
+            --- @cast data cmdparse.ChoiceData?
 
             local output = {}
 
@@ -47,7 +47,7 @@ end
 
 --- Add the `--style` parameter onto `parser`.
 ---
----@param parser argparse2.ParameterParser The parent parser to add the parameter onto.
+---@param parser cmdparse.ParameterParser The parent parser to add the parameter onto.
 ---
 local function _add_style_parameter(parser)
     parser:add_parameter({
@@ -60,12 +60,12 @@ local function _add_style_parameter(parser)
     })
 end
 
----@return argparse2.ParameterParser # The main parser for the `:PluginTemplate hello-world` command.
+---@return cmdparse.ParameterParser # The main parser for the `:PluginTemplate hello-world` command.
 function M.make_parser()
-    local parser = argparse2.ParameterParser.new({ "hello-world", help = "Print hello to the user." })
+    local parser = cmdparse.ParameterParser.new({ "hello-world", help = "Print hello to the user." })
     local top_subparsers =
         parser:add_subparsers({ destination = "commands", help = "All hello-world commands.", required = true })
-    --- @cast top_subparsers argparse2.Subparsers
+    --- @cast top_subparsers cmdparse.Subparsers
 
     local say = top_subparsers:add_parser({ "say", help = "Print something to the user." })
     local subparsers =

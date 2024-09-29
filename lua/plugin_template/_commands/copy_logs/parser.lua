@@ -3,13 +3,13 @@
 ---@module 'plugin_template._commands.copy_logs.parser'
 ---
 
-local argparse2 = require("plugin_template._cli.argparse2")
+local cmdparse = require("plugin_template._cli.cmdparse")
 
 local M = {}
 
----@return argparse2.ParameterParser # The main parser for the `:PluginTemplate copy-logs` command.
+---@return cmdparse.ParameterParser # The main parser for the `:PluginTemplate copy-logs` command.
 function M.make_parser()
-    local parser = argparse2.ParameterParser.new({ "copy-logs", help = "Get debug logs for PluginTemplate." })
+    local parser = cmdparse.ParameterParser.new({ "copy-logs", help = "Get debug logs for PluginTemplate." })
 
     -- TODO: Make sure this argument works
     parser:add_parameter({
