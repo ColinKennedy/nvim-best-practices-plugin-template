@@ -504,17 +504,19 @@ describe("named argument", function()
 end)
 
 describe("flag argument", function()
-    -- TODO: Implement this later
-    -- it("auto-completes on the dash", function()
-    --     local parser = {
-    --         {
-    --             option_type = completion.OptionType.flag,
-    --             name = "f",
-    --         },
-    --     }
-    --
-    --     assert.same({ "-f" }, parser:get_completion("-"), 1))
-    -- end)
+    it("auto-completes on the dash - 001", function()
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ "-f", help = "Force it." })
+
+        assert.same({ "-f=", "--help" }, parser:get_completion("-"), 1)
+    end)
+
+    it("auto-completes on the dash - 002", function()
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ "-f", action="store_true", help = "Force it." })
+
+        assert.same({ "-f", "--help" }, parser:get_completion("-"), 1)
+    end)
 
     it("does not auto-complete if at the end of the flag - 001", function()
         local parser = cmdparse.ParameterParser.new({ help = "Test." })
