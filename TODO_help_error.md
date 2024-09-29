@@ -1,2 +1,1 @@
-- When the user types incorrect text they should
-- Make sure that expressions don't accidentally trigger validtion failure if the expression evaluates into valid input
+- Make sure that dynamic expressions don't accidentally trigger validtion failure if the expression evaluates into valid input

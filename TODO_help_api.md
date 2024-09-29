@@ -1,2 +1,0 @@
-- Argument validation
-  - If count = "*" then don't, I guess.

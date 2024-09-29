@@ -314,7 +314,16 @@ describe("nargs", function()
         assert.same({ items = { { "foo", "bar", "fizz", "buzz" } } }, namespace)
     end)
 
-    it("position + nargs=2 + append should parse into a string[][] #asdf", function()
+    it("flag + nargs=+ + append + count + type - #complex", function()
+        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ "--items", action = "append", count = "*", nargs = "+", type = tonumber, help = "Test." })
+        parser:add_parameter({ "--other", help = "Test." })
+
+        local namespace = parser:parse_arguments("--items 12 2 3 --other buzz --items 12 1 93")
+        assert.same({ items = { { 12, 2, 3 }, { 12, 1, 93 } }, other = "buzz" }, namespace)
+    end)
+
+    it("position + nargs=2 + append should parse into a string[][]", function()
         local parser = argparse2.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "items", action = "append", nargs = 2, help = "Test." })
 

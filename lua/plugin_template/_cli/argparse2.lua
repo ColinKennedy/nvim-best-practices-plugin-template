@@ -1293,6 +1293,26 @@ local function _merge_namespaces(namespace, ...)
     end
 end
 
+--- Convert `values` according to `type_converter`.
+---
+---@param type_converter fun(data: any): any
+---@param values string | string[] The values to convert.
+---@return any # The converted value(s).
+---
+local function _resolve_value(type_converter, values)
+    if type(values) ~= "table" then
+        return type_converter(values)
+    end
+
+    local output = {}
+
+    for _, value in ipairs(values) do
+        table.insert(output, type_converter(value))
+    end
+
+    return output
+end
+
 --- Remove the ending `index` options from `input`.
 ---
 ---@param input argparse.ArgparseResults
@@ -2491,7 +2511,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             end
 
             local name = flag:get_nice_name()
-            local value = flag:get_type()(values)
+            local value = _resolve_value(flag:get_type(), values)
 
             if needs_a_value then
                 if value == nil then
@@ -2581,7 +2601,7 @@ function M.ParameterParser:_handle_exact_position_parameters(positions, argument
                 end
             end
 
-            local value = position:get_type()(values)
+            local value = _resolve_value(position:get_type(), values)
             local action = position:get_action()
 
             action({ namespace = namespace, name = name, value = value })
