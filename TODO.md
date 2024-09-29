@@ -1,14 +1,3 @@
-```
-- nargs 2
- - append
-- nargs *
- - append
-- nargs +
- - append
-  - --foo bar --foo buzz = {bar, buzz}
-
-```
-
 - Try to get the CI working for Linux / Mac / Windows again
 
 - Fix all `choices()` calls. They're missing context

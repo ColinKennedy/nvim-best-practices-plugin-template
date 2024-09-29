@@ -275,8 +275,15 @@ describe("nargs", function()
         local parser = argparse2.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "--items", action = "append", nargs = 2, help = "Test." })
 
-        local namespace = parser:parse_arguments("--items foo bar fizz buzz")
-        assert.same({ { "foo", "bar" }, { "fizz", "buzz" } }, namespace)
+        local success, result = pcall(function()
+            parser:parse_arguments("--items foo bar fizz buzz")
+        end)
+
+        assert.is_false(success)
+        assert.equal("Unexpected arguments fizz buzz.", result)
+
+        local namespace = parser:parse_arguments("--items foo bar")
+        assert.same({ items = { { "foo", "bar" } } }, namespace)
     end)
 
     it("flag + nargs=* + append should parse into a string[][]", function()
@@ -284,7 +291,19 @@ describe("nargs", function()
         parser:add_parameter({ "--items", action = "append", nargs = "*", help = "Test." })
 
         local namespace = parser:parse_arguments("--items foo bar fizz buzz")
-        assert.same({ { "foo", "bar" }, { "fizz", "buzz" } }, namespace)
+        assert.same({ items = { { "foo", "bar", "fizz", "buzz" } } }, namespace)
+    end)
+
+    it("flag + nargs=+ + append should error if no argument is given", function()
+        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ "--items", action = "append", nargs = "+", help = "Test." })
+
+        local success, result = pcall(function()
+            parser:parse_arguments("--items")
+        end)
+
+        assert.is_false(success)
+        assert.equal('Parameter "--items" requires 1-or-more values. Got none.', result)
     end)
 
     it("flag + nargs=+ + append should parse into a string[][]", function()
@@ -292,23 +311,41 @@ describe("nargs", function()
         parser:add_parameter({ "--items", action = "append", nargs = "+", help = "Test." })
 
         local namespace = parser:parse_arguments("--items foo bar fizz buzz")
-        assert.same({ { "foo", "bar" }, { "fizz", "buzz" } }, namespace)
+        assert.same({ items = { { "foo", "bar", "fizz", "buzz" } } }, namespace)
     end)
 
-    it("position + nargs=2 + append should parse into a string[][]", function()
+    it("position + nargs=2 + append should parse into a string[][] #asdf", function()
         local parser = argparse2.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "items", action = "append", nargs = 2, help = "Test." })
 
+        local success, result = pcall(function()
+            parser:parse_arguments("foo bar fizz buzz")
+        end)
+
+        assert.is_false(success)
+        assert.equal("Unexpected arguments fizz buzz.", result)
+
+        local namespace = parser:parse_arguments("foo bar")
+        assert.same({ items = { { "foo", "bar" } } }, namespace)
+    end)
+
+    it("position + nargs=2 + append + count should parse into a string[][]", function()
+        local parser = argparse2.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ "items", action = "append", count = "*", nargs = 2, help = "Test." })
+
         local namespace = parser:parse_arguments("foo bar fizz buzz")
-        assert.same({ { "foo", "bar" }, { "fizz", "buzz" } }, namespace)
+        assert.same({ items = { { "foo", "bar" }, { "fizz", "buzz" } } }, namespace)
     end)
 
     it("position + nargs=* + append should parse into a string[][]", function()
         local parser = argparse2.ParameterParser.new({ help = "Test." })
-        parser:add_parameter({ "items", action = "append", nargs = "*", help = "Test." })
+        parser:add_parameter({ "items", action = "append", nargs = "*", count = "*", help = "Test." })
+        parser:add_parameter({ "--foo", help = "Test." })
 
-        local namespace = parser:parse_arguments("foo bar fizz buzz")
-        assert.same({ { "foo", "bar" }, { "fizz", "buzz" } }, namespace)
+        local namespace = parser:parse_arguments("foo bar --foo thing fizz buzz")
+        assert.same({ foo = "thing", items = { { "foo", "bar" }, { "fizz", "buzz" } } }, namespace)
+        namespace = parser:parse_arguments("foo bar fizz buzz")
+        assert.same({ items = { { "foo", "bar", "fizz", "buzz" } } }, namespace)
     end)
 
     it("position + nargs=+ + append should parse into a string[][]", function()
@@ -316,7 +353,7 @@ describe("nargs", function()
         parser:add_parameter({ "items", action = "append", nargs = "+", help = "Test." })
 
         local namespace = parser:parse_arguments("foo bar fizz buzz")
-        assert.same({ { "foo", "bar" }, { "fizz", "buzz" } }, namespace)
+        assert.same({ items = { { "foo", "bar", "fizz", "buzz" } } }, namespace)
     end)
 end)
 
