@@ -2,11 +2,6 @@
 
 - Add a unittest to makes sure that position `choices` can maintain another table and remove possible matches each time the argument is used
  - Same test but for flag arguments
-
-- Include the concise help when a user provides an incorrect parameter(?)
-
-- Fix all `choices()` calls. They're missing context
-- Add `context` key to choices so people know why the choices are being requested
 - Allow all `choices` to get context information (current argument, current text, etc etc)
 
 - remove private variable accesses

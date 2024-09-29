@@ -313,7 +313,7 @@ thing]],
 
                     parser:add_parameter({ "--foo", nargs = "*", help = "Test." })
 
-                    assert.same({foo="thing"}, parser:parse_arguments("--foo=thing"))
+                    assert.same({ foo = "thing" }, parser:parse_arguments("--foo=thing"))
                 end)
 
                 it("works with nargs=+ and --foo=bar syntax", function()
@@ -321,7 +321,7 @@ thing]],
 
                     parser:add_parameter({ "--foo", nargs = "+", help = "Test." })
 
-                    assert.same({foo="thing"}, parser:parse_arguments("--foo=thing"))
+                    assert.same({ foo = "thing" }, parser:parse_arguments("--foo=thing"))
                 end)
             end)
         end)

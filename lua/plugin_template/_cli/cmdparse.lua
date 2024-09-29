@@ -264,13 +264,6 @@ local function _is_single_nargs_and_named_parameter(parameter, arguments)
         return false
     end
 
-    -- TODO: Not sure fi I actually need this code
-    -- local value = _get_argument_value_text(argument)
-    --
-    -- if parameter.choices then
-    --     return parameter.choices({current_value=value})
-    -- end
-
     return vim.tbl_contains(parameter.names, argument.name)
 end
 
@@ -657,25 +650,6 @@ local function _get_matching_partial_flag_text(prefix, flags, value)
 
                     break
                 end
-                -- if vim.startswith(name, prefix) then
-                --     if parameter.choices then
-                --         for _, choice in ipairs(parameter.choices()) do
-                --             if parameter:get_nargs() == 1 then
-                --                 table.insert(output, parameter.names[1] .. "=" .. choice)
-                --             else
-                --                 table.insert(output, choice)
-                --             end
-                --         end
-                --     else
-                --         if parameter:get_nargs() == 1 then
-                --             table.insert(output, parameter.names[1] .. "=")
-                --         else
-                --             table.insert(output, parameter.names[1])
-                --         end
-                --     end
-                --
-                --     break
-                -- end
             end
         end
     end

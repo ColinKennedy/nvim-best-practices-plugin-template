@@ -585,7 +585,7 @@ describe("quotes", function()
     describe("position arguments", function()
         it("processes -1 as a #position argument instead of a flag argument", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
-            parser:add_parameter({ "value", type=tonumber, help = "Test." })
+            parser:add_parameter({ "value", type = tonumber, help = "Test." })
 
             local namespace = parser:parse_arguments('"-1"')
             assert.same({ value = -1 }, namespace)
