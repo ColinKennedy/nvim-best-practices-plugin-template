@@ -131,6 +131,20 @@ describe("quotes", function()
         }, argparse.parse_arguments('foo "bar fizz" buzz'))
     end)
 
+    it("#quoted flag is treated as a #position argument", function()
+        assert.same({
+            arguments = {
+                {
+                    argument_type = argparse.ArgumentType.position,
+                    range = { start_column = 1, end_column = 4 },
+                    value = "-1",
+                },
+            },
+            text = '"-1"',
+            remainder = { value = "" },
+        }, argparse.parse_arguments('"-1"'))
+    end)
+
     it("has #flag within the quotes", function()
         assert.same({
             arguments = {

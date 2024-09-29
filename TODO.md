@@ -1,4 +1,3 @@
-- Make sure "-1" registers as a value
 - Try to get the CI working for Linux / Mac / Windows again
 
 - Add a check when user does `--foo=bar` but foo requires 2+ arguments (the = would be syntactically incorrect in that case)
