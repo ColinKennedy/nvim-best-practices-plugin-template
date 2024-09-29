@@ -112,6 +112,57 @@ describe("action", function()
     end)
 end)
 
+describe("choices", function()
+    it("can ensure there are no duplicate choices during a parse", function()
+
+        local function remove_value(array, value)
+            for index = #array, 1, -1 do
+                if array[index] == value then
+                    table.remove(array, index)
+                end
+            end
+        end
+
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
+        local values = { "1", "2", "3", "4", "5" }
+        parser:add_parameter({
+            "--items",
+            choices = function()
+                return values
+            end,
+            type = function(value)
+                remove_value(values, value)
+            end,
+            count = "*",
+            help = "Test.",
+        })
+
+        assert.same({
+            "--items=1",
+            "--items=2",
+            "--items=3",
+            "--items=4",
+            "--items=5",
+        }, parser:get_completion("--items="))
+        assert.same({
+            "--items=2",
+            "--items=3",
+            "--items=4",
+            "--items=5",
+        }, parser:get_completion("--items=1 --items="))
+        assert.same({
+            "--items=2",
+            "--items=4",
+            "--items=5",
+        }, parser:get_completion("--items=1 --items=3 --items="))
+        assert.same({
+            "--items=2",
+            "--items=5",
+        }, parser:get_completion("--items=1 --items=3 --items=4 --items="))
+        assert.same({ "--items=5" }, parser:get_completion("--items=1 --items=3 --items=4 --items=2 --items="))
+    end)
+end)
+
 describe("default", function()
     it("works with a #default", function()
         local parser = cmdparse.ParameterParser.new({ help = "Test" })
@@ -280,7 +331,7 @@ describe("nargs", function()
         end)
 
         assert.is_false(success)
-        assert.equal("Unexpected arguments fizz buzz.", result)
+        assert.equal('Unexpected arguments "fizz buzz".', result)
 
         local namespace = parser:parse_arguments("--items foo bar")
         assert.same({ items = { { "foo", "bar" } } }, namespace)
@@ -339,7 +390,7 @@ describe("nargs", function()
         end)
 
         assert.is_false(success)
-        assert.equal("Unexpected arguments fizz buzz.", result)
+        assert.equal('Unexpected arguments "fizz buzz".', result)
 
         local namespace = parser:parse_arguments("foo bar")
         assert.same({ items = { { "foo", "bar" } } }, namespace)
@@ -351,6 +402,38 @@ describe("nargs", function()
 
         local namespace = parser:parse_arguments("foo bar fizz buzz")
         assert.same({ items = { { "foo", "bar" }, { "fizz", "buzz" } } }, namespace)
+    end)
+
+    it("position + nargs=2 + append + count + choices should parse into a string[][]", function()
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({
+            "--items",
+            action = "append",
+            choices = { "1", "2", "3" },
+            count = "*",
+            nargs = 2,
+            help = "Test.",
+        })
+
+        local namespace = parser:parse_arguments("--items 1 3")
+        assert.same({ items = { { "1", "3" } } }, namespace)
+
+        local success, result = pcall(function()
+            parser:parse_arguments("--items 1 3 1")
+        end)
+
+        assert.is_false(success)
+        assert.equal('Unexpected argument "1".', result)
+
+        success, result = pcall(function()
+            parser:parse_arguments("--items 1 not_allowed")
+        end)
+
+        assert.is_false(success)
+        assert.equal(
+            'Parameter "--items" got invalid { "not_allowed" } value. Expected one of { "1", "2", "3" }.',
+            result
+        )
     end)
 
     it("position + nargs=* + append should parse into a string[][]", function()
@@ -590,7 +673,7 @@ describe("quotes", function()
             local namespace = parser:parse_arguments('"-1"')
             assert.same({ value = -1 }, namespace)
 
-            local namespace = parser:parse_arguments("'-1'")
+            namespace = parser:parse_arguments("'-1'")
             assert.same({ value = -1 }, namespace)
         end)
     end)

@@ -20,7 +20,7 @@ local function _add_repeat_parameter(parser)
 
             local output = {}
 
-            if not data or data.current_value == "" then
+            if not data or not data.current_value or data.current_value == "" then
                 for index = 1, 5 do
                     table.insert(output, tostring(index))
                 end
@@ -34,7 +34,9 @@ local function _add_repeat_parameter(parser)
                 return {}
             end
 
-            for index = 1, 5 do
+            table.insert(output, tostring(value))
+
+            for index = 1, 4 do
                 table.insert(output, tostring(value + index))
             end
 

@@ -33,7 +33,11 @@ local texter = require("plugin_template._core.texter")
 
 ---@class cmdparse.ChoiceData
 ---    The information that gets passed to a typical `option.choices(...)` call.
----@field current_value string
+---@field contexts cmdparse.ChoiceContext[]
+---    Extra information about what caused `choices()` to be called. For
+---    example we pass information like "I am currently auto-completing" or
+---    other details using this value.
+---@field current_value (string | string[])?
 ---    If the argument has an existing-written value written by the user, this
 ---    text is passed as `current_value`.
 
@@ -137,6 +141,9 @@ local _SHORT_HELP_FLAG = "-h"
 local _ActionConstant = { count = "count", store_false = "store_false", store_true = "store_true" }
 local _FLAG_ACTIONS = { _ActionConstant.count, _ActionConstant.store_false, _ActionConstant.store_true }
 
+---@enum cmdparse.ChoiceContext
+---    Extra information provided to `cmdparse.Parameter.choices()` when
+---    resolving for allowed values.
 M.ChoiceContext = {
     auto_completing = "auto_completing",
     error_message = "error_message",
@@ -177,7 +184,7 @@ M.Parameter.__index = M.Parameter
 
 ---@class cmdparse.ParameterParser
 ---    A starting point for parameters (positional parameters, flag parameters, etc).
----@field choices (fun(): string[])?
+---@field choices (fun(data: cmdparse.ChoiceData?): string[])?
 ---    If included, this parser can be referred to using these names instead of its expected name.
 ---@field help string
 ---    Explain what this parser is meant to do and the parameter(s) it needs.
@@ -608,17 +615,27 @@ end
 ---@param value string
 ---    The user-provided (exact or partial) value for the flag / named argument
 ---    value, if any. e.g. the `"bar"` part of `"--foo=bar"`.
+---@param contexts cmdparse.ChoiceContext[]?
+---    A description of how / when this function is called. It gets passed to
+---    `cmdparse.Parameter.choices()`.
 ---@return string[]
 ---    All auto-complete values, if any.
 ---
-local function _get_single_choices_text(parameter, value)
+local function _get_single_choices_text(parameter, value, contexts)
     if not parameter.choices then
         return { parameter.names[1] .. "=" }
     end
 
+    contexts = contexts or {}
+
     local output = {}
 
-    for _, choice in ipairs(parameter.choices({ contexts = { M.ChoiceContext.value_matching }, current_value = value })) do
+    for _, choice in
+        ipairs(parameter.choices({
+            contexts = vim.list_extend({ M.ChoiceContext.value_matching }, contexts),
+            current_value = value,
+        }))
+    do
         table.insert(output, parameter.names[1] .. "=" .. choice)
     end
 
@@ -634,10 +651,13 @@ end
 ---@param value string?
 ---    The user-provided (exact or partial) value for the flag / named argument
 ---    value, if any. e.g. the `"bar"` part of `"--foo=bar"`.
+---@param contexts cmdparse.ChoiceContext[]?
+---    A description of how / when this function is called. It gets passed to
+---    `cmdparse.Parameter.choices()`.
 ---@return cmdparse.Parameter[]
 ---    The matched parameters, if any.
 ---
-local function _get_matching_partial_flag_text(prefix, flags, value)
+local function _get_matching_partial_flag_text(prefix, flags, value, contexts)
     local output = {}
 
     for _, parameter in ipairs(_sort_parameters(flags)) do
@@ -648,7 +668,7 @@ local function _get_matching_partial_flag_text(prefix, flags, value)
                         if not value then
                             table.insert(output, parameter.names[1] .. "=")
                         else
-                            vim.list_extend(output, _get_single_choices_text(parameter, value))
+                            vim.list_extend(output, _get_single_choices_text(parameter, value, contexts))
                         end
                     else
                         table.insert(output, name)
@@ -676,11 +696,17 @@ end
 --- By default a position option takes any argument / value. Some position parameters
 --- have specific, required choice(s) that this function means to match.
 ---
----@param name string The user's input text to try to match.
----@param parameters cmdparse.Parameter[] All position parameters to check.
+---@param name string
+---    The user's input text to try to match.
+---@param parameters cmdparse.Parameter[]
+---    All position parameters to check.
+---@param contexts cmdparse.ChoiceContext[]?
+---    A description of how / when this function is called. It gets passed to
+---    `cmdparse.Parameter.choices()`.
 ---@return cmdparse.Parameter[] # The found matches, if any.
 ---
-local function _get_matching_position_parameters(name, parameters)
+local function _get_matching_position_parameters(name, parameters, contexts)
+    contexts = contexts or {}
     local output = {}
 
     for _, parameter in ipairs(_sort_parameters(parameters)) do
@@ -688,7 +714,10 @@ local function _get_matching_position_parameters(name, parameters)
             vim.list_extend(
                 output,
                 _get_array_startswith(
-                    parameter.choices({ contexts = { M.ChoiceContext.value_matching }, current_value = name }),
+                    parameter.choices({
+                        contexts = vim.list_extend({ M.ChoiceContext.value_matching }, contexts),
+                        current_value = name,
+                    }),
                     name
                 )
             )
@@ -768,14 +797,17 @@ end
 ---@param value string?
 ---    If the user provided a (exact or partial) value for the flag / named
 ---    position, the text is given here.
+---@param contexts cmdparse.ChoiceContext[]?
+---    A description of how / when this function is called. It gets passed to
+---    `cmdparse.Parameter.choices()`.
 ---@return string[] # The matching names, if any.
 ---
-local function _get_exact_or_partial_matches(prefix, parser, value)
+local function _get_exact_or_partial_matches(prefix, parser, value, contexts)
     prefix = _remove_contiguous_whitespace(prefix)
     local output = {}
 
-    vim.list_extend(output, _get_matching_position_parameters(prefix, parser:get_position_parameters()))
-    vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value))
+    vim.list_extend(output, _get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
+    vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts))
 
     -- -- TODO: Move to a function later
     -- -- NOTE: This case is for when there are multiple child parsers with
@@ -919,10 +951,13 @@ end
 ---    Prefix text to match against for. Usually it's empty but if there's
 ---    a command like `foo --`, as in they started to write a flag but hasn't
 ---    completed, then `prefix` would be `"--"`.
+---@param contexts cmdparse.ChoiceContext[]?
+---    A description of how / when this function is called. It gets passed to
+---    `cmdparse.Parameter.choices()`.
 ---@return string[]
 ---    The matching names, if any.
 ---
-local function _get_next_parameters_from_remainder(parser, prefix)
+local function _get_next_parameters_from_remainder(parser, prefix, contexts)
     -- TODO: Consider removing this text
     -- local name = _get_argument_name(argument)
     -- local matches = vim.iter(parsers):filter(function(parser)
@@ -941,7 +976,7 @@ local function _get_next_parameters_from_remainder(parser, prefix)
     end
 
     prefix = _lstrip(prefix)
-    vim.list_extend(output, _get_exact_or_partial_matches(prefix, parser))
+    vim.list_extend(output, _get_exact_or_partial_matches(prefix, parser, nil, contexts))
 
     -- TODO: There's a bug here. We may not be able to assume the last argument like this
     -- local last = stripped.arguments[#stripped.arguments]
@@ -982,7 +1017,7 @@ local function _get_position_long_help_text(position)
     local text
 
     if position.choices then
-        text = _get_help_command_labels(position.choices())
+        text = _get_help_command_labels(position.choices({ contexts = { M.ChoiceContext.help_message } }))
     else
         text = position:get_nice_name()
     end
@@ -1122,7 +1157,7 @@ local function _get_position_help_text(position)
     local text
 
     if position.choices then
-        text = _get_help_command_labels(position.choices())
+        text = _get_help_command_labels(position.choices({ contexts = { M.ChoiceContext.help_message } }))
     else
         text = position:get_nice_name()
     end
@@ -1227,11 +1262,18 @@ local function _expand_choices_options(options)
         choices = function(data)
             ---@cast data cmdparse.ChoiceData
 
-            if not data then
+            if not data or not data.current_value then
                 return input
             end
 
-            return _get_array_startswith(input, data.current_value)
+            local value = data.current_value
+            ---@cast value string
+
+            if vim.tbl_contains(data.contexts, M.ChoiceContext.auto_completing) then
+                return _get_array_startswith(input, value)
+            end
+
+            return input
         end
     elseif type(options.choices) == "function" then
         choices = input
@@ -1290,7 +1332,7 @@ end
 --- Convert `values` according to `type_converter`.
 ---
 ---@param type_converter fun(data: any): any
----@param values string | string[] The values to convert.
+---@param values (boolean | string | string[])? The values to convert.
 ---@return any # The converted value(s).
 ---
 local function _resolve_value(type_converter, values)
@@ -1847,7 +1889,10 @@ function M.ParameterParser:_get_issues()
                     text = string.format(
                         '%s Valid choices are "%s"',
                         text,
-                        vim.fn.join(vim.fn.sorted(parameter.choices()), ", ")
+                        vim.fn.join(
+                            vim.fn.sorted(parameter.choices({ contexts = { M.ChoiceContext.error_message } })),
+                            ", "
+                        )
                     )
                 end
 
@@ -1909,9 +1954,10 @@ function M.ParameterParser:_get_completion(data, column)
     local last = stripped.arguments[#stripped.arguments]
     local last_name = _get_argument_name(last)
     local last_value = _get_argument_value_text(last)
+    local contexts = { M.ChoiceContext.auto_completing }
 
     if remainder == "" then
-        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
+        vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value, contexts))
 
         if parser:is_satisfied() then
             for parser_ in _iter_parsers(parser) do
@@ -1952,7 +1998,7 @@ function M.ParameterParser:_get_completion(data, column)
         -- end
     end
 
-    return _get_next_parameters_from_remainder(parser, remainder)
+    return _get_next_parameters_from_remainder(parser, remainder, contexts)
 
     -- -- TODO: Make this all into a function. Simplify the code
     -- vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
@@ -2287,12 +2333,17 @@ end
 ---    are treated as **values** for the found parameter.
 ---@param namespace cmdparse.Namespace
 ---    A container for the found match(es).
+---@param contexts cmdparse.ChoiceContext[]?
+---    A description of how / when this function is called. It gets passed to
+---    `cmdparse.Parameter.choices()`.
 ---@return boolean
 ---    If a match was found, return `true`.
 ---@return number
 ---    The number of arguments used by the found flag, if any.
 ---
-function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, namespace)
+function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, namespace, contexts)
+    contexts = contexts or {}
+
     local function _needs_a_value(parameter)
         local nargs = parameter._nargs
 
@@ -2442,6 +2493,42 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
         end
     end
 
+    local function _validate_value_choices(values, choices, argument_name)
+        if type(values) == "table" then
+            local invalids = {}
+
+            for _, value in ipairs(values) do
+                if not vim.tbl_contains(choices, value) then
+                    table.insert(invalids, value)
+                end
+            end
+
+            if vim.tbl_isempty(invalids) then
+                return
+            end
+
+            local template = 'Parameter "%s" got invalid %s value. Expected one of %s.'
+
+            if #invalids > 1 then
+                template = 'Parameter "%s" got invalid %s values. Expected one of %s.'
+            end
+
+            error(string.format(template, argument_name, vim.inspect(invalids), vim.inspect(vim.fn.sort(choices))), 0)
+        end
+
+        if not vim.tbl_contains(choices, values) then
+            error(
+                string.format(
+                    'Parameter "%s" got invalid %s value. Expected one of %s.',
+                    argument_name,
+                    vim.inspect(values),
+                    vim.inspect(vim.fn.sort(choices))
+                ),
+                0
+            )
+        end
+    end
+
     local argument = arguments[1]
 
     if argument.argument_type == argparse.ArgumentType.named then
@@ -2480,19 +2567,12 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             end
 
             if flag.choices then
-                local choices = flag.choices()
+                local choices = flag.choices({
+                    contexts = vim.list_extend({ M.ChoiceContext.value_matching }, contexts),
+                    current_value = values,
+                })
 
-                if not vim.tbl_contains(choices, values) then
-                    error(
-                        string.format(
-                            'Parameter "%s" got invalid %s value. Expected one of %s.',
-                            argument.name,
-                            vim.inspect(values),
-                            vim.inspect(vim.fn.sort(choices))
-                        ),
-                        0
-                    )
-                end
+                _validate_value_choices(values, choices, argument.name)
             end
 
             local needs_a_value = _needs_a_value(flag)
@@ -2551,12 +2631,15 @@ end
 ---    parameter.
 ---@param namespace cmdparse.Namespace
 ---    A container for the found match(es).
+---@param contexts cmdparse.ChoiceContext[]?
+---    A description of how / when this function is called. It gets passed to
+---    `cmdparse.Parameter.choices()`.
 ---@return boolean
 ---    If a match was found, return `true`.
 ---@return number
 ---    The number of arguments used by the found flag, if any.
 ---
-function M.ParameterParser:_handle_exact_position_parameters(positions, arguments, namespace)
+function M.ParameterParser:_handle_exact_position_parameters(positions, arguments, namespace, contexts)
     -- TODO: Consider combining this function with the other duplicate
     local function _get_values(arguments_, count)
         if count == 1 then
@@ -2570,6 +2653,8 @@ function M.ParameterParser:_handle_exact_position_parameters(positions, argument
             :totable()
     end
 
+    contexts = contexts or {}
+
     for _, position in ipairs(positions) do
         if not position:is_exhausted() then
             local total = _get_used_position_arguments_count(position, arguments)
@@ -2578,12 +2663,16 @@ function M.ParameterParser:_handle_exact_position_parameters(positions, argument
             local values = _get_values(arguments, total)
 
             if position.choices then
-                local choices = position.choices()
                 local values_ = values
 
                 if type(values) ~= "table" then
                     values_ = { values }
                 end
+
+                local choices = position.choices({
+                    contexts = vim.list_extend({ M.ChoiceContext.value_matching }, contexts),
+                    current_value = values_,
+                })
 
                 for _, value in ipairs(values_) do
                     if not vim.tbl_contains(choices, value) then
@@ -2840,6 +2929,8 @@ function M.ParameterParser:_parse_arguments(data, namespace)
     local count = #data.arguments
     local index = 1
 
+    local contexts = { M.ChoiceContext.parsing }
+
     while index <= count do
         local argument = data.arguments[index]
 
@@ -2860,7 +2951,8 @@ function M.ParameterParser:_parse_arguments(data, namespace)
 
             local arguments = tabler.get_slice(data.arguments, index)
             local used_arguments
-            found, used_arguments = self:_handle_exact_position_parameters(position_parameters, arguments, namespace)
+            found, used_arguments =
+                self:_handle_exact_position_parameters(position_parameters, arguments, namespace, contexts)
 
             if not found then
                 self:_raise_suggested_fix(argument)
@@ -2874,7 +2966,7 @@ function M.ParameterParser:_parse_arguments(data, namespace)
             --- @cast argument argparse.FlagArgument | argparse.NamedArgument
             local arguments = tabler.get_slice(data.arguments, index)
             local used_arguments
-            found, used_arguments = self:_handle_exact_flag_parameters(flag_parameters, arguments, namespace)
+            found, used_arguments = self:_handle_exact_flag_parameters(flag_parameters, arguments, namespace, contexts)
 
             -- if not found then
             --     -- TODO: Do something about this one
@@ -2890,8 +2982,12 @@ function M.ParameterParser:_parse_arguments(data, namespace)
 
             local remaining_arguments = tabler.get_slice(data.arguments, index)
 
+            if #remaining_arguments == 1 then
+                error(string.format('Unexpected argument "%s".', _get_arguments_raw_text(remaining_arguments)[1]), 0)
+            end
+
             error(
-                string.format("Unexpected arguments %s.", vim.fn.join(_get_arguments_raw_text(remaining_arguments))),
+                string.format('Unexpected arguments "%s".', vim.fn.join(_get_arguments_raw_text(remaining_arguments))),
                 0
             )
         end
@@ -3113,7 +3209,7 @@ end
 ---@return string[] # Get all of the (initial) auto-complete options for this instance.
 function M.ParameterParser:get_names()
     if self.choices then
-        return self.choices()
+        return self.choices({ contexts = { M.ChoiceContext.parameter_names } })
     end
 
     return { self.name }

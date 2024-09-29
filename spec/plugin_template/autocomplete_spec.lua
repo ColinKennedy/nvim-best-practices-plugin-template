@@ -19,7 +19,7 @@ local function _add_repeat_parameter(parser)
 
         local output = {}
 
-        if not data or data.current_value == "" then
+        if not data or not data.current_value or data.current_value == "" then
             for index = 1, 5 do
                 table.insert(output, tostring(index))
             end
@@ -33,7 +33,9 @@ local function _add_repeat_parameter(parser)
             return {}
         end
 
-        for index = 1, 5 do
+        table.insert(output, tostring(value))
+
+        for index = 1, 4 do
             table.insert(output, tostring(value + index))
         end
 
@@ -326,11 +328,11 @@ describe("simple", function()
             "--repeat=5",
         }, parser:get_completion("say phrase --repeat="))
         assert.same({
+            "--repeat=5",
             "--repeat=6",
             "--repeat=7",
             "--repeat=8",
             "--repeat=9",
-            "--repeat=10",
         }, parser:get_completion("say phrase --repeat=5"))
 
         assert.same({ "--style=", "--help" }, parser:get_completion("say phrase --repeat=5 "))
@@ -492,11 +494,11 @@ describe("named argument", function()
         _add_repeat_parameter(parser)
 
         assert.same({
+            "--repeat=3",
             "--repeat=4",
             "--repeat=5",
             "--repeat=6",
             "--repeat=7",
-            "--repeat=8",
         }, parser:get_completion("--repeat=3"))
     end)
 end)
@@ -522,7 +524,7 @@ describe("flag argument", function()
         assert.same({ "-f=" }, parser:get_completion("-f", 2))
     end)
 
-    -- it("does not auto-complete if at the end of the flag - 002 #asdf", function()
+    -- it("does not auto-complete if at the end of the flag - 002", function()
     --     -- TODO: action store_true is not working producing the correct auto-complete
     --     local parser = cmdparse.ParameterParser.new({ help = "Test." })
     --     parser:add_parameter({ "-f", action="store_true", help = "Force it." })
