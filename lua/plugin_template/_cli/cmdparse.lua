@@ -2352,7 +2352,6 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             return _get_position_argument_values(found_arguments)
         end
 
-        -- TODO: Add support later
         if nargs == _ZERO_OR_MORE then
             local found_arguments = _get_next_position_arguments(value_arguments)
 
@@ -2467,6 +2466,18 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             local values
 
             if argument.argument_type == argparse.ArgumentType.named then
+                local nargs = flag:get_nargs()
+
+                if type(nargs) == "number" and nargs ~= 1 then
+                    error(
+                        string.format(
+                            'Parameter "%s" requires "2" values. Got "1" value.',
+                            flag.names[1]
+                        ),
+                        0
+                    )
+                end
+
                 values = argument.value
             elseif argument.argument_type == argparse.ArgumentType.flag then
                 values = _get_flag_values(flag, value_arguments)

@@ -293,6 +293,37 @@ thing]],
                     assert.equal('Parameter "foo" cannot use action "store_true" and nargs at the same time.', result)
                 end)
             end)
+
+            describe("nargs + --foo=bar named argument syntax", function()
+                it("errors with nargs=2 and --foo=bar syntax", function()
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
+
+                    parser:add_parameter({ "--foo", nargs = 2, help = "Test." })
+
+                    local success, result = pcall(function()
+                        parser:parse_arguments("--foo=thing")
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal('Parameter "--foo" requires "2" values. Got "1" value.', result)
+                end)
+
+                it("works with nargs=* and --foo=bar syntax", function()
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
+
+                    parser:add_parameter({ "--foo", nargs = "*", help = "Test." })
+
+                    assert.same({foo="thing"}, parser:parse_arguments("--foo=thing"))
+                end)
+
+                it("works with nargs=+ and --foo=bar syntax", function()
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
+
+                    parser:add_parameter({ "--foo", nargs = "+", help = "Test." })
+
+                    assert.same({foo="thing"}, parser:parse_arguments("--foo=thing"))
+                end)
+            end)
         end)
     end)
 

@@ -1,6 +1,5 @@
 - Try to get the CI working for Linux / Mac / Windows again
 
-- Add a check when user does `--foo=bar` but foo requires 2+ arguments (the = would be syntactically incorrect in that case)
 - Add a unittest to makes sure that position `choices` can maintain another table and remove possible matches each time the argument is used
  - Same test but for flag arguments
 
