@@ -137,6 +137,14 @@ local _SHORT_HELP_FLAG = "-h"
 local _ActionConstant = { count = "count", store_false = "store_false", store_true = "store_true" }
 local _FLAG_ACTIONS = { _ActionConstant.count, _ActionConstant.store_false, _ActionConstant.store_true }
 
+M.ChoiceContext = {
+    parameter_names = "parameter_names",
+    error_message = "error_message",
+    help_message = "help_message",
+    position_matching = "position_matching",
+    value_matching = "value_matching",
+}
+
 ---@class cmdparse.Parameter
 ---    An optional / required parameter for some parser.
 ---@field action cmdparse.Action?
@@ -216,7 +224,12 @@ local function _has_position_parameter_match(name, parameter)
         return true
     end
 
-    if vim.tbl_contains(parameter.choices({ current_value = name }), name) then
+    if
+        vim.tbl_contains(
+            parameter.choices({ contexts = { M.ChoiceContext.position_matching }, current_value = name }),
+            name
+        )
+    then
         return true
     end
 
@@ -604,7 +617,7 @@ local function _get_single_choices_text(parameter, value)
 
     local output = {}
 
-    for _, choice in ipairs(parameter.choices({ current_value = value })) do
+    for _, choice in ipairs(parameter.choices({ contexts = { M.ChoiceContext.value_matching }, current_value = value })) do
         table.insert(output, parameter.names[1] .. "=" .. choice)
     end
 
@@ -671,7 +684,13 @@ local function _get_matching_position_parameters(name, parameters)
 
     for _, parameter in ipairs(_sort_parameters(parameters)) do
         if not parameter:is_exhausted() and parameter.choices then
-            vim.list_extend(output, _get_array_startswith(parameter.choices({ current_value = name }), name))
+            vim.list_extend(
+                output,
+                _get_array_startswith(
+                    parameter.choices({ contexts = { M.ChoiceContext.value_matching }, current_value = name }),
+                    name
+                )
+            )
         end
     end
 
@@ -2443,13 +2462,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
                 local nargs = flag:get_nargs()
 
                 if type(nargs) == "number" and nargs ~= 1 then
-                    error(
-                        string.format(
-                            'Parameter "%s" requires "2" values. Got "1" value.',
-                            flag.names[1]
-                        ),
-                        0
-                    )
+                    error(string.format('Parameter "%s" requires "2" values. Got "1" value.', flag.names[1]), 0)
                 end
 
                 values = argument.value
