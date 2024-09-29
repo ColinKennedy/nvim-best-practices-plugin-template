@@ -7,7 +7,7 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
-local _PREFIX_CHARACTERS = { "-", "+" }
+M.PREFIX_CHARACTERS = { "-", "+" }
 
 ---@enum argparse.ArgumentType
 M.ArgumentType = {
@@ -90,7 +90,7 @@ end
 ---@return boolean # If `character` is a `argparse.PositionArgument` character, return `true`.
 ---
 local function _is_prefix(character)
-    return vim.tbl_contains(_PREFIX_CHARACTERS, character)
+    return vim.tbl_contains(M.PREFIX_CHARACTERS, character)
 end
 
 --- Check if `character` is a space, tab, or newline.

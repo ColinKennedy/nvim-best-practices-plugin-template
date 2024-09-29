@@ -64,22 +64,6 @@ describe("arbitrary-thing commands", function()
     end)
 end)
 
--- -- TODO: Fill it out
--- describe("copy-logs API", function()
--- end)
---
--- -- TODO: Fill it out
--- describe("copy-logs commands", function()
---     it("runs #copy-logs with #default arguments", function()
---         vim.cmd([[PluginTemplate copy-logs]])
---     end)
---
---     it("runs #copy-logs with with arguments", function()
---         local path = vim.fn.tempname() .. ".log"
---         vim.cmd(string.format("PluginTemplate copy-logs %s", path))
---     end)
--- end)
-
 describe("hello world API - say phrase/word", function()
     before_each(_initialize_all)
     after_each(_reset_all)
@@ -191,7 +175,7 @@ describe("help API", function()
     describe("fallback help", function()
         it("works on a nested subparser - 003", function()
             vim.cmd("PluginTemplate hello-world say")
-            assert.same({ "Usage: say {phrase, word} [--help]" }, _DATA)
+            assert.same({ "Usage: {say} {phrase,word} [--help]" }, _DATA)
         end)
     end)
 
@@ -201,7 +185,7 @@ describe("help API", function()
 
             assert.same({
                 [[
-Usage: PluginTemplate {arbitrary-thing, copy-logs, goodnight-moon, hello-world} [--help]
+Usage: {PluginTemplate} {arbitrary-thing,copy-logs,goodnight-moon,hello-world} [--help]
 
 Commands:
     arbitrary-thing    Prepare to sleep or sleep.
@@ -220,7 +204,7 @@ Options:
 
             assert.same({
                 [[
-Usage: say {phrase, word} [--help]
+Usage: {say} {phrase,word} [--help]
 
 Commands:
     phrase    Print everything that the user types.
@@ -237,14 +221,14 @@ Options:
 
             assert.same({
                 [[
-Usage: phrase phrases* [--repeat] [--style] [--help]
+Usage: {phrase} PHRASES* [--repeat {1,2,3,4,5}] [--style {lowercase,uppercase}] [--help]
 
 Positional Arguments:
-    phrases*    All of the text to print.
+    PHRASES*    All of the text to print.
 
 Options:
-    --repeat -r    Print to the user X number of times (default=1).
-    --style -s    lowercase modifies all capital letters. uppercase modifies all non-capital letter.
+    --repeat -r {1,2,3,4,5}    Print to the user X number of times (default=1).
+    --style -s {lowercase,uppercase}    lowercase makes WORD into word. uppercase does the reverse.
     --help -h    Show this help message and exit.
 ]],
             }, _DATA)
@@ -255,14 +239,14 @@ Options:
 
             assert.same({
                 [[
-Usage: word word [--repeat] [--style] [--help]
+Usage: {word} WORD [--repeat {1,2,3,4,5}] [--style {lowercase,uppercase}] [--help]
 
 Positional Arguments:
-    word    The word to print.
+    WORD    The word to print.
 
 Options:
-    --repeat -r    Print to the user X number of times (default=1).
-    --style -s    lowercase modifies all capital letters. uppercase modifies all non-capital letter.
+    --repeat -r {1,2,3,4,5}    Print to the user X number of times (default=1).
+    --style -s {lowercase,uppercase}    lowercase makes WORD into word. uppercase does the reverse.
     --help -h    Show this help message and exit.
 ]],
             }, _DATA)
@@ -273,14 +257,14 @@ Options:
 
             assert.same({
                 [[
-Usage: arbitrary-thing [-a] [-b] [-c] [-f] [-v] [--help]
+Usage: {arbitrary-thing} [-a] [-b] [-c] [-f] [-v] [--help]
 
 Options:
     -a    The -a flag.
     -b    The -b flag.
     -c    The -c flag.
-    -f    The -f flag.
-    -v    The -v flag.
+    -f *    The -f flag.
+    -v *    The -v flag.
     --help -h    Show this help message and exit.
 ]],
             }, _DATA)
@@ -291,10 +275,10 @@ Options:
 
             assert.same({
                 [[
-Usage: copy-logs log [--help]
+Usage: {copy-logs} LOG [--help]
 
 Positional Arguments:
-    log    The path on-disk to look for logs. If no path is given, a fallback log path is used instead.
+    LOG    The path on-disk to look for logs. If no path is given, a fallback log path is used instead.
 
 Options:
     --help -h    Show this help message and exit.
@@ -307,7 +291,7 @@ Options:
 
             assert.same({
                 [[
-Usage: goodnight-moon {count-sheep, read, sleep} [--help]
+Usage: {goodnight-moon} {count-sheep,read,sleep} [--help]
 
 Commands:
     count-sheep    Count some sheep to help you sleep.
@@ -325,7 +309,7 @@ Options:
 
             assert.same({
                 [[
-Usage: hello-world {say} [--help]
+Usage: {hello-world} {say} [--help]
 
 Commands:
     say    Print something to the user.

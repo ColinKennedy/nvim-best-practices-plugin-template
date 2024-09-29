@@ -5,6 +5,13 @@
 
 local M = {}
 
+---@class plugin_template.NamespaceExecuteArguments
+---    The expected data that's passed to any `set_execute` call in plugin-template.
+---@field input argparse.ArgparseResults
+---    The user's raw input, split into tokens.
+---@field namespace cmdparse.Namespace
+---    The collected results from comparing `input` to our cmdparse tree.
+
 ---@class plugin_template.CompleteData
 ---    The data that gets passed when `plugin_template.Subcommand.complete` is called.
 ---@field parsed_arguments argparse.ArgparseResults
@@ -22,7 +29,7 @@ local M = {}
 ---    preferred way to make parsers).
 ---@field complete (fun(data: plugin_template.CompleteData): string[])?
 ---    Command completions callback, the `data` are  the lead of the subcommand's arguments
----@field parser (fun(): argparse2.ParameterParser)?
+---@field parser (fun(): cmdparse.ParameterParser)?
 ---    The primary parser used for subcommands. It handles auto-complete,
 ---    expression-evaluation, and running a user's code.
 ---@field run (fun(data: plugin_template.SubcommandRun): nil)?
@@ -35,9 +42,9 @@ local M = {}
 ---@field parsed_arguments argparse.ArgparseResults
 ---    The parsed arguments (that the user is now trying to execute some function with).
 
----@alias plugin_template.ParserCreator fun(): argparse2.ParameterParser
+---@alias plugin_template.ParserCreator fun(): cmdparse.ParameterParser
 
----@alias plugin_template.Subcommands table<string, plugin_template.Subcommand | fun(): argparse2.ParameterParser>
+---@alias plugin_template.Subcommands table<string, plugin_template.Subcommand | fun(): cmdparse.ParameterParser>
 
 --- Check if `full` contains `prefix` + whitespace.
 ---
@@ -135,7 +142,7 @@ end
 
 --- Run `parser` and pass it the user's raw input `text`.
 ---
----@param parser argparse2.ParameterParser The decision tree that parses and runs `text`.
+---@param parser cmdparse.ParameterParser The decision tree that parses and runs `text`.
 ---@param text string The (unparsed) text that user provides from COMMAND mode.
 ---
 local function _run_subcommand(parser, text)
@@ -143,8 +150,10 @@ local function _run_subcommand(parser, text)
 
     local arguments = argparse.parse_arguments(text)
     local namespace = parser:parse_arguments(arguments)
+    ---@type plugin_template.NamespaceExecuteArguments
+    local execute = namespace.execute
 
-    if namespace.execute then
+    if execute then
         -- TODO: Make sure this has the right type-hint
         namespace.execute({ input = arguments, namespace = namespace })
 
@@ -216,7 +225,7 @@ function M.make_parser_triager(parser_creator)
             return
         end
 
-        ---@cast result argparse2.Namespace The found values.
+        ---@cast result cmdparse.Namespace The found values.
 
         if result.execute then
             -- TODO: Make sure this has the right type-hint
@@ -246,6 +255,11 @@ function M.make_parser_completer(parser_creator)
 
         return parser:get_completion(all_text, column)
     end
+
+    -- NOTE: Initialize only once
+    local configuration = require("plugin_template._core.configuration")
+
+    configuration.initialize_data_if_needed()
 
     return runner
 end
@@ -346,6 +360,11 @@ function M.make_subcommand_triager(subcommands)
 
         vim.notify(string.format('Subcommand "%s" must define `parser` or `run`.', vim.log.levels.ERROR))
     end
+
+    -- NOTE: Initialize only once
+    local configuration = require("plugin_template._core.configuration")
+
+    configuration.initialize_data_if_needed()
 
     return runner
 end

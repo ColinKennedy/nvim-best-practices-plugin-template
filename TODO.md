@@ -1,23 +1,31 @@
-- Make sure "-1" registers as a value
+- Do TODO notes
+
+- Simplify the help symbols (just add * / + to the end of stuff)
+
+- Auto-complete flag values even if there is no = (e.g. `--foo=bar`)
 - Try to get the CI working for Linux / Mac / Windows again
 
-- Add a check when user does `--foo=bar` but foo requires 2+ arguments (the = would be syntactically incorrect in that case)
-- Add a unittest to makes sure that position `choices` can maintain another table and remove possible matches each time the argument is used
- - Same test but for flag arguments
+```
+nargs=0 + position should error
+nargs for store actions must be != 0; if you have nothing to store, actions such as store true or store const may be more approp
+```
 
-- Include the concise help when a user provides an incorrect parameter(?)
+- Try to get the CI working for Linux / Mac / Windows again
 
-- Fix all `choices()` calls. They're missing context
-- Add `context` key to choices so people know why the choices are being requested
-- Allow all `choices` to get context information (current argument, current text, etc etc)
+- If a named arguiment is an nargs=1 argument then it should auto-complete to be --foo=, I guess
+ - If it it's nargs=2+ then it should auto-complete not with =
 
 - remove private variable accesses
 
 - Do a round of finishing TODO notes
 
+- Make sure the README.md commands work
+
+- The documentation.yml `tags` CI runner doesn't work. Fix!
+
 - Consider allowing unicode things
 
-- Make sre the CI works
+- Make sure the CI works
  - llscheck
  - release
  - test
@@ -26,12 +34,14 @@
  --- news
  --- stylua
 
+- Add badges to the README.md
+ - RSS
+ - Stylua
+ - etc
+
 - Consider changing argparse so that it registers any argument that starts with
 a non-alpha / ' / " as a flag argument. Instead of the current setup which only
 allows for - or +
-
-- If a named arguiment is an nargs=1 argument then it should auto-complete to be --foo=, I guess
- - If it it's nargs=2+ then it should auto-complete not with =
 
 Typing `-` or `--` doesn't auto-complete to `--repeat`
 

@@ -1,14 +1,14 @@
---- Make sure that `argparse2` errors when it should.
+--- Make sure that `cmdparse` errors when it should.
 ---
----@module 'plugin_template.argparse2_error_spec'
+---@module 'plugin_template.cmdparse_error_spec'
 ---
 
-local argparse2 = require("plugin_template._cli.argparse2")
+local cmdparse = require("plugin_template._cli.cmdparse")
 
 describe("bad input", function()
     describe("parsers definition issues", function()
         it("errors if you define a flag argument with choices", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
             local success, result = pcall(function()
                 parser:add_parameter({ "--foo", action = "store_true", choices = { "f" }, help = "Test." })
@@ -19,7 +19,7 @@ describe("bad input", function()
         end)
 
         it("errors if you define a nargs + flag argument", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
             local success, result = pcall(function()
                 parser:add_parameter({ "--foo", action = "store_true", nargs = 2, help = "Test." })
@@ -30,7 +30,7 @@ describe("bad input", function()
         end)
 
         it("errors if a custom type=foo doesn't return a value - 001", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ "--foo", type = tonumber, help = "Test." })
 
             local success, result = pcall(function()
@@ -52,7 +52,7 @@ describe("bad input", function()
         end)
 
         it("errors if a custom type=foo doesn't return a value - 002", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({
                 "--foo",
                 nargs = 1,
@@ -84,7 +84,7 @@ describe("bad input", function()
         end)
 
         it("includes named argument choices", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ "--foo", choices = { "aaa", "bbb", "zzz" }, help = "Test." })
 
             local success, result = pcall(function()
@@ -99,7 +99,7 @@ describe("bad input", function()
         end)
 
         it("includes nested subparsers argument choices - 001 required", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ "thing", help = "Test." })
 
             local subparsers = parser:add_subparsers({ "commands", help = "Test." })
@@ -125,7 +125,7 @@ thing]],
         end)
 
         it("includes position argument choices", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ "foo", choices = { "aaa", "bbb", "zzz" }, help = "Test." })
 
             local success, result = pcall(function()
@@ -140,7 +140,7 @@ thing]],
         end)
 
         it("includes subparsers argument choices - 001 required", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ "thing", help = "Test." })
             local subparsers = parser:add_subparsers({ "commands", help = "Test." })
             subparsers.required = true
@@ -168,7 +168,7 @@ thing]],
         end)
 
         it("includes subparsers argument choices - 002 - required", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ "thing", help = "Test." })
             local subparsers = parser:add_subparsers({ "commands", help = "Test." })
             subparsers.required = false
@@ -191,7 +191,7 @@ thing]],
         describe("nargs", function()
             describe("nargs number", function()
                 it("works with nargs=2 + count", function()
-                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
                         parser:add_parameter({ "foo", nargs = 2, action = "count", help = "Test." })
@@ -202,7 +202,7 @@ thing]],
                 end)
 
                 it("works with nargs=2 + store_false", function()
-                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
                         parser:add_parameter({ "foo", nargs = 2, action = "store_false", help = "Test." })
@@ -213,7 +213,7 @@ thing]],
                 end)
 
                 it("works with nargs=2 + store_true", function()
-                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
                         parser:add_parameter({ "foo", nargs = 2, action = "store_true", help = "Test." })
@@ -226,7 +226,7 @@ thing]],
 
             describe("nargs *", function()
                 it("works with nargs=* + count", function()
-                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
                         parser:add_parameter({ "foo", nargs = "*", action = "count", help = "Test." })
@@ -237,7 +237,7 @@ thing]],
                 end)
 
                 it("works with nargs=* + store_false", function()
-                    local parser = argparse2.ParameterParser.new({ help = "Test." })
+                    local parser = cmdparse.ParameterParser.new({ help = "Test." })
 
                     local success, result = pcall(function()
                         parser:add_parameter({ "foo", nargs = "*", action = "store_false", help = "Test." })
@@ -248,7 +248,7 @@ thing]],
                 end)
 
                 it("works with nargs=* + store_true", function()
-                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
                         parser:add_parameter({ "foo", nargs = "*", action = "store_true", help = "Test." })
@@ -261,7 +261,7 @@ thing]],
 
             describe("nargs +", function()
                 it("works with nargs=+ + count", function()
-                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
                         parser:add_parameter({ "foo", nargs = "+", action = "count", help = "Test." })
@@ -272,7 +272,7 @@ thing]],
                 end)
 
                 it("works with nargs=+ + store_false", function()
-                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
                         parser:add_parameter({ "foo", nargs = "+", action = "store_false", help = "Test." })
@@ -283,7 +283,7 @@ thing]],
                 end)
 
                 it("works with nargs=+ + store_true", function()
-                    local parser = argparse2.ParameterParser.new({ help = "Test" })
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
                         parser:add_parameter({ "foo", nargs = "+", action = "store_true", help = "Test." })
@@ -293,19 +293,50 @@ thing]],
                     assert.equal('Parameter "foo" cannot use action "store_true" and nargs at the same time.', result)
                 end)
             end)
+
+            describe("nargs + --foo=bar named argument syntax", function()
+                it("errors with nargs=2 and --foo=bar syntax", function()
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
+
+                    parser:add_parameter({ "--foo", nargs = 2, help = "Test." })
+
+                    local success, result = pcall(function()
+                        parser:parse_arguments("--foo=thing")
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal('Parameter "--foo" requires "2" values. Got "1" value.', result)
+                end)
+
+                it("works with nargs=* and --foo=bar syntax", function()
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
+
+                    parser:add_parameter({ "--foo", nargs = "*", help = "Test." })
+
+                    assert.same({ foo = "thing" }, parser:parse_arguments("--foo=thing"))
+                end)
+
+                it("works with nargs=+ and --foo=bar syntax", function()
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
+
+                    parser:add_parameter({ "--foo", nargs = "+", help = "Test." })
+
+                    assert.same({ foo = "thing" }, parser:parse_arguments("--foo=thing"))
+                end)
+            end)
         end)
     end)
 
     describe("simple", function()
         it("does not error if there is no text and all arguments are optional", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ name = "foo", required = false, help = "Test." })
 
             parser:parse_arguments("")
         end)
 
         it("errors if a flag is given instead of an expected position", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test." })
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
 
             parser:add_parameter({ "foo", help = "Test." })
 
@@ -318,7 +349,7 @@ thing]],
         end)
 
         it("errors if nargs doesn't get enough expected values", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test." })
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
 
             parser:add_parameter({ "--foo", nargs = 3, required = true, help = "Test." })
 
@@ -331,7 +362,7 @@ thing]],
         end)
 
         it("errors if the user is #missing a required flag argument - 001", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test." })
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
 
             parser:add_parameter({ "--foo", action = "store_true", required = true, help = "Test." })
 
@@ -344,7 +375,7 @@ thing]],
         end)
 
         it("errors if the user is #missing a required flag argument - 002", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test." })
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
             parser:add_parameter({ "thing", help = "Test." })
             parser:add_parameter({ "--foo", action = "store_true", required = true, help = "Test." })
 
@@ -359,7 +390,7 @@ thing]],
         end)
 
         it("errors if the user is #missing a required named argument - 001", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test." })
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
             parser:add_parameter({ "--foo", required = true, help = "Test." })
 
             local success, result = pcall(function()
@@ -371,7 +402,7 @@ thing]],
         end)
 
         it("errors if the user is #missing a required named argument - 002", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test." })
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
             parser:add_parameter({ "--foo", required = true, help = "Test." })
 
             local success, result = pcall(function()
@@ -383,7 +414,7 @@ thing]],
         end)
 
         it("errors if the user is #missing a required position argument", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ name = "foo", help = "Test." })
 
             local success, result = pcall(function()
@@ -395,7 +426,7 @@ thing]],
         end)
 
         it("ignores an optional position argument", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ name = "foo", required = false, help = "Test." })
 
             parser:parse_arguments("")
@@ -403,7 +434,7 @@ thing]],
 
         -- TODO: Consider if we need this
         -- it("errors if the user is #missing one of several arguments - 003 - position argument", function()
-        --     local parser = argparse2.ParameterParser.new({ help = "Test" })
+        --     local parser = cmdparse.ParameterParser.new({ help = "Test" })
         --     parser:add_parameter({ name = "foo", nargs=2})
         --
         --     local success, result = pcall(function() parser:parse_arguments("thing") end)
@@ -413,7 +444,7 @@ thing]],
         -- end)
 
         it("errors if the user is #missing one of several arguments - 004 - flag-value argument", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ name = "--foo", nargs = 2, help = "Test." })
 
             local success, result = pcall(function()
@@ -425,7 +456,7 @@ thing]],
         end)
 
         it("errors if a named argument in the middle of parse that is not given a value", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ name = "--foo", required = true, help = "Test." })
             parser:add_parameter({ name = "--bar", help = "Test." })
 
@@ -438,7 +469,7 @@ thing]],
         end)
 
         it("errors if a position argument in the middle of parse that is not given a value", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ name = "foo", help = "Test." })
             parser:add_parameter({ name = "bar", help = "Test." })
             parser:add_parameter({ name = "--fizz", help = "Test." })
@@ -452,7 +483,7 @@ thing]],
         end)
 
         it("errors if a position argument at the end of a parse that is not given a value", function()
-            local parser = argparse2.ParameterParser.new({ help = "Test" })
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ name = "foo", help = "Test." })
             parser:add_parameter({ name = "bar", help = "Test." })
             parser:add_parameter({ name = "thing", help = "Test." })
