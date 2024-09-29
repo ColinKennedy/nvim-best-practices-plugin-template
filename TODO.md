@@ -1,5 +1,8 @@
 - Try to get the CI working for Linux / Mac / Windows again
 
+- If a named arguiment is an nargs=1 argument then it should auto-complete to be --foo=, I guess
+ - If it it's nargs=2+ then it should auto-complete not with =
+
 - remove private variable accesses
 
 - Do a round of finishing TODO notes
@@ -27,9 +30,6 @@
 - Consider changing argparse so that it registers any argument that starts with
 a non-alpha / ' / " as a flag argument. Instead of the current setup which only
 allows for - or +
-
-- If a named arguiment is an nargs=1 argument then it should auto-complete to be --foo=, I guess
- - If it it's nargs=2+ then it should auto-complete not with =
 
 Typing `-` or `--` doesn't auto-complete to `--repeat`
 
