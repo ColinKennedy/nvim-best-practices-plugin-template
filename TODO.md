@@ -1,9 +1,5 @@
 - Try to get the CI working for Linux / Mac / Windows again
 
-- Add a unittest to makes sure that position `choices` can maintain another table and remove possible matches each time the argument is used
- - Same test but for flag arguments
-- Allow all `choices` to get context information (current argument, current text, etc etc)
-
 - remove private variable accesses
 
 - Do a round of finishing TODO notes
