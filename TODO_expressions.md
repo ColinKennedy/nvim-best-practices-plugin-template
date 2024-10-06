@@ -4,6 +4,8 @@
     - shell $()
     - python Python()
     - Lua Lua()
+     - https://github.com/neovim/neovim/commit/d5ae5c84e94a2b15374ee0c7e2f4444c161a8a63
+     - get_completions()
     - Shell variables - ${}
 
     - When expanded, use their data directly. OR if it's around quotes, use it as quotes
@@ -19,3 +21,5 @@ instead of that expression's auto-complete). e.g.
   - The cursor isn't on FOO so it shouldn't auto-complete like it is
 
 Do TODO notes
+
+- Make sure that dynamic expressions don't accidentally trigger validtion failure if the expression evaluates into valid input

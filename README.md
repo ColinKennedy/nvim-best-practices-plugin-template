@@ -212,12 +212,14 @@ eval $(luarocks path --lua-version 5.1 --bin)
 ## Running
 Run all tests
 ```sh
-busted .
+luarocks test --test-type busted
+# Or manually
+busted --helper spec/minimal_init.lua .
 ```
 
 Run test based on tags
 ```sh
-busted . --tags=simple
+busted --helper spec/minimal_init.lua . --tags=simple
 ```
 
 # Tracking Updates

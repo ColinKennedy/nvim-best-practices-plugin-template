@@ -7,12 +7,12 @@ local _PREFIX = "PluginTemplate"
 ---@type plugin_template.ParserCreator
 local _SUBCOMMANDS = function()
     local arbitrary_thing = require("plugin_template._commands.arbitrary_thing.parser")
-    local argparse2 = require("plugin_template._cli.argparse2")
+    local cmdparse = require("plugin_template._cli.cmdparse")
     local copy_logs = require("plugin_template._commands.copy_logs.parser")
     local goodnight_moon = require("plugin_template._commands.goodnight_moon.parser")
     local hello_world = require("plugin_template._commands.hello_world.parser")
 
-    local root_parser = argparse2.ParameterParser.new({ help = "The root of all commands." })
+    local root_parser = cmdparse.ParameterParser.new({ help = "The root of all commands." })
     local root_subparsers = root_parser:add_subparsers({ "command", help = "All root commands." })
 
     local parser = root_subparsers:add_parser({ name = _PREFIX, help = "The starting command." })
