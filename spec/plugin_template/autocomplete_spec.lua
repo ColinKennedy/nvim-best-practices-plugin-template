@@ -606,6 +606,69 @@ describe("flag argument", function()
     end)
 end)
 
+-- TODO: Get these tests to pass
+describe("nargs", function()
+    describe("flag", function()
+        it("works with nargs 1", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "--items", choices={"barty", "bar", "foo"}, nargs = 1, help = "Test." })
+
+            assert.same({"barty", "bar"}, parser:get_completion("--items b"))
+        end)
+
+        it("works with nargs 2+", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "--items", choices={"barty", "bar", "foo"}, nargs = 2, help = "Test." })
+
+            assert.same({"foo"}, parser:get_completion("--items bar f"))
+        end)
+
+        it("works with nargs * #asdf", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "--items", choices={"barty", "bar", "foo"}, nargs = "*", help = "Test." })
+
+            assert.same({"foo"}, parser:get_completion("--items bar f"))
+        end)
+
+        it("works with nargs +", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "--items", choices={"barty", "bar", "foo"}, nargs = "+", help = "Test." })
+
+            assert.same({"foo"}, parser:get_completion("--items bar f"))
+        end)
+    end)
+
+    describe("position", function()
+        it("works with nargs 1", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "items", choices={"barty", "bar", "foo"}, nargs = 1, help = "Test." })
+
+            assert.same({"barty", "bar"}, parser:get_completion("b"))
+        end)
+
+        it("works with nargs 2+", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "items", choices={"barty", "bar", "foo"}, nargs = 2, help = "Test." })
+
+            assert.same({"foo"}, parser:get_completion("bar f"))
+        end)
+
+        it("works with nargs *", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "items", choices={"barty", "bar", "foo"}, nargs = "*", help = "Test." })
+
+            assert.same({"foo"}, parser:get_completion("bar f"))
+        end)
+
+        it("works with nargs +", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "items", choices={"barty", "bar", "foo"}, nargs = "+", help = "Test." })
+
+            assert.same({"foo"}, parser:get_completion("bar f"))
+        end)
+    end)
+end)
+
 describe("numbered count - named argument", function()
     it("works with count = 2", function()
         local parser = cmdparse.ParameterParser.new({ help = "Test" })

@@ -1,8 +1,9 @@
 - Do TODO notes
 
+- Make sure completion does not spam errors to the user if they give incorrect input
+
 - Simplify the help symbols (just add * / + to the end of stuff)
 
-- Auto-complete flag values even if there is no = (e.g. `--foo=bar`)
 - Try to get the CI working for Linux / Mac / Windows again
 
 ```
