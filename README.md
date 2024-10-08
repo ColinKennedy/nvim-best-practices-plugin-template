@@ -47,7 +47,7 @@ A template repository for Neovim plugins.
 
 # Using This Template
 1. Follow the [Wiki instructions](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/Using-This-Template)
-2. Once you're done, remove this section (the rest of this README.md file should be kept)
+2. Once you're done, remove this section (the rest of this README.md file should be kept / customized to your needs)
 
 
 # Installation

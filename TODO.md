@@ -1,6 +1,6 @@
 - Do TODO notes
 
-- Make sure completion does not spam errors to the user if they give incorrect input
+- Make sure auto-completion does not spam errors to the user if they give incorrect input
 
 - Simplify the help symbols (just add * / + to the end of stuff)
 

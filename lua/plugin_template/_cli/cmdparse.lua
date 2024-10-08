@@ -2813,7 +2813,9 @@ function M.ParameterParser:_parse_arguments(data, namespace)
 
             -- if not found then
             --     -- TODO: Do something about this one
+            --     error("TODO: Add this case")
             -- end
+
             index = index + used_arguments
         end
 
