@@ -623,7 +623,7 @@ describe("nargs", function()
             assert.same({"foo"}, parser:get_completion("--items bar f"))
         end)
 
-        it("works with nargs * #asdf", function()
+        it("works with nargs *", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
             parser:add_parameter({ "--items", choices={"barty", "bar", "foo"}, nargs = "*", help = "Test." })
 

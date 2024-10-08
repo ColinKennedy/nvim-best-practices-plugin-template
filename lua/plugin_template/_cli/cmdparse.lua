@@ -2593,13 +2593,13 @@ function M.ParameterParser:_compute_matching_parsers(arguments)
     local current_parser = self
     local count = #arguments
 
-    local last_index = count - 1
-
     -- NOTE: We search all but the last argument here.
     -- IMPORTANT: Every argument must have a match or it means the `arguments`
     -- failed to match something in the parser tree.
     --
-    for index = 1, last_index do
+    local index = 1
+
+    while index < count do
         local argument = arguments[index]
         local argument_name = _get_argument_name(argument)
 
@@ -2622,9 +2622,11 @@ function M.ParameterParser:_compute_matching_parsers(arguments)
                 return previous_parser or self, index
             end
         end
+
+        index = index + 1
     end
 
-    return current_parser, last_index
+    return current_parser, count - 1
 
     -- -- NOTE: The last user argument is special because it might be partially written.
     -- local last = arguments[count]
