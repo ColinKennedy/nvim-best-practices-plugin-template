@@ -669,6 +669,20 @@ describe("nargs", function()
             assert.same({"foo"}, parser:get_completion("bar f"))
         end)
     end)
+
+    describe("named argument", function()
+        it("does not complete with = when nargs is 2+", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "--items", nargs = 2, help = "Test." })
+
+            assert.same({"--items"}, parser:get_completion("--ite"))
+
+            local parser2 = cmdparse.ParameterParser.new({ help = "Test." })
+            parser2:add_parameter({ "--items", nargs = 1, help = "Test." })
+
+            assert.same({"--items="}, parser2:get_completion("--ite"))
+        end)
+    end)
 end)
 
 describe("numbered count - named argument", function()

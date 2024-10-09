@@ -6,15 +6,16 @@
 
 - Try to get the CI working for Linux / Mac / Windows again
 
+
+Consider more badges
+https://github.com/azratul/live-share.nvim?tab=readme-ov-file
+
 ```
 nargs=0 + position should error
 nargs for store actions must be != 0; if you have nothing to store, actions such as store true or store const may be more approp
 ```
 
 - Try to get the CI working for Linux / Mac / Windows again
-
-- If a named arguiment is an nargs=1 argument then it should auto-complete to be --foo=, I guess
- - If it it's nargs=2+ then it should auto-complete not with =
 
 - remove private variable accesses
 
