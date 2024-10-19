@@ -761,17 +761,51 @@ end
 ---@return string[] # The matching names, if any.
 ---
 local function _get_exact_or_partial_matches(parameter, argument, parser, contexts)
+    -- local function _get_longest_match(prefix, options)
+    --     local longest_match_count = 0
+    --     local longest_match
+    --
+    --     for _, name in ipairs(options) do
+    --         if vim.startswith(name, prefix) then
+    --             local count = #prefix
+    --
+    --             if count > longest_match_count then
+    --                 longest_match = name
+    --                 longest_match_count = count
+    --             end
+    --         end
+    --     end
+    --
+    --     return longest_match
+    -- end
+
     local output = {}
 
-    local prefix = _get_argument_value_text(argument)
+    local prefix = _get_argument_name(argument)
 
-    if parameter.choices then
+    local matches = _get_array_startswith(parameter.names, prefix)
+
+    if not vim.tbl_isempty(matches) and argument.value == false then
+        if parameter:is_exhausted() then
+            return {}
+        end
+
+        local nargs = parameter:get_nargs()
+
+        if nargs == 1 then
+            return { matches[1] .. "=" }
+        end
+    end
+
+    prefix = _get_argument_value_text(argument)
+
+    if argument.argument_type == argparse.ArgumentType.position and parameter.choices then
         return parameter.choices({ current_value = prefix, contexts = contexts })
     end
 
     prefix = _get_argument_name(argument)
     vim.list_extend(output, _get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
-    vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts))
+    vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), argument.value, contexts))
 
     return output
 end
@@ -902,68 +936,6 @@ end
 local function _lstrip(text)
     return (text:gsub("^%s*", ""))
 end
-
--- --- Find the next arguments that need to be completed / used based on some partial `prefix`.
--- ---
--- ---@param parser cmdparse.ParameterParser
--- ---    The subparser to consider for the next parameter(s).
--- ---@param prefix string
--- ---    Prefix text to match against for. Usually it's empty but if there's
--- ---    a command like `foo --`, as in they started to write a flag but hasn't
--- ---    completed, then `prefix` would be `"--"`.
--- ---@param contexts cmdparse.ChoiceContext[]?
--- ---    A description of how / when this function is called. It gets passed to
--- ---    `cmdparse.Parameter.choices()`.
--- ---@return string[]
--- ---    The matching names, if any.
--- ---
--- local function _get_next_parameters_from_remainder(parser, prefix, contexts)
---     -- TODO: Consider removing this text
---     -- local name = _get_argument_name(argument)
---     -- local matches = vim.iter(parsers):filter(function(parser)
---     --     return vim.tbl_contains(parser:get_names(), name)
---     -- end):totable()
---     -- -- TODO: If 2+ matches, log a warning
---     -- local match = matches[1]
---
---     local output = {}
---
---     -- TODO: Fix the argument4 sorting here. It's broken
---     -- See "dynamic argument - works with positional arguments" test
---     --
---     if parser:is_satisfied() then
---         vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(prefix, parser)))
---     end
---
---     vim.list_extend(output, _get_exact_or_partial_matches(parser, nil, contexts))
---
---     -- TODO: There's a bug here. We may not be able to assume the last argument like this
---     -- local last = stripped.arguments[#stripped.arguments]
---     -- local last_name = _get_argument_name(last)
---     -- local matches = vim.iter(parsers):filter(function(parser) return parser.name == last_name end):totable()
---     -- local match = matches[1]
---     -- vim.list_extend(output, _get_exact_or_partial_matches(last_name, match))
---     -- output = {match.name}
---     -- local parent_subparsers = match._parent
---     -- local parent = parent_subparsers._parent
---     -- vim.list_extend(output, _get_exact_or_partial_matches(last_name, parent))
---     -- output = vim.fn.sort(output)
---
---     return output
--- end
-
--- --- Find all arguments that match `prefix`, starting from `parser.
--- ---
--- --- @param parser cmdparse.ParameterParser The starting point to search within.
--- --- @return string[] # The matching names, if any.
--- ---
--- local function _get_next_exact_or_partial_arguments(parser)
---     local output = {}
---     vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(parser)))
---     vim.list_extend(output, _get_exact_or_partial_matches(parser))
---
---     return output
--- end
 
 --- Get all option flag / named parameter --help text from `parser`.
 ---
@@ -1473,6 +1445,11 @@ function M.Parameter:is_exhausted()
     return self._used >= self._count
 end
 
+---@return boolean # If this instance is a flag like `--foo` or `--foo=bar`, return `false`.
+function M.Parameter:is_position()
+    return _is_position_name(self.names[1])
+end
+
 --- Get a function that mutates the namespace with a new parsed argument.
 ---
 ---@return fun(data: cmdparse.ActionData): nil
@@ -1896,16 +1873,72 @@ function M.ParameterParser:_get_completion(data, column)
     --     return output
     -- end
 
+    -- If `parameter` is a position then `argument` must a new parameter
+    -- because `parameter` would only be found if its arguments were satisfied.
+    --
+    -- If `parameter` is a flag then and `argument` is a position then
+    -- `argument` could either be the starting value for another parameter or
+    -- an additional value for `parameter`. We aren't sure.
+    --
+    -- If `parameter is a flag and `argument` is not a position then `argument`
+    -- is definitely a starting value for another parameter.
+    --
+    ---@return cmdparse.Parameter
+    ---
+    local function _get_next_parameter_if_needed(parser_, parameter, argument)
+        if parameter:is_position() then
+            if argument.argument_type == argparse.ArgumentType.position then
+                local positions = parser_:get_position_parameters()
+
+                for _, position in ipairs(positions) do
+                    if not position:is_exhausted() then
+                        return position
+                    end
+                end
+
+                return positions[#positions]
+            end
+
+            error("TODO: Handle this case")
+        end
+
+        if argument.argument_type ~= argparse.ArgumentType.position then
+            local name = argument.name
+
+            for _, flag in ipairs(parser:get_flag_parameters()) do
+                if
+                    not flag:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(flag.names, name))
+                then
+                    return flag
+                end
+            end
+
+            return parameter
+        end
+
+        -- NOTE: We aren't sure if `argument` is for `parameter` or another, next parameter.
+        -- Until we have concrete cases let's just return the original parameter.
+        --
+        return parameter
+    end
+
     if remainder == "" then
         if _is_parser(recent_item) then
             ---@cast recent_item cmdparse.ParameterParser
             vim.list_extend(output, _get_parser_exact_or_partial_matches(recent_item, last_name, last_value, contexts))
         elseif _is_incomplete_named_argument(last) then
             ---@cast recent_item cmdparse.Parameter
-            vim.list_extend(output, _get_named_argument_completion_choices(recent_item, last, contexts))
+            local parameter = _get_next_parameter_if_needed(parser, recent_item, last)
+            vim.list_extend(output, _get_named_argument_completion_choices(parameter, last, contexts))
         elseif _is_parameter(recent_item) then
             ---@cast recent_item cmdparse.Parameter
-            vim.list_extend(output, _get_exact_or_partial_matches(recent_item, last, parser, contexts))
+            local parameter = _get_next_parameter_if_needed(parser, recent_item, last)
+
+            if not parameter then
+                return {}
+            end
+
+            vim.list_extend(output, _get_exact_or_partial_matches(parameter, last, parser, contexts))
         else
             error(string.format('Bug found. Item "%s" is unknown.', vim.inspect(recent_item)))
         end
@@ -3059,7 +3092,7 @@ end
 ---
 ---@param data string | argparse.Results
 ---    User text that needs to be parsed. e.g. `hello "World!"`
----@param namespace cmdparse.Namespace?
+---@param namespace cmdparse.Namespace
 ---    All pre-existing, default parsed values. If this is the first
 ---    cmdparse.ParameterParser then this `namespace` will always be empty
 ---    but a nested parser will usually have the parsed arguments of the

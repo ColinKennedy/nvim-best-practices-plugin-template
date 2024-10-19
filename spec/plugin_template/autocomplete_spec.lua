@@ -664,9 +664,12 @@ describe("nargs", function()
 
         it("works with nargs +", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
-            parser:add_parameter(
-                { "items", choices = { "barty", "bar", "foo" }, nargs = "+", help = "Parameter test." }
-            )
+            parser:add_parameter({
+                "items",
+                choices = { "barty", "bar", "foo" },
+                nargs = "+",
+                help = "Parameter test.",
+            })
 
             assert.same({ "foo" }, parser:get_completion("bar f"))
         end)
