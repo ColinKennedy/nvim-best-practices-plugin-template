@@ -46,6 +46,15 @@ function M.is_string_list(items)
     return true
 end
 
+--- Check if `character` is a space, tab, or newline.
+---
+---@param character string Basically `" "`, `\n`, `\t`.
+---@return boolean # If it's any whitespace, return `true`.
+---
+function M.is_whitespace(character)
+    return character:match("%s")
+end
+
 --- Add indentation to `text.
 ---
 ---@param text string Some phrase to indent one level. e.g. `"foo"`.

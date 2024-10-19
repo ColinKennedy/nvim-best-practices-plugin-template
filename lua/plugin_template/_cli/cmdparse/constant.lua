@@ -1,6 +1,9 @@
 -- TODO: Finish
 local M = {}
 
+---@enum cmdparse.ActionOption
+M.Action = { count = "count", store_false = "store_false", store_true = "store_true" }
+
 ---@enum cmdparse.ChoiceContext
 ---    Extra information provided to `cmdparse.Parameter.choices()` when
 ---    resolving for allowed values.

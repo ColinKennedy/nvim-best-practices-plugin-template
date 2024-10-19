@@ -3,6 +3,7 @@
 ---@module 'plugin_template._cli.argparse'
 ---
 
+local texter = require("plugin_template._core.texter")
 local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
@@ -91,15 +92,6 @@ end
 ---
 local function _is_prefix(character)
     return vim.tbl_contains(M.PREFIX_CHARACTERS, character)
-end
-
---- Check if `character` is a space, tab, or newline.
----
----@param character string Basically `" "`, `\n`, `\t`.
----@return boolean # If it's any whitespace, return `true`.
----
-local function _is_whitespace(character)
-    return character:match("%s")
 end
 
 --- Check if `character` starts a multi-word quote.
@@ -288,7 +280,7 @@ function M.parse_arguments(text)
                 else
                     state = _State.value_is_pending
                 end
-            elseif _is_whitespace(character) then
+            elseif texter.is_whitespace(character) then
                 -- NOTE: Ignore whitespace in some situations.
                 if not is_escaping then
                     current_name = current_name .. current_argument
@@ -305,7 +297,7 @@ function M.parse_arguments(text)
             --
             local next_character = peek(physical_index)
 
-            if _is_whitespace(next_character) or next_character == "" then
+            if texter.is_whitespace(next_character) or next_character == "" then
                 -- NOTE: We've reached the end of 1+ single flag(s).
                 -- Add every found character as flags
                 --
@@ -329,7 +321,7 @@ function M.parse_arguments(text)
                 _append_to_wip_argument()
             end
         elseif state == _State.value_is_pending then
-            if _is_whitespace(character) then
+            if texter.is_whitespace(character) then
                 if current_argument == "" then
                     current_argument = false
                 end
@@ -345,7 +337,7 @@ function M.parse_arguments(text)
                 physical_index = physical_index + 1
                 escaped_character_count = escaped_character_count + 1
                 is_escaping = false -- NOTE: The escaped character was consumed
-            elseif _is_whitespace(character) then
+            elseif texter.is_whitespace(character) then
                 _add_to_output()
                 _reset_all()
                 remainder.value = remainder.value .. character

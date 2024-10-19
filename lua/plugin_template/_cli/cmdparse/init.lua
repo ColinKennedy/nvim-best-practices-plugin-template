@@ -5,13 +5,16 @@
 
 -- TODO: Clean-up code
 
-local _cmdparse_help = require("plugin_template._cli._cmdparse_help")
-local _cmdparse_utility = require("plugin_template._cli._cmdparse_utility")
 local argparse = require("plugin_template._cli.argparse")
 local argparse_helper = require("plugin_template._cli.argparse_helper")
-local cmdparse_constant = require("plugin_template._cli.cmdparse_constant")
+local constant = require("plugin_template._cli.cmdparse.constant")
+local evaluator = require("lua.plugin_template._cli.cmdparse.evaluator")
+local help_message = require("plugin_template._cli.cmdparse.help_message")
+local iterator_helper = require("plugin_template._cli.cmdparse.iterator_helper")
 local tabler = require("plugin_template._core.tabler")
+local text_parse = require("lua.plugin_template._cli.cmdparse.text_parse")
 local texter = require("plugin_template._core.texter")
+local types_input = require("lua.plugin_template._cli.cmdparse.types_input")
 
 ---@alias cmdparse.Action "append" | "count" | "store_false" | "store_true" | fun(data: cmdparse.ActionData): nil
 ---    This controls the behavior of how parsed arguments are added into the
@@ -137,9 +140,6 @@ local M = {}
 local _FULL_HELP_FLAG = "--help"
 local _SHORT_HELP_FLAG = "-h"
 
-local _ActionConstant = { count = "count", store_false = "store_false", store_true = "store_true" }
-local _FLAG_ACTIONS = { _ActionConstant.count, _ActionConstant.store_false, _ActionConstant.store_true }
-
 ---@class cmdparse.Parameter
 ---    An optional / required parameter for some parser.
 ---@field action cmdparse.Action?
@@ -203,37 +203,6 @@ M.Subparsers = {
 }
 M.Subparsers.__index = M.Subparsers
 
---- Check if `name` is a possible value of `parameter`.
----
----@param name string
----    The written user text. e.g. `"foo"`.
----@param parameter cmdparse.Parameter
----    Some position parameter to check. e.g. `{choices={"foo", "bar"}}`.
----@return boolean
----    If `parameter` has defined `parameter.choices` and `name` matches one of
----    them, return `true`.
----
-local function _has_position_parameter_match(name, parameter)
-    if not parameter.choices then
-        -- NOTE: Any value is valid if there are no explicit choices
-        return true
-    end
-
-    if
-        vim.tbl_contains(
-            parameter.choices({
-                contexts = { cmdparse_constant.ChoiceContext.position_matching },
-                current_value = name,
-            }),
-            name
-        )
-    then
-        return true
-    end
-
-    return false
-end
-
 --- If the `argument` is a Named Argument with a value, get it.
 ---
 ---@param argument argparse.Argument Some user input argument to check.
@@ -258,83 +227,6 @@ end
 ---
 local function _is_incomplete_named_argument(argument)
     return argument.argument_type == argparse.ArgumentType.named and argument.value == false
-end
-
---- Check if `parameter` is expected to have exactly one value.
----
----@param parameter cmdparse.Parameter
----    A parser parameter that may expect 0-or-more values.
----@param arguments argparse.Argument
----    User inputs to check.
----@return boolean
----    If `parameter` needs exactly one value, return `true`.
----
-local function _is_single_nargs_and_named_parameter(parameter, arguments)
-    if parameter:get_nargs() ~= 1 then
-        return false
-    end
-
-    local argument = arguments[1]
-
-    if not argument then
-        return false
-    end
-
-    if argument.argument_type ~= argparse.ArgumentType.named then
-        return false
-    end
-
-    return vim.tbl_contains(parameter.names, argument.name)
-end
-
---- Check if `arguments` is valid data for `parameter`.
----
----@param parameter cmdparse.Parameter
----    A parser parameter that may expect 0-or-more values.
----@param arguments argparse.Argument
----    User inputs to check to check against `parameter`.
----@return boolean
----    If `parameter` is satisified by is satisified by `arguments`, return `true`.
----
-local function _has_satisfying_value(parameter, arguments)
-    if _is_single_nargs_and_named_parameter(parameter, arguments) then
-        return true
-    end
-
-    local nargs = parameter:get_nargs()
-
-    if nargs == 0 or nargs == cmdparse_constant.Counter.zero_or_more then
-        -- NOTE: If `parameter` doesn't need any value then it is definitely satisified.
-        return true
-    end
-
-    local count = 0
-
-    for _, argument in ipairs(arguments) do
-        if argument.argument_type ~= argparse.ArgumentType.position then
-            -- NOTE: Flag arguments can only accept non-flag arguments, in general.
-            return false
-        end
-
-        count = count + 1
-
-        if count == nargs or nargs == cmdparse_constant.Counter.one_or_more then
-            return true
-        end
-    end
-
-    -- NOTE: There wasn't enough `arguments` left to satisfy `parameter`.
-    return false
-end
-
---- Check if `text`.
----
----@param text string Some text. e.g. `--foo`.
----@return boolean # If `text` is a word, return `true.
----
-local function _is_position_name(text)
-    -- TODO: Consider allowing utf-8+ characters here
-    return text:sub(1, 1):match("%w")
 end
 
 --- Check if `text` is only spaces.
@@ -396,61 +288,6 @@ local function _get_array_startswith(values, prefix)
     return output
 end
 
---- Find + increment all flag parameters of `parser` that match the other inputs.
----
----@param parser cmdparse.ParameterParser
----    A parser whose parameters may be modified.
----@param argument_name string
----    The expected flag argument name.
----@param arguments argparse.Argument
----    All of the upcoming argumenst after `argument_name`. We use these to figure out
----    if `parser` is an exact match.
----@return boolean
----    If `true` a flag argument was matched and incremented.
----
-local function _compute_exact_flag_match(parser, argument_name, arguments)
-    for _, parameter in ipairs(parser:get_flag_parameters()) do
-        if
-            not parameter:is_exhausted()
-            and vim.tbl_contains(parameter.names, argument_name)
-            and _has_satisfying_value(parameter, arguments)
-        then
-            parameter:increment_used()
-
-            return true
-        end
-    end
-
-    return false
-end
-
---- Find + increment all position parameters of `parser` that match the other inputs.
----
----@param parser cmdparse.ParameterParser
----    A parser whose parameters may be modified.
----@param argument_name string
----    The expected position argument name. Most of the time position arguments
----    don't even have an expected name so this value is not always used.
----@return boolean
----    If `true` a position argument was matched and incremented.
----
-local function _compute_exact_position_match(argument_name, parser)
-    for _, parameter in ipairs(parser:get_position_parameters()) do
-        if not parameter:is_exhausted() then
-            if _has_position_parameter_match(argument_name, parameter) then
-                -- TODO: Handle this scenario. Need to do nargs checks and stuff
-                parameter:increment_used()
-
-                return true
-            end
-
-            return false
-        end
-    end
-
-    return false
-end
-
 --- Remove whitespace from `text` but only if `text` is 100% whitespace.
 ---
 ---@param text string Some text to possibly strip.
@@ -489,7 +326,7 @@ end
 ---@return string[] # All parser names, if any are defined.
 ---
 local function _get_child_parser_names(parser)
-    return vim.iter(_cmdparse_utility.iter_parsers(parser))
+    return vim.iter(iterator_helper.iter_parsers(parser))
         :map(function(parser_)
             return parser_:get_names()[1]
         end)
@@ -554,7 +391,7 @@ local function _get_named_argument_completion_choices(parameter, argument, conte
 
     for _, choice in
         ipairs(parameter.choices({
-            contexts = vim.list_extend({ cmdparse_constant.ChoiceContext.value_matching }, contexts),
+            contexts = vim.list_extend({ constant.ChoiceContext.value_matching }, contexts),
             current_value = current_value,
         }))
     do
@@ -589,7 +426,7 @@ local function _get_single_choices_text(parameter, value, contexts)
 
     for _, choice in
         ipairs(parameter.choices({
-            contexts = vim.list_extend({ cmdparse_constant.ChoiceContext.value_matching }, contexts),
+            contexts = vim.list_extend({ constant.ChoiceContext.value_matching }, contexts),
             current_value = value,
         }))
     do
@@ -672,7 +509,7 @@ local function _get_matching_position_parameters(name, parameters, contexts)
                 output,
                 _get_array_startswith(
                     parameter.choices({
-                        contexts = vim.list_extend({ cmdparse_constant.ChoiceContext.position_matching }, contexts),
+                        contexts = vim.list_extend({ constant.ChoiceContext.position_matching }, contexts),
                         current_value = name,
                     }),
                     name
@@ -761,24 +598,6 @@ end
 ---@return string[] # The matching names, if any.
 ---
 local function _get_exact_or_partial_matches(parameter, argument, parser, contexts)
-    -- local function _get_longest_match(prefix, options)
-    --     local longest_match_count = 0
-    --     local longest_match
-    --
-    --     for _, name in ipairs(options) do
-    --         if vim.startswith(name, prefix) then
-    --             local count = #prefix
-    --
-    --             if count > longest_match_count then
-    --                 longest_match = name
-    --                 longest_match_count = count
-    --             end
-    --         end
-    --     end
-    --
-    --     return longest_match
-    -- end
-
     local output = {}
 
     local prefix = _get_argument_name(argument)
@@ -804,8 +623,11 @@ local function _get_exact_or_partial_matches(parameter, argument, parser, contex
     end
 
     prefix = _get_argument_name(argument)
+    local value = argument.value
+    ---@cast value string
+
     vim.list_extend(output, _get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
-    vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), argument.value, contexts))
+    vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts))
 
     return output
 end
@@ -904,7 +726,7 @@ end
 local function _get_matching_subparser_names(prefix, parser)
     local output = {}
 
-    for parser_ in _cmdparse_utility.iter_parsers(parser) do
+    for parser_ in iterator_helper.iter_parsers(parser) do
         local names = parser_:get_names()
 
         -- TODO: All current uses of this function ended up with `prefix` ==
@@ -952,7 +774,7 @@ local function _get_parser_flag_help_text(parser)
         -- TODO: If this function continues to work, consider renaming
         -- `get_position_usage_help_text` to something more generic.
         --
-        local hint = _cmdparse_help.get_position_usage_help_text(flag)
+        local hint = help_message.get_position_usage_help_text(flag)
 
         if hint and hint ~= "" then
             text = text .. " " .. hint
@@ -981,7 +803,7 @@ local function _get_parser_position_help_text(parser)
     local output = {}
 
     for _, position in ipairs(parser:get_position_parameters()) do
-        local text = _cmdparse_help.get_position_description_help_text(position)
+        local text = help_message.get_position_description_help_text(position)
 
         table.insert(output, texter.indent(text))
     end
@@ -1033,145 +855,6 @@ end
 --
 --     return output
 -- end
-
---- Print `data` but don't recurse.
----
---- If you don't call this function when you try to print one of our Parameter
---- types, it will print parent / child objects and it ends up printing the
---- whole tree. This function instead prints just the relevant details.
----
----@param data any Anything. Usually an Parameter type from this file.
----@return string # The found data.
----
-local function _concise_inspect(data)
-    --- NOTE: Not sure why llscheck doesn't like this line. Maybe the
-    --- annotations for `vim.inspect` are incorret.
-    ---
-    ---@diagnostic disable-next-line redundant-parameter
-    return vim.inspect(data, { depth = 1 }) or ""
-end
-
---- Find a proper type converter from `options`.
----
----@param options cmdparse.ParameterInputOptions | cmdparse.ParameterOptions The suggested type for an parameter.
----
-local function _expand_type_options(options)
-    if not options.type then
-        options.type = function(value)
-            return value
-        end
-    elseif options.type == "string" then
-        options.type = function(value)
-            return value
-        end
-    elseif options.type == "number" then
-        options.type = function(value)
-            return tonumber(value)
-        end
-    elseif type(options.type) == "function" then
-        -- NOTE: Do nothing. Assume the user knows what they're doing.
-        return
-    else
-        error(string.format('Type "%s" is unknown. We can\'t parse it.', _concise_inspect(options)), 0)
-    end
-end
-
---- Add / modify `options.choices` as needed.
----
---- Basically if `options.choices` is not defined, that's fine. If it is
---- a `string` or `string[]`, handle that. If it's a function, assume the user
---- knows what they're doing and include it.
----
----@param options cmdparse.ParameterInputOptions
----    | cmdparse.ParameterOptions
----    | cmdparse.ParameterParserOptions
----    | cmdparse.ParameterParserInputOptions
----    The user-written options. (sparse or not).
----
-local function _expand_choices_options(options)
-    if not options.choices then
-        return
-    end
-
-    local input = options.choices
-    local choices
-
-    -- TODO: Add unittests for these. Make sur ethat the user's text is
-    -- passed as an import to these functions
-    --
-    if type(options.choices) == "string" then
-        choices = function()
-            return { input }
-        end
-    elseif texter.is_string_list(input) then
-        ---@cast input string[]
-        choices = function(data)
-            ---@cast data cmdparse.ChoiceData
-
-            if not data or not data.current_value then
-                return input
-            end
-
-            local value = data.current_value
-            ---@cast value string | string[]
-
-            if vim.tbl_contains(data.contexts, cmdparse_constant.ChoiceContext.auto_completing) then
-                ---@cast value string
-                return _get_array_startswith(input, value)
-            end
-
-            return input
-        end
-    elseif type(options.choices) == "function" then
-        choices = input
-    else
-        error(
-            string.format( -- NOTE: choices has to be a known format.
-                'Got invalid "%s" choices. Expected a string[] or a function.',
-                _concise_inspect(options.choices)
-            ),
-            0
-        )
-    end
-
-    options.choices = choices
-end
-
---- If `options` is sparsely written, "expand" all of its values. so we can use it.
----
----@param options cmdparse.ParameterInputOptions | cmdparse.ParameterOptions
----    The user-written options. (sparse or not).
----@param is_position boolean
----    If `options` is meant to be a non-flag argument. e.g. `--foo` is `false`.
----
-local function _expand_parameter_options(options, is_position)
-    _expand_type_options(options)
-    _expand_choices_options(options)
-
-    if options.required == nil then
-        if is_position then
-            options.required = true
-        else
-            options.required = false
-        end
-    end
-
-    if vim.tbl_contains(_FLAG_ACTIONS, options.action) and not options.nargs then
-        options.nargs = 0
-    end
-
-    if not options.nargs then
-        options.nargs = 1
-    end
-
-    if options.required == nil then
-        if is_position then
-            options.required = true
-        else
-            options.required = false
-        end
-    end
-end
 
 --- Combined `namespace` with all other `...` namespaces.
 ---
@@ -1233,96 +916,6 @@ local function _rstrip_input(input, column)
     stripped.text = input.text:sub(1, column)
 
     return stripped
-end
-
---- Make sure an `cmdparse.Parameter` has a name and every name is the same type.
----
---- If `names` is `{"foo", "-f"}` then this function will error.
----
----@param options cmdparse.ParameterInputOptions | cmdparse.ParameterOptions All data to check.
----
-local function _expand_parameter_names(options)
-    local function _get_type(name)
-        if _is_position_name(name) then
-            return "position"
-        end
-
-        return "flag"
-    end
-
-    local names = options.names or options.name or options[1]
-
-    if type(names) == "string" then
-        names = { names }
-    end
-
-    local found_type = nil
-
-    for _, name in ipairs(names) do
-        if not found_type then
-            found_type = _get_type(name)
-        elseif found_type ~= _get_type(name) then
-            error(
-                string.format(
-                    "Parameter names have to be the same type. "
-                        .. 'e.g. If one name starts with "-", all names '
-                        .. 'must start with "-" and vice versa.'
-                ),
-                0
-            )
-        end
-    end
-
-    if not found_type then
-        error(string.format('Options "%s" must provide at least one name.', vim.inspect(names)), 0)
-    end
-
-    options.names = names
-end
-
---- Make sure `options` has no conflicting / missing data.
----
---- Raises:
----     If an issue is found.
----
----@param options cmdparse.ParameterInputOptions | cmdparse.ParameterOptions
----    All data to check.
----
-local function _validate_parameter_options(options)
-    if vim.tbl_contains(_FLAG_ACTIONS, options.action) then
-        if options.choices ~= nil then
-            error(
-                string.format(
-                    'Parameter "%s" cannot use action "%s" and choices at the same time.',
-                    options.names[1],
-                    options.action
-                ),
-                0
-            )
-        end
-
-        if options.nargs ~= 0 then
-            error(
-                string.format(
-                    'Parameter "%s" cannot use action "%s" and nargs at the same time.',
-                    options.names[1],
-                    options.action
-                ),
-                0
-            )
-        end
-    end
-end
-
---- Make sure a name was provided from `options`.
----
----@param options cmdparse.ParameterParserOptions
----
-local function _validate_name(options)
-    -- TODO: name is required
-    if not options.name or _is_whitespace(options.name) then
-        error(string.format('Parameter "%s" must have a name.', _concise_inspect(options)), 0)
-    end
 end
 
 --- Create a new group of parsers.
@@ -1436,7 +1029,7 @@ end
 
 ---@return boolean # Check if this instance cannot be used anymore.
 function M.Parameter:is_exhausted()
-    if self._count == cmdparse_constant.Counter.zero_or_more then
+    if self._count == constant.Counter.zero_or_more then
         return false
     end
 
@@ -1447,7 +1040,7 @@ end
 
 ---@return boolean # If this instance is a flag like `--foo` or `--foo=bar`, return `false`.
 function M.Parameter:is_position()
-    return _is_position_name(self.names[1])
+    return text_parse.is_position_name(self.names[1])
 end
 
 --- Get a function that mutates the namespace with a new parsed argument.
@@ -1501,17 +1094,17 @@ end
 ---@param action cmdparse.Action The selected functionality.
 ---
 function M.Parameter:set_action(action)
-    if action == _ActionConstant.store_false then
+    if action == constant.ActionOption.store_false then
         action = function(data)
             ---@cast data cmdparse.ActionData
             data.namespace[data.name] = false
         end
-    elseif action == _ActionConstant.store_true then
+    elseif action == constant.ActionOption.store_true then
         action = function(data)
             ---@cast data cmdparse.ActionData
             data.namespace[data.name] = true
         end
-    elseif action == _ActionConstant.count then
+    elseif action == constant.ActionOption.count then
         action = function(data)
             ---@cast data cmdparse.ActionData
             local name = data.name
@@ -1523,7 +1116,7 @@ function M.Parameter:set_action(action)
 
             namespace[name] = namespace[name] + 1
         end
-    elseif action == "append" then
+    elseif action == constant.ActionOption.count then
         action = function(data)
             ---@cast data cmdparse.ActionData
             local name = data.name
@@ -1560,9 +1153,9 @@ end
 ---
 function M.Parameter:set_nargs(count)
     if count == "*" then
-        count = cmdparse_constant.Counter.zero_or_more
+        count = constant.Counter.zero_or_more
     elseif count == "+" then
-        count = cmdparse_constant.Counter.one_or_more
+        count = constant.Counter.one_or_more
     end
 
     self._nargs = count
@@ -1584,10 +1177,10 @@ function M.ParameterParser.new(options)
     end
 
     if options.parent then
-        _validate_name(options)
+        types_input.validate_name(options)
     end
 
-    _expand_choices_options(options)
+    types_input.expand_choices_options(options)
     --- @cast options cmdparse.ParameterParserOptions
 
     --- @class cmdparse.ParameterParser
@@ -1636,7 +1229,7 @@ end
 ---@return cmdparse.ParameterParser? # The matching child parser, if any.
 ---
 local function _get_exact_subparser_child(name, parser)
-    for child_parser in _cmdparse_utility.iter_parsers(parser) do
+    for child_parser in iterator_helper.iter_parsers(parser) do
         if vim.tbl_contains(child_parser:get_names(), name) then
             return child_parser
         end
@@ -1658,13 +1251,13 @@ end
 ---    If `true` a flag argument was matched and incremented.
 ---
 local function _compute_and_increment_parameter(parser, argument_name, arguments)
-    local found = _compute_exact_flag_match(parser, argument_name, arguments)
+    local found = evaluator.compute_exact_flag_match(parser, argument_name, arguments)
 
     if found then
         return found
     end
 
-    return _compute_exact_position_match(argument_name, parser)
+    return evaluator.compute_exact_position_match(argument_name, parser)
 end
 
 -- TODO: Remove?
@@ -1713,7 +1306,7 @@ end
 ---
 function M.ParameterParser:_get_argument_usage_summary(data)
     local function _get_child_parser_by_name(parser, prefix)
-        for parser_ in _cmdparse_utility.iter_parsers(parser) do
+        for parser_ in iterator_helper.iter_parsers(parser) do
             if vim.tbl_contains(parser_:get_names(), prefix) then
                 return parser_
             end
@@ -1764,9 +1357,7 @@ function M.ParameterParser:_get_issues()
                         '%s Valid choices are "%s"',
                         text,
                         vim.fn.join(
-                            vim.fn.sorted(
-                                parameter.choices({ contexts = { cmdparse_constant.ChoiceContext.error_message } })
-                            ),
+                            vim.fn.sorted(parameter.choices({ contexts = { constant.ChoiceContext.error_message } })),
                             ", "
                         )
                     )
@@ -1840,7 +1431,7 @@ function M.ParameterParser:_get_completion(data, column)
         return output
     end
 
-    local contexts = { cmdparse_constant.ChoiceContext.auto_completing }
+    local contexts = { constant.ChoiceContext.auto_completing }
     local parser, recent_item, index = self:_compute_matching_parsers(stripped, contexts)
     local finished = index == #stripped.arguments - 1
 
@@ -1856,7 +1447,7 @@ function M.ParameterParser:_get_completion(data, column)
     --     ---@cast recent_item cmdparse.Parameter
     --
     --     local choices = recent_item.choices({
-    --         contexts = vim.list_extend({ cmdparse_constant.ChoiceContext.value_matching }, contexts),
+    --         contexts = vim.list_extend({ constant.ChoiceContext.value_matching }, contexts),
     --         current_value = last_value,
     --     })
     --
@@ -1865,7 +1456,7 @@ function M.ParameterParser:_get_completion(data, column)
     --     vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value, contexts))
     --
     --     if parser:is_satisfied() then
-    --         for parser_ in _cmdparse_utility.iter_parsers(parser) do
+    --         for parser_ in iterator_helper.iter_parsers(parser) do
     --             vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
     --         end
     --     end
@@ -1906,9 +1497,7 @@ function M.ParameterParser:_get_completion(data, column)
             local name = argument.name
 
             for _, flag in ipairs(parser:get_flag_parameters()) do
-                if
-                    not flag:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(flag.names, name))
-                then
+                if not flag:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(flag.names, name)) then
                     return flag
                 end
             end
@@ -1944,7 +1533,7 @@ function M.ParameterParser:_get_completion(data, column)
         end
 
         if parser:is_satisfied() then
-            for parser_ in _cmdparse_utility.iter_parsers(parser) do
+            for parser_ in iterator_helper.iter_parsers(parser) do
                 vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
             end
         end
@@ -1987,7 +1576,7 @@ function M.ParameterParser:_get_completion(data, column)
     --     ---@cast recent_item cmdparse.Parameter
     --
     --     local choices = recent_item.choices({
-    --         contexts = vim.list_extend({ cmdparse_constant.ChoiceContext.value_matching }, contexts),
+    --         contexts = vim.list_extend({ constant.ChoiceContext.value_matching }, contexts),
     --         current_value = last_value,
     --     })
     --
@@ -1996,7 +1585,7 @@ function M.ParameterParser:_get_completion(data, column)
     --     vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value, contexts))
     --
     --     if parser:is_satisfied() then
-    --         for parser_ in _cmdparse_utility.iter_parsers(parser) do
+    --         for parser_ in iterator_helper.iter_parsers(parser) do
     --             vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
     --         end
     --     end
@@ -2128,16 +1717,16 @@ function M.ParameterParser:_get_usage_summary(parser)
         end
     else
         if not vim.tbl_isempty(names) then
-            table.insert(output, _cmdparse_help.get_help_command_labels(names))
+            table.insert(output, help_message.get_help_command_labels(names))
         end
     end
 
     for _, position in ipairs(parser:get_position_parameters()) do
-        table.insert(output, _cmdparse_help.get_position_usage_help_text(position))
+        table.insert(output, help_message.get_position_usage_help_text(position))
     end
 
     for _, flag in ipairs(_sort_parameters(parser:get_flag_parameters({ hide_implicits = true }))) do
-        table.insert(output, _cmdparse_help.get_flag_help_text(flag))
+        table.insert(output, help_message.get_flag_help_text(flag))
     end
 
     local parser_names = _get_child_parser_names(parser)
@@ -2248,7 +1837,7 @@ end
 --         return nargs
 --     end
 --
---     if nargs == cmdparse_constant.Counter.one_or_more or nargs == cmdparse_constant.Counter.zero_or_more then
+--     if nargs == constant.Counter.one_or_more or nargs == constant.Counter.zero_or_more then
 --         -- TODO: Add support here
 --         error("TODO: Need to write this", 0)
 --
@@ -2293,7 +1882,7 @@ local function _validate_variable_position_arguments(nargs, arguments, name)
         found = index
     end
 
-    if nargs == cmdparse_constant.Counter.one_or_more then
+    if nargs == constant.Counter.one_or_more then
         if found == 0 then
             error(string.format('Parameter "%s" requires a value.', name), 0)
         end
@@ -2317,7 +1906,6 @@ end
 ---    The number of `arguments` that match `position`'s requirements.
 ---
 local function _get_used_position_arguments_count(position, arguments)
-
     local function _error(index, nargs)
         local template = 'Parameter "%s" requires "%s" values. Got "%s"'
 
@@ -2410,7 +1998,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             return nargs ~= 0
         end
 
-        return nargs == cmdparse_constant.Counter.one_or_more
+        return nargs == constant.Counter.one_or_more
     end
 
     local function _get_next_position_arguments(value_arguments)
@@ -2446,7 +2034,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
 
         -- TODO: Need to handle expressions, probably
 
-        if nargs == cmdparse_constant.Counter.one_or_more then
+        if nargs == constant.Counter.one_or_more then
             local found_arguments = _get_next_position_arguments(value_arguments)
 
             if vim.tbl_isempty(found_arguments) then
@@ -2456,7 +2044,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             return _get_position_argument_values(found_arguments)
         end
 
-        if nargs == cmdparse_constant.Counter.zero_or_more then
+        if nargs == constant.Counter.zero_or_more then
             local found_arguments = _get_next_position_arguments(value_arguments)
 
             return _get_position_argument_values(found_arguments)
@@ -2555,7 +2143,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
     local function _validate_value_choices(flag, values, choices, argument_name)
         if choices == nil then
             local expected = flag.choices({
-                contexts = vim.list_extend({ cmdparse_constant.ChoiceContext.error_message }, contexts),
+                contexts = vim.list_extend({ constant.ChoiceContext.error_message }, contexts),
                 -- TODO: Not sure if it's right to pass #values instead of the
                 -- whole array. Need to double check it later
                 --
@@ -2650,7 +2238,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
 
             if flag.choices then
                 local choices = flag.choices({
-                    contexts = vim.list_extend({ cmdparse_constant.ChoiceContext.value_matching }, contexts),
+                    contexts = vim.list_extend({ constant.ChoiceContext.value_matching }, contexts),
                     current_value = current_value,
                 })
 
@@ -2746,7 +2334,7 @@ function M.ParameterParser:_handle_exact_position_parameters(positions, argument
             local name = position:get_nice_name()
             local values = _get_values(arguments, total)
 
-            if position.choices and vim.tbl_contains(contexts, cmdparse_constant.ChoiceContext.parsing) then
+            if position.choices and vim.tbl_contains(contexts, constant.ChoiceContext.parsing) then
                 local values_ = values
 
                 if type(values) ~= "table" then
@@ -2756,7 +2344,7 @@ function M.ParameterParser:_handle_exact_position_parameters(positions, argument
                 local current_value = values_[#values_]
 
                 local choices = position.choices({
-                    contexts = vim.list_extend({ cmdparse_constant.ChoiceContext.value_matching }, contexts),
+                    contexts = vim.list_extend({ constant.ChoiceContext.value_matching }, contexts),
                     -- TODO: Not sure if it's right to pass #values instead of
                     -- the whole array. Need to double check it later
                     --
@@ -2860,7 +2448,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
                     end
 
                     return parameter, nargs
-                elseif nargs == cmdparse_constant.Counter.zero_or_more then
+                elseif nargs == constant.Counter.zero_or_more then
                     local values_count = #other_arguments
 
                     for index = 1, values_count do
@@ -2872,7 +2460,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
                     end
 
                     return parameter, values_count
-                elseif nargs == cmdparse_constant.Counter.one_or_more then
+                elseif nargs == constant.Counter.one_or_more then
                     local values_count = #other_arguments
                     local found = false
 
@@ -2921,7 +2509,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
         if argument.argument_type == argparse.ArgumentType.position then
             --- @cast argument argparse.PositionArgument
 
-            for parser_ in _cmdparse_utility.iter_parsers(current_parser) do
+            for parser_ in iterator_helper.iter_parsers(current_parser) do
                 if vim.tbl_contains(parser_:get_names(), argument_name) then
                     found = true
                     current_parser = parser_
@@ -3170,7 +2758,7 @@ function M.ParameterParser:_parse_arguments(data, namespace)
     local count = #data.arguments
     local index = 1
 
-    local contexts = { cmdparse_constant.ChoiceContext.parsing }
+    local contexts = { constant.ChoiceContext.parsing }
 
     while index <= count do
         local argument = data.arguments[index]
@@ -3345,7 +2933,7 @@ function M.ParameterParser:get_full_help(data)
 
     local position_text = _get_parser_position_help_text(parser)
     local flag_text = _get_parser_flag_help_text(parser)
-    local child_parser_text = _cmdparse_help.get_parser_child_parser_help_text(parser)
+    local child_parser_text = help_message.get_parser_child_parser_help_text(parser)
 
     local output = { summary }
 
@@ -3389,7 +2977,7 @@ end
 ---@return string[] # Get all of the (initial) auto-complete options for this instance.
 function M.ParameterParser:get_names()
     if self.choices then
-        return self.choices({ contexts = { cmdparse_constant.ChoiceContext.parameter_names } })
+        return self.choices({ contexts = { constant.ChoiceContext.parameter_names } })
     end
 
     return { self.name }
@@ -3418,18 +3006,18 @@ end
 ---    The created `cmdparse.Parameter` instance.
 ---
 function M.ParameterParser:add_parameter(options)
-    _expand_parameter_names(options)
-    local is_position = _is_position_name(options.names[1])
-    _expand_parameter_options(options, is_position)
+    types_input.expand_parameter_names(options)
+    local is_position = text_parse.is_position_name(options.names[1])
+    types_input.expand_parameter_options(options, is_position)
 
     --- @cast options cmdparse.ParameterOptions
 
-    _validate_parameter_options(options)
+    types_input.validate_parameter_options(options)
 
     local new_options = vim.tbl_deep_extend("force", options, { parent = self })
     local parameter = M.Parameter.new(new_options)
 
-    if _is_position_name(options.names[1]) then
+    if is_position then
         table.insert(self._position_parameters, parameter)
     else
         table.insert(self._flag_parameters, parameter)
