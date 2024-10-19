@@ -236,7 +236,7 @@ end
 
 --- If the `argument` is a Named Argument with a value, get it.
 ---
----@param argument argparse.ArgparseArgument Some user input argument to check.
+---@param argument argparse.Argument Some user input argument to check.
 ---@return string # The found value, if any.
 ---
 local function _get_argument_value_text(argument)
@@ -253,7 +253,7 @@ end
 
 --- Check if `argument` is an argument with a missing value. e.g. `--foo=`.
 ---
----@param argument argparse.ArgparseArgument Some position, flag, or named argument.
+---@param argument argparse.Argument Some position, flag, or named argument.
 ---@return boolean # If `argument` is a named argument with no value, return `true`.
 ---
 local function _is_incomplete_named_argument(argument)
@@ -264,7 +264,7 @@ end
 ---
 ---@param parameter cmdparse.Parameter
 ---    A parser parameter that may expect 0-or-more values.
----@param arguments argparse.ArgparseArgument
+---@param arguments argparse.Argument
 ---    User inputs to check.
 ---@return boolean
 ---    If `parameter` needs exactly one value, return `true`.
@@ -291,7 +291,7 @@ end
 ---
 ---@param parameter cmdparse.Parameter
 ---    A parser parameter that may expect 0-or-more values.
----@param arguments argparse.ArgparseArgument
+---@param arguments argparse.Argument
 ---    User inputs to check to check against `parameter`.
 ---@return boolean
 ---    If `parameter` is satisified by is satisified by `arguments`, return `true`.
@@ -371,7 +371,7 @@ end
 --- Important:
 ---    If `argument` is a flag, this function must return back the prefix character(s) too.
 ---
----@param argument argparse.ArgparseArgument Some named argument to get text from.
+---@param argument argparse.Argument Some named argument to get text from.
 ---@return string # The found name.
 ---
 local function _get_argument_name(argument)
@@ -402,7 +402,7 @@ end
 ---    A parser whose parameters may be modified.
 ---@param argument_name string
 ---    The expected flag argument name.
----@param arguments argparse.ArgparseArgument
+---@param arguments argparse.Argument
 ---    All of the upcoming argumenst after `argument_name`. We use these to figure out
 ---    if `parser` is an exact match.
 ---@return boolean
@@ -498,7 +498,7 @@ end
 
 --- Scan `input` and stop processing arguments after `column`.
 ---
----@param input argparse.ArgparseResults
+---@param input argparse.Results
 ---    The user's parsed text.
 ---@param column number
 ---    The point to stop checking for arguments. Must be a 1-or-greater value.
@@ -535,7 +535,7 @@ end
 ---
 ---@param parameter cmdparse.Parameter
 ---    The named parameter to query from.
----@param argument argparse.ArgparseArgument
+---@param argument argparse.Argument
 ---    The actual user input to include in the auto-complete result.
 ---@param contexts cmdparse.ChoiceContext[]
 ---    Extra information about what caused `choices()` to be called.
@@ -548,12 +548,14 @@ local function _get_named_argument_completion_choices(parameter, argument, conte
     end
 
     local prefix = argument.name
+    local current_value = argument.value
+    ---@cast current_value string
     local output = {}
 
     for _, choice in
         ipairs(parameter.choices({
             contexts = vim.list_extend({ cmdparse_constant.ChoiceContext.value_matching }, contexts),
-            current_value = argument.value,
+            current_value = current_value,
         }))
     do
         table.insert(output, string.format("%s=%s", prefix, choice))
@@ -713,7 +715,7 @@ end
 
 --- Get the labels of all `arguments`.
 ---
----@param arguments argparse.ArgparseArgument[] The flag, position, or named arguments.
+---@param arguments argparse.Argument[] The flag, position, or named arguments.
 ---@return string[] # All raw user input text.
 ---
 local function _get_arguments_raw_text(arguments)
@@ -747,7 +749,7 @@ end
 ---
 ---@param parameter cmdparse.Parameter
 ---    The position, flag, or named parameter to consider nargs / choices / etc.
----@param argument argparse.ArgparseArgument
+---@param argument argparse.Argument
 ---    A user's actual CLI input. It must either match `parameter` or be
 ---    a valid input to `parameter`. Or be the next valid parameter that would
 ---    normally follow `parameter`.
@@ -1247,12 +1249,12 @@ end
 
 --- Remove the ending `index` options from `input`.
 ---
----@param input argparse.ArgparseResults
+---@param input argparse.Results
 ---    The parsed arguments + any remainder text.
 ---@param column number
 ---    The found index. If all arguments are < `column` then the returning
 ---    index will cover all of `input.arguments`.
----@return argparse.ArgparseResults
+---@return argparse.Results
 ---    The stripped copy from `input`.
 ---
 local function _rstrip_input(input, column)
@@ -1682,7 +1684,7 @@ end
 ---    A parser whose parameters may be modified.
 ---@param argument_name string
 ---    The expected flag argument name.
----@param arguments argparse.ArgparseArgument
+---@param arguments argparse.Argument
 ---    All of the upcoming argumenst after `argument_name`. We use these to figure out
 ---    if `parser` is an exact match.
 ---@return boolean
@@ -1735,7 +1737,7 @@ end
 
 --- Parse `arguments` and get the help summary line (the top "Usage: ..." line).
 ---
----@param data argparse.ArgparseResults
+---@param data argparse.Results
 ---    User text that needs to be parsed.
 ---@return string
 ---    The found "Usage: ..." line.
@@ -1833,7 +1835,7 @@ end
 
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
----@param data argparse.ArgparseResults | string The user input.
+---@param data argparse.Results | string The user input.
 ---@param column number? A 1-or-more value that represents the user's cursor.
 ---@return string[] # All found auto-complete options, if any.
 ---
@@ -1909,8 +1911,10 @@ function M.ParameterParser:_get_completion(data, column)
             ---@cast recent_item cmdparse.ParameterParser
             vim.list_extend(output, _get_parser_exact_or_partial_matches(recent_item, last_name, last_value, contexts))
         elseif _is_incomplete_named_argument(last) then
+            ---@cast recent_item cmdparse.Parameter
             vim.list_extend(output, _get_named_argument_completion_choices(recent_item, last, contexts))
         elseif _is_parameter(recent_item) then
+            ---@cast recent_item cmdparse.Parameter
             vim.list_extend(output, _get_exact_or_partial_matches(recent_item, last, parser, contexts))
         else
             error(string.format('Bug found. Item "%s" is unknown.', vim.inspect(recent_item)))
@@ -2060,7 +2064,7 @@ end
 -- TODO: Consider merging this code with the over traversal code
 --- Search recursively for the lowest possible `cmdparse.ParameterParser` from `data`.
 ---
----@param data argparse.ArgparseResults All of the arguments to consider.
+---@param data argparse.Results All of the arguments to consider.
 ---@return cmdparse.ParameterParser # The found parser, if any.
 ---
 function M.ParameterParser:_get_leaf_parser(data)
@@ -2129,7 +2133,7 @@ end
 -- ---
 -- ---@param parameter cmdparse.Parameter
 -- ---    Any position / flag / named parameter.
--- ---@param arguments argparse.ArgparseArgument[]
+-- ---@param arguments argparse.Argument[]
 -- ---    All of the values that we will consider applying to `parameter`.
 -- ---@return string?
 -- ---    A found issue, if any.
@@ -2243,9 +2247,9 @@ end
 ---@param nargs number | cmdparse.Counter
 ---    A fixed number or "0-or-more" or "1-or-more" etc. Basically it's the
 ---    condition that this function must satisfy or raise an exception.
----@param arguments argparse.ArgparseArgument[]
+---@param arguments argparse.Argument[]
 ---    All user input to consider.
----@param name str
+---@param name string
 ---    The parameter where this validation originated from. Used just for the
 ---    error message.
 ---@return number
@@ -2281,7 +2285,7 @@ end
 ---
 ---@param position cmdparse.Parameter
 ---    The `foo`, `bar`, etc parameter to check.
----@param arguments argparse.ArgparseArgument[]
+---@param arguments argparse.Argument[]
 ---    The arguments to match against `positions`. Every element in `arguments`
 ---    is checked.
 ---@return number
@@ -2312,7 +2316,7 @@ end
 -- ---
 -- ---@param flag cmdparse.Parameter
 -- ---    A parser option e.g. `--foo` or `--foo=bar`.
--- ---@param arguments argparse.ArgparseArgument[]
+-- ---@param arguments argparse.Argument[]
 -- ---    The arguments to match against `flags`. If a match is found, the
 -- ---    remainder of the arguments are treated as **values** for the found
 -- ---    parameter.
@@ -2340,7 +2344,7 @@ end
 ---
 ---@param flags cmdparse.Parameter[]
 ---    All `-f`, `--foo`, `-f=ttt`, and `--foo=ttt`, parameters to check.
----@param arguments argparse.ArgparseArgument[]
+---@param arguments argparse.Argument[]
 ---    The arguments to match against `flags`. If the first element in
 ---    `arguments` matches one of `flags`, the **remainder** of the arguments
 ---    are treated as **values** for the found parameter.
@@ -2390,7 +2394,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
     ---
     ---@param flag cmdparse.Parameter
     ---    The option to get values for, if needed.
-    ---@param value_arguments argparse.ArgparseArgument[]
+    ---@param value_arguments argparse.Argument[]
     ---    All of the values that we think could be related to `flag`.
     ---@return (string[] | string)?
     ---    The found value, if any.
@@ -2659,7 +2663,7 @@ end
 ---
 ---@param positions cmdparse.Parameter[]
 ---    All `foo`, `bar`, etc parameters to check.
----@param arguments argparse.ArgparseArgument[]
+---@param arguments argparse.Argument[]
 ---    The arguments to match against `positions`. If a match is found, the
 ---    remainder of the arguments are treated as **values** for the found
 ---    parameter.
@@ -2744,7 +2748,7 @@ end
 
 --- Check if `argument_name` matches a registered subparser.
 ---
----@param data argparse.ArgparseResults The parsed arguments + any remainder text.
+---@param data argparse.Results The parsed arguments + any remainder text.
 ---@param argument_name string A raw argument name. e.g. `foo`.
 ---@param namespace cmdparse.Namespace An existing namespace to set/append/etc to the subparser.
 ---@return boolean # If a match was found, return `true`.
@@ -2779,7 +2783,7 @@ end
 -- TODO: Consider returning just 1 parser, not a list
 --- Traverse the parsers, marking arguments as used / exhausted as we traverse down.
 ---
----@param data argparse.ArgparseResults
+---@param data argparse.Results
 ---    User text that needs to be parsed.
 ---@return cmdparse.ParameterParser
 ---    The parser that was found in a current or previous iteration.
@@ -2817,7 +2821,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
                         local argument = other_arguments[index]
 
                         if argument.argument_type ~= argparse.ArgumentType.position then
-                            return index
+                            return parameter, index
                         end
                     end
 
@@ -2861,6 +2865,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
     local index = 1
     local found = false
     local last_index = count - 1
+    ---@type cmdparse.ParameterParser | cmdparse.Parameter
     local current_item = self
 
     while index < count do
@@ -2918,7 +2923,9 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
                     current_parser:_raise_suggested_positional_argument_fix(argument)
                 end
 
-                current_item = found_parameter
+                if found_parameter then
+                    current_item = found_parameter
+                end
 
                 -- NOTE: We don't call increment_used() here because
                 -- `_handle_exact_position_parameters` already does it for us.
@@ -2942,15 +2949,17 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
                 error("TODO Write a message for this / handle this")
             end
 
+            ---@cast current_item cmdparse.Parameter
             current_item:increment_used()
 
             index = index + 1
         elseif argument.argument_type == argparse.ArgumentType.flag then
-            --- @cast argument argparse.FlagArgument | argparse.NamedArgument
+            ---@cast argument argparse.FlagArgument | argparse.NamedArgument
 
             local flag_parameters = current_parser:get_flag_parameters()
             local arguments = tabler.get_slice(data.arguments, index)
             local used_arguments
+            ---@cast current_item cmdparse.Parameter
             current_item, used_arguments = _seek_next_argument_from_flag(flag_parameters, arguments)
 
             -- if not found then
@@ -3023,7 +3032,7 @@ end
 --- Raises:
 ---     All issue(s) found, assuming 1+ issue was found.
 ---
----@param argument argparse.ArgparseArgument
+---@param argument argparse.Argument
 ---    Some position / flag that we don't know what to do with.
 ---
 function M.ParameterParser:_raise_suggested_positional_argument_fix(argument)
@@ -3072,7 +3081,7 @@ end
 
 --- Parse user text `data`.
 ---
----@param data string | argparse.ArgparseResults
+---@param data string | argparse.Results
 ---    User text that needs to be parsed. e.g. `hello "World!"`
 ---@param namespace cmdparse.Namespace?
 ---    All pre-existing, default parsed values. If this is the first
@@ -3244,7 +3253,7 @@ end
 
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
----@param data argparse.ArgparseResults | string The user input.
+---@param data argparse.Results | string The user input.
 ---@param column number? A 1-or-more value that represents the user's cursor.
 ---@return string[] # All found auto-complete options, if any.
 ---
@@ -3264,7 +3273,7 @@ end
 
 --- Get a 1-to-2 line summary on how to run the CLI.
 ---
----@param data string | argparse.ArgparseResults
+---@param data string | argparse.Results
 ---    User text that needs to be parsed. e.g. `hello "World!"`
 ---    If `data` includes subparsers, that subparser's help message is returned instead.
 ---@return string
@@ -3295,7 +3304,7 @@ end
 
 --- Get all of information on how to run the CLI.
 ---
----@param data string | argparse.ArgparseResults
+---@param data string | argparse.Results
 ---    User text that needs to be parsed. e.g. `hello "World!"`
 ---    If `data` includes subparsers, that subparser's help message is returned instead.
 ---@return string
@@ -3421,7 +3430,7 @@ end
 
 --- Parse user text `data`.
 ---
----@param data string | argparse.ArgparseResults
+---@param data string | argparse.Results
 ---    User text that needs to be parsed. e.g. `hello "World!"`
 ---@return cmdparse.Namespace
 ---    All of the parsed data as one group.

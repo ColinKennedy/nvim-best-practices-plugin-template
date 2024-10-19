@@ -7,19 +7,19 @@ local M = {}
 
 ---@class plugin_template.NamespaceExecuteArguments
 ---    The expected data that's passed to any `set_execute` call in plugin-template.
----@field input argparse.ArgparseResults
+---@field input argparse.Results
 ---    The user's raw input, split into tokens.
 ---@field namespace cmdparse.Namespace
 ---    The collected results from comparing `input` to our cmdparse tree.
 
 ---@class plugin_template.CompleteData
 ---    The data that gets passed when `plugin_template.Subcommand.complete` is called.
----@field parsed_arguments argparse.ArgparseResults
+---@field parsed_arguments argparse.Results
 ---    All information that was found from parsing some user's input.
 
 ---@class plugin_template.RunData
 ---    The data that gets passed when `plugin_template.Subcommand.run` is called.
----@field parsed_arguments argparse.ArgparseResults
+---@field parsed_arguments argparse.Results
 ---    All information that was found from parsing some user's input.
 
 ---@class plugin_template.Subcommand
@@ -39,7 +39,7 @@ local M = {}
 ---    The data that gets passed to the `run` function. Most of the time,
 ---    a user never needs or touches this data. It's only for people who need
 ---    absolute control over the CLI or some unsupported behavior.
----@field parsed_arguments argparse.ArgparseResults
+---@field parsed_arguments argparse.Results
 ---    The parsed arguments (that the user is now trying to execute some function with).
 
 ---@alias plugin_template.ParserCreator fun(): cmdparse.ParameterParser
