@@ -2514,7 +2514,9 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
         if choices == nil then
             local expected = flag.choices({
                 contexts = vim.list_extend({ cmdparse_constant.ChoiceContext.error_message }, contexts),
-                -- TODO: Not sure if it's right to pass #values instead of the whole array. Need to double check it later
+                -- TODO: Not sure if it's right to pass #values instead of the
+                -- whole array. Need to double check it later
+                --
                 current_value = values,
             })
 
@@ -2713,7 +2715,9 @@ function M.ParameterParser:_handle_exact_position_parameters(positions, argument
 
                 local choices = position.choices({
                     contexts = vim.list_extend({ cmdparse_constant.ChoiceContext.value_matching }, contexts),
-                    -- TODO: Not sure if it's right to pass #values instead of the whole array. Need to double check it later
+                    -- TODO: Not sure if it's right to pass #values instead of
+                    -- the whole array. Need to double check it later
+                    --
                     current_value = current_value,
                 })
 
@@ -2856,7 +2860,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
     local current_parser = self
     local count = #data.arguments
 
-    local contexts = contexts or {}
+    contexts = contexts or {}
 
     -- NOTE: We search all but the last argument here.
     -- IMPORTANT: Every argument must have a match or it means the `arguments`
@@ -2871,26 +2875,6 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
     while index < count do
         local argument = data.arguments[index]
         local argument_name = _get_argument_name(argument)
-
-        -- local found = false
-        --
-        -- for parser_ in _cmdparse_utility.iter_parsers(current_parser) do
-        --     if vim.tbl_contains(parser_:get_names(), argument_name) then
-        --         found = true
-        --         previous_parser = current_parser
-        --         current_parser = parser_
-        --
-        --         break
-        --     end
-        -- end
-        --
-        -- if not found then
-        --     found = _compute_and_increment_parameter(current_parser, argument_name, tabler.get_slice(arguments, index))
-        --
-        --     if not found then
-        --         return previous_parser or self, index
-        --     end
-        -- end
 
         if argument.argument_type == argparse.ArgumentType.position then
             --- @cast argument argparse.PositionArgument
@@ -3103,8 +3087,8 @@ function M.ParameterParser:_parse_arguments(data, namespace)
         end
     end
 
-    local function _handle_position_argument(current_argument, data, index, contexts)
-        local arguments_to_consider = tabler.get_slice(data.arguments, index)
+    local function _handle_position_argument(current_argument, data_, index, contexts)
+        local arguments_to_consider = tabler.get_slice(data_.arguments, index)
         local position_parameters = self:get_position_parameters()
         local found, used_arguments =
             self:_handle_exact_position_parameters(position_parameters, arguments_to_consider, namespace, contexts)
@@ -3116,13 +3100,13 @@ function M.ParameterParser:_parse_arguments(data, namespace)
         return used_arguments
     end
 
-    local function _handle_not_found(data, index)
+    local function _handle_not_found(data_, index)
         -- TODO: Add a unittest
         -- NOTE: We lost our place in the parse so we can't continue.
 
         _validate_current_parser()
 
-        local remaining_arguments = tabler.get_slice(data.arguments, index)
+        local remaining_arguments = tabler.get_slice(data_.arguments, index)
 
         if #remaining_arguments == 1 then
             error(string.format('Unexpected argument "%s".', _get_arguments_raw_text(remaining_arguments)[1]), 0)
