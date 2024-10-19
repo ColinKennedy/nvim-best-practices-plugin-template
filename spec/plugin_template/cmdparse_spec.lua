@@ -4,12 +4,12 @@
 ---
 
 local cmdparse = require("plugin_template._cli.cmdparse")
-local cmdparse_constant = require("plugin_template._cli.cmdparse_constant")
+local constant = require("plugin_template._cli.cmdparse.constant")
 
 ---@return cmdparse.ParameterParser # Create a tree of commands for unittests.
 local function _make_simple_parser()
     local choices = function(data)
-        if vim.tbl_contains(data.contexts, cmdparse_constant.ChoiceContext.help_message) then
+        if vim.tbl_contains(data.contexts, constant.ChoiceContext.help_message) then
             local output = {}
 
             for index = 1, 5 do
