@@ -1912,10 +1912,14 @@ function M.ParameterParser:_get_completion(data, column)
             vim.list_extend(output, _get_parser_exact_or_partial_matches(recent_item, last_name, last_value, contexts))
         elseif _is_incomplete_named_argument(last) then
             ---@cast recent_item cmdparse.Parameter
-            vim.list_extend(output, _get_named_argument_completion_choices(recent_item, last, contexts))
+            if not recent_item:is_exhausted() then
+                vim.list_extend(output, _get_named_argument_completion_choices(recent_item, last, contexts))
+            end
         elseif _is_parameter(recent_item) then
             ---@cast recent_item cmdparse.Parameter
-            vim.list_extend(output, _get_exact_or_partial_matches(recent_item, last, parser, contexts))
+            if not recent_item:is_exhausted() then
+                vim.list_extend(output, _get_exact_or_partial_matches(recent_item, last, parser, contexts))
+            end
         else
             error(string.format('Bug found. Item "%s" is unknown.', vim.inspect(recent_item)))
         end
