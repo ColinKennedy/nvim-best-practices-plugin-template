@@ -468,29 +468,6 @@ end
 --     return output
 -- end
 
---- Get all position argument --help text from `parser`.
----
----@param parser cmdparse.ParameterParser Some runnable command to get arguments from.
----@return string[] # The labels of all of the flags.
----
-local function _get_parser_position_help_text(parser)
-    local output = {}
-
-    for _, position in ipairs(parser:get_position_parameters()) do
-        local text = help_message.get_position_description_help_text(position)
-
-        table.insert(output, texter.indent(text))
-    end
-
-    output = vim.fn.sort(output)
-
-    if not vim.tbl_isempty(output) then
-        table.insert(output, 1, "Positional Arguments:")
-    end
-
-    return output
-end
-
 -- --- Get the name(s) used to refer to `parsers`.
 -- ---
 -- --- Usually a parser can only be referred to by one name, in which case this
@@ -570,19 +547,6 @@ local function _expand_type_options(options)
     else
         error(string.format('Type "%s" is unknown. We can\'t parse it.', _concise_inspect(options)), 0)
     end
-end
-
---- Add `items` to `table_` if it is not empty.
----
----@param table_ any[] An array to add to.
----@param items string[] Values to add into `table_`, maybe.
----
-local function _insert_if_value(table_, items)
-    if vim.tbl_isempty(items) then
-        return
-    end
-
-    table.insert(table_, vim.fn.join(items, "\n"))
 end
 
 --- Combined `namespace` with all other `...` namespaces.
@@ -2544,15 +2508,8 @@ function M.ParameterParser:get_full_help(data)
 
     local summary, parser = self:_get_argument_usage_summary(data)
 
-    local position_text = _get_parser_position_help_text(parser)
-    local flag_text = help_message.get_parser_flag_help_text(parser)
-    local child_parser_text = help_message.get_parser_child_parser_help_text(parser)
-
     local output = { summary }
-
-    _insert_if_value(output, position_text)
-    _insert_if_value(output, child_parser_text)
-    _insert_if_value(output, flag_text)
+    vim.list_extend(output, help_message.get_parser_help_text_body(parser))
 
     return vim.fn.join(output, "\n\n") .. "\n"
 end

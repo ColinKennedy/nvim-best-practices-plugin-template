@@ -1,4 +1,7 @@
--- TODO: Docstring
+--- Match exact / partial text of cmdparse parameters and argparse arguments.
+---
+---@module 'plugin_template._cli.cmdparse.matcher'
+---
 
 local argparse = require("plugin_template._cli.argparse")
 local constant = require("plugin_template._cli.cmdparse.constant")

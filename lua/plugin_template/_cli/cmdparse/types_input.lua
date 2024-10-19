@@ -1,4 +1,7 @@
--- TODO: Docstring
+--- Functions that fill-in missing values, validate values, etc for cmdparse types.
+---
+---@module 'plugin_template._cli.cmdparse.types_input'
+---
 
 local constant = require("plugin_template._cli.cmdparse.constant")
 local text_parse = require("plugin_template._cli.cmdparse.text_parse")

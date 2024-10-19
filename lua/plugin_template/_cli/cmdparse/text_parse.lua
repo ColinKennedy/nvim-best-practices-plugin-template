@@ -1,4 +1,7 @@
--- TODO: Docstring
+--- Make dealing with raw text from cmdparse types easier to handle.
+---
+---@module 'plugin_template._cli.cmdparse.text_parse'
+---
 
 local argparse = require("plugin_template._cli.argparse")
 

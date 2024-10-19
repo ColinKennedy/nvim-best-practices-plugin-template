@@ -1,5 +1,7 @@
 - Do TODO notes
 
+- Indicate required arguments in help messages using a symbol
+
 - Make sure auto-completion does not spam errors to the user if they give incorrect input
 
 - Simplify the help symbols (just add * / + to the end of stuff)
