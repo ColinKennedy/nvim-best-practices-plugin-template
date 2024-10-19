@@ -251,6 +251,15 @@ local function _get_argument_value_text(argument)
     return value
 end
 
+--- Check if `argument` is an argument with a missing value. e.g. `--foo=`.
+---
+---@param argument argparse.ArgparseArgument Some position, flag, or named argument.
+---@return boolean # If `argument` is a named argument with no value, return `true`.
+---
+local function _is_incomplete_named_argument(argument)
+    return argument.argument_type == argparse.ArgumentType.named and argument.value == false
+end
+
 --- Check if `parameter` is expected to have exactly one value.
 ---
 ---@param parameter cmdparse.Parameter

@@ -782,6 +782,7 @@ describe("dynamic argument", function()
         --
         assert.same({ "a", "asteroid" }, parser:get_completion("say a"))
         assert.same({ "ab", "cc", "lazers", "thing_parser", "zzz", "--help" }, parser:get_completion("say a "))
+        assert.same({ "ab", "cc", "lazers", "thing_parser", "zzz", "--help" }, parser:get_completion("say tt "))
         assert.same({ "another", "last", "--help" }, parser:get_completion("say a thing_parser "))
 
         assert.same({ "different", "--help" }, parser:get_completion("say ab "))
