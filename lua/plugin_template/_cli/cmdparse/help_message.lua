@@ -1,5 +1,5 @@
-local _cmdparse_utility = require("plugin_template._cli._cmdparse_utility")
-local cmdparse_constant = require("plugin_template._cli.cmdparse_constant")
+local constant = require("plugin_template._cli.cmdparse.constant")
+local iterator_helper = require("plugin_template._cli.cmdparse.iterator_helper")
 local texter = require("plugin_template._core.texter")
 
 local M = {}
@@ -99,7 +99,7 @@ local function _get_position_usage_help_text(position)
     if position.value_hint and position.value_hint ~= "" then
         text = position.value_hint
     elseif position.choices then
-        local choices = position.choices({ contexts = { cmdparse_constant.ChoiceContext.help_message } })
+        local choices = position.choices({ contexts = { constant.ChoiceContext.help_message } })
 
         text = "{" .. vim.fn.join(choices, ",") .. "}"
     else
@@ -118,11 +118,11 @@ local function _get_position_usage_help_text(position)
         return vim.fn.join(output, " ")
     end
 
-    if nargs == cmdparse_constant.Counter.zero_or_more then
+    if nargs == constant.Counter.zero_or_more then
         return string.format("[%s ...]", text)
     end
 
-    if nargs == cmdparse_constant.Counter.one_or_more then
+    if nargs == constant.Counter.one_or_more then
         return string.format("%s [%s ...]", text, text)
     end
 
@@ -174,7 +174,7 @@ end
 function M.get_parser_child_parser_help_text(parser)
     local output = {}
 
-    for parser_ in _cmdparse_utility.iter_parsers(parser) do
+    for parser_ in iterator_helper.iter_parsers(parser) do
         local names = parser_:get_names()
         local text = names[1]
 
