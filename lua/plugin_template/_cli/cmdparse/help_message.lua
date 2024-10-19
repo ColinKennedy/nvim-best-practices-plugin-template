@@ -44,7 +44,7 @@ function _Private.get_recommended_value_hint_name(text)
 
     local word = text:sub(found, #text)
 
-    return word:upper():gsub("-", "_")
+    return (word:upper():gsub("-", "_"))
 end
 
 --- Create the help message for a parameter.
@@ -162,7 +162,7 @@ end
 --- Convert a position parameter
 --- Create the help message for a position parameter or subparser.
 ---
----@param parameter cmdparse.Parameter
+---@param position cmdparse.Parameter
 ---    Any position, flag, or named parameter to get a help message for.
 ---@return string
 ---    The help created message.

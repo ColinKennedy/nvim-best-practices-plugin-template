@@ -457,8 +457,8 @@ thing]],
         end)
 
         it("errors if the user is #missing one of several arguments - 003 - position argument", function()
-            local parser = cmdparse.ParameterParser.new({ help = "Test" })
-            parser:add_parameter({ name = "foo", nargs = 2 })
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ name = "foo", nargs = 2, help="Test."})
 
             local success, result = pcall(function()
                 parser:parse_arguments("thing")
