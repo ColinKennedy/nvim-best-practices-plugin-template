@@ -1,4 +1,3 @@
-- Rename argparse.ArgparseArgument to argparse.Argument
 - Do TODO notes
 
 - Make sure auto-completion does not spam errors to the user if they give incorrect input
