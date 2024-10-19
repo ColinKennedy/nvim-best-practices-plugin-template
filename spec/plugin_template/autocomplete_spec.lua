@@ -572,14 +572,13 @@ describe("flag argument", function()
         assert.same({ "-f=" }, parser:get_completion("-f", 2))
     end)
 
-    -- it("does not auto-complete if at the end of the flag - 002", function()
-    --     -- TODO: action store_true is not working producing the correct auto-complete
-    --     local parser = cmdparse.ParameterParser.new({ help = "Test." })
-    --     parser:add_parameter({ "-f", action="store_true", help = "Force it." })
-    --
-    --     assert.same({}, parser:get_completion("-f", 1))
-    --     assert.same({"-f"}, parser:get_completion("-f", 2))
-    -- end)
+    it("does not auto-complete if at the end of the flag - 002", function()
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ "-f", action="store_true", help = "Force it." })
+
+        assert.same({}, parser:get_completion("-f", 1))
+        assert.same({"-f"}, parser:get_completion("-f", 2))
+    end)
 
     describe("++flag examples", function()
         it("auto-completes on the dash - 001", function()
