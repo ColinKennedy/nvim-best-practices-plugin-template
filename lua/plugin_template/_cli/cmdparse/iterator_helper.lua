@@ -1,6 +1,6 @@
 --- Generic functions used in other files.
 ---
----@module 'plugin_template._cli.cmdparse_utility'
+---@module 'plugin_template._cli.cmdparse.iterator_helper'
 ---
 
 local M = {}
