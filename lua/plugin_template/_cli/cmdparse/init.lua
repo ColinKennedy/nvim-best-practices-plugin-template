@@ -8,13 +8,13 @@
 local argparse = require("plugin_template._cli.argparse")
 local argparse_helper = require("plugin_template._cli.argparse_helper")
 local constant = require("plugin_template._cli.cmdparse.constant")
-local evaluator = require("lua.plugin_template._cli.cmdparse.evaluator")
+local evaluator = require("plugin_template._cli.cmdparse.evaluator")
 local help_message = require("plugin_template._cli.cmdparse.help_message")
 local iterator_helper = require("plugin_template._cli.cmdparse.iterator_helper")
 local tabler = require("plugin_template._core.tabler")
-local text_parse = require("lua.plugin_template._cli.cmdparse.text_parse")
+local text_parse = require("plugin_template._cli.cmdparse.text_parse")
 local texter = require("plugin_template._core.texter")
-local types_input = require("lua.plugin_template._cli.cmdparse.types_input")
+local types_input = require("plugin_template._cli.cmdparse.types_input")
 
 ---@alias cmdparse.Action "append" | "count" | "store_false" | "store_true" | fun(data: cmdparse.ActionData): nil
 ---    This controls the behavior of how parsed arguments are added into the
@@ -1094,17 +1094,17 @@ end
 ---@param action cmdparse.Action The selected functionality.
 ---
 function M.Parameter:set_action(action)
-    if action == constant.ActionOption.store_false then
+    if action == constant.Action.store_false then
         action = function(data)
             ---@cast data cmdparse.ActionData
             data.namespace[data.name] = false
         end
-    elseif action == constant.ActionOption.store_true then
+    elseif action == constant.Action.store_true then
         action = function(data)
             ---@cast data cmdparse.ActionData
             data.namespace[data.name] = true
         end
-    elseif action == constant.ActionOption.count then
+    elseif action == constant.Action.count then
         action = function(data)
             ---@cast data cmdparse.ActionData
             local name = data.name
@@ -1116,7 +1116,7 @@ function M.Parameter:set_action(action)
 
             namespace[name] = namespace[name] + 1
         end
-    elseif action == constant.ActionOption.count then
+    elseif action == constant.Action.count then
         action = function(data)
             ---@cast data cmdparse.ActionData
             local name = data.name

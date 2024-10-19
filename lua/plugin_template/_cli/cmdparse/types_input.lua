@@ -1,7 +1,7 @@
 -- TODO: Docstring
 
-local constant = require("plugin_template._cli.constant")
-local text_parse = require("plugin_template._cli.text_parse")
+local constant = require("plugin_template._cli.cmdparse.constant")
+local text_parse = require("plugin_template._cli.cmdparse.text_parse")
 local texter = require("plugin_template._core.texter")
 
 local M = {}
@@ -62,7 +62,7 @@ end
 ---    | cmdparse.ParameterParserInputOptions
 ---    The user-written options. (sparse or not).
 ---
-local function _expand_choices_options(options)
+function M.expand_choices_options(options)
     if not options.choices then
         return
     end
@@ -165,7 +165,7 @@ end
 ---
 function M.expand_parameter_options(options, is_position)
     _expand_type_options(options)
-    _expand_choices_options(options)
+    M.expand_choices_options(options)
 
     if options.required == nil then
         if is_position then
