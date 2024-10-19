@@ -70,9 +70,6 @@ function M.expand_choices_options(options)
     local input = options.choices
     local choices
 
-    -- TODO: Add unittests for these. Make sur ethat the user's text is
-    -- passed as an import to these functions
-    --
     if type(options.choices) == "string" then
         choices = function()
             return { input }
@@ -130,6 +127,10 @@ function M.expand_parameter_names(options)
 
     if type(names) == "string" then
         names = { names }
+    end
+
+    if not names then
+        error(string.format('Options "%s" is missing a "name" key.', vim.inspect(options)), 0)
     end
 
     local found_type = nil
@@ -231,7 +232,6 @@ end
 ---@param options cmdparse.ParameterParserOptions
 ---
 function M.validate_name(options)
-    -- TODO: name is required
     if not options.name or texter.is_whitespace(options.name) then
         error(string.format('Parameter "%s" must have a name.', _concise_inspect(options)), 0)
     end

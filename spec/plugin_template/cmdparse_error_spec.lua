@@ -83,6 +83,30 @@ describe("bad input", function()
             )
         end)
 
+        it("errors if no name is give", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+
+            local success, result = pcall(function()
+                parser:add_parameter({
+                    nargs = 1,
+                    type = function(_)
+                        return nil
+                    end,
+                    help = "Test.",
+                })
+            end)
+
+            assert.is_false(success)
+            assert.equal(
+                [[Options "{
+  help = "Test.",
+  nargs = 1,
+  type = <function 1>
+}" is missing a "name" key.]],
+                result
+            )
+        end)
+
         it("includes named argument choices", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test" })
             parser:add_parameter({ "--foo", choices = { "aaa", "bbb", "zzz" }, help = "Test." })
