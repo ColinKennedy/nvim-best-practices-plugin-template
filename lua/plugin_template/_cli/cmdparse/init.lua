@@ -458,90 +458,6 @@ local function _get_named_argument_completion_choices(parameter, argument, conte
     return output
 end
 
---- Create auto-complete text for `parameter`, given some `value`.
----
----@param parameter cmdparse.Parameter
----    A parameter that (we assume) takes exactly one value that we need
----    auto-completion options for.
----@param value string
----    The user-provided (exact or partial) value for the flag / named argument
----    value, if any. e.g. the `"bar"` part of `"--foo=bar"`.
----@param contexts cmdparse.ChoiceContext[]?
----    A description of how / when this function is called. It gets passed to
----    `cmdparse.Parameter.choices()`.
----@return string[]
----    All auto-complete values, if any.
----
-local function _get_single_choices_text(parameter, value, contexts)
-    if not parameter.choices then
-        return { parameter.names[1] .. "=" }
-    end
-
-    contexts = contexts or {}
-
-    local output = {}
-
-    for _, choice in
-        ipairs(parameter.choices({
-            contexts = vim.list_extend({ constant.ChoiceContext.value_matching }, contexts),
-            current_value = value,
-        }))
-    do
-        table.insert(output, parameter.names[1] .. "=" .. choice)
-    end
-
-    return output
-end
-
---- Check all `flags` that match `prefix` and `value`.
----
----@param prefix string
----    The name of the flag that must match, exactly or partially.
----@param flags cmdparse.Parameter[]
----    All position / flag / named parameters.
----@param value string?
----    The user-provided (exact or partial) value for the flag / named argument
----    value, if any. e.g. the `"bar"` part of `"--foo=bar"`.
----@param contexts cmdparse.ChoiceContext[]?
----    A description of how / when this function is called. It gets passed to
----    `cmdparse.Parameter.choices()`.
----@return cmdparse.Parameter[]
----    The matched parameters, if any.
----
-local function _get_matching_partial_flag_text(prefix, flags, value, contexts)
-    local output = {}
-
-    for _, parameter in ipairs(iterator_helper.sort_parameters(flags)) do
-        if not parameter:is_exhausted() then
-            for _, name in ipairs(parameter.names) do
-                if name == prefix then
-                    if parameter:get_nargs() == 1 then
-                        if not value then
-                            table.insert(output, parameter.names[1] .. "=")
-                        else
-                            vim.list_extend(output, _get_single_choices_text(parameter, value, contexts))
-                        end
-                    else
-                        table.insert(output, name)
-                    end
-
-                    break
-                elseif vim.startswith(name, prefix) then
-                    if parameter:get_nargs() == 1 then
-                        table.insert(output, name .. "=")
-                    else
-                        table.insert(output, name)
-                    end
-
-                    break
-                end
-            end
-        end
-    end
-
-    return output
-end
-
 --- Find all child parsers, recursively.
 ---
 --- Note:
@@ -663,7 +579,7 @@ local function _get_exact_or_partial_matches(parameter, argument, parser, contex
 
     prefix = _get_argument_name(argument)
     vim.list_extend(output, matcher.get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
-    vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), argument.value, contexts))
+    vim.list_extend(output, matcher.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), argument.value, contexts))
 
     return output
 end
@@ -688,7 +604,7 @@ local function _get_parser_exact_or_partial_matches(parser, prefix, value, conte
     local output = {}
 
     vim.list_extend(output, matcher.get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
-    vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts))
+    vim.list_extend(output, matcher.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts))
 
     return output
 end
@@ -750,32 +666,6 @@ end
 --
 --     return output
 -- end
-
---- Find all all child parsers that start with `prefix`, starting from `parser`.
----
---- This function is **exclusive** - `parser` cannot be returned from this function.
----
----@param prefix string Some text to search for.
----@param parser cmdparse.ParameterParser The starting point to search within.
----@return string[] # The names of all matching child parsers.
----
-local function _get_matching_subparser_names(prefix, parser)
-    local output = {}
-
-    for parser_ in iterator_helper.iter_parsers(parser) do
-        local names = parser_:get_names()
-
-        -- TODO: All current uses of this function ended up with `prefix` ==
-        -- whitespace. If so, remove this if condition later
-        if texter.is_whitespace(prefix) then
-            vim.list_extend(output, names)
-        else
-            vim.list_extend(output, texter.get_array_startswith(names, prefix))
-        end
-    end
-
-    return output
-end
 
 --- Strip argument name of any flag / prefix text. e.g. `"--foo"` becomes `"foo"`.
 ---
@@ -1651,9 +1541,9 @@ local function _get_current_parser_completions(parser)
     -- TODO: Add better sorting of the output here
     -- NOTE: Get all possible initial arguments (check all parameters / subparsers)
     -- TODO: Only show subparser names if requireds are all exhausted
-    vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names("", parser)))
+    vim.list_extend(output, vim.fn.sort(matcher.get_matching_subparser_names("", parser)))
     vim.list_extend(output, matcher.get_matching_position_parameters("", parser:get_position_parameters()))
-    vim.list_extend(output, _get_matching_partial_flag_text("", parser:get_flag_parameters()))
+    vim.list_extend(output, matcher.get_matching_partial_flag_text("", parser:get_flag_parameters()))
 
     return output
 end
@@ -1684,7 +1574,7 @@ function M.ParameterParser:_get_completion(data, column)
         end
 
         if not texter.is_whitespace(remainder) then
-            vim.list_extend(output, _get_matching_partial_flag_text(remainder, self:get_flag_parameters()))
+            vim.list_extend(output, matcher.get_matching_partial_flag_text(remainder, self:get_flag_parameters()))
 
             -- NOTE: If there was unparsed text then it means that the user is
             -- in the middle of an argument. We don't want to show completion
@@ -1867,7 +1757,7 @@ function M.ParameterParser:_get_completion(data, column)
     -- TODO: Add better sorting of the output here
     -- TODO: Only show subparser names if requireds are all exhausted
     if parser:is_satisfied() then
-        vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names("", parser)))
+        vim.list_extend(output, vim.fn.sort(matcher.get_matching_subparser_names("", parser)))
     end
     vim.list_extend(
         output,
@@ -1875,7 +1765,7 @@ function M.ParameterParser:_get_completion(data, column)
     )
     vim.list_extend(
         output,
-        _get_matching_partial_flag_text(stripped_remainder, parser:get_flag_parameters(), last_value, contexts)
+        matcher.get_matching_partial_flag_text(stripped_remainder, parser:get_flag_parameters(), last_value, contexts)
     )
 
     return output
@@ -1921,7 +1811,7 @@ function M.ParameterParser:_get_completion(data, column)
     -- --     return output
     -- -- end
     -- --
-    -- -- vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(parser, remainder)))
+    -- -- vim.list_extend(output, vim.fn.sort(matcher.get_matching_subparser_names(parser, remainder)))
     -- --
     -- -- for parameter in tabler.chain(iterator_helper.sort_parameters(parser._flag_parameters)) do
     -- --     table.insert(output, parameter:get_raw_name())
