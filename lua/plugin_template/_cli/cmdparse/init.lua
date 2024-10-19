@@ -13,7 +13,9 @@ local help_message = require("plugin_template._cli.cmdparse.help_message")
 local iterator_helper = require("plugin_template._cli.cmdparse.iterator_helper")
 local matcher = require("plugin_template._cli.cmdparse.matcher")
 local tabler = require("plugin_template._core.tabler")
+local text_parse = require("plugin_template._cli.cmdparse.text_parse")
 local texter = require("plugin_template._core.texter")
+local types_input = require("plugin_template._cli.cmdparse.types_input")
 
 ---@alias cmdparse.Action "append" | "count" | "store_false" | "store_true" | fun(data: cmdparse.ActionData): nil
 ---    This controls the behavior of how parsed arguments are added into the
@@ -135,6 +137,7 @@ local texter = require("plugin_template._core.texter")
 ---    A shorthand for the subparser name.
 
 local M = {}
+local _Private = {}
 
 local _ActionConstant = { count = "count", store_false = "store_false", store_true = "store_true" }
 local _FLAG_ACTIONS = { _ActionConstant.count, _ActionConstant.store_false, _ActionConstant.store_true }
@@ -202,73 +205,6 @@ M.Subparsers = {
 }
 M.Subparsers.__index = M.Subparsers
 
---- Check if `name` is a possible value of `parameter`.
----
----@param name string
----    The written user text. e.g. `"foo"`.
----@param parameter cmdparse.Parameter
----    Some position parameter to check. e.g. `{choices={"foo", "bar"}}`.
----@return boolean
----    If `parameter` has defined `parameter.choices` and `name` matches one of
----    them, return `true`.
----
-local function _has_position_parameter_match(name, parameter)
-    if not parameter.choices then
-        -- NOTE: Any value is valid if there are no explicit choices
-        return true
-    end
-
-    if
-        vim.tbl_contains(
-            parameter.choices({
-                contexts = { constant.ChoiceContext.position_matching },
-                current_value = name,
-            }),
-            name
-        )
-    then
-        return true
-    end
-
-    return false
-end
-
---- If the `argument` is a Named Argument with a value, get it.
----
----@param argument argparse.Argument Some user input argument to check.
----@return string # The found value, if any.
----
-local function _get_argument_value_text(argument)
-    local value = argument.value
-
-    if type(value) == "boolean" then
-        return ""
-    end
-
-    ---@cast value string
-
-    return value
-end
-
---- Check if `argument` is an argument with a missing value. e.g. `--foo=`.
----
----@param argument argparse.Argument Some position, flag, or named argument.
----@return boolean # If `argument` is a named argument with no value, return `true`.
----
-local function _is_incomplete_named_argument(argument)
-    return argument.argument_type == argparse.ArgumentType.named and argument.value == false
-end
-
---- Check if `text`.
----
----@param text string Some text. e.g. `--foo`.
----@return boolean # If `text` is a word, return `true.
----
-local function _is_position_name(text)
-    -- TODO: Consider allowing utf-8+ characters here
-    return text:sub(1, 1):match("%w")
-end
-
 -- --- Find all parsers / sub-parsers starting from `parsers`.
 -- ---
 -- ---@param parsers cmdparse.ParameterParser[] All child / leaf parsers to start traversing from.
@@ -288,27 +224,6 @@ end
 --
 --     return output
 -- end
-
---- Get the raw argument name. e.g. `"--foo"`.
----
---- Important:
----    If `argument` is a flag, this function must return back the prefix character(s) too.
----
----@param argument argparse.Argument Some named argument to get text from.
----@return string # The found name.
----
-local function _get_argument_name(argument)
-    return argument.name or argument.value
-end
-
---- Remove whitespace from `text` but only if `text` is 100% whitespace.
----
----@param text string Some text to possibly strip.
----@return string # The processed `text` or, if it contains whitespace, the original `text`.
----
-local function _remove_contiguous_whitespace(text)
-    return (text:gsub("^%s*$", ""))
-end
 
 --- Find all child parser names under `parser`.
 ---
@@ -420,25 +335,6 @@ local function _get_all_parsers(parser)
     return output
 end
 
---- Get the labels of all `arguments`.
----
----@param arguments argparse.Argument[] The flag, position, or named arguments.
----@return string[] # All raw user input text.
----
-local function _get_arguments_raw_text(arguments)
-    local output = {}
-
-    for _, argument in ipairs(arguments) do
-        if argument.argument_type == argparse.ArgumentType.named then
-            table.insert(output, string.format("%s=%s", argument.name, argument.value))
-        else
-            table.insert(output, argument.value or argument.name)
-        end
-    end
-
-    return output
-end
-
 --- Get the label / text of `arguments`.
 ---
 ---@param arguments argparse.PositionArgument[] # Each value to serialize.
@@ -452,94 +348,49 @@ local function _get_position_argument_values(arguments)
         :totable()
 end
 
---- Find all Argments starting with `prefix`.
+--- Check `position` for matching, contiguous `arguments`.
 ---
----@param parameter cmdparse.Parameter
----    The position, flag, or named parameter to consider nargs / choices / etc.
----@param argument argparse.Argument
----    A user's actual CLI input. It must either match `parameter` or be
----    a valid input to `parameter`. Or be the next valid parameter that would
----    normally follow `parameter`.
----@param parser cmdparse.ParameterParser
----    The starting point to search within.
----@param contexts cmdparse.ChoiceContext[]
----    A description of how / when this function is called. It gets passed to
----    `cmdparse.Parameter.choices()`.
----@return string[] # The matching names, if any.
+---@param position cmdparse.Parameter
+---    The `foo`, `bar`, etc parameter to check.
+---@param arguments argparse.Argument[]
+---    The arguments to match against `positions`. Every element in `arguments`
+---    is checked.
+---@return number
+---    The number of `arguments` that match `position`'s requirements.
 ---
-local function _get_exact_or_partial_matches(parameter, argument, parser, contexts)
-    -- local function _get_longest_match(prefix, options)
-    --     local longest_match_count = 0
-    --     local longest_match
-    --
-    --     for _, name in ipairs(options) do
-    --         if vim.startswith(name, prefix) then
-    --             local count = #prefix
-    --
-    --             if count > longest_match_count then
-    --                 longest_match = name
-    --                 longest_match_count = count
-    --             end
-    --         end
-    --     end
-    --
-    --     return longest_match
-    -- end
+local function _get_used_position_arguments_count(position, arguments)
 
-    local output = {}
+    local function _error(index, nargs)
+        local template = 'Parameter "%s" requires "%s" values. Got "%s"'
 
-    local prefix = _get_argument_name(argument)
-
-    local matches = texter.get_array_startswith(parameter.names, prefix)
-
-    if not vim.tbl_isempty(matches) and argument.value == false then
-        if parameter:is_exhausted() then
-            return {}
+        if index < 2 then
+            template = template .. " value."
+        else
+            template = template .. " values."
         end
 
-        local nargs = parameter:get_nargs()
+        error(string.format(template, position.names[1], nargs, index), 0)
+    end
 
-        if nargs == 1 then
-            return { matches[1] .. "=" }
+    local nargs = position:get_nargs()
+
+    if type(nargs) == "number" then
+        for index = 1, nargs do
+            local argument = arguments[index]
+
+            if not argument then
+                _error(index - 1, nargs)
+            end
+
+            if argument.argument_type ~= argparse.ArgumentType.position then
+                _error(index, nargs)
+            end
         end
+
+        return nargs
     end
 
-    prefix = _get_argument_value_text(argument)
-
-    if argument.argument_type == argparse.ArgumentType.position and parameter.choices then
-        return parameter.choices({ current_value = prefix, contexts = contexts })
-    end
-
-    prefix = _get_argument_name(argument)
-    vim.list_extend(output, matcher.get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
-    vim.list_extend(output, matcher.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), argument.value, contexts))
-
-    return output
-end
-
---- Get the next auto-complete options for `parser`.
----
----@param parser cmdparse.ParameterParser
----    The starting point to search within.
----@param prefix string
----    The name of the flag that must match, exactly or partially.
----@param value string
----    If the user provided a (exact or partial) value for the flag / named
----    position, the text is given here.
----@param contexts cmdparse.ChoiceContext[]
----    A description of how / when this function is called. It gets passed to
----    `cmdparse.Parameter.choices()`.
----@return string[]
----    All auto-completion results found, if any.
----
-local function _get_parser_exact_or_partial_matches(parser, prefix, value, contexts)
-    prefix = _remove_contiguous_whitespace(prefix)
-    local output = {}
-
-    vim.list_extend(output, matcher.get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
-    vim.list_extend(output, matcher.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts))
-
-    return output
+    return _Private.validate_variable_position_arguments(nargs, arguments, position.names[1])
 end
 
 -- local function _get_matches(name, items)
@@ -783,40 +634,17 @@ local function _expand_choices_options(options)
     options.choices = choices
 end
 
---- If `options` is sparsely written, "expand" all of its values. so we can use it.
+--- Add `items` to `table_` if it is not empty.
 ---
----@param options cmdparse.ParameterInputOptions | cmdparse.ParameterOptions
----    The user-written options. (sparse or not).
----@param is_position boolean
----    If `options` is meant to be a non-flag argument. e.g. `--foo` is `false`.
+---@param table_ any[] An array to add to.
+---@param items string[] Values to add into `table_`, maybe.
 ---
-local function _expand_parameter_options(options, is_position)
-    _expand_type_options(options)
-    _expand_choices_options(options)
-
-    if options.required == nil then
-        if is_position then
-            options.required = true
-        else
-            options.required = false
-        end
+local function _insert_if_value(table_, items)
+    if vim.tbl_isempty(items) then
+        return
     end
 
-    if vim.tbl_contains(_FLAG_ACTIONS, options.action) and not options.nargs then
-        options.nargs = 0
-    end
-
-    if not options.nargs then
-        options.nargs = 1
-    end
-
-    if options.required == nil then
-        if is_position then
-            options.required = true
-        else
-            options.required = false
-        end
-    end
+    table.insert(table_, vim.fn.join(items, "\n"))
 end
 
 --- Combined `namespace` with all other `...` namespaces.
@@ -881,94 +709,46 @@ local function _rstrip_input(input, column)
     return stripped
 end
 
---- Make sure an `cmdparse.Parameter` has a name and every name is the same type.
----
---- If `names` is `{"foo", "-f"}` then this function will error.
----
----@param options cmdparse.ParameterInputOptions | cmdparse.ParameterOptions All data to check.
----
-local function _expand_parameter_names(options)
-    local function _get_type(name)
-        if _is_position_name(name) then
-            return "position"
-        end
-
-        return "flag"
-    end
-
-    local names = options.names or options.name or options[1]
-
-    if type(names) == "string" then
-        names = { names }
-    end
-
-    local found_type = nil
-
-    for _, name in ipairs(names) do
-        if not found_type then
-            found_type = _get_type(name)
-        elseif found_type ~= _get_type(name) then
-            error(
-                string.format(
-                    "Parameter names have to be the same type. "
-                        .. 'e.g. If one name starts with "-", all names '
-                        .. 'must start with "-" and vice versa.'
-                ),
-                0
-            )
-        end
-    end
-
-    if not found_type then
-        error(string.format('Options "%s" must provide at least one name.', vim.inspect(names)), 0)
-    end
-
-    options.names = names
-end
-
---- Make sure `options` has no conflicting / missing data.
+--- Make sure `arguments` satisfies `nargs`.
 ---
 --- Raises:
----     If an issue is found.
+---     If `arguments` fails to meet the requirements of `nargs`.
 ---
----@param options cmdparse.ParameterInputOptions | cmdparse.ParameterOptions
----    All data to check.
+---@param nargs number | cmdparse.Counter
+---    A fixed number or "0-or-more" or "1-or-more" etc. Basically it's the
+---    condition that this function must satisfy or raise an exception.
+---@param arguments argparse.Argument[]
+---    All user input to consider.
+---@param name string
+---    The parameter where this validation originated from. Used just for the
+---    error message.
+---@return number
+---    The number of "satisfying" `arguments`. If `nargs` is a number then this
+---    return value will always be `nargs`. But if `nargs` is "0-or-more" or
+---    "1-or-more" etc then the returned number could be less-than-or-equal to `nargs`.
 ---
-local function _validate_parameter_options(options)
-    if vim.tbl_contains(_FLAG_ACTIONS, options.action) then
-        if options.choices ~= nil then
-            error(
-                string.format(
-                    'Parameter "%s" cannot use action "%s" and choices at the same time.',
-                    options.names[1],
-                    options.action
-                ),
-                0
-            )
+function _Private.validate_variable_position_arguments(nargs, arguments, name)
+    local found = 0
+
+    for index, argument in ipairs(arguments) do
+        if argument.argument_type ~= argparse.ArgumentType.position then
+            return found
         end
 
-        if options.nargs ~= 0 then
-            error(
-                string.format(
-                    'Parameter "%s" cannot use action "%s" and nargs at the same time.',
-                    options.names[1],
-                    options.action
-                ),
-                0
-            )
+        found = index
+    end
+
+    if nargs == constant.Counter.one_or_more then
+        if found == 0 then
+            error(string.format('Parameter "%s" requires a value.', name), 0)
+        end
+    elseif type(nargs) == "number" then
+        if found < nargs then
+            error(string.format('Parameter "%s" requires "%s" values. Got "%s" value.', name, nargs, found), 0)
         end
     end
-end
 
---- Make sure a name was provided from `options`.
----
----@param options cmdparse.ParameterParserOptions
----
-local function _validate_name(options)
-    -- TODO: name is required
-    if not options.name or texter.is_whitespace(options.name) then
-        error(string.format('Parameter "%s" must have a name.', _concise_inspect(options)), 0)
-    end
+    return found
 end
 
 --- Create a new group of parsers.
@@ -1093,7 +873,7 @@ end
 
 ---@return boolean # If this instance is a flag like `--foo` or `--foo=bar`, return `false`.
 function M.Parameter:is_position()
-    return _is_position_name(self.names[1])
+    return text_parse.is_position_name(self.names[1])
 end
 
 --- Get a function that mutates the namespace with a new parsed argument.
@@ -1230,7 +1010,7 @@ function M.ParameterParser.new(options)
     end
 
     if options.parent then
-        _validate_name(options)
+        types_input.validate_name(options)
     end
 
     _expand_choices_options(options)
@@ -1374,7 +1154,7 @@ function M.ParameterParser:_get_argument_usage_summary(data)
         local last = data.arguments[#data.arguments]
 
         if last then
-            local last_name = _get_argument_name(last)
+            local last_name = text_parse.get_argument_name(last)
             parser = _get_child_parser_by_name(parser, last_name) or parser
         end
     end
@@ -1426,26 +1206,6 @@ function M.ParameterParser:_get_issues()
     return output
 end
 
---- Get all auto-completions that `parser` is currently allowed to recommend.
----
---- All exhausted child parameters are excluded from the output.
----
----@param parser cmdparse.ParameterParser A parser to query.
----@return string[] # The found auto-completion results, if any.
----
-local function _get_current_parser_completions(parser)
-    local output = {}
-
-    -- TODO: Add better sorting of the output here
-    -- NOTE: Get all possible initial arguments (check all parameters / subparsers)
-    -- TODO: Only show subparser names if requireds are all exhausted
-    vim.list_extend(output, vim.fn.sort(matcher.get_matching_subparser_names("", parser)))
-    vim.list_extend(output, matcher.get_matching_position_parameters("", parser:get_position_parameters()))
-    vim.list_extend(output, matcher.get_matching_partial_flag_text("", parser:get_flag_parameters()))
-
-    return output
-end
-
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
 ---@param data argparse.Results | string The user input.
@@ -1481,7 +1241,7 @@ function M.ParameterParser:_get_completion(data, column)
             return output
         end
 
-        vim.list_extend(output, _get_current_parser_completions(self))
+        vim.list_extend(output, matcher.get_current_parser_completions(self))
 
         return output
     end
@@ -1495,8 +1255,8 @@ function M.ParameterParser:_get_completion(data, column)
     end
 
     local last = stripped.arguments[#stripped.arguments]
-    local last_name = _get_argument_name(last)
-    local last_value = _get_argument_value_text(last)
+    local last_name = text_parse.get_argument_name(last)
+    local last_value = text_parse.get_argument_value_text(last)
 
     -- if recent_item.choices then
     --     ---@cast recent_item cmdparse.Parameter
@@ -1508,7 +1268,7 @@ function M.ParameterParser:_get_completion(data, column)
     --
     --     return choices
     --
-    --     vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value, contexts))
+    --     vim.list_extend(output, matcher.get_exact_or_partial_matches(last_name, parser, last_value, contexts))
     --
     --     if parser:is_satisfied() then
     --         for parser_ in iterator_helper.iter_parsers(parser) do
@@ -1571,8 +1331,8 @@ function M.ParameterParser:_get_completion(data, column)
     if remainder == "" then
         if _is_parser(recent_item) then
             ---@cast recent_item cmdparse.ParameterParser
-            vim.list_extend(output, _get_parser_exact_or_partial_matches(recent_item, last_name, last_value, contexts))
-        elseif _is_incomplete_named_argument(last) then
+            vim.list_extend(output, matcher.get_parser_exact_or_partial_matches(recent_item, last_name, last_value, contexts))
+        elseif text_parse.is_incomplete_named_argument(last) then
             ---@cast recent_item cmdparse.Parameter
             local parameter = _get_next_parameter_if_needed(parser, recent_item, last)
             vim.list_extend(output, _get_named_argument_completion_choices(parameter, last, contexts))
@@ -1584,7 +1344,7 @@ function M.ParameterParser:_get_completion(data, column)
                 return {}
             end
 
-            vim.list_extend(output, _get_exact_or_partial_matches(parameter, last, parser, contexts))
+            vim.list_extend(output, matcher.get_exact_or_partial_matches(parameter, last, parser, contexts))
         else
             error(string.format('Bug found. Item "%s" is unknown.', vim.inspect(recent_item)))
         end
@@ -1619,7 +1379,7 @@ function M.ParameterParser:_get_completion(data, column)
         -- that parameter calls `increment_used()`!
         --
         local next_index = index + 1
-        local argument_name = _get_argument_name(stripped.arguments[next_index])
+        local argument_name = text_parse.get_argument_name(stripped.arguments[next_index])
 
         _compute_and_increment_parameter(parser, argument_name, tabler.get_slice(stripped.arguments, next_index))
 
@@ -1639,7 +1399,7 @@ function M.ParameterParser:_get_completion(data, column)
     --
     --     return choices
     --
-    --     vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value, contexts))
+    --     vim.list_extend(output, matcher.get_exact_or_partial_matches(last_name, parser, last_value, contexts))
     --
     --     if parser:is_satisfied() then
     --         for parser_ in iterator_helper.iter_parsers(parser) do
@@ -1669,7 +1429,7 @@ function M.ParameterParser:_get_completion(data, column)
     return output
 
     -- -- TODO: Make this all into a function. Simplify the code
-    -- vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
+    -- vim.list_extend(output, matcher.get_exact_or_partial_matches(last_name, parser, last_value))
     --
     -- if not texter.is_whitespace(last_name) then
     --     for parser_ in _iter_parsers(parser) do
@@ -1677,7 +1437,7 @@ function M.ParameterParser:_get_completion(data, column)
     --     end
     -- end
     --
-    -- vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
+    -- vim.list_extend(output, matcher.get_exact_or_partial_matches(last_name, parser, last_value))
     --
     -- -- TODO: Move to a function later
     -- -- NOTE: This case is for when there are multiple child parsers with
@@ -1697,12 +1457,12 @@ function M.ParameterParser:_get_completion(data, column)
     -- -- local output = {}
     -- --
     -- -- local last = stripped.arguments[#stripped.arguments]
-    -- -- local last_name = _get_argument_name(last)
+    -- -- local last_name = text_parse.get_argument_name(last)
     --
     -- -- if remainder == "" then
     -- --     -- TODO: There's a bug here. We may not be able to assume the last argument like this
     -- --     local last = stripped.arguments[#stripped.arguments]
-    -- --     local last_name = _get_argument_name(last)
+    -- --     local last_name = text_parse.get_argument_name(last)
     -- --     output = matcher.get_matching_position_parameters(last_name, parser)
     -- --     output = vim.fn.sort(output)
     -- --
@@ -1744,7 +1504,7 @@ function M.ParameterParser:_get_leaf_parser(data)
 
     for index, argument in ipairs(data.arguments) do
         if argument.argument_type == argparse.ArgumentType.position then
-            local argument_name = _get_argument_name(argument)
+            local argument_name = text_parse.get_argument_name(argument)
 
             local found, found_parser =
                 parser:_handle_subparsers(argparse_helper.lstrip_arguments(data, index + 1), argument_name, {})
@@ -1909,93 +1669,6 @@ end
 --
 --     error("Unknown situation. This is a bug. Fix!", 0)
 -- end
-
---- Make sure `arguments` satisfies `nargs`.
----
---- Raises:
----     If `arguments` fails to meet the requirements of `nargs`.
----
----@param nargs number | cmdparse.Counter
----    A fixed number or "0-or-more" or "1-or-more" etc. Basically it's the
----    condition that this function must satisfy or raise an exception.
----@param arguments argparse.Argument[]
----    All user input to consider.
----@param name string
----    The parameter where this validation originated from. Used just for the
----    error message.
----@return number
----    The number of "satisfying" `arguments`. If `nargs` is a number then this
----    return value will always be `nargs`. But if `nargs` is "0-or-more" or
----    "1-or-more" etc then the returned number could be less-than-or-equal to `nargs`.
----
-local function _validate_variable_position_arguments(nargs, arguments, name)
-    local found = 0
-
-    for index, argument in ipairs(arguments) do
-        if argument.argument_type ~= argparse.ArgumentType.position then
-            return found
-        end
-
-        found = index
-    end
-
-    if nargs == constant.Counter.one_or_more then
-        if found == 0 then
-            error(string.format('Parameter "%s" requires a value.', name), 0)
-        end
-    elseif type(nargs) == "number" then
-        if found < nargs then
-            error(string.format('Parameter "%s" requires "%s" values. Got "%s" value.', name, nargs, found), 0)
-        end
-    end
-
-    return found
-end
-
---- Check `position` for matching, contiguous `arguments`.
----
----@param position cmdparse.Parameter
----    The `foo`, `bar`, etc parameter to check.
----@param arguments argparse.Argument[]
----    The arguments to match against `positions`. Every element in `arguments`
----    is checked.
----@return number
----    The number of `arguments` that match `position`'s requirements.
----
-local function _get_used_position_arguments_count(position, arguments)
-
-    local function _error(index, nargs)
-        local template = 'Parameter "%s" requires "%s" values. Got "%s"'
-
-        if index < 2 then
-            template = template .. " value."
-        else
-            template = template .. " values."
-        end
-
-        error(string.format(template, position.names[1], nargs, index), 0)
-    end
-
-    local nargs = position:get_nargs()
-
-    if type(nargs) == "number" then
-        for index = 1, nargs do
-            local argument = arguments[index]
-
-            if not argument then
-                _error(index - 1, nargs)
-            end
-
-            if argument.argument_type ~= argparse.ArgumentType.position then
-                _error(index, nargs)
-            end
-        end
-
-        return nargs
-    end
-
-    return _validate_variable_position_arguments(nargs, arguments, position.names[1])
-end
 
 -- --- Raise an error if `arguments` are not valid input for `flag`.
 -- ---
@@ -2562,7 +2235,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
 
     while index < count do
         local argument = data.arguments[index]
-        local argument_name = _get_argument_name(argument)
+        local argument_name = text_parse.get_argument_name(argument)
 
         if argument.argument_type == argparse.ArgumentType.position then
             --- @cast argument argparse.PositionArgument
@@ -2653,7 +2326,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
     --
     -- if last then
     --     -- TODO: When would this ever not be true? Remove?
-    --     argument_name = _get_argument_name(last)
+    --     argument_name = text_parse.get_argument_name(last)
     -- end
     --
     -- local output = {current_parser}
@@ -2797,10 +2470,10 @@ function M.ParameterParser:_parse_arguments(data, namespace)
         local remaining_arguments = tabler.get_slice(data_.arguments, index)
 
         if #remaining_arguments == 1 then
-            error(string.format('Unexpected argument "%s".', _get_arguments_raw_text(remaining_arguments)[1]), 0)
+            error(string.format('Unexpected argument "%s".', text_parse.get_arguments_raw_text(remaining_arguments)[1]), 0)
         end
 
-        error(string.format('Unexpected arguments "%s".', vim.fn.join(_get_arguments_raw_text(remaining_arguments))), 0)
+        error(string.format('Unexpected arguments "%s".', vim.fn.join(text_parse.get_arguments_raw_text(remaining_arguments))), 0)
     end
 
     if type(data) == "string" then
@@ -2823,7 +2496,7 @@ function M.ParameterParser:_parse_arguments(data, namespace)
 
         if argument.argument_type == argparse.ArgumentType.position then
             --- @cast argument argparse.PositionArgument
-            local argument_name = _get_argument_name(argument)
+            local argument_name = text_parse.get_argument_name(argument)
 
             found = self:_handle_subparsers(argparse_helper.lstrip_arguments(data, index + 1), argument_name, namespace)
 
@@ -2961,19 +2634,6 @@ function M.ParameterParser:get_concise_help(data)
     return summary
 end
 
---- Add `items` to `table_` if it is not empty.
----
----@param table_ any[] An array to add to.
----@param items string[] Values to add into `table_`, maybe.
----
-local function _insert_if_value(table_, items)
-    if vim.tbl_isempty(items) then
-        return
-    end
-
-    table.insert(table_, vim.fn.join(items, "\n"))
-end
-
 --- Get all of information on how to run the CLI.
 ---
 ---@param data string | argparse.Results
@@ -3064,18 +2724,18 @@ end
 ---    The created `cmdparse.Parameter` instance.
 ---
 function M.ParameterParser:add_parameter(options)
-    _expand_parameter_names(options)
-    local is_position = _is_position_name(options.names[1])
-    _expand_parameter_options(options, is_position)
+    types_input.expand_parameter_names(options)
+    local is_position = text_parse.is_position_name(options.names[1])
+    types_input.expand_parameter_options(options, is_position)
 
     --- @cast options cmdparse.ParameterOptions
 
-    _validate_parameter_options(options)
+    types_input.validate_parameter_options(options)
 
     local new_options = vim.tbl_deep_extend("force", options, { parent = self })
     local parameter = M.Parameter.new(new_options)
 
-    if _is_position_name(options.names[1]) then
+    if is_position then
         table.insert(self._position_parameters, parameter)
     else
         table.insert(self._flag_parameters, parameter)

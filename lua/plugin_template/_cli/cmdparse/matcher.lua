@@ -1,10 +1,107 @@
 -- TODO: Docstring
 
+local argparse = require("plugin_template._cli.argparse")
 local constant = require("plugin_template._cli.cmdparse.constant")
 local iterator_helper = require("plugin_template._cli.cmdparse.iterator_helper")
+local text_parse = require("plugin_template._cli.cmdparse.text_parse")
 local texter = require("plugin_template._core.texter")
 
 local M = {}
+
+
+--- Remove whitespace from `text` but only if `text` is 100% whitespace.
+---
+---@param text string Some text to possibly strip.
+---@return string # The processed `text` or, if it contains whitespace, the original `text`.
+---
+local function _remove_contiguous_whitespace(text)
+    return (text:gsub("^%s*$", ""))
+end
+
+--- Get all auto-completions that `parser` is currently allowed to recommend.
+---
+--- All exhausted child parameters are excluded from the output.
+---
+---@param parser cmdparse.ParameterParser A parser to query.
+---@return string[] # The found auto-completion results, if any.
+---
+function M.get_current_parser_completions(parser)
+    local output = {}
+
+    -- TODO: Add better sorting of the output here
+    -- NOTE: Get all possible initial arguments (check all parameters / subparsers)
+    -- TODO: Only show subparser names if requireds are all exhausted
+    vim.list_extend(output, vim.fn.sort(M.get_matching_subparser_names("", parser)))
+    vim.list_extend(output, M.get_matching_position_parameters("", parser:get_position_parameters()))
+    vim.list_extend(output, M.get_matching_partial_flag_text("", parser:get_flag_parameters()))
+
+    return output
+end
+
+--- Find all Argments starting with `prefix`.
+---
+---@param parameter cmdparse.Parameter
+---    The position, flag, or named parameter to consider nargs / choices / etc.
+---@param argument argparse.Argument
+---    A user's actual CLI input. It must either match `parameter` or be
+---    a valid input to `parameter`. Or be the next valid parameter that would
+---    normally follow `parameter`.
+---@param parser cmdparse.ParameterParser
+---    The starting point to search within.
+---@param contexts cmdparse.ChoiceContext[]
+---    A description of how / when this function is called. It gets passed to
+---    `cmdparse.Parameter.choices()`.
+---@return string[] # The matching names, if any.
+---
+function M.get_exact_or_partial_matches(parameter, argument, parser, contexts)
+    -- local function _get_longest_match(prefix, options)
+    --     local longest_match_count = 0
+    --     local longest_match
+    --
+    --     for _, name in ipairs(options) do
+    --         if vim.startswith(name, prefix) then
+    --             local count = #prefix
+    --
+    --             if count > longest_match_count then
+    --                 longest_match = name
+    --                 longest_match_count = count
+    --             end
+    --         end
+    --     end
+    --
+    --     return longest_match
+    -- end
+
+    local output = {}
+
+    local prefix = text_parse.get_argument_name(argument)
+
+    local matches = texter.get_array_startswith(parameter.names, prefix)
+
+    if not vim.tbl_isempty(matches) and argument.value == false then
+        if parameter:is_exhausted() then
+            return {}
+        end
+
+        local nargs = parameter:get_nargs()
+
+        if nargs == 1 then
+            return { matches[1] .. "=" }
+        end
+    end
+
+    prefix = text_parse.get_argument_value_text(argument)
+
+    if argument.argument_type == argparse.ArgumentType.position and parameter.choices then
+        return parameter.choices({ current_value = prefix, contexts = contexts })
+    end
+
+    prefix = text_parse.get_argument_name(argument)
+    vim.list_extend(output, M.get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
+    vim.list_extend(output, M.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), argument.value, contexts))
+
+    return output
+end
 
 --- Create auto-complete text for `parameter`, given some `value`.
 ---
@@ -148,6 +245,31 @@ function M.get_matching_subparser_names(prefix, parser)
             vim.list_extend(output, texter.get_array_startswith(names, prefix))
         end
     end
+
+    return output
+end
+
+--- Get the next auto-complete options for `parser`.
+---
+---@param parser cmdparse.ParameterParser
+---    The starting point to search within.
+---@param prefix string
+---    The name of the flag that must match, exactly or partially.
+---@param value string
+---    If the user provided a (exact or partial) value for the flag / named
+---    position, the text is given here.
+---@param contexts cmdparse.ChoiceContext[]
+---    A description of how / when this function is called. It gets passed to
+---    `cmdparse.Parameter.choices()`.
+---@return string[]
+---    All auto-completion results found, if any.
+---
+function M.get_parser_exact_or_partial_matches(parser, prefix, value, contexts)
+    prefix = _remove_contiguous_whitespace(prefix)
+    local output = {}
+
+    vim.list_extend(output, M.get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
+    vim.list_extend(output, M.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts))
 
     return output
 end
