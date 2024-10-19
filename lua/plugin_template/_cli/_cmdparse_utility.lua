@@ -1,4 +1,8 @@
--- TODO: Docstring
+--- Generic functions used in other files.
+---
+---@module 'plugin_template._cli.cmdparse_utility'
+---
+
 local M = {}
 
 --- Find all direct-children parsers of `parser`.
@@ -23,23 +27,6 @@ function M.iter_parsers(parser, inclusive)
     local subparsers_index = 1
     local subparsers = parser._subparsers[subparsers_index]
     local returned_parser = false
-
-    -- TODO: Remove?
-    -- if not subparsers then
-    --     if inclusive then
-    --         return function() return nil end
-    --     end
-    --
-    --     return function()
-    --         if not returned_parser then
-    --             returned_parser = true
-    --
-    --             return parser
-    --         end
-    --
-    --         return nil
-    --     end
-    -- end
 
     local parser_index = 1
     local parsers = {}
