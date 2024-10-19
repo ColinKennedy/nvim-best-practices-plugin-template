@@ -337,15 +337,6 @@ local function _is_position_name(text)
     return text:sub(1, 1):match("%w")
 end
 
---- Check if `text` is only spaces.
----
----@param text string Some word / phrase to check. e.g. `" "`.
----@return boolean # If `text` has non-empty alphanumeric character(s), return `true`.
----
-local function _is_whitespace(text)
-    return text == "" or text:match("%s+")
-end
-
 -- --- Find all parsers / sub-parsers starting from `parsers`.
 -- ---
 -- ---@param parsers cmdparse.ParameterParser[] All child / leaf parsers to start traversing from.
@@ -909,7 +900,7 @@ local function _get_matching_subparser_names(prefix, parser)
 
         -- TODO: All current uses of this function ended up with `prefix` ==
         -- whitespace. If so, remove this if condition later
-        if _is_whitespace(prefix) then
+        if texter.is_whitespace(prefix) then
             vim.list_extend(output, names)
         else
             vim.list_extend(output, _get_array_startswith(names, prefix))
@@ -1320,7 +1311,7 @@ end
 ---
 local function _validate_name(options)
     -- TODO: name is required
-    if not options.name or _is_whitespace(options.name) then
+    if not options.name or texter.is_whitespace(options.name) then
         error(string.format('Parameter "%s" must have a name.', _concise_inspect(options)), 0)
     end
 end
@@ -1825,7 +1816,7 @@ function M.ParameterParser:_get_completion(data, column)
             return {}
         end
 
-        if not _is_whitespace(remainder) then
+        if not texter.is_whitespace(remainder) then
             vim.list_extend(output, _get_matching_partial_flag_text(remainder, self:get_flag_parameters()))
 
             -- NOTE: If there was unparsed text then it means that the user is
@@ -2025,7 +2016,7 @@ function M.ParameterParser:_get_completion(data, column)
     -- -- TODO: Make this all into a function. Simplify the code
     -- vim.list_extend(output, _get_exact_or_partial_matches(last_name, parser, last_value))
     --
-    -- if not _is_whitespace(last_name) then
+    -- if not texter.is_whitespace(last_name) then
     --     for parser_ in _iter_parsers(parser) do
     --         vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
     --     end
@@ -2038,7 +2029,7 @@ function M.ParameterParser:_get_completion(data, column)
     -- -- similar names. e.g. `get-asset` & `get-assets` might both auto-complete here.
     -- --
     -- local parent_parser = parser:get_parent_parser()
-    -- if parent_parser and not _is_whitespace(last_name) then
+    -- if parent_parser and not texter.is_whitespace(last_name) then
     --     for parser_ in _iter_parsers(parent_parser) do
     --         vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
     --     end
