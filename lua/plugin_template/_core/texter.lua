@@ -82,4 +82,13 @@ function M.indent(text)
     return string.format("    %s", text)
 end
 
+--- Remove leading (left) whitespace `text`, if there is any.
+---
+---@param text string Some text e.g. `" -- "`.
+---@return string # The removed text e.g. `"-- "`.
+---
+function M.lstrip(text)
+    return (text:gsub("^%s*", ""))
+end
+
 return M

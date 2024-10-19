@@ -225,6 +225,24 @@ M.Subparsers.__index = M.Subparsers
 --     return output
 -- end
 
+--- Check if `object` is a `cmdparse.ParameterParser`.
+---
+---@param object any Anything.
+---@return boolean # If match, return `true`.
+---
+local function _is_parser(object)
+    return object._flag_parameters ~= nil
+end
+
+--- Check if `object` is a `cmdparse.Parameter`.
+---
+---@param object any Anything.
+---@return boolean # If match, return `true`.
+---
+local function _is_parameter(object)
+    return object._parent and not _is_parser(object)
+end
+
 --- Find all child parsers, recursively.
 ---
 --- Note:
@@ -359,7 +377,6 @@ end
 ---    The number of `arguments` that match `position`'s requirements.
 ---
 local function _get_used_position_arguments_count(position, arguments)
-
     local function _error(index, nargs)
         local template = 'Parameter "%s" requires "%s" values. Got "%s"'
 
@@ -450,15 +467,6 @@ end
 --
 --     return output
 -- end
-
---- Remove leading (left) whitespace `text`, if there is any.
----
----@param text string Some text e.g. `" -- "`.
----@return string # The removed text e.g. `"-- "`.
----
-local function _lstrip(text)
-    return (text:gsub("^%s*", ""))
-end
 
 --- Get all position argument --help text from `parser`.
 ---
@@ -710,24 +718,6 @@ function M.Subparsers.new(options)
     return self
 end
 
---- Check if `object` is a `cmdparse.ParameterParser`.
----
----@param object any Anything.
----@return boolean # If match, return `true`.
----
-local function _is_parser(object)
-    return object._flag_parameters ~= nil
-end
-
---- Check if `object` is a `cmdparse.Parameter`.
----
----@param object any Anything.
----@return boolean # If match, return `true`.
----
-local function _is_parameter(object)
-    return object._parent and not _is_parser(object)
-end
-
 --- Create a new `cmdparse.ParameterParser` using `options`.
 ---
 ---@param options cmdparse.ParameterParserInputOptions | cmdparse.ParameterParserOptions | cmdparse.ParameterParser
@@ -964,27 +954,6 @@ function M.ParameterParser.new(options)
     return self
 end
 
---- Make a `--help` parameter and add it to this current instance.
-function M.ParameterParser:_add_help_parameter()
-    local parameter = self:add_parameter({
-        action = function(data)
-            data.namespace.execute = function(...) -- luacheck: ignore 212 unused argument
-                vim.notify(self:get_full_help(""), vim.log.levels.INFO)
-            end
-        end,
-        help = "Show this help message and exit.",
-        names = { "--help", "-h" },
-        nargs = 0,
-    })
-
-    -- NOTE: `self:add_parameter` just added the help flag to
-    -- `self._flag_parameters` so we need to remove it (so we can add it
-    -- somewhere else).
-    --
-    table.remove(self._flag_parameters)
-    table.insert(self._implicit_flag_parameters, parameter)
-end
-
 -- TODO: Remove?
 -- local function _get_subparser_issues(parser)
 --     local output = {}
@@ -1082,9 +1051,7 @@ function M.ParameterParser:_get_issues()
                         '%s Valid choices are "%s"',
                         text,
                         vim.fn.join(
-                            vim.fn.sorted(
-                                parameter.choices({ contexts = { constant.ChoiceContext.error_message } })
-                            ),
+                            vim.fn.sorted(parameter.choices({ contexts = { constant.ChoiceContext.error_message } })),
                             ", "
                         )
                     )
@@ -1204,9 +1171,7 @@ function M.ParameterParser:_get_completion(data, column)
             local name = argument.name
 
             for _, flag in ipairs(parser:get_flag_parameters()) do
-                if
-                    not flag:is_exhausted() and not vim.tbl_isempty(texter.get_array_startswith(flag.names, name))
-                then
+                if not flag:is_exhausted() and not vim.tbl_isempty(texter.get_array_startswith(flag.names, name)) then
                     return flag
                 end
             end
@@ -1223,7 +1188,10 @@ function M.ParameterParser:_get_completion(data, column)
     if remainder == "" then
         if _is_parser(recent_item) then
             ---@cast recent_item cmdparse.ParameterParser
-            vim.list_extend(output, matcher.get_parser_exact_or_partial_matches(recent_item, last_name, last_value, contexts))
+            vim.list_extend(
+                output,
+                matcher.get_parser_exact_or_partial_matches(recent_item, last_name, last_value, contexts)
+            )
         elseif text_parse.is_incomplete_named_argument(last) then
             ---@cast recent_item cmdparse.Parameter
             local parameter = _get_next_parameter_if_needed(parser, recent_item, last)
@@ -1273,7 +1241,11 @@ function M.ParameterParser:_get_completion(data, column)
         local next_index = index + 1
         local argument_name = text_parse.get_argument_name(stripped.arguments[next_index])
 
-        evaluator.compute_and_increment_parameter(parser, argument_name, tabler.get_slice(stripped.arguments, next_index))
+        evaluator.compute_and_increment_parameter(
+            parser,
+            argument_name,
+            tabler.get_slice(stripped.arguments, next_index)
+        )
 
         --     -- TODO: Need to handle this case. Not sure how. Error?
         -- local found = evaluator.compute_and_increment_parameter(parser, argument_name, tabler.get_slice(stripped.arguments, next_index))
@@ -1303,7 +1275,7 @@ function M.ParameterParser:_get_completion(data, column)
     --     return output
     -- end
 
-    local stripped_remainder = _lstrip(remainder)
+    local stripped_remainder = texter.lstrip(remainder)
 
     -- TODO: Add better sorting of the output here
     -- TODO: Only show subparser names if requireds are all exhausted
@@ -1590,6 +1562,27 @@ end
 --         error(issue, 0)
 --     end
 -- end
+
+--- Make a `--help` parameter and add it to this current instance.
+function M.ParameterParser:_add_help_parameter()
+    local parameter = self:add_parameter({
+        action = function(data)
+            data.namespace.execute = function(...) -- luacheck: ignore 212 unused argument
+                vim.notify(self:get_full_help(""), vim.log.levels.INFO)
+            end
+        end,
+        help = "Show this help message and exit.",
+        names = { "--help", "-h" },
+        nargs = 0,
+    })
+
+    -- NOTE: `self:add_parameter` just added the help flag to
+    -- `self._flag_parameters` so we need to remove it (so we can add it
+    -- somewhere else).
+    --
+    table.remove(self._flag_parameters)
+    table.insert(self._implicit_flag_parameters, parameter)
+end
 
 --- Add `flags` to `namespace` if they match `argument`.
 ---
@@ -2311,10 +2304,19 @@ function M.ParameterParser:_parse_arguments(data, namespace)
         local remaining_arguments = tabler.get_slice(data_.arguments, index)
 
         if #remaining_arguments == 1 then
-            error(string.format('Unexpected argument "%s".', text_parse.get_arguments_raw_text(remaining_arguments)[1]), 0)
+            error(
+                string.format('Unexpected argument "%s".', text_parse.get_arguments_raw_text(remaining_arguments)[1]),
+                0
+            )
         end
 
-        error(string.format('Unexpected arguments "%s".', vim.fn.join(text_parse.get_arguments_raw_text(remaining_arguments))), 0)
+        error(
+            string.format(
+                'Unexpected arguments "%s".',
+                vim.fn.join(text_parse.get_arguments_raw_text(remaining_arguments))
+            ),
+            0
+        )
     end
 
     if type(data) == "string" then
