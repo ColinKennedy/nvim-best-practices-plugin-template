@@ -10,6 +10,7 @@ local argparse_helper = require("plugin_template._cli.argparse_helper")
 local constant = require("plugin_template._cli.cmdparse.constant")
 local help_message = require("plugin_template._cli.cmdparse.help_message")
 local iterator_helper = require("plugin_template._cli.cmdparse.iterator_helper")
+local matcher = require("plugin_template._cli.cmdparse.matcher")
 local tabler = require("plugin_template._core.tabler")
 local texter = require("plugin_template._core.texter")
 
@@ -133,9 +134,6 @@ local texter = require("plugin_template._core.texter")
 ---    A shorthand for the subparser name.
 
 local M = {}
-
-local _FULL_HELP_FLAG = "--help"
-local _SHORT_HELP_FLAG = "-h"
 
 local _ActionConstant = { count = "count", store_false = "store_false", store_true = "store_true" }
 local _FLAG_ACTIONS = { _ActionConstant.count, _ActionConstant.store_false, _ActionConstant.store_true }
@@ -369,24 +367,6 @@ local function _get_argument_name(argument)
     return argument.name or argument.value
 end
 
---- Check all elements in `values` for `prefix` text.
----
----@param values string[] All values to check. e.g. `{"foo", "bar"}`.
----@param prefix string The prefix text to search for.
----@return string[] # All found values, if any.
----
-local function _get_array_startswith(values, prefix)
-    local output = {}
-
-    for _, value in ipairs(values) do
-        if vim.startswith(value, prefix) then
-            table.insert(output, value)
-        end
-    end
-
-    return output
-end
-
 --- Find + increment all flag parameters of `parser` that match the other inputs.
 ---
 ---@param parser cmdparse.ParameterParser
@@ -449,29 +429,6 @@ end
 ---
 local function _remove_contiguous_whitespace(text)
     return (text:gsub("^%s*$", ""))
-end
-
---- Re-order `parameters` alphabetically but put the `--help` flag at the end.
----
----@param parameters cmdparse.Parameter[] All position / flag / named parameters.
----@return cmdparse.Parameter[] # The sorted entries.
----
-local function _sort_parameters(parameters)
-    local output = vim.deepcopy(parameters)
-
-    table.sort(output, function(left, right)
-        if vim.tbl_contains(left.names, _FULL_HELP_FLAG) or vim.tbl_contains(left.names, _SHORT_HELP_FLAG) then
-            return false
-        end
-
-        if vim.tbl_contains(right.names, _FULL_HELP_FLAG) or vim.tbl_contains(right.names, _SHORT_HELP_FLAG) then
-            return true
-        end
-
-        return left.names[1] < right.names[1]
-    end)
-
-    return output
 end
 
 --- Find all child parser names under `parser`.
@@ -608,7 +565,7 @@ end
 local function _get_matching_partial_flag_text(prefix, flags, value, contexts)
     local output = {}
 
-    for _, parameter in ipairs(_sort_parameters(flags)) do
+    for _, parameter in ipairs(iterator_helper.sort_parameters(flags)) do
         if not parameter:is_exhausted() then
             for _, name in ipairs(parameter.names) do
                 if name == prefix then
@@ -633,42 +590,6 @@ local function _get_matching_partial_flag_text(prefix, flags, value, contexts)
                     break
                 end
             end
-        end
-    end
-
-    return output
-end
-
---- Find all `options` that match `name`.
----
---- By default a position option takes any argument / value. Some position parameters
---- have specific, required choice(s) that this function means to match.
----
----@param name string
----    The user's input text to try to match.
----@param parameters cmdparse.Parameter[]
----    All position parameters to check.
----@param contexts cmdparse.ChoiceContext[]?
----    A description of how / when this function is called. It gets passed to
----    `cmdparse.Parameter.choices()`.
----@return cmdparse.Parameter[] # The found matches, if any.
----
-local function _get_matching_position_parameters(name, parameters, contexts)
-    contexts = contexts or {}
-    local output = {}
-
-    for _, parameter in ipairs(_sort_parameters(parameters)) do
-        if not parameter:is_exhausted() and parameter.choices then
-            vim.list_extend(
-                output,
-                _get_array_startswith(
-                    parameter.choices({
-                        contexts = vim.list_extend({ constant.ChoiceContext.position_matching }, contexts),
-                        current_value = name,
-                    }),
-                    name
-                )
-            )
         end
     end
 
@@ -774,7 +695,7 @@ local function _get_exact_or_partial_matches(parameter, argument, parser, contex
 
     local prefix = _get_argument_name(argument)
 
-    local matches = _get_array_startswith(parameter.names, prefix)
+    local matches = texter.get_array_startswith(parameter.names, prefix)
 
     if not vim.tbl_isempty(matches) and argument.value == false then
         if parameter:is_exhausted() then
@@ -795,7 +716,7 @@ local function _get_exact_or_partial_matches(parameter, argument, parser, contex
     end
 
     prefix = _get_argument_name(argument)
-    vim.list_extend(output, _get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
+    vim.list_extend(output, matcher.get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
     vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), argument.value, contexts))
 
     return output
@@ -820,7 +741,7 @@ local function _get_parser_exact_or_partial_matches(parser, prefix, value, conte
     prefix = _remove_contiguous_whitespace(prefix)
     local output = {}
 
-    vim.list_extend(output, _get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
+    vim.list_extend(output, matcher.get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
     vim.list_extend(output, _get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts))
 
     return output
@@ -846,7 +767,7 @@ end
 --     return string.format("[%s]", flag:get_raw_name())
 -- end
 
--- local function _get_matching_position_parameters(argument, parser)
+-- local function matcher.get_matching_position_parameters(argument, parser)
 --     local output = {}
 --
 --     if vim.startswith(parser.name, argument) then
@@ -903,7 +824,7 @@ local function _get_matching_subparser_names(prefix, parser)
         if texter.is_whitespace(prefix) then
             vim.list_extend(output, names)
         else
-            vim.list_extend(output, _get_array_startswith(names, prefix))
+            vim.list_extend(output, texter.get_array_startswith(names, prefix))
         end
     end
 
@@ -936,7 +857,7 @@ end
 local function _get_parser_flag_help_text(parser)
     local output = {}
 
-    for _, flag in ipairs(_sort_parameters(parser:get_flag_parameters())) do
+    for _, flag in ipairs(iterator_helper.sort_parameters(parser:get_flag_parameters())) do
         local names = vim.fn.join(flag.names, " ")
         local text = names
 
@@ -1108,7 +1029,7 @@ local function _expand_choices_options(options)
 
             if vim.tbl_contains(data.contexts, constant.ChoiceContext.auto_completing) then
                 ---@cast value string
-                return _get_array_startswith(input, value)
+                return texter.get_array_startswith(input, value)
             end
 
             return input
@@ -1785,7 +1706,7 @@ local function _get_current_parser_completions(parser)
     -- NOTE: Get all possible initial arguments (check all parameters / subparsers)
     -- TODO: Only show subparser names if requireds are all exhausted
     vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names("", parser)))
-    vim.list_extend(output, _get_matching_position_parameters("", parser:get_position_parameters()))
+    vim.list_extend(output, matcher.get_matching_position_parameters("", parser:get_position_parameters()))
     vim.list_extend(output, _get_matching_partial_flag_text("", parser:get_flag_parameters()))
 
     return output
@@ -1857,7 +1778,7 @@ function M.ParameterParser:_get_completion(data, column)
     --
     --     if parser:is_satisfied() then
     --         for parser_ in iterator_helper.iter_parsers(parser) do
-    --             vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+    --             vim.list_extend(output, texter.get_array_startswith(parser_:get_names(), last_name))
     --         end
     --     end
     --
@@ -1898,7 +1819,7 @@ function M.ParameterParser:_get_completion(data, column)
 
             for _, flag in ipairs(parser:get_flag_parameters()) do
                 if
-                    not flag:is_exhausted() and not vim.tbl_isempty(_get_array_startswith(flag.names, name))
+                    not flag:is_exhausted() and not vim.tbl_isempty(texter.get_array_startswith(flag.names, name))
                 then
                     return flag
                 end
@@ -1936,7 +1857,7 @@ function M.ParameterParser:_get_completion(data, column)
 
         if parser:is_satisfied() then
             for parser_ in iterator_helper.iter_parsers(parser) do
-                vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+                vim.list_extend(output, texter.get_array_startswith(parser_:get_names(), last_name))
             end
         end
 
@@ -1988,7 +1909,7 @@ function M.ParameterParser:_get_completion(data, column)
     --
     --     if parser:is_satisfied() then
     --         for parser_ in iterator_helper.iter_parsers(parser) do
-    --             vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+    --             vim.list_extend(output, texter.get_array_startswith(parser_:get_names(), last_name))
     --         end
     --     end
     --
@@ -2004,7 +1925,7 @@ function M.ParameterParser:_get_completion(data, column)
     end
     vim.list_extend(
         output,
-        _get_matching_position_parameters(stripped_remainder, parser:get_position_parameters(), contexts)
+        matcher.get_matching_position_parameters(stripped_remainder, parser:get_position_parameters(), contexts)
     )
     vim.list_extend(
         output,
@@ -2018,7 +1939,7 @@ function M.ParameterParser:_get_completion(data, column)
     --
     -- if not texter.is_whitespace(last_name) then
     --     for parser_ in _iter_parsers(parser) do
-    --         vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+    --         vim.list_extend(output, get_array_startswith(parser_:get_names(), last_name))
     --     end
     -- end
     --
@@ -2031,7 +1952,7 @@ function M.ParameterParser:_get_completion(data, column)
     -- local parent_parser = parser:get_parent_parser()
     -- if parent_parser and not texter.is_whitespace(last_name) then
     --     for parser_ in _iter_parsers(parent_parser) do
-    --         vim.list_extend(output, _get_array_startswith(parser_:get_names(), last_name))
+    --         vim.list_extend(output, texter.get_array_startswith(parser_:get_names(), last_name))
     --     end
     -- end
     --
@@ -2048,7 +1969,7 @@ function M.ParameterParser:_get_completion(data, column)
     -- --     -- TODO: There's a bug here. We may not be able to assume the last argument like this
     -- --     local last = stripped.arguments[#stripped.arguments]
     -- --     local last_name = _get_argument_name(last)
-    -- --     output = _get_matching_position_parameters(last_name, parser)
+    -- --     output = matcher.get_matching_position_parameters(last_name, parser)
     -- --     output = vim.fn.sort(output)
     -- --
     -- --     return output
@@ -2056,7 +1977,7 @@ function M.ParameterParser:_get_completion(data, column)
     -- --
     -- -- vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names(parser, remainder)))
     -- --
-    -- -- for parameter in tabler.chain(_sort_parameters(parser._flag_parameters)) do
+    -- -- for parameter in tabler.chain(iterator_helper.sort_parameters(parser._flag_parameters)) do
     -- --     table.insert(output, parameter:get_raw_name())
     -- -- end
     --
@@ -2127,7 +2048,7 @@ function M.ParameterParser:_get_usage_summary(parser)
         table.insert(output, help_message.get_position_usage_help_text(position))
     end
 
-    for _, flag in ipairs(_sort_parameters(parser:get_flag_parameters({ hide_implicits = true }))) do
+    for _, flag in ipairs(iterator_helper.sort_parameters(parser:get_flag_parameters({ hide_implicits = true }))) do
         table.insert(output, help_message.get_flag_help_text(flag))
     end
 
@@ -2137,7 +2058,7 @@ function M.ParameterParser:_get_usage_summary(parser)
         table.insert(output, string.format("{%s}", vim.fn.join(vim.fn.sort(parser_names), ",")))
     end
 
-    for _, flag in ipairs(_sort_parameters(parser:get_implicit_flag_parameters())) do
+    for _, flag in ipairs(iterator_helper.sort_parameters(parser:get_implicit_flag_parameters())) do
         table.insert(output, string.format("[%s]", flag:get_raw_name()))
     end
 
@@ -3014,7 +2935,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
     -- --     if
     -- --         not parameter:is_exhausted()
     -- --         and not vim.tbl_isempty(
-    -- --             _get_array_startswith(_get_recommended_position_names(parameter), argument_name)
+    -- --             texter.get_array_startswith(_get_recommended_position_names(parameter), argument_name)
     -- --         )
     -- --     then
     -- --         -- TODO: Handle this scenario. Need to do nargs checks and stuff
@@ -3026,7 +2947,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
     -- -- for _, parameter in ipairs(current_parser:get_flag_parameters()) do
     -- --     if
     -- --         not parameter:is_exhausted()
-    -- --         and not vim.tbl_isempty(_get_array_startswith(parameter.names, argument_name))
+    -- --         and not vim.tbl_isempty(texter.get_array_startswith(parameter.names, argument_name))
     -- --     then
     -- --         -- TODO: Handle this scenario. Need to do nargs checks and stuff
     -- --         parameter:increment_used()

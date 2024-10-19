@@ -5,6 +5,9 @@
 
 local M = {}
 
+local _FULL_HELP_FLAG = "--help"
+local _SHORT_HELP_FLAG = "-h"
+
 --- Find all direct-children parsers of `parser`.
 ---
 --- Note:
@@ -62,6 +65,29 @@ function M.iter_parsers(parser, inclusive)
 
         return result
     end
+end
+
+--- Re-order `parameters` alphabetically but put the `--help` flag at the end.
+---
+---@param parameters cmdparse.Parameter[] All position / flag / named parameters.
+---@return cmdparse.Parameter[] # The sorted entries.
+---
+function M.sort_parameters(parameters)
+    local output = vim.deepcopy(parameters)
+
+    table.sort(output, function(left, right)
+        if vim.tbl_contains(left.names, _FULL_HELP_FLAG) or vim.tbl_contains(left.names, _SHORT_HELP_FLAG) then
+            return false
+        end
+
+        if vim.tbl_contains(right.names, _FULL_HELP_FLAG) or vim.tbl_contains(right.names, _SHORT_HELP_FLAG) then
+            return true
+        end
+
+        return left.names[1] < right.names[1]
+    end)
+
+    return output
 end
 
 return M

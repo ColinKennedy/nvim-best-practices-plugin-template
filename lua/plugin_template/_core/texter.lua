@@ -55,6 +55,24 @@ function M.is_whitespace(character)
     return character == "" or character:match("%s+")
 end
 
+--- Check all elements in `values` for `prefix` text.
+---
+---@param values string[] All values to check. e.g. `{"foo", "bar"}`.
+---@param prefix string The prefix text to search for.
+---@return string[] # All found values, if any.
+---
+function M.get_array_startswith(values, prefix)
+    local output = {}
+
+    for _, value in ipairs(values) do
+        if vim.startswith(value, prefix) then
+            table.insert(output, value)
+        end
+    end
+
+    return output
+end
+
 --- Add indentation to `text.
 ---
 ---@param text string Some phrase to indent one level. e.g. `"foo"`.
