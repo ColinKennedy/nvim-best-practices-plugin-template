@@ -2317,14 +2317,31 @@ end
 ---    The number of `arguments` that match `position`'s requirements.
 ---
 local function _get_used_position_arguments_count(position, arguments)
+
+    local function _error(index, nargs)
+        local template = 'Parameter "%s" requires "%s" values. Got "%s"'
+
+        if index < 2 then
+            template = template .. " value."
+        else
+            template = template .. " values."
+        end
+
+        error(string.format(template, position.names[1], nargs, index), 0)
+    end
+
     local nargs = position:get_nargs()
 
     if type(nargs) == "number" then
-        local template = 'Parameter "%s" requires "%s" values. Got "%s" values.'
-
         for index = 1, nargs do
-            if arguments[index].argument_type ~= argparse.ArgumentType.position then
-                error(string.format(template, position.names[1], nargs, index), 0)
+            local argument = arguments[index]
+
+            if not argument then
+                _error(index - 1, nargs)
+            end
+
+            if argument.argument_type ~= argparse.ArgumentType.position then
+                _error(index, nargs)
             end
         end
 
