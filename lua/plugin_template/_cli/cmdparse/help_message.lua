@@ -7,6 +7,41 @@ local M = {}
 -- TODO: docstring
 -- TODO: Cleanup
 
+--- Get all option flag / named parameter --help text from `parser`.
+---
+---@param parser cmdparse.ParameterParser Some runnable command to get parameters from.
+---@return string[] # The labels of all of the flags.
+---
+function M.get_parser_flag_help_text(parser)
+    local output = {}
+
+    for _, flag in ipairs(iterator_helper.sort_parameters(parser:get_flag_parameters())) do
+        local names = vim.fn.join(flag.names, " ")
+        local text = names
+
+        -- TODO: If this function continues to work, consider renaming
+        -- `get_position_usage_help_text` to something more generic.
+        --
+        local hint = M.get_position_usage_help_text(flag)
+
+        if hint and hint ~= "" then
+            text = text .. " " .. hint
+        end
+
+        if flag.help then
+            text = text .. "    " .. flag.help
+        end
+
+        table.insert(output, texter.indent(text))
+    end
+
+    if not vim.tbl_isempty(output) then
+        table.insert(output, 1, "Options:")
+    end
+
+    return output
+end
+
 -- --- Get a friendly label for `position`. Used for `--help` flags.
 -- ---
 -- --- If `position` has expected choices, those choices are returned instead.
@@ -71,6 +106,7 @@ local M = {}
 --     return ""
 -- end
 
+-- TODO: Docstring
 local function _get_recommended_value_hint_name(text)
     local found
 

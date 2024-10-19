@@ -259,73 +259,6 @@ local function _is_incomplete_named_argument(argument)
     return argument.argument_type == argparse.ArgumentType.named and argument.value == false
 end
 
---- Check if `parameter` is expected to have exactly one value.
----
----@param parameter cmdparse.Parameter
----    A parser parameter that may expect 0-or-more values.
----@param arguments argparse.Argument
----    User inputs to check.
----@return boolean
----    If `parameter` needs exactly one value, return `true`.
----
-local function _is_single_nargs_and_named_parameter(parameter, arguments)
-    if parameter:get_nargs() ~= 1 then
-        return false
-    end
-
-    local argument = arguments[1]
-
-    if not argument then
-        return false
-    end
-
-    if argument.argument_type ~= argparse.ArgumentType.named then
-        return false
-    end
-
-    return vim.tbl_contains(parameter.names, argument.name)
-end
-
---- Check if `arguments` is valid data for `parameter`.
----
----@param parameter cmdparse.Parameter
----    A parser parameter that may expect 0-or-more values.
----@param arguments argparse.Argument
----    User inputs to check to check against `parameter`.
----@return boolean
----    If `parameter` is satisified by is satisified by `arguments`, return `true`.
----
-local function _has_satisfying_value(parameter, arguments)
-    if _is_single_nargs_and_named_parameter(parameter, arguments) then
-        return true
-    end
-
-    local nargs = parameter:get_nargs()
-
-    if nargs == 0 or nargs == constant.Counter.zero_or_more then
-        -- NOTE: If `parameter` doesn't need any value then it is definitely satisified.
-        return true
-    end
-
-    local count = 0
-
-    for _, argument in ipairs(arguments) do
-        if argument.argument_type ~= argparse.ArgumentType.position then
-            -- NOTE: Flag arguments can only accept non-flag arguments, in general.
-            return false
-        end
-
-        count = count + 1
-
-        if count == nargs or nargs == constant.Counter.one_or_more then
-            return true
-        end
-    end
-
-    -- NOTE: There wasn't enough `arguments` left to satisfy `parameter`.
-    return false
-end
-
 --- Check if `text`.
 ---
 ---@param text string Some text. e.g. `--foo`.
@@ -683,41 +616,6 @@ end
 ---
 local function _lstrip(text)
     return (text:gsub("^%s*", ""))
-end
-
---- Get all option flag / named parameter --help text from `parser`.
----
----@param parser cmdparse.ParameterParser Some runnable command to get parameters from.
----@return string[] # The labels of all of the flags.
----
-local function _get_parser_flag_help_text(parser)
-    local output = {}
-
-    for _, flag in ipairs(iterator_helper.sort_parameters(parser:get_flag_parameters())) do
-        local names = vim.fn.join(flag.names, " ")
-        local text = names
-
-        -- TODO: If this function continues to work, consider renaming
-        -- `get_position_usage_help_text` to something more generic.
-        --
-        local hint = help_message.get_position_usage_help_text(flag)
-
-        if hint and hint ~= "" then
-            text = text .. " " .. hint
-        end
-
-        if flag.help then
-            text = text .. "    " .. flag.help
-        end
-
-        table.insert(output, texter.indent(text))
-    end
-
-    if not vim.tbl_isempty(output) then
-        table.insert(output, 1, "Options:")
-    end
-
-    return output
 end
 
 --- Get all position argument --help text from `parser`.
@@ -3092,7 +2990,7 @@ function M.ParameterParser:get_full_help(data)
     local summary, parser = self:_get_argument_usage_summary(data)
 
     local position_text = _get_parser_position_help_text(parser)
-    local flag_text = _get_parser_flag_help_text(parser)
+    local flag_text = help_message.get_parser_flag_help_text(parser)
     local child_parser_text = help_message.get_parser_child_parser_help_text(parser)
 
     local output = { summary }
