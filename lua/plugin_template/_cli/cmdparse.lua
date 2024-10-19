@@ -1985,7 +1985,9 @@ function M.ParameterParser:_get_completion(data, column)
 
     -- TODO: Add better sorting of the output here
     -- TODO: Only show subparser names if requireds are all exhausted
-    vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names("", parser)))
+    if parser:is_satisfied() then
+        vim.list_extend(output, vim.fn.sort(_get_matching_subparser_names("", parser)))
+    end
     vim.list_extend(
         output,
         _get_matching_position_parameters(stripped_remainder, parser:get_position_parameters(), contexts)
