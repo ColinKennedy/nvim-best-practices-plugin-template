@@ -225,6 +225,35 @@ M.Subparsers.__index = M.Subparsers
 --     return output
 -- end
 
+--- Find all child parsers, recursively.
+---
+--- Note:
+---     This function is **inclusive**, meaning `parser` will be returned.
+---
+---@param parser cmdparse.ParameterParser The starting point to look for parsers.
+---@return cmdparse.ParameterParser[] # All found `parser` + child parsers.
+---
+local function _get_all_parsers(parser)
+    local stack = { parser }
+    local output = {}
+
+    while #stack > 0 do
+        local current = table.remove(stack)
+
+        if not current then
+            break
+        end
+
+        table.insert(output, current)
+
+        for _, subparsers in ipairs(current._subparsers) do
+            vim.list_extend(stack, subparsers:get_parsers())
+        end
+    end
+
+    return output
+end
+
 --- Find all child parser names under `parser`.
 ---
 ---@param parser cmdparse.ParameterParser The starting point to look for child parsers.
@@ -301,35 +330,6 @@ local function _get_named_argument_completion_choices(parameter, argument, conte
         }))
     do
         table.insert(output, string.format("%s=%s", prefix, choice))
-    end
-
-    return output
-end
-
---- Find all child parsers, recursively.
----
---- Note:
----     This function is **inclusive**, meaning `parser` will be returned.
----
----@param parser cmdparse.ParameterParser The starting point to look for parsers.
----@return cmdparse.ParameterParser[] # All found `parser` + child parsers.
----
-local function _get_all_parsers(parser)
-    local stack = { parser }
-    local output = {}
-
-    while #stack > 0 do
-        local current = table.remove(stack)
-
-        if not current then
-            break
-        end
-
-        table.insert(output, current)
-
-        for _, subparsers in ipairs(current._subparsers) do
-            vim.list_extend(stack, subparsers:get_parsers())
-        end
     end
 
     return output
@@ -451,15 +451,6 @@ end
 --     return output
 -- end
 
---- Strip argument name of any flag / prefix text. e.g. `"--foo"` becomes `"foo"`.
----
----@param text string Some raw argument name. e.g. `"--foo"`.
----@return string # The (clean) argument mame. e.g. `"foo"`.
----
-local function _get_nice_name(text)
-    return text:match("%W*(%w+)")
-end
-
 --- Remove leading (left) whitespace `text`, if there is any.
 ---
 ---@param text string Some text e.g. `" -- "`.
@@ -571,67 +562,6 @@ local function _expand_type_options(options)
     else
         error(string.format('Type "%s" is unknown. We can\'t parse it.', _concise_inspect(options)), 0)
     end
-end
-
---- Add / modify `options.choices` as needed.
----
---- Basically if `options.choices` is not defined, that's fine. If it is
---- a `string` or `string[]`, handle that. If it's a function, assume the user
---- knows what they're doing and include it.
----
----@param options cmdparse.ParameterInputOptions
----    | cmdparse.ParameterOptions
----    | cmdparse.ParameterParserOptions
----    | cmdparse.ParameterParserInputOptions
----    The user-written options. (sparse or not).
----
-local function _expand_choices_options(options)
-    if not options.choices then
-        return
-    end
-
-    local input = options.choices
-    local choices
-
-    -- TODO: Add unittests for these. Make sur ethat the user's text is
-    -- passed as an import to these functions
-    --
-    if type(options.choices) == "string" then
-        choices = function()
-            return { input }
-        end
-    elseif texter.is_string_list(input) then
-        ---@cast input string[]
-        choices = function(data)
-            ---@cast data cmdparse.ChoiceData
-
-            if not data or not data.current_value then
-                return input
-            end
-
-            local value = data.current_value
-            ---@cast value string | string[]
-
-            if vim.tbl_contains(data.contexts, constant.ChoiceContext.auto_completing) then
-                ---@cast value string
-                return texter.get_array_startswith(input, value)
-            end
-
-            return input
-        end
-    elseif type(options.choices) == "function" then
-        choices = input
-    else
-        error(
-            string.format( -- NOTE: choices has to be a known format.
-                'Got invalid "%s" choices. Expected a string[] or a function.',
-                _concise_inspect(options.choices)
-            ),
-            0
-        )
-    end
-
-    options.choices = choices
 end
 
 --- Add `items` to `table_` if it is not empty.
@@ -846,7 +776,7 @@ function M.Parameter.new(options)
     self.default = options.default
     self.names = options.names
     self.help = options.help
-    self.destination = _get_nice_name(options.destination or options.names[1])
+    self.destination = text_parse.get_nice_name(options.destination or options.names[1])
     self:set_action(options.action)
     self.required = options.required
     self.value_hint = options.value_hint
@@ -894,7 +824,7 @@ end
 
 ---@return string # The (clean) argument mame. e.g. `"--foo"` becomes `"foo"`.
 function M.Parameter:get_nice_name()
-    return _get_nice_name(self.destination or self.names[1])
+    return text_parse.get_nice_name(self.destination or self.names[1])
 end
 
 ---@return string # The (raw) argument mame. e.g. `"--foo"`.
@@ -1013,7 +943,7 @@ function M.ParameterParser.new(options)
         types_input.validate_name(options)
     end
 
-    _expand_choices_options(options)
+    types_input.expand_choices_options(options)
     --- @cast options cmdparse.ParameterParserOptions
 
     --- @class cmdparse.ParameterParser
@@ -1053,44 +983,6 @@ function M.ParameterParser:_add_help_parameter()
     --
     table.remove(self._flag_parameters)
     table.insert(self._implicit_flag_parameters, parameter)
-end
-
---- Find the child parser that matches `name`.
----
----@param name string The name of a child parser within `parser`.
----@param parser cmdparse.ParameterParser The parent parser to search within.
----@return cmdparse.ParameterParser? # The matching child parser, if any.
----
-local function _get_exact_subparser_child(name, parser)
-    for child_parser in iterator_helper.iter_parsers(parser) do
-        if vim.tbl_contains(child_parser:get_names(), name) then
-            return child_parser
-        end
-    end
-
-    return nil
-end
-
---- Find + increment the parameter(s) of `parser` that match the other inputs.
----
----@param parser cmdparse.ParameterParser
----    A parser whose parameters may be modified.
----@param argument_name string
----    The expected flag argument name.
----@param arguments argparse.Argument
----    All of the upcoming argumenst after `argument_name`. We use these to figure out
----    if `parser` is an exact match.
----@return boolean
----    If `true` a flag argument was matched and incremented.
----
-local function _compute_and_increment_parameter(parser, argument_name, arguments)
-    local found = evaluator.compute_exact_flag_match(parser, argument_name, arguments)
-
-    if found then
-        return found
-    end
-
-    return evaluator.compute_exact_position_match(argument_name, parser)
 end
 
 -- TODO: Remove?
@@ -1368,7 +1260,7 @@ function M.ParameterParser:_get_completion(data, column)
     --     return {}
     -- end
 
-    local child_parser = _get_exact_subparser_child(last_name, parser)
+    local child_parser = matcher.get_exact_subparser_child(last_name, parser)
 
     if child_parser then
         -- NOTE: The last, parsed argument is a subparser. So we use it
@@ -1381,9 +1273,10 @@ function M.ParameterParser:_get_completion(data, column)
         local next_index = index + 1
         local argument_name = text_parse.get_argument_name(stripped.arguments[next_index])
 
-        _compute_and_increment_parameter(parser, argument_name, tabler.get_slice(stripped.arguments, next_index))
+        evaluator.compute_and_increment_parameter(parser, argument_name, tabler.get_slice(stripped.arguments, next_index))
 
-        -- local found = _compute_and_increment_parameter(...
+        --     -- TODO: Need to handle this case. Not sure how. Error?
+        -- local found = evaluator.compute_and_increment_parameter(parser, argument_name, tabler.get_slice(stripped.arguments, next_index))
         -- if not found then
         --     -- TODO: Need to handle this case. Not sure how. Error?
         -- end
@@ -2372,58 +2265,6 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
     -- return output
 end
 
---- Tell the user how to solve the unparseable `argument`
----
---- Raises:
----     All issue(s) found, assuming 1+ issue was found.
----
----@param argument argparse.Argument
----    Some position / flag that we don't know what to do with.
----
-function M.ParameterParser:_raise_suggested_positional_argument_fix(argument)
-    local names = {}
-
-    for _, parameter in ipairs(self:get_all_parameters()) do
-        if parameter.required and not parameter:is_exhausted() then
-            table.insert(names, parameter.names[1])
-        end
-    end
-
-    for _, subparser in ipairs(self._subparsers) do
-        if not subparser.visited then
-            for _, parser in ipairs(subparser:get_parsers()) do
-                for _, name in ipairs(parser:get_names()) do
-                    if not vim.tbl_contains(names, name) then
-                        table.insert(names, name)
-                    end
-                end
-            end
-        end
-    end
-
-    if vim.tbl_isempty(names) then
-        return
-    end
-
-    if #names == 1 then
-        local message = string.format(
-            'Got unexpected "%s" value. Did you mean one of this incomplete parameter? %s',
-            argument.name or argument.value,
-            vim.fn.join(names, "\n")
-        )
-
-        error(message, 0)
-    end
-
-    local message = string.format(
-        'Got unexpected "%s" value. Did you mean one of these incomplete parameters?\n%s',
-        argument.name or argument.value,
-        vim.fn.join(names, "\n")
-    )
-
-    error(message, 0)
-end
-
 --- Parse user text `data`.
 ---
 ---@param data string | argparse.Results
@@ -2544,6 +2385,58 @@ function M.ParameterParser:_parse_arguments(data, namespace)
     end
 
     return namespace
+end
+
+--- Tell the user how to solve the unparseable `argument`
+---
+--- Raises:
+---     All issue(s) found, assuming 1+ issue was found.
+---
+---@param argument argparse.Argument
+---    Some position / flag that we don't know what to do with.
+---
+function M.ParameterParser:_raise_suggested_positional_argument_fix(argument)
+    local names = {}
+
+    for _, parameter in ipairs(self:get_all_parameters()) do
+        if parameter.required and not parameter:is_exhausted() then
+            table.insert(names, parameter.names[1])
+        end
+    end
+
+    for _, subparser in ipairs(self._subparsers) do
+        if not subparser.visited then
+            for _, parser in ipairs(subparser:get_parsers()) do
+                for _, name in ipairs(parser:get_names()) do
+                    if not vim.tbl_contains(names, name) then
+                        table.insert(names, name)
+                    end
+                end
+            end
+        end
+    end
+
+    if vim.tbl_isempty(names) then
+        return
+    end
+
+    if #names == 1 then
+        local message = string.format(
+            'Got unexpected "%s" value. Did you mean one of this incomplete parameter? %s',
+            argument.name or argument.value,
+            vim.fn.join(names, "\n")
+        )
+
+        error(message, 0)
+    end
+
+    local message = string.format(
+        'Got unexpected "%s" value. Did you mean one of these incomplete parameters?\n%s',
+        argument.name or argument.value,
+        vim.fn.join(names, "\n")
+    )
+
+    error(message, 0)
 end
 
 --- (Assuming parameter counts were modified by any function) Reset counts back to zero.

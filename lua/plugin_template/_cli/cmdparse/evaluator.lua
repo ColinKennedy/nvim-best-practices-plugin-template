@@ -116,7 +116,7 @@ end
 ---@return boolean
 ---    If `true` a flag argument was matched and incremented.
 ---
-function M.compute_exact_flag_match(parser, argument_name, arguments)
+function _Private.compute_exact_flag_match(parser, argument_name, arguments)
     for _, parameter in ipairs(parser:get_flag_parameters()) do
         if
             not parameter:is_exhausted()
@@ -142,7 +142,7 @@ end
 ---@return boolean
 ---    If `true` a position argument was matched and incremented.
 ---
-function M.compute_exact_position_match(argument_name, parser)
+function _Private.compute_exact_position_match(argument_name, parser)
     for _, parameter in ipairs(parser:get_position_parameters()) do
         if not parameter:is_exhausted() then
             if _has_position_parameter_match(argument_name, parameter) then
@@ -157,6 +157,28 @@ function M.compute_exact_position_match(argument_name, parser)
     end
 
     return false
+end
+
+--- Find + increment the parameter(s) of `parser` that match the other inputs.
+---
+---@param parser cmdparse.ParameterParser
+---    A parser whose parameters may be modified.
+---@param argument_name string
+---    The expected flag argument name.
+---@param arguments argparse.Argument
+---    All of the upcoming argumenst after `argument_name`. We use these to figure out
+---    if `parser` is an exact match.
+---@return boolean
+---    If `true` a flag argument was matched and incremented.
+---
+function M.compute_and_increment_parameter(parser, argument_name, arguments)
+    local found = _Private.compute_exact_flag_match(parser, argument_name, arguments)
+
+    if found then
+        return found
+    end
+
+    return _Private.compute_exact_position_match(argument_name, parser)
 end
 
 return M

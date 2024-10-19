@@ -138,6 +138,22 @@ local function _get_single_choices_text(parameter, value, contexts)
     return output
 end
 
+--- Find the child parser that matches `name`.
+---
+---@param name string The name of a child parser within `parser`.
+---@param parser cmdparse.ParameterParser The parent parser to search within.
+---@return cmdparse.ParameterParser? # The matching child parser, if any.
+---
+function M.get_exact_subparser_child(name, parser)
+    for child_parser in iterator_helper.iter_parsers(parser) do
+        if vim.tbl_contains(child_parser:get_names(), name) then
+            return child_parser
+        end
+    end
+
+    return nil
+end
+
 --- Check all `flags` that match `prefix` and `value`.
 ---
 ---@param prefix string
