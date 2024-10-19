@@ -1,4 +1,7 @@
--- TODO: Docstring
+--- Parse and evaluate parameters, using CLI arguments.
+---
+---@module 'plugin_template._cli.cmdparse.evaluator'
+---
 
 local argparse = require("plugin_template._cli.argparse")
 local constant = require("plugin_template._cli.cmdparse.constant")
