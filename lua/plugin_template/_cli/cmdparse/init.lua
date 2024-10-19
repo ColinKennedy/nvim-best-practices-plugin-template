@@ -8,6 +8,7 @@
 local argparse = require("plugin_template._cli.argparse")
 local argparse_helper = require("plugin_template._cli.argparse_helper")
 local constant = require("plugin_template._cli.cmdparse.constant")
+local evaluator = require("plugin_template._cli.cmdparse.evaluator")
 local help_message = require("plugin_template._cli.cmdparse.help_message")
 local iterator_helper = require("plugin_template._cli.cmdparse.iterator_helper")
 local matcher = require("plugin_template._cli.cmdparse.matcher")
@@ -365,61 +366,6 @@ end
 ---
 local function _get_argument_name(argument)
     return argument.name or argument.value
-end
-
---- Find + increment all flag parameters of `parser` that match the other inputs.
----
----@param parser cmdparse.ParameterParser
----    A parser whose parameters may be modified.
----@param argument_name string
----    The expected flag argument name.
----@param arguments argparse.Argument
----    All of the upcoming argumenst after `argument_name`. We use these to figure out
----    if `parser` is an exact match.
----@return boolean
----    If `true` a flag argument was matched and incremented.
----
-local function _compute_exact_flag_match(parser, argument_name, arguments)
-    for _, parameter in ipairs(parser:get_flag_parameters()) do
-        if
-            not parameter:is_exhausted()
-            and vim.tbl_contains(parameter.names, argument_name)
-            and _has_satisfying_value(parameter, arguments)
-        then
-            parameter:increment_used()
-
-            return true
-        end
-    end
-
-    return false
-end
-
---- Find + increment all position parameters of `parser` that match the other inputs.
----
----@param parser cmdparse.ParameterParser
----    A parser whose parameters may be modified.
----@param argument_name string
----    The expected position argument name. Most of the time position arguments
----    don't even have an expected name so this value is not always used.
----@return boolean
----    If `true` a position argument was matched and incremented.
----
-local function _compute_exact_position_match(argument_name, parser)
-    for _, parameter in ipairs(parser:get_position_parameters()) do
-        if not parameter:is_exhausted() then
-            if _has_position_parameter_match(argument_name, parameter) then
-                -- TODO: Handle this scenario. Need to do nargs checks and stuff
-                parameter:increment_used()
-
-                return true
-            end
-
-            return false
-        end
-    end
-
-    return false
 end
 
 --- Remove whitespace from `text` but only if `text` is 100% whitespace.
@@ -1570,13 +1516,13 @@ end
 ---    If `true` a flag argument was matched and incremented.
 ---
 local function _compute_and_increment_parameter(parser, argument_name, arguments)
-    local found = _compute_exact_flag_match(parser, argument_name, arguments)
+    local found = evaluator.compute_exact_flag_match(parser, argument_name, arguments)
 
     if found then
         return found
     end
 
-    return _compute_exact_position_match(argument_name, parser)
+    return evaluator.compute_exact_position_match(argument_name, parser)
 end
 
 -- TODO: Remove?
@@ -2954,11 +2900,11 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
     -- --     end
     -- -- end
     --
-    -- if _compute_exact_flag_match(current_parser, argument_name, {}) then
+    -- if evaluator.compute_exact_flag_match(current_parser, argument_name, {}) then
     --     return output
     -- end
     --
-    -- if _compute_exact_position_match(current_parser, argument_name) then
+    -- if evaluator.compute_exact_position_match(current_parser, argument_name) then
     --     return output
     -- end
     --
