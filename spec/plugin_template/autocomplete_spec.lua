@@ -613,60 +613,60 @@ describe("nargs", function()
     describe("flag", function()
         it("works with nargs 1", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
-            parser:add_parameter({ "--items", choices={"barty", "bar", "foo"}, nargs = 1, help = "Test." })
+            parser:add_parameter({ "--items", choices = { "barty", "bar", "foo" }, nargs = 1, help = "Test." })
 
-            assert.same({"barty", "bar"}, parser:get_completion("--items b"))
+            assert.same({ "barty", "bar" }, parser:get_completion("--items b"))
         end)
 
         it("works with nargs 2+", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
-            parser:add_parameter({ "--items", choices={"barty", "bar", "foo"}, nargs = 2, help = "Test." })
+            parser:add_parameter({ "--items", choices = { "barty", "bar", "foo" }, nargs = 2, help = "Test." })
 
-            assert.same({"foo"}, parser:get_completion("--items bar f"))
+            assert.same({ "foo" }, parser:get_completion("--items bar f"))
         end)
 
         it("works with nargs *", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
-            parser:add_parameter({ "--items", choices={"barty", "bar", "foo"}, nargs = "*", help = "Test." })
+            parser:add_parameter({ "--items", choices = { "barty", "bar", "foo" }, nargs = "*", help = "Test." })
 
-            assert.same({"foo"}, parser:get_completion("--items bar f"))
+            assert.same({ "foo" }, parser:get_completion("--items bar f"))
         end)
 
         it("works with nargs +", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
-            parser:add_parameter({ "--items", choices={"barty", "bar", "foo"}, nargs = "+", help = "Test." })
+            parser:add_parameter({ "--items", choices = { "barty", "bar", "foo" }, nargs = "+", help = "Test." })
 
-            assert.same({"foo"}, parser:get_completion("--items bar f"))
+            assert.same({ "foo" }, parser:get_completion("--items bar f"))
         end)
     end)
 
     describe("position", function()
         it("works with nargs 1", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
-            parser:add_parameter({ "items", choices={"barty", "bar", "foo"}, nargs = 1, help = "Test." })
+            parser:add_parameter({ "items", choices = { "barty", "bar", "foo" }, nargs = 1, help = "Test." })
 
-            assert.same({"barty", "bar"}, parser:get_completion("b"))
+            assert.same({ "barty", "bar" }, parser:get_completion("b"))
         end)
 
         it("works with nargs 2+", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
-            parser:add_parameter({ "items", choices={"barty", "bar", "foo"}, nargs = 2, help = "Test." })
+            parser:add_parameter({ "items", choices = { "barty", "bar", "foo" }, nargs = 2, help = "Test." })
 
-            assert.same({"foo"}, parser:get_completion("bar f"))
+            assert.same({ "foo" }, parser:get_completion("bar f"))
         end)
 
         it("works with nargs *", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
-            parser:add_parameter({ "items", choices={"barty", "bar", "foo"}, nargs = "*", help = "Test." })
+            parser:add_parameter({ "items", choices = { "barty", "bar", "foo" }, nargs = "*", help = "Test." })
 
-            assert.same({"foo"}, parser:get_completion("bar f"))
+            assert.same({ "foo" }, parser:get_completion("bar f"))
         end)
 
         it("works with nargs +", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
-            parser:add_parameter({ "items", choices={"barty", "bar", "foo"}, nargs = "+", help = "Test." })
+            parser:add_parameter({ "items", choices = { "barty", "bar", "foo" }, nargs = "+", help = "Parameter test." })
 
-            assert.same({"foo"}, parser:get_completion("bar f"))
+            assert.same({ "foo" }, parser:get_completion("bar f"))
         end)
     end)
 
@@ -675,12 +675,12 @@ describe("nargs", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
             parser:add_parameter({ "--items", nargs = 2, help = "Test." })
 
-            assert.same({"--items"}, parser:get_completion("--ite"))
+            assert.same({ "--items" }, parser:get_completion("--ite"))
 
             local parser2 = cmdparse.ParameterParser.new({ help = "Test." })
             parser2:add_parameter({ "--items", nargs = 1, help = "Test." })
 
-            assert.same({"--items="}, parser2:get_completion("--ite"))
+            assert.same({ "--items=" }, parser2:get_completion("--ite"))
         end)
     end)
 end)
