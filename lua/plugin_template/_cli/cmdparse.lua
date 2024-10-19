@@ -763,16 +763,6 @@ end
 local function _get_exact_or_partial_matches(parameter, argument, parser, contexts)
     local output = {}
 
-    local nargs = parameter:get_nargs()
-
-    if nargs == cmdparse_constant.Counter.zero_or_more or nargs == cmdparse_constant.Counter.one_or_more then
-        local prefix = _get_argument_value_text(argument)
-
-        if parameter.choices then
-            return parameter.choices({ current_value = prefix, contexts = contexts })
-        end
-    end
-
     local prefix = _get_argument_value_text(argument)
 
     if parameter.choices then
