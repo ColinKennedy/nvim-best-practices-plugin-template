@@ -136,6 +136,8 @@ local types_input = require("plugin_template._cli.cmdparse.types_input")
 ---@field [1] string?
 ---    A shorthand for the subparser name.
 
+local vlog = require("plugin_template._vendors.vlog")
+
 local M = {}
 local _Private = {}
 
@@ -1271,7 +1273,11 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
                 end
             end
 
-            -- TODO: Add log. This section shouldn't possibly run
+            -- NOTE: This code shouldn't be possible because conditions above
+            -- should have covered all cases.
+            --
+            vlog.error('Unexpected code path found. This is probably a bug. Fix!')
+
             local arguments_ = tabler.get_slice(arguments, 1, nargs + 1)
 
             return _get_position_argument_values(arguments_)
