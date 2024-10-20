@@ -205,6 +205,10 @@ end
 ---    All data to check.
 ---
 function M.validate_parameter_options(options)
+    if text_parse.is_position_name(options.names[1]) and options.nargs == 0 then
+        error(string.format('Parameter "%s" cannot be nargs=0.', options.names[1]), 0)
+    end
+
     if vim.tbl_contains(_FLAG_ACTIONS, options.action) then
         if options.choices ~= nil then
             error(

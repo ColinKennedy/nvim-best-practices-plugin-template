@@ -20,13 +20,14 @@ local _SHORT_HELP_FLAG = "-h"
 ---
 function M.iter_parsers(parser)
     local subparsers_index = 1
-    local subparsers = parser._subparsers[subparsers_index]
+    local all_subparsers = parser:get_subparsers()
+    local current_subparsers = all_subparsers[subparsers_index]
 
     local parser_index = 1
     local parsers = {}
 
-    if subparsers then
-        parsers = subparsers:get_parsers()
+    if current_subparsers then
+        parsers = current_subparsers:get_parsers()
     end
 
     local parser_count = #parsers
@@ -36,7 +37,7 @@ function M.iter_parsers(parser)
             -- NOTE: Get the next subparsers.
             parser_index = 1
             subparsers_index = subparsers_index + 1
-            parsers = parser._subparsers[subparsers_index]
+            parsers = all_subparsers[subparsers_index]
 
             if not parsers then
                 -- NOTE: We reached the end.

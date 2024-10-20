@@ -18,6 +18,17 @@ describe("bad input", function()
             assert.equal('Parameter "--foo" cannot use action "store_true" and choices at the same time.', result)
         end)
 
+        it("errors if you define a nargs=0 + position argument", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+
+            local success, result = pcall(function()
+                parser:add_parameter({ "foo", nargs = 0, help = "Test." })
+            end)
+
+            assert.is_false(success)
+            assert.equal('Parameter "foo" cannot be nargs=0.', result)
+        end)
+
         it("errors if you define a nargs + flag argument", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test" })
 

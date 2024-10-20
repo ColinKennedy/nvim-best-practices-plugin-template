@@ -250,8 +250,8 @@ end
 function M.get_position_usage_help_text(position)
     local text = _Private.get_parameter_usage_help_text(position)
 
-    if type(position._count) == "string" then
-        text = text .. position._count
+    if type(position.count) == "string" then
+        text = text .. position.count
     end
 
     return text

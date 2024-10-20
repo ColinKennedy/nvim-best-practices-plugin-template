@@ -162,7 +162,7 @@ M.Parameter = {
             vim.inspect(parameter._action),
             vim.inspect(parameter._nargs),
             vim.inspect(parameter.choices),
-            vim.inspect(parameter._count),
+            vim.inspect(parameter.count),
             parameter.required,
             vim.inspect(parameter._used)
         )
@@ -243,7 +243,7 @@ local function _get_all_parsers(parser)
 
         table.insert(output, current)
 
-        for _, subparsers in ipairs(current._subparsers) do
+        for _, subparsers in ipairs(current:get_subparsers()) do
             vim.list_extend(stack, subparsers:get_parsers())
         end
     end
@@ -547,11 +547,11 @@ function M.Parameter.new(options)
     local self = setmetatable({}, M.Parameter)
 
     self._action = nil
-    self._count = options.count or 1
     self._nargs = options.nargs or 1
     self._type = options.type
     self._used = 0
     self.choices = options.choices
+    self.count = options.count or 1
     self.default = options.default
     self.names = options.names
     self.help = options.help
@@ -566,16 +566,16 @@ end
 
 ---@return boolean # Check if this parameter expects a fixed number of uses.
 function M.Parameter:has_numeric_count()
-    return type(self._count) == "number"
+    return type(self.count) == "number"
 end
 
 ---@return boolean # Check if this instance cannot be used anymore.
 function M.Parameter:is_exhausted()
-    if self._count == constant.Counter.zero_or_more then
+    if self.count == constant.Counter.zero_or_more then
         return false
     end
 
-    return self._used >= self._count
+    return self._used >= self.count
 end
 
 ---@return boolean # If this instance is a flag like `--foo` or `--foo=bar`, return `false`.
@@ -798,7 +798,7 @@ function M.ParameterParser:_get_issues()
                         'Parameter "%s" used "%s" times but must be used "%s" times.',
                         parameter.names[1],
                         parameter._used,
-                        parameter._count
+                        parameter.count
                     )
                 end
 
@@ -2058,6 +2058,11 @@ end
 ---@return cmdparse.Parameter[] # Get all arguments that must be put in a specific order.
 function M.ParameterParser:get_position_parameters()
     return self._position_parameters
+end
+
+---@return cmdparse.Subparsers # All immediate parser containers for this instance.
+function M.ParameterParser:get_subparsers()
+    return self._subparsers
 end
 
 --- Create a child parameter so we can use it to parse text later.

@@ -150,7 +150,7 @@ describe("copy logs command", function()
         assert.same({ path }, _DATA)
     end)
 
-    it("runs with default arguments #asdf", function()
+    it("runs with default arguments", function()
         vim.cmd([[PluginTemplate copy-logs]])
         _wait_for_result()
 

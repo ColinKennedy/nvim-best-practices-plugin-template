@@ -1,15 +1,6 @@
 ## Round 1
 - Do TODO notes
 
-- remove private variable accesses
-
-- replace all `_subparsers` with a get_subparsers() method
-
-```
-nargs=0 + position should error
-nargs for store actions must be != 0; if you have nothing to store, actions such as store true or store const may be more approp
-```
-
 - What happens if a user provides a 1-or-more / 0-or-more and then has a flag in the middle?
  - PluginTemplate hello-world say phrase sadfasfasdf asdfsfd --repeat=3 sfdasfdasfddttt
  - should it error ot just append the next position to the previous one
