@@ -7,6 +7,16 @@ local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
+--- Modify the user's system clipboard with `result`.
+---
+---@param result plugin_template.ReadFileResult The file path + its contents that we read.
+---
+local function _callback(result)
+    vim.fn.setreg("+", result.data)
+
+    vim.notify(string.format('Log file "%s" was copied to the clipboard.', result.path), vim.log.levels.INFO)
+end
+
 ---@class plugin_template.ReadFileResult
 ---    A file path + its contents.
 ---@field data string
@@ -19,7 +29,7 @@ local M = {}
 ---@param path string An absolute path to a file on-disk.
 ---@param callback fun(result: plugin_template.ReadFileResult): nil Call this once `path` is read.
 ---
-local function _read_file(path, callback)
+function M._read_file(path, callback)
     -- NOTE: mode 428 == rw-rw-rw-
     vim.uv.fs_open(path, "r", 438, function(error_open, handler)
         assert(not error_open, error_open)
@@ -40,16 +50,6 @@ local function _read_file(path, callback)
     end)
 end
 
---- Modify the user's system clipboard with `result`.
----
----@param result plugin_template.ReadFileResult The file path + its contents that we read.
----
-local function _callback(result)
-    vim.fn.setreg("+", result.data)
-
-    vim.notify(string.format('Log file "%s" was copied to the clipboard.', result.path), vim.log.levels.INFO)
-end
-
 --- Copy the log data from the given `path` to the user's clipboard.
 ---
 ---@param path string?
@@ -65,7 +65,7 @@ function M.run(path)
         return
     end
 
-    local success, _ = pcall(_read_file, path, vim.schedule_wrap(_callback))
+    local success, _ = pcall(M._read_file, path, vim.schedule_wrap(_callback))
 
     if not success then
         vim.notify(string.format('Failed to read "%s" path. Cannot copy the logs.', path), vim.log.levels.ERROR)

@@ -2143,7 +2143,10 @@ function M.ParameterParser:set_execute(caller)
     self._defaults.execute = caller
 end
 
--- TODO: Consider making _parent public.
+--- Re-parent this instance underneath `parser`.
+---
+---@param parser cmdparse.ParameterParser The new parent to set.
+---
 function M.ParameterParser:set_parent(parser)
     self._parent = parser
 end

@@ -11,11 +11,9 @@ local M = {}
 function M.make_parser()
     local parser = cmdparse.ParameterParser.new({ "copy-logs", help = "Get debug logs for PluginTemplate." })
 
-    -- TODO: Make sure this argument works
     parser:add_parameter({
         "log",
         required = false,
-        default = "",
         help = "The path on-disk to look for logs. If no path is given, a fallback log path is used instead.",
     })
 

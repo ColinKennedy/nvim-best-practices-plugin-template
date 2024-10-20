@@ -2,7 +2,6 @@
 
 - Make positional * count as required=false
 - Support position + count
-- Indicate required arguments in help messages using a symbol
 
 - Make sure auto-completion does not spam errors to the user if they give incorrect input
 
