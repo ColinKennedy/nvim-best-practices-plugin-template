@@ -48,17 +48,10 @@ nargs for store actions must be != 0; if you have nothing to store, actions such
 a non-alpha / ' / " as a flag argument. Instead of the current setup which only
 allows for - or +
 
-Typing `-` or `--` doesn't auto-complete to `--repeat`
-
 - Follow up on - https://github.com/jeffzi/llscheck/issues/7#issuecomment-2352981951
-
-- "works with nested parsers where a parent also defines a default" is bugged. Selecting a subparser should immediately get its value(s).
 
 - Remove subcommand-related files
  - Make sure the GitHub wiki + documentation still works
-
-- Add the wiki pages to this repository
- - Make sure the documentation tellsthe user to delete this folder
 
 - Add a configuration option to disable --help / -h from auto-completion
 

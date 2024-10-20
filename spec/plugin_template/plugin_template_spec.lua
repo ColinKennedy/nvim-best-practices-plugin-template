@@ -32,7 +32,7 @@ end
 --- Watch the `copy-logs` API command for function calls.
 local function _initialize_copy_log()
     local function _save_path(path)
-        _DATA = {path}
+        _DATA = { path }
     end
 
     copy_logs_runner._read_file = _save_path
@@ -40,7 +40,7 @@ end
 
 --- Write a log file so we can query its later later.
 local function _make_fake_log(path)
-    local file = io.open(path, "w")  -- Open the file in write mode
+    local file = io.open(path, "w") -- Open the file in write mode
 
     if not file then
         error(string.format('Path "%s" is not writable.', path))
@@ -151,7 +151,7 @@ describe("copy logs command", function()
     end)
 
     it("runs with default arguments #asdf", function()
-        vim.cmd[[PluginTemplate copy-logs]]
+        vim.cmd([[PluginTemplate copy-logs]])
         _wait_for_result()
 
         local expected = vim.fs.joinpath(vim.fn.expand("~"), ".local", "share", "nvim", "plugin_template.log")

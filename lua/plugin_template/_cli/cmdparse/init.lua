@@ -501,8 +501,6 @@ function M.Subparsers.new(options)
     self._parent = options.parent
     self._parsers = {}
 
-    -- TODO: I think we can remove self.destination. Try it
-    self.destination = options.destination
     self.help = options.help
     self.required = options.required or false
 
@@ -576,8 +574,6 @@ function M.Parameter:is_exhausted()
     if self._count == constant.Counter.zero_or_more then
         return false
     end
-
-    -- TODO: Consider 1-or-more here, too
 
     return self._used >= self._count
 end
@@ -1276,7 +1272,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             -- NOTE: This code shouldn't be possible because conditions above
             -- should have covered all cases.
             --
-            vlog.error('Unexpected code path found. This is probably a bug. Fix!')
+            vlog.error("Unexpected code path found. This is probably a bug. Fix!")
 
             local arguments_ = tabler.get_slice(arguments, 1, nargs + 1)
 

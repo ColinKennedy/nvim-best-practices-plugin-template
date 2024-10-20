@@ -103,10 +103,7 @@ function M.get_exact_or_partial_matches(parameter, argument, parser, contexts)
 
     prefix = text_parse.get_argument_name(argument)
     vim.list_extend(output, M.get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
-    vim.list_extend(
-        output,
-        M.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts)
-    )
+    vim.list_extend(output, M.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts))
 
     return output
 end
