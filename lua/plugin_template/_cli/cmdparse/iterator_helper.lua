@@ -15,9 +15,6 @@ local _SHORT_HELP_FLAG = "-h"
 ---
 ---@param parser cmdparse.ParameterParser
 ---    The starting point ot saerch for child parsers.
----@param inclusive boolean?
----    If `true`, `parser` will be the first returned value. If `false` then
----    only the children are returned.
 ---@return fun(): cmdparse.ParameterParser?
 ---    An iterator that find all child parsers.
 ---

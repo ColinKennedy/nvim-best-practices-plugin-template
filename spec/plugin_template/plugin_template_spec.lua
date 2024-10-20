@@ -31,7 +31,7 @@ end
 
 --- Watch the `copy-logs` API command for function calls.
 local function _initialize_copy_log()
-    local function _save_path(path, ...)
+    local function _save_path(path)
         _DATA = {path}
     end
 
@@ -63,13 +63,6 @@ local function _reset_prints()
     _DATA = {}
 end
 
-local function _wait_vim_uv()
-    local command, err = vim.ui.open("$VIMRUNTIME")
-
-    if command then
-        command:wait()
-    end
-end
 --- Wait for our (mocked) unittest variable to get some data back.
 ---
 ---@param timeout number?

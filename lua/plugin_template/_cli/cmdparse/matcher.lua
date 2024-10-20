@@ -98,11 +98,14 @@ function M.get_exact_or_partial_matches(parameter, argument, parser, contexts)
         return parameter.choices({ current_value = prefix, contexts = contexts })
     end
 
+    local value = argument.value or nil
+    ---@cast value string
+
     prefix = text_parse.get_argument_name(argument)
     vim.list_extend(output, M.get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
     vim.list_extend(
         output,
-        M.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), argument.value, contexts)
+        M.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts)
     )
 
     return output

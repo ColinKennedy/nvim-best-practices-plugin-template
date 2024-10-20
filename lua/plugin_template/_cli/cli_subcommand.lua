@@ -105,8 +105,9 @@ local function _get_subcommand_completion(text, prefix, subcommands)
         return parser:get_completion(arguments, column)
     end
 
+    ---@cast subcommand plugin_template.Subcommand
+
     if subcommand.parser then
-        -- TODO: Add type
         local parser = subcommand.parser()
         local column = vim.fn.getcmdpos()
 
@@ -114,7 +115,6 @@ local function _get_subcommand_completion(text, prefix, subcommands)
     end
 
     if subcommand.complete then
-        -- TODO: Make sure this works still
         local result = subcommand.complete({ parsed_arguments = argparse.parse_arguments(arguments) })
 
         if result == nil or vim.islist(result) then
@@ -150,12 +150,11 @@ local function _run_subcommand(parser, text)
 
     local arguments = argparse.parse_arguments(text)
     local namespace = parser:parse_arguments(arguments)
-    ---@type plugin_template.NamespaceExecuteArguments
+    ---@type fun(data: plugin_template.NamespaceExecuteArguments): nil
     local execute = namespace.execute
 
     if execute then
-        -- TODO: Make sure this has the right type-hint
-        namespace.execute({ input = arguments, namespace = namespace })
+        execute({ input = arguments, namespace = namespace })
 
         return
     end

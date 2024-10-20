@@ -2145,7 +2145,7 @@ end
 
 --- Re-parent this instance underneath `parser`.
 ---
----@param parser cmdparse.ParameterParser The new parent to set.
+---@param parser cmdparse.Subparsers The new parent to set.
 ---
 function M.ParameterParser:set_parent(parser)
     self._parent = parser
