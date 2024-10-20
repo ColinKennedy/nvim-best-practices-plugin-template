@@ -136,9 +136,6 @@ function _Private.get_parser_flag_help_text(parser)
         local names = vim.fn.join(flag.names, " ")
         local text = names
 
-        -- TODO: If this function continues to work, consider renaming
-        -- `get_position_usage_help_text` to something more generic.
-        --
         local hint = M.get_position_usage_help_text(flag)
 
         if hint and hint ~= "" then
