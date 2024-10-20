@@ -258,13 +258,7 @@ function M.get_matching_subparser_names(prefix, parser)
     for parser_ in iterator_helper.iter_parsers(parser) do
         local names = parser_:get_names()
 
-        -- TODO: All current uses of this function ended up with `prefix` ==
-        -- whitespace. If so, remove this if condition later
-        if texter.is_whitespace(prefix) then
-            vim.list_extend(output, names)
-        else
-            vim.list_extend(output, texter.get_array_startswith(names, prefix))
-        end
+        vim.list_extend(output, texter.get_array_startswith(names, prefix))
     end
 
     return output
