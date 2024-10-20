@@ -21,15 +21,9 @@ local _SHORT_HELP_FLAG = "-h"
 ---@return fun(): cmdparse.ParameterParser?
 ---    An iterator that find all child parsers.
 ---
-function M.iter_parsers(parser, inclusive)
-    -- TODO: Audit this variable. Maybe remove / make default
-    if inclusive == nil then
-        inclusive = false
-    end
-
+function M.iter_parsers(parser)
     local subparsers_index = 1
     local subparsers = parser._subparsers[subparsers_index]
-    local returned_parser = false
 
     local parser_index = 1
     local parsers = {}
@@ -41,10 +35,6 @@ function M.iter_parsers(parser, inclusive)
     local parser_count = #parsers
 
     return function()
-        if inclusive and not returned_parser then
-            return parser
-        end
-
         if parser_index > parser_count then
             -- NOTE: Get the next subparsers.
             parser_index = 1

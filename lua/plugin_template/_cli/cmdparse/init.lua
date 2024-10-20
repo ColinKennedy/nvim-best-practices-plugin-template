@@ -2287,7 +2287,6 @@ function M.ParameterParser:_parse_arguments(data, namespace)
         data = argparse.parse_arguments(data)
     end
 
-    -- TODO: Merge namespaces more cleanly
     namespace = namespace or {}
     _merge_namespaces(namespace, self._defaults, self:_get_default_namespace())
 
@@ -2411,24 +2410,12 @@ function M.ParameterParser:_reset_used()
         for parameter in tabler.chain(parser:get_position_parameters(), parser:get_flag_parameters()) do
             parameter._used = 0
         end
-    end
 
-    -- TODO: Reset subparser.visited recursively
-    for _, subparser in ipairs(self._subparsers) do
-        subparser.visited = false
+        for _, subparser in ipairs(self._subparsers) do
+            subparser.visited = false
+        end
     end
 end
-
--- TODO: Remove?
--- function M.ParameterParser:is_exhausted()
---     for _, parameter in ipairs(self:get_all_parameters()) do
---         if parameter.required and not parameter:is_exhausted() then
---             return false
---         end
---     end
---
---     return true
--- end
 
 ---@return boolean # If all required parameters of this instance have values.
 function M.ParameterParser:is_satisfied()
