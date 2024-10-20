@@ -547,6 +547,7 @@ function M.Parameter.new(options)
     local self = setmetatable({}, M.Parameter)
 
     self._action = nil
+    self._action_type = nil
     self._nargs = options.nargs or 1
     self._type = options.type
     self._used = 0
@@ -583,13 +584,14 @@ function M.Parameter:is_position()
     return text_parse.is_position_name(self.names[1])
 end
 
---- Get a function that mutates the namespace with a new parsed argument.
----
----@return fun(data: cmdparse.ActionData): nil
----    A function that directly modifies the contents of `data`.
----
+---@return fun(data: cmdparse.ActionData): nil # A function that directly modifies the contents of `data`.
 function M.Parameter:get_action()
     return self._action
+end
+
+---@return cmdparse.Action # The original action type. e.g. `"store_true"`.
+function M.Parameter:get_action_type()
+    return self._action_type
 end
 
 ---@return cmdparse.MultiNumber # The number of elements that this argument consumes at once.
@@ -632,6 +634,8 @@ end
 ---@param action cmdparse.Action The selected functionality.
 ---
 function M.Parameter:set_action(action)
+    self._action_type = action
+
     if action == constant.Action.store_false then
         action = function(data)
             ---@cast data cmdparse.ActionData
@@ -1008,6 +1012,14 @@ function M.ParameterParser:_get_default_namespace()
     for parameter in tabler.chain(self:get_position_parameters(), self:get_flag_parameters()) do
         if parameter.default then
             output[parameter:get_nice_name()] = parameter.default
+        else
+            local action = parameter:get_action_type()
+
+            if action == constant.Action.store_true then
+                output[parameter:get_nice_name()] = false
+            elseif action == constant.Action.store_false then
+                output[parameter:get_nice_name()] = true
+            end
         end
     end
 

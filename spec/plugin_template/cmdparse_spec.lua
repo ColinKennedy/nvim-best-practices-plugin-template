@@ -202,6 +202,23 @@ Options:
             parser:get_full_help("")
         )
     end)
+
+    it("creates a default value if store_true / store_false has no value", function()
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ "--truthy", action = "store_true", help = "Test." })
+        parser:add_parameter({ "--falsey", action = "store_false", help = "Test." })
+        parser:add_parameter({ "--lastly", action = "store_true", default=10, help = "Test." })
+
+        local namespace = parser:parse_arguments("")
+        assert.equal(false, namespace.truthy)
+        assert.equal(true, namespace.falsey)
+        assert.equal(10, namespace.lastly)
+
+        namespace = parser:parse_arguments("--truthy --falsey --lastly")
+        assert.equal(true, namespace.truthy)
+        assert.equal(false, namespace.falsey)
+        assert.equal(true, namespace.lastly)
+    end)
 end)
 
 describe("help", function()

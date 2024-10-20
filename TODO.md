@@ -1,11 +1,13 @@
 ## Round 1
 - Do TODO notes
 
-- What happens if a user provides a 1-or-more / 0-or-more and then has a flag in the middle?
- - PluginTemplate hello-world say phrase sadfasfasdf asdfsfd --repeat=3 sfdasfdasfddttt
- - should it error ot just append the next position to the previous one
-
 - Make sure auto-completion does not spam errors to the user if they give incorrect input
+
+- If the user has a 1-or-more / 0-or-more and their count is exhausted and
+there is a flag in the middle, error parsing
+ - e.g. `PluginTemplate hello-world say phrase sadfasfasdf asdfsfd --repeat=3
+ sfdasfdasfddttt` should fail to parse if the phrase argument is count = 1 but
+ succeed if count = 2 or count = * / +
 
 
 ## Round 2
@@ -18,6 +20,11 @@
 
 
 ## Round 3
+This is auto-completing but shouldn't be auto-completing!
+```
+PluginTemplate hello-world say tas phrase
+```
+
 - Make positional * count as required=false
 - Support position + count
 
