@@ -115,6 +115,7 @@ local function _get_subcommand_completion(text, prefix, subcommands)
     end
 
     if subcommand.complete then
+        -- TODO: Add a unittest. Make sure this still works
         local result = subcommand.complete({ parsed_arguments = argparse.parse_arguments(arguments) })
 
         if result == nil or vim.islist(result) then
@@ -224,11 +225,11 @@ function M.make_parser_triager(parser_creator)
             return
         end
 
-        ---@cast result cmdparse.Namespace The found values.
+        ---@type fun(data: plugin_template.NamespaceExecuteArguments): nil
+        local execute = result.execute
 
-        if result.execute then
-            -- TODO: Make sure this has the right type-hint
-            result.execute({ input = arguments, namespace = result })
+        if execute then
+            execute({ input = arguments, namespace = result })
 
             return
         end

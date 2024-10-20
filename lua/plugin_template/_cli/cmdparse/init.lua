@@ -1715,8 +1715,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
             current_item, used_arguments = _seek_next_argument_from_flag(flag_parameters, arguments)
 
             -- if not found then
-            --     -- TODO: Do something about this one
-            --     error("TODO: Add this case")
+            --     error("TODO: Add this case2")
             -- end
 
             current_item:increment_used()
@@ -1765,7 +1764,6 @@ function M.ParameterParser:_parse_arguments(data, namespace)
     end
 
     local function _handle_not_found(data_, index)
-        -- TODO: Add a unittest
         -- NOTE: We lost our place in the parse so we can't continue.
 
         _validate_current_parser()
