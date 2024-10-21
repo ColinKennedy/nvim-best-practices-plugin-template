@@ -12,21 +12,27 @@ local M = {}
 -- NOTE: Don't remove this line. It makes the Lua module much easier to reload
 vim.g.loaded_plugin_template = false
 
+---@type plugin_template.Configuration
 M.DATA = {}
 
--- TODO: (you) Update the settings here to match your plugin's needs
-
+-- TODO: (you) If you use the vlog.lua for built-in logging, keep the `logging`
+-- section. Otherwise delete it.
+--
+-- It's recommended to keep the `display` section in any case.
+--
+---@type plugin_template.Configuration
 local _DEFAULTS = {
+    cmdparse = { auto_complete = { display = { help_flag = true } } },
+    logging = { level = "info", use_console = false, use_file = false },
+}
+
+-- TODO: (you) Update these sections depending on your intended plugin features.
+local _EXTRA_DEFAULTS = {
     commands = {
         goodnight_moon = { read = { phrase = "A good book" } },
         hello_world = {
             say = { ["repeat"] = 1, style = say_constant.Keyword.style.lowercase },
         },
-    },
-    logging = {
-        level = "info",
-        use_console = false,
-        use_file = false,
     },
     tools = {
         lualine = {
@@ -62,6 +68,8 @@ local _DEFAULTS = {
         },
     },
 }
+
+_DEFAULTS = vim.tbl_deep_extend("force", _DEFAULTS, _EXTRA_DEFAULTS)
 
 --- Setup `plugin_template` for the first time, if needed.
 function M.initialize_data_if_needed()

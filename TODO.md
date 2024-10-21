@@ -16,8 +16,6 @@ there is a flag in the middle, error parsing
  - Auto-complete should work as expected
 - Consider renaming `nargs` to `arguments_count` or something
 
-- Add --help argument configuration
-
 
 ## Round 3
 This is auto-completing but shouldn't be auto-completing!

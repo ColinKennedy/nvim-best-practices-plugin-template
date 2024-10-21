@@ -8,6 +8,7 @@ local constant = require("plugin_template._cli.cmdparse.constant")
 local iterator_helper = require("plugin_template._cli.cmdparse.iterator_helper")
 local text_parse = require("plugin_template._cli.cmdparse.text_parse")
 local texter = require("plugin_template._core.texter")
+local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 
@@ -24,10 +25,14 @@ end
 ---
 --- All exhausted child parameters are excluded from the output.
 ---
----@param parser cmdparse.ParameterParser A parser to query.
----@return string[] # The found auto-completion results, if any.
+---@param parser cmdparse.ParameterParser
+---    A parser to query.
+---@param options cmdparse._core.DisplayOptions?
+---    Control minor behaviors of this function. e.g. What data to show.
+---@return string[]
+---    The found auto-completion results, if any.
 ---
-function M.get_current_parser_completions(parser)
+function M.get_current_parser_completions(parser, options)
     local output = {}
 
     -- TODO: Add better sorting of the output here
@@ -35,7 +40,16 @@ function M.get_current_parser_completions(parser)
     -- TODO: Only show subparser names if requireds are all exhausted
     vim.list_extend(output, vim.fn.sort(M.get_matching_subparser_names("", parser)))
     vim.list_extend(output, M.get_matching_position_parameters("", parser:get_position_parameters()))
-    vim.list_extend(output, M.get_matching_partial_flag_text("", parser:get_flag_parameters()))
+    vim.list_extend(
+        output,
+        M.get_matching_partial_flag_text(
+            "",
+            parser:get_flag_parameters(),
+            nil,
+            { constant.ChoiceContext.auto_completing },
+            options
+        )
+    )
 
     return output
 end
@@ -53,9 +67,11 @@ end
 ---@param contexts cmdparse.ChoiceContext[]
 ---    A description of how / when this function is called. It gets passed to
 ---    `cmdparse.Parameter.choices()`.
+---@param options cmdparse._core.DisplayOptions
+---    Control minor behaviors of this function. e.g. What data to show.
 ---@return string[] # The matching names, if any.
 ---
-function M.get_exact_or_partial_matches(parameter, argument, parser, contexts)
+function M.get_exact_or_partial_matches(parameter, argument, parser, contexts, options)
     -- local function _get_longest_match(prefix, options)
     --     local longest_match_count = 0
     --     local longest_match
@@ -103,7 +119,10 @@ function M.get_exact_or_partial_matches(parameter, argument, parser, contexts)
 
     prefix = text_parse.get_argument_name(argument)
     vim.list_extend(output, M.get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
-    vim.list_extend(output, M.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts))
+    vim.list_extend(
+        output,
+        M.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts, options)
+    )
 
     return output
 end
@@ -171,16 +190,28 @@ end
 ---@param contexts cmdparse.ChoiceContext[]?
 ---    A description of how / when this function is called. It gets passed to
 ---    `cmdparse.Parameter.choices()`.
+---@param options cmdparse._core.DisplayOptions?
+---    Control minor behaviors of this function. e.g. What data to show.
 ---@return cmdparse.Parameter[]
 ---    The matched parameters, if any.
 ---
-function M.get_matching_partial_flag_text(prefix, flags, value, contexts)
+function M.get_matching_partial_flag_text(prefix, flags, value, contexts, options)
     local output = {}
+
+    local excluded_names = {}
+
+    if options then
+        excluded_names = options.excluded_names or {}
+    end
 
     for _, parameter in ipairs(iterator_helper.sort_parameters(flags)) do
         if not parameter:is_exhausted() then
             for _, name in ipairs(parameter.names) do
-                if name == prefix then
+                if vim.tbl_contains(excluded_names, name) then
+                    vlog.fmt_debug('Skipped adding "%s" because it was found in "%s".', parameter, excluded_names)
+
+                    break
+                elseif name == prefix then
                     if parameter:get_nargs() == 1 then
                         if not value then
                             table.insert(output, parameter.names[1] .. "=")
@@ -276,15 +307,20 @@ end
 ---@param contexts cmdparse.ChoiceContext[]
 ---    A description of how / when this function is called. It gets passed to
 ---    `cmdparse.Parameter.choices()`.
+---@param options cmdparse._core.DisplayOptions?
+---    Control minor behaviors of this function. e.g. What data to show.
 ---@return string[]
 ---    All auto-completion results found, if any.
 ---
-function M.get_parser_exact_or_partial_matches(parser, prefix, value, contexts)
+function M.get_parser_exact_or_partial_matches(parser, prefix, value, contexts, options)
     prefix = _remove_contiguous_whitespace(prefix)
     local output = {}
 
     vim.list_extend(output, M.get_matching_position_parameters(prefix, parser:get_position_parameters(), contexts))
-    vim.list_extend(output, M.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts))
+    vim.list_extend(
+        output,
+        M.get_matching_partial_flag_text(prefix, parser:get_flag_parameters(), value, contexts, options)
+    )
 
     return output
 end

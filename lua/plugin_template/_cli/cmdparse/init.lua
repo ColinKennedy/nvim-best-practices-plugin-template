@@ -7,6 +7,7 @@
 
 local argparse = require("plugin_template._cli.argparse")
 local argparse_helper = require("plugin_template._cli.argparse_helper")
+local configuration = require("plugin_template._core.configuration")
 local constant = require("plugin_template._cli.cmdparse.constant")
 local evaluator = require("plugin_template._cli.cmdparse.evaluator")
 local help_message = require("plugin_template._cli.cmdparse.help_message")
@@ -136,10 +137,19 @@ local types_input = require("plugin_template._cli.cmdparse.types_input")
 ---@field [1] string?
 ---    A shorthand for the subparser name.
 
+---@class cmdparse._core.DisplayOptions
+---    Control minor behaviors of this function. e.g. What data to show.
+---@field excluded_names string[]?
+---    Prevent parameters from returning from functions if they are in this
+---    list. e.g. don't show any parameter in during auto-completion if it is
+---    in `excluded_names`.
+
 local vlog = require("plugin_template._vendors.vlog")
 
 local M = {}
 local _Private = {}
+
+local _HELP_NAMES = { "--help", "-h" }
 
 ---@class cmdparse.Parameter
 ---    An optional / required parameter for some parser.
@@ -203,6 +213,30 @@ M.Subparsers = {
     end,
 }
 M.Subparsers.__index = M.Subparsers
+
+--- Check if `data` wants to show "--help" flags during cmdparse commands.
+---
+---@param data plugin_template.ConfigurationCmdparseAutoComplete?
+---    The user settings to read from, if any. If no data is given, the user's
+---    default configuration is used insteand.
+---@return boolean
+---    If `true` then the --help flag should be down. If `false`, don't.
+---
+local function _is_help_flag_enabled(data)
+    local value
+
+    if data then
+        value = tabler.get_value(data, { "display", "help_flag" })
+    else
+        value = tabler.get_value(configuration.DATA, { "cmdparse", "auto_complete", "display", "help_flag" })
+    end
+
+    if value == nil then
+        return true
+    end
+
+    return value
+end
 
 --- Check if `object` is a `cmdparse.ParameterParser`.
 ---
@@ -314,6 +348,24 @@ local function _get_named_argument_completion_choices(parameter, argument, conte
         }))
     do
         table.insert(output, string.format("%s=%s", prefix, choice))
+    end
+
+    return output
+end
+
+--- Decide from `data` what should be displayed to a user (e.g. during auto-complete).
+---
+---@param options plugin_template.ConfigurationCmdparseAutoComplete?
+---    The user settings to read from, if any. If no data is given, the user's
+---    default configuration is used insteand.
+---@return cmdparse._core.DisplayOptions
+---    If `true` then the --help flag should be down. If `false`, don't.
+---
+local function _get_display_options(options)
+    local output = { excluded_names = {} }
+
+    if not _is_help_flag_enabled(options) then
+        vim.list_extend(output.excluded_names, _HELP_NAMES)
     end
 
     return output
@@ -827,15 +879,22 @@ end
 
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
----@param data argparse.Results | string The user input.
----@param column number? A 1-or-more value that represents the user's cursor.
----@return string[] # All found auto-complete options, if any.
+---@param data argparse.Results | string
+---    The user input.
+---@param column number?
+---    A 1-or-more value that represents the user's cursor.
+---@param options plugin_template.ConfigurationCmdparseAutoComplete?
+---    The user settings to read from, if any. If no data is given, the user's
+---    default configuration is used insteand.
+---@return string[]
+---    All found auto-complete options, if any.
 ---
-function M.ParameterParser:_get_completion(data, column)
+function M.ParameterParser:_get_completion(data, column, options)
     if type(data) == "string" then
         data = argparse.parse_arguments(data)
     end
 
+    local display_options = _get_display_options(options)
     local count = #data.text
     column = column or count
     local stripped = _rstrip_input(data, column)
@@ -851,7 +910,16 @@ function M.ParameterParser:_get_completion(data, column)
         end
 
         if not texter.is_whitespace(remainder) then
-            vim.list_extend(output, matcher.get_matching_partial_flag_text(remainder, self:get_flag_parameters()))
+            vim.list_extend(
+                output,
+                matcher.get_matching_partial_flag_text(
+                    remainder,
+                    self:get_flag_parameters(),
+                    nil,
+                    { constant.ChoiceContext.auto_completing },
+                    display_options
+                )
+            )
 
             -- NOTE: If there was unparsed text then it means that the user is
             -- in the middle of an argument. We don't want to show completion
@@ -860,7 +928,7 @@ function M.ParameterParser:_get_completion(data, column)
             return output
         end
 
-        vim.list_extend(output, matcher.get_current_parser_completions(self))
+        vim.list_extend(output, matcher.get_current_parser_completions(self, display_options))
 
         return output
     end
@@ -943,7 +1011,10 @@ function M.ParameterParser:_get_completion(data, column)
                 return {}
             end
 
-            vim.list_extend(output, matcher.get_exact_or_partial_matches(parameter, last, parser, contexts))
+            vim.list_extend(
+                output,
+                matcher.get_exact_or_partial_matches(parameter, last, parser, contexts, display_options)
+            )
         else
             error(string.format('Bug found. Item "%s" is unknown.', vim.inspect(recent_item)))
         end
@@ -996,9 +1067,16 @@ function M.ParameterParser:_get_completion(data, column)
         output,
         matcher.get_matching_position_parameters(stripped_remainder, parser:get_position_parameters(), contexts)
     )
+
     vim.list_extend(
         output,
-        matcher.get_matching_partial_flag_text(stripped_remainder, parser:get_flag_parameters(), last_value, contexts)
+        matcher.get_matching_partial_flag_text(
+            stripped_remainder,
+            parser:get_flag_parameters(),
+            last_value,
+            contexts,
+            display_options
+        )
     )
 
     return output
@@ -1103,7 +1181,7 @@ function M.ParameterParser:_add_help_parameter()
             end
         end,
         help = "Show this help message and exit.",
-        names = { "--help", "-h" },
+        names = _HELP_NAMES,
         nargs = 0,
     })
 
@@ -1961,13 +2039,19 @@ end
 
 --- Get auto-complete options based on this instance + the user's `data` input.
 ---
----@param data argparse.Results | string The user input.
----@param column number? A 1-or-more value that represents the user's cursor.
----@return string[] # All found auto-complete options, if any.
+---@param data argparse.Results | string
+---    The user input.
+---@param column number?
+---    A 1-or-more value that represents the user's cursor.
+---@param options plugin_template.ConfigurationCmdparseAutoComplete?
+---    The user settings to read from, if any. If no data is given, the user's
+---    default configuration is used insteand.
+---@return string[]
+---    All found auto-complete options, if any.
 ---
-function M.ParameterParser:get_completion(data, column)
+function M.ParameterParser:get_completion(data, column, options)
     local success, result = pcall(function()
-        return self:_get_completion(data, column)
+        return self:_get_completion(data, column, options)
     end)
 
     self:_reset_used()

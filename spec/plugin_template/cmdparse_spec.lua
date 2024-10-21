@@ -4,7 +4,20 @@
 ---
 
 local cmdparse = require("plugin_template._cli.cmdparse")
+local configuration = require("plugin_template._core.configuration")
 local constant = require("plugin_template._cli.cmdparse.constant")
+
+local _DATA
+
+--- Save the user's current configuration (so we can modify & restore it later).
+local function _keep_configuration()
+    _DATA = vim.deepcopy(configuration.DATA)
+end
+
+--- Revert the configuration to its previously-saved state.
+local function _restore_configuration()
+    configuration.DATA = _DATA
+end
 
 ---@return cmdparse.ParameterParser # Create a tree of commands for unittests.
 local function _make_simple_parser()
@@ -175,6 +188,37 @@ end)
 --     end)
 -- end)
 
+describe("configuration", function()
+    before_each(_keep_configuration)
+    after_each(_restore_configuration)
+
+    describe("auto-completion", function()
+        it("hides the --help flag if the user asks to, explicitly", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "--items", help = "Test." })
+
+            assert.same({ "--items=", "--help" }, parser:get_completion(""))
+            assert.same({ "--items=" }, parser:get_completion("", nil, { display = { help_flag = false } }))
+        end)
+
+        it("hides the --help flag if the user asks to, implicitly via configuration", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "--items", help = "Test." })
+            configuration.DATA.cmdparse.auto_complete.display.help_flag = false
+
+            assert.same({ "--items=" }, parser:get_completion(""))
+        end)
+
+        it("works even if the user deletess their configuration", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "--items", help = "Test." })
+
+            configuration.DATA = {}
+            assert.same({ "--items=", "--help" }, parser:get_completion(""))
+        end)
+    end)
+end)
+
 describe("default", function()
     it("works with a #default", function()
         local parser = cmdparse.ParameterParser.new({ help = "Test" })
@@ -207,7 +251,7 @@ Options:
         local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "--truthy", action = "store_true", help = "Test." })
         parser:add_parameter({ "--falsey", action = "store_false", help = "Test." })
-        parser:add_parameter({ "--lastly", action = "store_true", default=10, help = "Test." })
+        parser:add_parameter({ "--lastly", action = "store_true", default = 10, help = "Test." })
 
         local namespace = parser:parse_arguments("")
         assert.equal(false, namespace.truthy)
