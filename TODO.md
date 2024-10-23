@@ -1,6 +1,5 @@
 ## Round 2
 - Document the old manual parser way
-- Fix the main commit history (force push master)
 
 
 ## Round 3
