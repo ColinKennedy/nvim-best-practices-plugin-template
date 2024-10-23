@@ -3,23 +3,32 @@
 ---@module 'plugin_template._cli.cli_subcommand'
 ---
 
+local help_message = require("plugin_template._cli.cmdparse.help_message")
+
 local M = {}
+
+---@class argparse.SubcommandRunnerOptions
+---    User input to send to the legacy argparse API.
+---@field args string
+---    The full user input text, unparsed. e.g. `"some_subcommand arg1 --flag --foo=bar"`.
+---@field fargs string[]
+---    The parsed user input text. e.g. `{"some_subcommand", "arg1", "--flag" "--foo=bar"}`.
 
 ---@class plugin_template.NamespaceExecuteArguments
 ---    The expected data that's passed to any `set_execute` call in plugin-template.
----@field input argparse.ArgparseResults
+---@field input argparse.Results
 ---    The user's raw input, split into tokens.
 ---@field namespace cmdparse.Namespace
 ---    The collected results from comparing `input` to our cmdparse tree.
 
 ---@class plugin_template.CompleteData
 ---    The data that gets passed when `plugin_template.Subcommand.complete` is called.
----@field parsed_arguments argparse.ArgparseResults
+---@field input argparse.Results
 ---    All information that was found from parsing some user's input.
 
 ---@class plugin_template.RunData
 ---    The data that gets passed when `plugin_template.Subcommand.run` is called.
----@field parsed_arguments argparse.ArgparseResults
+---@field input argparse.Results
 ---    All information that was found from parsing some user's input.
 
 ---@class plugin_template.Subcommand
@@ -39,7 +48,7 @@ local M = {}
 ---    The data that gets passed to the `run` function. Most of the time,
 ---    a user never needs or touches this data. It's only for people who need
 ---    absolute control over the CLI or some unsupported behavior.
----@field parsed_arguments argparse.ArgparseResults
+---@field input argparse.Results
 ---    The parsed arguments (that the user is now trying to execute some function with).
 
 ---@alias plugin_template.ParserCreator fun(): cmdparse.ParameterParser
@@ -105,8 +114,9 @@ local function _get_subcommand_completion(text, prefix, subcommands)
         return parser:get_completion(arguments, column)
     end
 
+    ---@cast subcommand plugin_template.Subcommand
+
     if subcommand.parser then
-        -- TODO: Add type
         local parser = subcommand.parser()
         local column = vim.fn.getcmdpos()
 
@@ -114,8 +124,7 @@ local function _get_subcommand_completion(text, prefix, subcommands)
     end
 
     if subcommand.complete then
-        -- TODO: Make sure this works still
-        local result = subcommand.complete({ parsed_arguments = argparse.parse_arguments(arguments) })
+        local result = subcommand.complete({ input = argparse.parse_arguments(arguments) })
 
         if result == nil or vim.islist(result) then
             if arguments == "" then
@@ -134,7 +143,7 @@ local function _get_subcommand_completion(text, prefix, subcommands)
             return result
         end
 
-        return
+        return nil
     end
 
     return nil
@@ -150,12 +159,11 @@ local function _run_subcommand(parser, text)
 
     local arguments = argparse.parse_arguments(text)
     local namespace = parser:parse_arguments(arguments)
-    ---@type plugin_template.NamespaceExecuteArguments
+    ---@type fun(data: plugin_template.NamespaceExecuteArguments): nil
     local execute = namespace.execute
 
     if execute then
-        -- TODO: Make sure this has the right type-hint
-        namespace.execute({ input = arguments, namespace = namespace })
+        execute({ input = arguments, namespace = namespace })
 
         return
     end
@@ -214,7 +222,10 @@ function M.make_parser_triager(parser_creator)
         local text = opts.name .. " " .. opts.args
         local arguments = argparse.parse_arguments(text)
         local parser = parser_creator()
-        local success, result = pcall(function()
+        local success
+        ---@type table<string, any> | string
+        local result
+        success, result = pcall(function()
             return parser:parse_arguments(arguments)
         end)
 
@@ -225,11 +236,11 @@ function M.make_parser_triager(parser_creator)
             return
         end
 
-        ---@cast result cmdparse.Namespace The found values.
+        ---@type fun(data: plugin_template.NamespaceExecuteArguments): nil
+        local execute = result.execute
 
-        if result.execute then
-            -- TODO: Make sure this has the right type-hint
-            result.execute({ input = arguments, namespace = result })
+        if execute then
+            execute({ input = arguments, namespace = result })
 
             return
         end
@@ -302,16 +313,18 @@ end
 
 --- Create a deferred function that creates separate parsers for each subcommand.
 ---
----@param subcommands plugin_template.Subcommands Each subcommand to register.
----@return fun(opts: table): nil # A function that will parse the user's arguments.
+---@param subcommands plugin_template.Subcommands
+---    Each subcommand to register.
+---@return fun(opts: argparse.SubcommandRunnerOptions): nil
+---    A function that will parse the user's arguments.
 ---
 function M.make_subcommand_triager(subcommands)
     --- Check for a subcommand and, if found, call its `run` caller field.
     ---
     ---
-    --- @param opts table
+    ---@param opts argparse.SubcommandRunnerOptions The parsed user inputs.
     ---
-    local function runner(opts)
+    local function _runner(opts)
         local configuration = require("plugin_template._core.configuration")
         local argparse = require("plugin_template._cli.argparse")
         configuration.initialize_data_if_needed()
@@ -352,13 +365,37 @@ function M.make_subcommand_triager(subcommands)
         end
 
         if subcommand.run then
-            -- TODO: Add a unittest. Make sure this still works
             subcommand.run(vim.tbl_deep_extend("force", opts, {
-                parsed_arguments = argparse.parse_arguments(stripped_text),
+                input = argparse.parse_arguments(stripped_text),
             }))
+
+            return
         end
 
         vim.notify(string.format('Subcommand "%s" must define `parser` or `run`.', vim.log.levels.ERROR))
+    end
+
+    --- Check for a subcommand and, if found, call its `run` caller field.
+    ---
+    ---
+    ---@param opts argparse.SubcommandRunnerOptions The parsed user options.
+    ---
+    local function runner(opts)
+        local success, result = pcall(function()
+            _runner(opts)
+        end)
+
+        if not success then
+            ---@cast result string
+
+            if help_message.is_help_message(result) then
+                help_message.show_help(result)
+
+                return
+            end
+
+            error(result)
+        end
     end
 
     -- NOTE: Initialize only once

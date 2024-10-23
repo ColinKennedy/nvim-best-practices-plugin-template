@@ -18,15 +18,15 @@ A template repository for Neovim plugins.
 - Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices)
 - Fast start-up (the plugin is super defer-loaded. < 1 ms guarantee)
 - Auto-release to [luarocks](https://luarocks.org)
-- Automated User documentation (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
+- Automated user documentation (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
 - Automated API documentation (using [mini.doc](https://github.com/echasnovski/mini.doc))
 - Vimtags generation
 - Built-in Vim commands
 - A high quality command mode parser
-- A (experimental) auto-completion API
-- No external dependencies*
+- Auto-completes your commands at any cursor position
+- No external dependencies[*](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/External-Dependencies-Disclaimer)
 - [LuaCATS](https://luals.github.io/wiki/annotations/) annotations and type-hints, everywhere
-- RSS feed support
+- [RSS feed support](tracking-updates)
 - Built-in logging to stdout / files
 - Unittests use the full power of native [busted](https://olivinelabs.com/busted)
 - 100% Lua
@@ -47,7 +47,7 @@ A template repository for Neovim plugins.
 
 # Using This Template
 1. Follow the [Wiki instructions](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/Using-This-Template)
-2. Once you're done, remove this section (the rest of this README.md file should be kept)
+2. Once you're done, remove this section (the rest of this README.md file should be kept / customized to your needs)
 
 
 # Installation
@@ -63,7 +63,6 @@ A template repository for Neovim plugins.
 
 
 # Configuration
-
 (These are default values)
 
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
@@ -72,6 +71,9 @@ A template repository for Neovim plugins.
     "ColinKennedy/nvim-best-practices-plugin-template",
     config = function()
         vim.g.plugin_template_configuration = {
+            cmdparse = {
+                auto_complete = { display = { help_flag = true } },
+            },
             commands = {
                 goodnight_moon = { read = { phrase = "A good book" } },
                 hello_world = {
@@ -169,8 +171,8 @@ require("lualine").setup {
 ## Colors
 This plugin provides two default highlights
 
-- PluginTemplateTelescopeEntry
-- PluginTemplateTelescopeSecondary
+- `PluginTemplateTelescopeEntry`
+- `PluginTemplateTelescopeSecondary`
 
 Both come with default colors that should look nice. If you want to change them, here's how:
 ```lua
@@ -191,7 +193,7 @@ Here are some example commands:
 :PluginTemplate hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase
 
 " An example of a flag this repeatable and 3 flags, -a, -b, -c, as one dash
-:PluginTemplate hello-world arbitrary-thing -vvv -abc -f
+:PluginTemplate arbitrary-thing -vvv -abc -f
 
 " Separate commands with completely separate, flexible APIs
 :PluginTemplate goodnight-moon count-sheep 42
@@ -215,6 +217,8 @@ Run all tests
 luarocks test --test-type busted
 # Or manually
 busted --helper spec/minimal_init.lua .
+# Or with Make
+make test
 ```
 
 Run test based on tags

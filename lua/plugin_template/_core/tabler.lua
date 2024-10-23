@@ -17,6 +17,8 @@ local M = {}
 ---    be returned). Uses every index to the end of `table_`' if not provided.
 ---@param step? number
 ---    The step size between elements in the slice. Defaults to 1 if not provided.
+---@return table<any, any>
+---    The subset of `table_`.
 ---
 function M.get_slice(table_, first, last, step)
     local sliced = {}

@@ -13,7 +13,6 @@ function M.make_parser()
     local subparsers =
         parser:add_subparsers({ destination = "commands", help = "All goodnight-moon commands.", required = true })
 
-    -- TODO: Finish this stuff later
     local count_sheep = subparsers:add_parser({ "count-sheep", help = "Count some sheep to help you sleep." })
     count_sheep:add_parameter({ "count", type = "number", help = "The number of sheept to count." })
     local read = subparsers:add_parser({ "read", help = "Read a book in bed." })

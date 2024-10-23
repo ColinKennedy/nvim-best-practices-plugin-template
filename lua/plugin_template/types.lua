@@ -14,12 +14,24 @@
 
 ---@class plugin_template.Configuration
 ---    The user's customizations for this plugin.
+---@field cmdparse plugin_template.ConfigurationCmdparse?
+---    All settings that control the command mode tools (parsing, auto-complete, etc).
 ---@field commands plugin_template.ConfigurationCommands?
 ---    Customize the fallback behavior of all `:PluginTemplate` commands.
 ---@field logging plugin_template.LoggingConfiguration?
 ---    Control how and which logs print to file / Neovim.
 ---@field tools plugin_template.ConfigurationTools?
 ---    Optional third-party tool integrations.
+
+---@class plugin_template.ConfigurationCmdparse
+---    All settings that control the command mode tools (parsing, auto-complete, etc).
+---@field auto_complete plugin_template.ConfigurationCmdparseAutoComplete
+---    The settings that control what happens during auto-completion.
+
+---@class plugin_template.ConfigurationCmdparseAutoComplete
+---    The settings that control what happens during auto-completion.
+---@field display {help_flag: boolean}
+---    help_flag = Show / Hide the --help flag during auto-completion.
 
 ---@class plugin_template.ConfigurationCommands
 ---    Customize the fallback behavior of all `:PluginTemplate` commands.

@@ -40,6 +40,7 @@ local default_config = {
 -- {{{ NO NEED TO CHANGE
 local log = {}
 
+---@diagnostic disable-next-line: deprecated
 local unpack = unpack or table.unpack
 
 local _LEVEL_NUMBER_TO_LEVEL_NAME = {

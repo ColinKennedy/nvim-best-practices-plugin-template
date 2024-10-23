@@ -4,12 +4,25 @@
 ---
 
 local cmdparse = require("plugin_template._cli.cmdparse")
-local cmdparse_constant = require("plugin_template._cli.cmdparse_constant")
+local configuration = require("plugin_template._core.configuration")
+local constant = require("plugin_template._cli.cmdparse.constant")
+
+local _DATA
+
+--- Save the user's current configuration (so we can modify & restore it later).
+local function _keep_configuration()
+    _DATA = vim.deepcopy(configuration.DATA)
+end
+
+--- Revert the configuration to its previously-saved state.
+local function _restore_configuration()
+    configuration.DATA = _DATA
+end
 
 ---@return cmdparse.ParameterParser # Create a tree of commands for unittests.
 local function _make_simple_parser()
     local choices = function(data)
-        if vim.tbl_contains(data.contexts, cmdparse_constant.ChoiceContext.help_message) then
+        if vim.tbl_contains(data.contexts, constant.ChoiceContext.help_message) then
             local output = {}
 
             for index = 1, 5 do
@@ -123,10 +136,14 @@ describe("action", function()
     end)
 end)
 
--- TODO: Consider adding this sort of functionality in the future
+-- -- TODO: Add this later
 -- describe("choices", function()
---     it("can ensure there are no duplicate choices during a parse", function()
+--     it("ensures there are no duplicate choices during a parse", function()
 --         local function remove_value(array, value)
+--             print("removing value from array")
+--             print(value)
+--             print(vim.inspect(array))
+--
 --             for index = #array, 1, -1 do
 --                 if array[index] == value then
 --                     table.remove(array, index)
@@ -175,6 +192,65 @@ end)
 --     end)
 -- end)
 
+describe("configuration", function()
+    before_each(_keep_configuration)
+    after_each(_restore_configuration)
+
+    describe("auto-completion", function()
+        it("hides the --help flag if the user asks to, explicitly", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "--items", help = "Test." })
+
+            assert.same({ "--items=", "--help" }, parser:get_completion(""))
+            assert.same({ "--items=" }, parser:get_completion("", nil, { display = { help_flag = false } }))
+        end)
+
+        it("hides the --help flag if the user asks to, implicitly via configuration", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "--items", help = "Test." })
+            configuration.DATA.cmdparse.auto_complete.display.help_flag = false
+
+            assert.same({ "--items=" }, parser:get_completion(""))
+        end)
+
+        it("works even if the user deletess their configuration", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "--items", help = "Test." })
+
+            configuration.DATA = {}
+            assert.same({ "--items=", "--help" }, parser:get_completion(""))
+        end)
+    end)
+end)
+
+describe("count", function()
+    it("sets a position parameter to optional when count = *", function()
+        local parser = cmdparse.ParameterParser.new({ help = "Test" })
+        local parameter = parser:add_parameter({ "foo", count = "*", help = "Test." })
+
+        assert.is_false(parameter.required)
+    end)
+
+    it("works with position + count=* parameters - 001 - multiple parameters", function()
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ "foo", nargs = "*", help = "Test." })
+        parser:add_parameter({ "bar", nargs = "*", help = "Test." })
+        parser:add_parameter({ "--flag", action = "store_true", help = "Test." })
+
+        local namespace = parser:parse_arguments("1 2 3 4 --flag 5 6 7")
+        assert.same({ foo = { "1", "2", "3", "4" }, flag = true, bar = { "5", "6", "7" } }, namespace)
+    end)
+
+    it("works with position + count=* parameters - 002 - split, single parameter", function()
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ "foo", action = "append", count = "*", nargs = "*", type = tonumber, help = "Test." })
+        parser:add_parameter({ "--flag", action = "store_true", help = "Test." })
+
+        local namespace = parser:parse_arguments("1 2 3 4 --flag 5 6 7")
+        assert.same({ foo = { [1] = { 1, 2, 3, 4 }, [2] = { 5, 6, 7 } }, flag = true }, namespace)
+    end)
+end)
+
 describe("default", function()
     it("works with a #default", function()
         local parser = cmdparse.ParameterParser.new({ help = "Test" })
@@ -201,6 +277,23 @@ Options:
 ]],
             parser:get_full_help("")
         )
+    end)
+
+    it("creates a default value if store_true / store_false has no value", function()
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ "--truthy", action = "store_true", help = "Test." })
+        parser:add_parameter({ "--falsey", action = "store_false", help = "Test." })
+        parser:add_parameter({ "--lastly", action = "store_true", default = 10, help = "Test." })
+
+        local namespace = parser:parse_arguments("")
+        assert.equal(false, namespace.truthy)
+        assert.equal(true, namespace.falsey)
+        assert.equal(10, namespace.lastly)
+
+        namespace = parser:parse_arguments("--truthy --falsey --lastly")
+        assert.equal(true, namespace.truthy)
+        assert.equal(false, namespace.falsey)
+        assert.equal(true, namespace.lastly)
     end)
 end)
 
@@ -266,6 +359,56 @@ Options:
     --help -h    Show this help message and exit.
 ]],
                 parser:get_full_help("say phrase ")
+            )
+        end)
+
+        it("shows even if there parsing errors", function()
+            local function _assert(parser, command, expected)
+                local success, result = pcall(function()
+                    parser:parse_arguments(command)
+                end)
+
+                assert.is_false(success)
+                assert.equal(expected, result)
+            end
+
+            local parser = _make_simple_parser()
+
+            _assert(
+                parser,
+                "does_not_exist --help",
+                [[Usage: top_test {say} [--help]
+
+Commands:
+    say    Print stuff to the terminal.
+
+Options:
+    --help -h    Show this help message and exit.
+]]
+            )
+            _assert(
+                parser,
+                "say does_not_exist --help",
+                [[Usage: {say} {phrase,word} [--help]
+
+Commands:
+    phrase    Print a whole sentence.
+    word    Print a single word.
+
+Options:
+    --help -h    Show this help message and exit.
+]]
+            )
+            _assert(
+                parser,
+                "say phrase does_not_exist --help",
+                [[Usage: {phrase} [--repeat {1,2,3,4,5}] [--style {lowercase,uppercase}] [--help]
+
+Options:
+    --repeat -r {1,2,3,4,5}    The number of times to display the message.
+    --style -s {lowercase,uppercase}    The format of the message.
+    --help -h    Show this help message and exit.
+]]
             )
         end)
 
@@ -717,7 +860,7 @@ describe("nargs", function()
         end)
 
         assert.is_false(success)
-        assert.equal('Unexpected arguments "fizz buzz".', result)
+        assert.equal('Unexpected arguments "fizz, buzz".', result)
 
         local namespace = parser:parse_arguments("--items foo bar")
         assert.same({ items = { { "foo", "bar" } } }, namespace)
@@ -733,14 +876,14 @@ describe("nargs", function()
 
     it("flag + nargs=+ + append should error if no argument is given", function()
         local parser = cmdparse.ParameterParser.new({ help = "Test." })
-        parser:add_parameter({ "--items", action = "append", nargs = "+", help = "Test." })
+        parser:add_parameter({ "--items", nargs = "+", help = "Test." })
 
         local success, result = pcall(function()
-            parser:parse_arguments("--items")
+            parser:get_completion("--items --another")
         end)
 
         assert.is_false(success)
-        assert.equal('Parameter "--items" requires 1-or-more values. Got none.', result)
+        assert.equal('Parameter "--another" requires 1-or-more values. Got "0" values.', result)
     end)
 
     it("flag + nargs=+ + append should parse into a string[][]", function()
@@ -776,7 +919,7 @@ describe("nargs", function()
         end)
 
         assert.is_false(success)
-        assert.equal('Unexpected arguments "fizz buzz".', result)
+        assert.equal('Unexpected arguments "fizz, buzz".', result)
 
         local namespace = parser:parse_arguments("foo bar")
         assert.same({ items = { { "foo", "bar" } } }, namespace)
@@ -889,6 +1032,56 @@ describe("set_defaults", function()
 end)
 
 describe("scenarios", function()
+    describe("subparsers", function()
+        it("errors if the last argument is a required subparser and it has required parameters", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            local subparsers = parser:add_subparsers({
+                destination = "commands",
+                help = "All commands.",
+                required = true,
+            })
+
+            local say = subparsers:add_parser({ "say", help = "Test." })
+            say:add_parameter({ "inner_thing", help = "Test." })
+
+            local success, result = pcall(function()
+                parser:parse_arguments("say")
+            end)
+
+            assert.is_false(success)
+            assert.equal('Parameter "inner_thing" must be defined.', result)
+        end)
+
+        it("passes if the last argument is a required subparser but its parameters are all optional", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            local subparsers = parser:add_subparsers({
+                destination = "commands",
+                help = "All commands.",
+                required = true,
+            })
+
+            local say = subparsers:add_parser({ "say", help = "Test." })
+            say:add_parameter({ "--thing", action = "store_false", help = "Test." })
+
+            assert.same({ thing = true }, parser:parse_arguments("say"))
+        end)
+
+        it("passes if the last argument subparser is optional", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            local subparsers = parser:add_subparsers({
+                destination = "commands",
+                help = "All commands.",
+                required = false,
+            })
+
+            local say = subparsers:add_parser({ "say", help = "Test." })
+            say:add_parameter({ "inner_thing", help = "Test." })
+
+            local namespace = parser:parse_arguments("")
+            assert.same({}, namespace)
+        end)
+    end)
+
     it("works with a #basic flag argument", function()
         local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:add_parameter({
@@ -1012,6 +1205,67 @@ describe("type", function()
 
         local namespace = parser:parse_arguments("12")
         assert.same({ foo = 12 }, namespace)
+    end)
+end)
+
+describe("utf-8", function()
+    describe("get_completion", function()
+        it("works with flag parameters", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "--ɧelp", action = "store_true", help = "Test." })
+
+            assert.same({ "--ɧelp" }, parser:get_completion("--ɧel"))
+        end)
+
+        it("works with position parameters - 001", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "ɧelp", help = "Test." })
+
+            assert.same({}, parser:get_completion("ɧel"))
+        end)
+
+        it("works with position parameters - 002", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "ɧelp", choices = { "a", "bb", "ccc" }, help = "Test." })
+
+            assert.same({ "ccc" }, parser:get_completion("cc"))
+        end)
+
+        it("works with named parameters", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "--ɧelp", choices = { "aa", "bb" }, help = "Test." })
+
+            assert.same({ "--ɧelp=" }, parser:get_completion("--ɧ"))
+            assert.same({ "--ɧelp=" }, parser:get_completion("--ɧel"))
+            assert.same({ "--ɧelp=" }, parser:get_completion("--ɧelp"))
+            assert.same({ "--ɧelp=aa", "--ɧelp=bb" }, parser:get_completion("--ɧelp="))
+        end)
+    end)
+
+    describe("parse_arguments", function()
+        it("works with flag parameters", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "--ɧelp", action = "store_true", help = "Test." })
+
+            local namespace = parser:parse_arguments("--ɧelp")
+            assert.same({ ["ɧelp"] = true }, namespace)
+        end)
+
+        it("works with position parameters", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "ɧ", help = "Test." })
+
+            local namespace = parser:parse_arguments("thing")
+            assert.same({ ["ɧ"] = "thing" }, namespace)
+        end)
+
+        it("works with named parameters", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+            parser:add_parameter({ "--ɧelp", help = "Test." })
+
+            local namespace = parser:parse_arguments("--ɧelp=thing")
+            assert.same({ ["ɧelp"] = "thing" }, namespace)
+        end)
     end)
 end)
 

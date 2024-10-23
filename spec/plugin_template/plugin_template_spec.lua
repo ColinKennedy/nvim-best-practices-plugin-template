@@ -7,9 +7,13 @@
 ---@module 'plugin_template.plugin_template_spec'
 ---
 
+local copy_logs_runner = require("plugin_template._commands.copy_logs.runner")
 local plugin_template = require("plugin_template")
 
+---@type string[]
 local _DATA = {}
+
+local _ORIGINAL_COPY_LOGS_READ_FILE = copy_logs_runner._read_file
 local _ORIGINAL_NOTIFY = vim.notify
 
 --- Keep track of text that would have been printed. Save it to a variable instead.
@@ -21,19 +25,63 @@ local function _save_prints(data)
 end
 
 --- Mock all functions / states before a unittest runs (call this before each test).
-local function _initialize_all()
+local function _initialize_prints()
     vim.notify = _save_prints
 end
 
+--- Watch the `copy-logs` API command for function calls.
+local function _initialize_copy_log()
+    local function _save_path(path)
+        _DATA = { path }
+    end
+
+    copy_logs_runner._read_file = _save_path
+end
+
+--- Write a log file so we can query its later later.
+local function _make_fake_log(path)
+    local file = io.open(path, "w") -- Open the file in write mode
+
+    if not file then
+        error(string.format('Path "%s" is not writable.', path))
+    end
+
+    file:write("aaa\nbbb\nccc\n")
+    file:close()
+end
+
+--- Remove the "watcher" that we added during unittesting.
+local function _reset_copy_log()
+    copy_logs_runner._read_file = _ORIGINAL_COPY_LOGS_READ_FILE
+
+    _DATA = {}
+end
+
 --- Reset all functions / states to their previous settings before the test had run.
-local function _reset_all()
+local function _reset_prints()
     vim.notify = _ORIGINAL_NOTIFY
     _DATA = {}
 end
 
+--- Wait for our (mocked) unittest variable to get some data back.
+---
+---@param timeout number?
+---    The milliseconds to wait before continuing. If the timeout is exceeded
+---    then we stop waiting for all of the functions to call.
+---
+local function _wait_for_result(timeout)
+    if timeout == nil then
+        timeout = 1000
+    end
+
+    vim.wait(timeout, function()
+        return not vim.tbl_isempty(_DATA)
+    end)
+end
+
 describe("arbitrary-thing API", function()
-    before_each(_initialize_all)
-    after_each(_reset_all)
+    before_each(_initialize_prints)
+    after_each(_reset_prints)
 
     it("runs #arbitrary-thing with #default arguments", function()
         plugin_template.run_arbitrary_thing({})
@@ -49,8 +97,8 @@ describe("arbitrary-thing API", function()
 end)
 
 describe("arbitrary-thing commands", function()
-    before_each(_initialize_all)
-    after_each(_reset_all)
+    before_each(_initialize_prints)
+    after_each(_reset_prints)
 
     it("runs #arbitrary-thing with #default arguments", function()
         vim.cmd([[PluginTemplate arbitrary-thing]])
@@ -64,9 +112,57 @@ describe("arbitrary-thing commands", function()
     end)
 end)
 
+describe("copy logs API", function()
+    before_each(_initialize_copy_log)
+    after_each(_reset_copy_log)
+
+    it("runs with an explicit file path", function()
+        local path = vim.fn.tempname() .. "copy_logs_test.txt"
+        _make_fake_log(path)
+
+        plugin_template.run_copy_logs(path)
+        _wait_for_result()
+
+        assert.same({ path }, _DATA)
+    end)
+
+    it("runs with default arguments", function()
+        plugin_template.run_copy_logs()
+        _wait_for_result()
+
+        local expected = vim.fs.joinpath(vim.fn.expand("~"), ".local", "share", "nvim", "plugin_template.log")
+
+        assert.same({ expected }, _DATA)
+    end)
+end)
+
+describe("copy logs command", function()
+    before_each(_initialize_copy_log)
+    after_each(_reset_copy_log)
+
+    it("runs with an explicit file path", function()
+        local path = vim.fn.tempname() .. "copy_logs_test.txt"
+        _make_fake_log(path)
+
+        vim.cmd(string.format('PluginTemplate copy-logs "%s"', path))
+        _wait_for_result()
+
+        assert.same({ path }, _DATA)
+    end)
+
+    it("runs with default arguments", function()
+        vim.cmd([[PluginTemplate copy-logs]])
+        _wait_for_result()
+
+        local expected = vim.fs.joinpath(vim.fn.expand("~"), ".local", "share", "nvim", "plugin_template.log")
+
+        assert.same({ expected }, _DATA)
+    end)
+end)
+
 describe("hello world API - say phrase/word", function()
-    before_each(_initialize_all)
-    after_each(_reset_all)
+    before_each(_initialize_prints)
+    after_each(_reset_prints)
 
     it("runs #hello-world with default `say phrase` arguments - 001", function()
         plugin_template.run_hello_world_say_phrase({ "" })
@@ -100,8 +196,8 @@ describe("hello world API - say phrase/word", function()
 end)
 
 describe("hello world commands - say phrase/word", function()
-    before_each(_initialize_all)
-    after_each(_reset_all)
+    before_each(_initialize_prints)
+    after_each(_reset_prints)
 
     it("runs #hello-world with default arguments", function()
         vim.cmd([[PluginTemplate hello-world say phrase]])
@@ -123,8 +219,8 @@ describe("hello world commands - say phrase/word", function()
 end)
 
 describe("goodnight-moon API", function()
-    before_each(_initialize_all)
-    after_each(_reset_all)
+    before_each(_initialize_prints)
+    after_each(_reset_prints)
 
     it("runs #goodnight-moon #count-sheep with all of its arguments", function()
         plugin_template.run_goodnight_moon_count_sheep(3)
@@ -146,8 +242,8 @@ describe("goodnight-moon API", function()
 end)
 
 describe("goodnight-moon commands", function()
-    before_each(_initialize_all)
-    after_each(_reset_all)
+    before_each(_initialize_prints)
+    after_each(_reset_prints)
 
     it("runs #goodnight-moon #count-sheep with all of its arguments", function()
         vim.cmd([[PluginTemplate goodnight-moon count-sheep 3]])
@@ -169,8 +265,8 @@ describe("goodnight-moon commands", function()
 end)
 
 describe("help API", function()
-    before_each(_initialize_all)
-    after_each(_reset_all)
+    before_each(_initialize_prints)
+    after_each(_reset_prints)
 
     describe("fallback help", function()
         it("works on a nested subparser - 003", function()

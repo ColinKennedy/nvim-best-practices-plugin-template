@@ -23,6 +23,10 @@ CI
     - `panvimdoc`
 - RSS feed support
 
+CLI
+
+- Added nargs support to `cmdparse` and other features
+
 START UP
 
 - Fast start-up (the plugin is defer-loaded)

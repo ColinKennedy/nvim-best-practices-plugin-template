@@ -20,6 +20,8 @@ plugin-template-under-construction-	plugin-template.txt	/*plugin-template-under-
 plugin-template-using-this-template	plugin-template.txt	/*plugin-template-using-this-template*
 plugin-template.txt	plugin-template.txt	/*plugin-template.txt*
 plugin_template.Configuration	plugin_template_types.txt	/*plugin_template.Configuration*
+plugin_template.ConfigurationCmdparse	plugin_template_types.txt	/*plugin_template.ConfigurationCmdparse*
+plugin_template.ConfigurationCmdparseAutoComplete	plugin_template_types.txt	/*plugin_template.ConfigurationCmdparseAutoComplete*
 plugin_template.ConfigurationCommands	plugin_template_types.txt	/*plugin_template.ConfigurationCommands*
 plugin_template.ConfigurationGoodnightMoon	plugin_template_types.txt	/*plugin_template.ConfigurationGoodnightMoon*
 plugin_template.ConfigurationGoodnightMoonRead	plugin_template_types.txt	/*plugin_template.ConfigurationGoodnightMoonRead*

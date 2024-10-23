@@ -5,7 +5,39 @@
 
 local cmdparse = require("plugin_template._cli.cmdparse")
 
-describe("bad input", function()
+describe("bad auto-complete input", function()
+    it("errors if an incorrect flag is given", function()
+        local parser = cmdparse.ParameterParser.new({ "arbitrary-thing", help = "Prepare to sleep or sleep." })
+
+        parser:add_parameter({ "--bar", action = "store_true", help = "The -bar flag." })
+        parser:add_parameter({ "--foo", action = "store_true", help = "The -foo flag." })
+
+        assert.same({}, parser:get_completion("--does-not-exist "))
+        assert.same({}, parser:get_completion("--bar --does-not-exist "))
+        assert.same({}, parser:get_completion("--does-not-exist"))
+        assert.same({}, parser:get_completion("--bar --does-not-exist"))
+    end)
+
+    describe("named arguments", function()
+        it("errors if an unknown named argument is given", function()
+            local parser = cmdparse.ParameterParser.new({ "arbitrary-thing", help = "Prepare to sleep or sleep." })
+
+            parser:add_parameter({ "--bar", help = "The -bar flag." })
+            parser:add_parameter({ "--foo", action = "store_true", help = "The -foo flag." })
+
+            assert.same({}, parser:get_completion("--unknown=thing "))
+            assert.same({}, parser:get_completion("--unknown=thing"))
+
+            assert.same({}, parser:get_completion("--bar=thing --unknown=thing "))
+            assert.same({}, parser:get_completion("--bar=thing --unknown=thing"))
+
+            assert.same({}, parser:get_completion("--unknown=thing --bar=thing"))
+            assert.same({}, parser:get_completion("--unknown=thing --bar=thing "))
+        end)
+    end)
+end)
+
+describe("bad definition input", function()
     describe("parsers definition issues", function()
         it("errors if you define a flag argument with choices", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test" })
@@ -18,6 +50,17 @@ describe("bad input", function()
             assert.equal('Parameter "--foo" cannot use action "store_true" and choices at the same time.', result)
         end)
 
+        it("errors if you define a nargs=0 + position argument", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+
+            local success, result = pcall(function()
+                parser:add_parameter({ "foo", nargs = 0, help = "Test." })
+            end)
+
+            assert.is_false(success)
+            assert.equal('Parameter "foo" cannot be nargs=0.', result)
+        end)
+
         it("errors if you define a nargs + flag argument", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
@@ -27,6 +70,17 @@ describe("bad input", function()
 
             assert.is_false(success)
             assert.equal('Parameter "--foo" cannot use action "store_true" and nargs at the same time.', result)
+        end)
+
+        it("errors if you define a position parameter + action store_true #asdf", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+
+            local success, result = pcall(function()
+                parser:add_parameter({ "ɧelp", action = "store_true", help = "Test." })
+            end)
+
+            assert.is_false(success)
+            assert.equal('Parameter "ɧelp" cannot use action="store_true".', result)
         end)
 
         it("errors if a custom type=foo doesn't return a value - 001", function()
@@ -79,6 +133,30 @@ describe("bad input", function()
             assert.is_false(success)
             assert.equal(
                 'Parameter "--foo" failed to find a value. Please check your `type` parameter and fix it!',
+                result
+            )
+        end)
+
+        it("errors if no name is give", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test" })
+
+            local success, result = pcall(function()
+                parser:add_parameter({
+                    nargs = 1,
+                    type = function(_)
+                        return nil
+                    end,
+                    help = "Test.",
+                })
+            end)
+
+            assert.is_false(success)
+            assert.equal(
+                [[Options "{
+  help = "Test.",
+  nargs = 1,
+  type = <function 1>
+}" is missing a "name" key.]],
                 result
             )
         end)
@@ -190,37 +268,61 @@ thing]],
 
         describe("nargs", function()
             describe("nargs number", function()
+                it("errors if not enough values are given", function()
+                    local parser = cmdparse.ParameterParser.new({ help = "Test" })
+                    parser:add_parameter({ "--foo", nargs = 2, help = "Test." })
+                    parser:add_parameter({ "--bar", nargs = 2, help = "Test." })
+
+                    local command = "--foo thing --bar something else"
+                    local success, result = pcall(function()
+                        parser:parse_arguments(command)
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal('Parameter "--foo" requires "2" values. Got "1" value.', result)
+
+                    success, result = pcall(function()
+                        parser:get_completion(command)
+                    end)
+
+                    assert.is_false(success)
+                    assert.equal('Parameter "--foo" requires "2" values. Got "1" value.', result)
+                end)
+
                 it("works with nargs=2 + count", function()
                     local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
-                        parser:add_parameter({ "foo", nargs = 2, action = "count", help = "Test." })
+                        parser:add_parameter({ "--foo", nargs = 2, action = "count", help = "Test." })
                     end)
 
                     assert.is_false(success)
-                    assert.equal('Parameter "foo" cannot use action "count" and nargs at the same time.', result)
+                    assert.equal('Parameter "--foo" cannot use action "count" and nargs at the same time.', result)
                 end)
 
                 it("works with nargs=2 + store_false", function()
                     local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
-                        parser:add_parameter({ "foo", nargs = 2, action = "store_false", help = "Test." })
+                        parser:add_parameter({ "--foo", nargs = 2, action = "store_false", help = "Test." })
                     end)
 
                     assert.is_false(success)
-                    assert.equal('Parameter "foo" cannot use action "store_false" and nargs at the same time.', result)
+                    assert.equal(
+                        'Parameter "--foo" cannot use action "store_false" and nargs at the same time.',
+                        result
+                    )
                 end)
 
                 it("works with nargs=2 + store_true", function()
                     local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
-                        parser:add_parameter({ "foo", nargs = 2, action = "store_true", help = "Test." })
+                        parser:add_parameter({ "--foo", nargs = 2, action = "store_true", help = "Test." })
                     end)
 
                     assert.is_false(success)
-                    assert.equal('Parameter "foo" cannot use action "store_true" and nargs at the same time.', result)
+                    assert.equal('Parameter "--foo" cannot use action "store_true" and nargs at the same time.', result)
                 end)
             end)
 
@@ -229,33 +331,36 @@ thing]],
                     local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
-                        parser:add_parameter({ "foo", nargs = "*", action = "count", help = "Test." })
+                        parser:add_parameter({ "--foo", nargs = "*", action = "count", help = "Test." })
                     end)
 
                     assert.is_false(success)
-                    assert.equal('Parameter "foo" cannot use action "count" and nargs at the same time.', result)
+                    assert.equal('Parameter "--foo" cannot use action "count" and nargs at the same time.', result)
                 end)
 
                 it("works with nargs=* + store_false", function()
                     local parser = cmdparse.ParameterParser.new({ help = "Test." })
 
                     local success, result = pcall(function()
-                        parser:add_parameter({ "foo", nargs = "*", action = "store_false", help = "Test." })
+                        parser:add_parameter({ "--foo", nargs = "*", action = "store_false", help = "Test." })
                     end)
 
                     assert.is_false(success)
-                    assert.equal('Parameter "foo" cannot use action "store_false" and nargs at the same time.', result)
+                    assert.equal(
+                        'Parameter "--foo" cannot use action "store_false" and nargs at the same time.',
+                        result
+                    )
                 end)
 
                 it("works with nargs=* + store_true", function()
                     local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
-                        parser:add_parameter({ "foo", nargs = "*", action = "store_true", help = "Test." })
+                        parser:add_parameter({ "--foo", nargs = "*", action = "store_true", help = "Test." })
                     end)
 
                     assert.is_false(success)
-                    assert.equal('Parameter "foo" cannot use action "store_true" and nargs at the same time.', result)
+                    assert.equal('Parameter "--foo" cannot use action "store_true" and nargs at the same time.', result)
                 end)
             end)
 
@@ -264,33 +369,36 @@ thing]],
                     local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
-                        parser:add_parameter({ "foo", nargs = "+", action = "count", help = "Test." })
+                        parser:add_parameter({ "--foo", nargs = "+", action = "count", help = "Test." })
                     end)
 
                     assert.is_false(success)
-                    assert.equal('Parameter "foo" cannot use action "count" and nargs at the same time.', result)
+                    assert.equal('Parameter "--foo" cannot use action "count" and nargs at the same time.', result)
                 end)
 
                 it("works with nargs=+ + store_false", function()
                     local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
-                        parser:add_parameter({ "foo", nargs = "+", action = "store_false", help = "Test." })
+                        parser:add_parameter({ "--foo", nargs = "+", action = "store_false", help = "Test." })
                     end)
 
                     assert.is_false(success)
-                    assert.equal('Parameter "foo" cannot use action "store_false" and nargs at the same time.', result)
+                    assert.equal(
+                        'Parameter "--foo" cannot use action "store_false" and nargs at the same time.',
+                        result
+                    )
                 end)
 
                 it("works with nargs=+ + store_true", function()
                     local parser = cmdparse.ParameterParser.new({ help = "Test" })
 
                     local success, result = pcall(function()
-                        parser:add_parameter({ "foo", nargs = "+", action = "store_true", help = "Test." })
+                        parser:add_parameter({ "--foo", nargs = "+", action = "store_true", help = "Test." })
                     end)
 
                     assert.is_false(success)
-                    assert.equal('Parameter "foo" cannot use action "store_true" and nargs at the same time.', result)
+                    assert.equal('Parameter "--foo" cannot use action "store_true" and nargs at the same time.', result)
                 end)
             end)
 
@@ -432,16 +540,17 @@ thing]],
             parser:parse_arguments("")
         end)
 
-        -- TODO: Consider if we need this
-        -- it("errors if the user is #missing one of several arguments - 003 - position argument", function()
-        --     local parser = cmdparse.ParameterParser.new({ help = "Test" })
-        --     parser:add_parameter({ name = "foo", nargs=2})
-        --
-        --     local success, result = pcall(function() parser:parse_arguments("thing") end)
-        --
-        --     assert.is_false(success)
-        --     assert.equal('Parameter "--foo" expects 2 values.', result)
-        -- end)
+        it("errors if the user is #missing one of several arguments - 003 - position argument", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ name = "foo", nargs = 2, help = "Test." })
+
+            local success, result = pcall(function()
+                parser:parse_arguments("thing")
+            end)
+
+            assert.is_false(success)
+            assert.equal('Parameter "foo" requires "2" values. Got "1" value.', result)
+        end)
 
         it("errors if the user is #missing one of several arguments - 004 - flag-value argument", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test" })
@@ -494,6 +603,37 @@ thing]],
 
             assert.is_false(success)
             assert.equal('Parameter "thing" must be defined.', result)
+        end)
+    end)
+end)
+
+describe("bugs", function()
+    describe("auto-complete", function()
+        it("works with arbitrary-thing's flags", function()
+            local parser = cmdparse.ParameterParser.new({ "arbitrary-thing", help = "Prepare to sleep or sleep." })
+
+            parser:add_parameter({ "-a", action = "store_true", help = "The -a flag." })
+            parser:add_parameter({ "-b", action = "store_true", help = "The -b flag." })
+            parser:add_parameter({ "-c", action = "store_true", help = "The -c flag." })
+            parser:add_parameter({ "-f", action = "store_true", count = "*", help = "The -f flag." })
+            parser:add_parameter({
+                "-v",
+                action = "store_true",
+                count = "*",
+                destination = "verbose",
+                help = "The -v flag.",
+            })
+
+            assert.same({ "-c", "-f", "-v", "--help" }, parser:get_completion("-a -b "))
+        end)
+
+        it("works with arbitrary-thing's flags - 002", function()
+            local parser = cmdparse.ParameterParser.new({ "arbitrary-thing", help = "Prepare to sleep or sleep." })
+
+            parser:add_parameter({ "--bar", action = "store_true", help = "The -bar flag." })
+            parser:add_parameter({ "--foo", action = "store_true", help = "The -foo flag." })
+
+            assert.same({}, parser:get_completion("-a -b "))
         end)
     end)
 end)

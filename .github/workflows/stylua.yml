@@ -1,8 +1,5 @@
 ---
-on:
-  push:
-    branches:
-      - main
+on: [pull_request]
 name: stylua
 
 jobs:

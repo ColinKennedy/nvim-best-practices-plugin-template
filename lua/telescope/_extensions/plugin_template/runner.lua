@@ -20,6 +20,9 @@ local read = require("plugin_template._commands.goodnight_moon.read")
 local say_runner = require("plugin_template._commands.hello_world.say.runner")
 local tabler = require("plugin_template._core.tabler")
 
+---@diagnostic disable-next-line: deprecated
+local unpack = unpack or table.unpack
+
 vim.api.nvim_set_hl(0, "PluginTemplateTelescopeEntry", { link = "TelescopeResultsNormal", default = true })
 vim.api.nvim_set_hl(0, "PluginTemplateTelescopeSecondary", { link = "TelescopeResultsComment", default = true })
 

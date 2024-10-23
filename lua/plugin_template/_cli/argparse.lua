@@ -48,18 +48,18 @@ M.ArgumentType = {
 ---    `"--foo=bar"`. If the argument is partially written like `"--foo="`
 ---    then this will be an empty string.
 
----@alias argparse.ArgparseArgument argparse.FlagArgument | argparse.PositionArgument | argparse.NamedArgument
+---@alias argparse.Argument argparse.FlagArgument | argparse.PositionArgument | argparse.NamedArgument
 
----@class argparse.ArgparseResults
+---@class argparse.Results
 ---    All information that was found from parsing some user's input.
----@field arguments argparse.ArgparseArgument[]
+---@field arguments argparse.Argument[]
 ---    The arguments that were able to be parsed
----@field remainder argparse.ArgparseRemainder
+---@field remainder argparse.Remainder
 ---    Any leftover text during parsing that didn't match an argument.
 ---@field text string
 ---    The original, raw, unparsed user arguments.
 
----@class argparse.ArgparseRemainder
+---@class argparse.Remainder
 ---    Any leftover text during parsing that didn't match an argument.
 ---@field value string
 ---    The raw, unparsed text.
@@ -121,7 +121,7 @@ end
 ---
 ---@param text string
 ---    Some command to parse. e.g. `bar -f --buzz --some="thing else"`.
----@return argparse.ArgparseResults
+---@return argparse.Results
 ---    All found for positional arguments, named arguments, and flag arguments.
 ---
 function M.parse_arguments(text)
@@ -135,7 +135,7 @@ function M.parse_arguments(text)
     local is_escaping = false
     local needs_name = false
     local needs_value = false
-    --- @type argparse.ArgparseRemainder
+    --- @type argparse.Remainder
     local remainder = { value = "" }
     local start_index = 1
     local escaped_character_count = 0

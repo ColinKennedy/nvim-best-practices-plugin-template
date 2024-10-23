@@ -388,7 +388,7 @@ describe("named argument", function()
             local parser = _make_style_parser("++")
 
             assert.same({ "++style=" }, parser:get_completion("++s"))
-            assert.same({ "--help" }, parser:get_completion("++style=10 "))
+            assert.same({ "--help" }, parser:get_completion("++style=lowercase "))
             assert.same({}, parser:get_completion("sty"))
         end)
 
@@ -430,7 +430,8 @@ describe("named argument", function()
         local parser = _make_style_parser()
 
         assert.same({ "--style=" }, parser:get_completion("--s"))
-        assert.same({ "--help" }, parser:get_completion("--style=10 "))
+        assert.same({ "--help" }, parser:get_completion("--style=lowercase "))
+        assert.same({ "--help" }, parser:get_completion("--style uppercase "))
         assert.same({}, parser:get_completion("sty"))
     end)
 
@@ -570,14 +571,13 @@ describe("flag argument", function()
         assert.same({ "-f=" }, parser:get_completion("-f", 2))
     end)
 
-    -- it("does not auto-complete if at the end of the flag - 002", function()
-    --     -- TODO: action store_true is not working producing the correct auto-complete
-    --     local parser = cmdparse.ParameterParser.new({ help = "Test." })
-    --     parser:add_parameter({ "-f", action="store_true", help = "Force it." })
-    --
-    --     assert.same({}, parser:get_completion("-f", 1))
-    --     assert.same({"-f"}, parser:get_completion("-f", 2))
-    -- end)
+    it("does not auto-complete if at the end of the flag - 002", function()
+        local parser = cmdparse.ParameterParser.new({ help = "Test." })
+        parser:add_parameter({ "-f", action = "store_true", help = "Force it." })
+
+        assert.same({}, parser:get_completion("-f", 1))
+        assert.same({ "-f" }, parser:get_completion("-f", 2))
+    end)
 
     describe("++flag examples", function()
         it("auto-completes on the dash - 001", function()
@@ -602,6 +602,87 @@ describe("flag argument", function()
 
             assert.same({}, parser:get_completion("+f", 1))
             assert.same({ "+f=" }, parser:get_completion("+f", 2))
+        end)
+    end)
+end)
+
+describe("nargs", function()
+    describe("flag", function()
+        it("works with nargs 1", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "--items", choices = { "barty", "bar", "foo" }, nargs = 1, help = "Test." })
+
+            assert.same({ "bar", "barty" }, parser:get_completion("--items b"))
+        end)
+
+        it("works with nargs 2+", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "--items", choices = { "barty", "bar", "foo" }, nargs = 2, help = "Test." })
+
+            assert.same({ "foo" }, parser:get_completion("--items bar f"))
+        end)
+
+        it("works with nargs *", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "--items", choices = { "barty", "bar", "foo" }, nargs = "*", help = "Test." })
+
+            assert.same({ "foo" }, parser:get_completion("--items bar f"))
+        end)
+
+        it("works with nargs +", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "--items", choices = { "barty", "bar", "foo" }, nargs = "+", help = "Test." })
+
+            assert.same({ "foo" }, parser:get_completion("--items bar f"))
+        end)
+    end)
+
+    describe("position", function()
+        it("works with nargs 1", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "items", choices = { "barty", "bar", "foo" }, nargs = 1, help = "Test." })
+
+            assert.same({ "bar", "barty" }, parser:get_completion("b"))
+        end)
+
+        it("works with nargs 2+", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "items", choices = { "barty", "bar", "foo" }, nargs = 2, help = "Test." })
+
+            assert.same({ "foo" }, parser:get_completion("bar f"))
+        end)
+
+        it("works with nargs *", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "items", choices = { "barty", "bar", "foo" }, nargs = "*", help = "Test." })
+
+            assert.same({ "foo" }, parser:get_completion("bar f"))
+        end)
+
+        it("works with nargs +", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({
+                "items",
+                choices = { "barty", "bar", "foo" },
+                nargs = "+",
+                help = "Parameter test.",
+            })
+
+            assert.same({ "foo" }, parser:get_completion("bar f"))
+        end)
+    end)
+
+    describe("named argument", function()
+        it("does not complete with = when nargs is 2+", function()
+            local parser = cmdparse.ParameterParser.new({ help = "Test." })
+            parser:add_parameter({ "--items", nargs = 2, help = "Test." })
+
+            assert.same({ "--items" }, parser:get_completion("--ite"))
+
+            local parser2 = cmdparse.ParameterParser.new({ help = "Test." })
+            parser2:add_parameter({ "--items", nargs = 1, help = "Test." })
+
+            assert.same({ "--items=" }, parser2:get_completion("--ite"))
         end)
     end)
 end)
@@ -652,12 +733,32 @@ describe("* count", function()
 end)
 
 describe("dynamic argument", function()
-    it("skips if no matches were found", function()
-        -- TODO: Add
-    end)
-
     it("works even if matches use spaces", function()
-        -- TODO: The user's argument should be in quotes, basically
+        local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test" })
+        local subparsers = parser:add_subparsers({ destination = "commands", help = "All main commands." })
+        local say_parser = subparsers:add_parser({ name = "say", help = "Say something." })
+        local inner_subparsers = say_parser:add_subparsers({ destination = "thing_subparsers", help = "Test." })
+
+        local dynamic = inner_subparsers:add_parser({
+            name = "dynamic_thing",
+            choices = function()
+                return { "item with spaces", "cc", "zzz", "lazers" }
+            end,
+            help = "Test.",
+        })
+
+        local inner_dynamic = dynamic:add_subparsers({ name = "inner_dynamic_thing", help = "Test." })
+        local different = inner_dynamic:add_parser({ name = "different", help = "Test." })
+        different:add_parameter({
+            name = "last",
+            choices = function()
+                return { "branch", "here" }
+            end,
+            help = "Test.",
+        })
+
+        assert.same({ "item with spaces" }, parser:get_completion('say "item "'))
+        assert.same({ "branch" }, parser:get_completion('say "item with spaces" different b'))
     end)
 
     it("works with positional arguments", function()
@@ -692,17 +793,17 @@ describe("dynamic argument", function()
             help = "Test.",
         })
 
-        -- TODO: Improve the (default) sorting here
         -- NOTE: We don't complete the next subparsers because required
         -- parameter(s) from the `say` subparser have no been satisfied yet.
         --
-        assert.same({ "a", "bb", "asteroid", "tt", "--help" }, parser:get_completion("say "))
+        assert.same({ "a", "asteroid", "bb", "tt", "--help" }, parser:get_completion("say "))
         -- IMPORTANT: Notice we do not include `ab` in the completion because
         -- the `thing` argument is required and must be satisfied first before
         -- we can continue to the subparser.
         --
         assert.same({ "a", "asteroid" }, parser:get_completion("say a"))
         assert.same({ "ab", "cc", "lazers", "thing_parser", "zzz", "--help" }, parser:get_completion("say a "))
+        assert.same({ "ab", "cc", "lazers", "thing_parser", "zzz", "--help" }, parser:get_completion("say tt "))
         assert.same({ "another", "last", "--help" }, parser:get_completion("say a thing_parser "))
 
         assert.same({ "different", "--help" }, parser:get_completion("say ab "))
