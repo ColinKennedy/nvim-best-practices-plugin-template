@@ -6,7 +6,47 @@ Notable changes since PluginTemplate 1.0
 ===============================================================================
 NEW FEATURES                                     *plugin-template-new-features*
 
-We're live!
+GENERAL
+
+- 100% Lua
+- LuaCATS <https://luals.github.io/wiki/annotations/> annotations and type-hints, everywhere
+- No external dependencies
+
+CI
+
+- Github actions for:
+    - PR reviews - Reminds users to update `doc/news.txt`
+    - `StyLua`
+    - `llscheck`
+    - `luacheck`
+    - `luarocks`
+    - `panvimdoc`
+- RSS feed support
+
+CLI
+
+- Added nargs support to `cmdparse` and other features
+
+START UP
+
+- Fast start-up (the plugin is defer-loaded)
+- Follows nvim-best-practices <https://github.com/nvim-neorocks/nvim-best-practices>
+
+COMMANDS
+
+- Built-in Vim commands with auto-completion
+
+TESTS
+
+- Unittests use the full power of native busted <https://olivinelabs.com/busted>
+
+TOOLS
+
+Integrates with
+
+- lualine.nvim <https://github.com/nvim-lualine/lualine.nvim>
+- telescope.nvim <https://github.com/nvim-telescope/telescope.nvim>
+- `:checkhealth`
 
 
 ===============================================================================

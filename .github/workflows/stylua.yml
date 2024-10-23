@@ -1,3 +1,5 @@
+---
+on: [pull_request]
 name: stylua
 
 on:

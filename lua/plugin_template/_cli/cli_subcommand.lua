@@ -3,6 +3,8 @@
 ---@module 'plugin_template._cli.cli_subcommand'
 ---
 
+local help_message = require("plugin_template._cli.cmdparse.help_message")
+
 local M = {}
 
 ---@class argparse.SubcommandRunnerOptions
@@ -378,8 +380,25 @@ function M.make_subcommand_triager(subcommands)
     ---@param opts argparse.SubcommandRunnerOptions The parsed user options.
     ---
     local function runner(opts)
-        local configuration = require("plugin_template._core.configuration")
-        configuration.initialize_data_if_needed()
+        local success, result = pcall(function()
+            _runner(opts)
+        end)
+
+        if not success then
+            ---@cast result string
+
+            if help_message.is_help_message(result) then
+                help_message.show_help(result)
+
+                return
+            end
+
+            error(result)
+        end
+    end
+
+    -- NOTE: Initialize only once
+    local configuration = require("plugin_template._core.configuration")
 
         local help_message = require("plugin_template._cli.cmdparse.help_message")
 
