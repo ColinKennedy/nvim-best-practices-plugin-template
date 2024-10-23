@@ -18,6 +18,8 @@ jobs:
     - name: build
       run: |
         luarocks install busted
+        luarocks install nlua
+        luarocks install nui.nvim
         luarocks make
 
     - name: test
