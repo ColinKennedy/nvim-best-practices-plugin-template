@@ -15,6 +15,11 @@ jobs:
 
     - uses: leafo/gh-actions-luarocks@v4
 
+    - uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: stable
+
     - name: build
       run: |
         luarocks install busted
