@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - fix_multi_nargs_flag_002
+      - fix_todo_notes
 name: documentation
 
 jobs:
