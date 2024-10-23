@@ -53,7 +53,7 @@ A template repository for Neovim plugins.
 - Auto-completes your commands at any cursor position
 - No external dependencies <https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/External-Dependencies-Disclaimer>
 - LuaCATS <https://luals.github.io/wiki/annotations/>annotations and type-hints, everywhere
-- RSS feed support
+- RSS feed support <tracking-updates>
 - Built-in logging to stdout / files
 - Unittests use the full power of native busted <https://olivinelabs.com/busted>
 - 100% Lua
