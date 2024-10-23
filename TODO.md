@@ -1,12 +1,15 @@
 ## Round 2
-- Document the old manual parser way
+- add test.yml, for busted
 
 
 ## Round 3
 - Make sure the CI works
  - llscheck
 
+https://dev.to/envoy_/150-badges-for-github-pnk
+
 - Add badges to the README.md
+ - Add a badge for test.yml
  - RSS
  - Stylua
  - etc
@@ -19,6 +22,7 @@ https://github.com/azratul/live-share.nvim?tab=readme-ov-file
 
 ## Round 4
 - Do a round of finishing TODO notes
+- Document the old manual parser way
 
 
 ## Extra Features
@@ -26,6 +30,4 @@ https://github.com/azratul/live-share.nvim?tab=readme-ov-file
 
 
 ## Last Round
-- Make sure PR linters work (release (post-merge) should also work)
-
 - Make sure to increment the version to v1.0.0
