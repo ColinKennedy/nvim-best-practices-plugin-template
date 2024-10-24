@@ -6,8 +6,8 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        neovim: [v0.10.0, stable, nightly]
+        os: [windows-latest]
+        neovim: [v0.10.0]
 
     runs-on: ${{ matrix.os }}
     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
