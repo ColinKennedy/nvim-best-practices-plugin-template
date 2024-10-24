@@ -6,8 +6,8 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [windows-latest]
-        neovim: [v0.10.0]
+        os: [ubuntu-latest, macos-latest]
+        neovim: [v0.10.0, stable, nightly]
 
     runs-on: ${{ matrix.os }}
     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
@@ -15,14 +15,13 @@ jobs:
     steps:
     - uses: actions/checkout@master
 
-    - uses: ilammy/msvc-dev-cmd@v1  # Only used by windows, does nothing on other OSes.
     - uses: leafo/gh-actions-lua@v10
       with:
         # Neovim is compiled with LuaJIT so we might as well match. But it doesn't look like we can match it exactly.
         #
         # Reference: https://github.com/leafo/gh-actions-lua/issues/49#issuecomment-2295071198
         #
-        luaVersion: "5.1.5"
+        luaVersion: "luajit-openresty"
 
     - uses: leafo/gh-actions-luarocks@v4
 
