@@ -33,6 +33,9 @@ local default_config = {
         { name = "fatal", hl = "ErrorMsg" },
     },
 
+    -- Define this path to redirect the log file to wherever you need it to go
+    outfile = nil,
+
     -- Can limit the number of decimals displayed for floats
     float_precision = 0.01,
 }
@@ -64,7 +67,7 @@ log.new = function(config, standalone)
 
     obj._is_logging_to_file_enabled = config.use_file
 
-    obj._outfile =
+    obj._outfile = config.outfile or
         vim.fs.joinpath(vim.api.nvim_call_function("stdpath", { "data" }), string.format("%s.log", config.plugin))
 
     local levels = {}
