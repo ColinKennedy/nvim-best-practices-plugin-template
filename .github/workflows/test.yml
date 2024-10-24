@@ -15,6 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
 
+    - uses: ilammy/msvc-dev-cmd@v1  # Only used by windows, does nothing on other OSes.
     - uses: leafo/gh-actions-lua@v10
       with:
         # Neovim is compiled with LuaJIT so we might as well match. But it doesn't look like we can match it exactly.
