@@ -29,8 +29,8 @@ A template repository for Neovim plugins.
 - [RSS feed support](tracking-updates)
 - Built-in logging to stdout / files
 - Unittests use the full power of native [busted](https://olivinelabs.com/busted)
-- Automated testing matrix supports
-    - neovim: `[v0.9.0, v0.10.0, stable, nightly]`
+- Automated testing matrix supports 6 Neovim/OS combinations
+    - neovim: `[v0.10.0, stable, nightly]`
     - os: `[ubuntu-latest, macos-latest]`
 - 100% Lua
 - Uses [Semantic Versioning](https://semver.org)
