@@ -92,12 +92,12 @@ end
 local function _get_command_issues(data)
     local output = {}
 
-    local success, message = pcall(
-        vim.validate,
-        "commands.goodnight_moon.read.phrase",
-        tabler.get_value(data, { "commands", "goodnight_moon", "read", "phrase" }),
-        "string"
-    )
+    local success, message = pcall(vim.validate, {
+        ["commands.goodnight_moon.read.phrase"] = {
+            tabler.get_value(data, { "commands", "goodnight_moon", "read", "phrase" }),
+            "string",
+        },
+    })
 
     if not success then
         table.insert(output, message)

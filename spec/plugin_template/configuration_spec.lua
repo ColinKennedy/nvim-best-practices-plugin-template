@@ -90,7 +90,7 @@ describe("bad configuration - commands", function()
     it("happens with a bad type for #commands.goodnight_moon.phrase", function()
         _assert_bad(
             { commands = { goodnight_moon = { read = { phrase = 10 } } } },
-            { "commands.goodnight_moon.read.phrase: expected string, got number (10)" }
+            { "commands.goodnight_moon.read.phrase: expected string, got number" }
         )
     end)
 
@@ -190,7 +190,7 @@ describe("health.check", function()
         local issues = tabler.get_slice(found, 1, #found - 1)
 
         assert.same({
-            "commands.goodnight_moon.read.phrase: expected string, got number (123)",
+            "commands.goodnight_moon.read.phrase: expected string, got number",
             "commands.hello_world.say.repeat: expected a number (value must be 1-or-more), got asdf",
             'commands.hello_world.say.style: expected "lowercase" or "uppercase", got 789',
             'logging.level: expected an enum. e.g. "trace" | "debug" | "info" | "warn" | "error" | "fatal", got false',
