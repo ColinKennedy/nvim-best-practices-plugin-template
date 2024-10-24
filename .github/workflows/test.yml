@@ -6,7 +6,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         neovim: [v0.10.0, stable, nightly]
 
     runs-on: ${{ matrix.os }}
