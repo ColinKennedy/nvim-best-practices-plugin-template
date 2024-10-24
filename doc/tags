@@ -1,7 +1,6 @@
 plugin-template-a-neovim-plugin-template	plugin-template.txt	/*plugin-template-a-neovim-plugin-template*
 plugin-template-commands	plugin-template.txt	/*plugin-template-commands*
 plugin-template-configuration	plugin-template.txt	/*plugin-template-configuration*
-plugin-template-configuration-colors	plugin-template.txt	/*plugin-template-configuration-colors*
 plugin-template-configuration-lualine	plugin-template.txt	/*plugin-template-configuration-lualine*
 plugin-template-configuration-telescope	plugin-template.txt	/*plugin-template-configuration-telescope*
 plugin-template-features	plugin-template.txt	/*plugin-template-features*

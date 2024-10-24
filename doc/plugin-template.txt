@@ -10,7 +10,6 @@ Table of Contents                          *plugin-template-table-of-contents*
 5. Configuration                               |plugin-template-configuration|
   - Lualine                            |plugin-template-configuration-lualine|
   - Telescope                        |plugin-template-configuration-telescope|
-  - Colors                              |plugin-template-configuration-colors|
 6. Commands                                         |plugin-template-commands|
 7. Tests                                               |plugin-template-tests|
   - Initialization                      |plugin-template-tests-initialization|
@@ -202,7 +201,7 @@ telescope.nvim <https://github.com/nvim-telescope/telescope.nvim>
 <
 
 
-COLORS                                  *plugin-template-configuration-colors*
+COLORS ~
 
 This plugin provides two default highlights
 
