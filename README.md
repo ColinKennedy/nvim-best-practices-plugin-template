@@ -233,7 +233,7 @@ busted --helper spec/minimal_init.lua . --tags=simple
 # Tracking Updates
 See [doc/news.txt](doc/news.txt) for updates.
 
-You can add changes to this plugin by adding this URL to your RSS feed:
+You can watch this plugin for changes by adding this URL to your RSS feed:
 ```
 https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom
 ```
