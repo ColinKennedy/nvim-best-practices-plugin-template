@@ -1,11 +1,4 @@
-## Round 2
-- add test.yml, for busted
-
-
 ## Round 3
-- Make sure the CI works
- - llscheck
-
 https://dev.to/envoy_/150-badges-for-github-pnk
 
 - Add badges to the README.md
