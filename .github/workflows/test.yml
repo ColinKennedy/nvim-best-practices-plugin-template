@@ -34,9 +34,7 @@ jobs:
 
     - name: build
       run: |
-        luarocks install busted
-        luarocks install nlua
-        luarocks install nui.nvim
+        luarocks install plugin-template-scm-1.rockspec --only-deps
         luarocks make
 
     - name: test
