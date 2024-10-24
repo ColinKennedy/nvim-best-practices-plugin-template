@@ -29,9 +29,8 @@ jobs:
 
     - name: build
       run: |
-        luarocks install plugin-template-scm-1.rockspec --only-deps
-        luarocks make
+        luarocks test plugin-template-scm-1.rockspec --prepare
 
     - name: test
       run: |
-        make test
+        luarocks test --test-type busted
