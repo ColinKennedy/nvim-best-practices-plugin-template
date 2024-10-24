@@ -12,7 +12,7 @@ test_dependencies = {
 -- Reference: https://github.com/luarocks/luarocks/wiki/test#test-types
 test = {
     type = "busted",
-    flags = {"--helper", "spec/minimal_init.lua"},
+    flags = {"--helper", "spec/minimal_init.lua", "--tags", "mmm"},
 }
 
 source = {

@@ -126,7 +126,7 @@ describe("copy logs API", function()
         assert.same({ path }, _DATA)
     end)
 
-    it("runs with default arguments", function()
+    it("runs with default arguments #mmm", function()
         plugin_template.run_copy_logs()
         _wait_for_result()
 
