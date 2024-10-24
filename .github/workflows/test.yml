@@ -17,9 +17,11 @@ jobs:
 
     - uses: leafo/gh-actions-lua@v10
       with:
-        # Neovim is compiled with LuaJIT so we might as well match. But it doesn't look like we can match it exactly.
+        # Neovim is compiled with LuaJIT so we might as well match. But it
+        # doesn't look like we can match it exactly.
         #
-        # Reference: https://github.com/leafo/gh-actions-lua/issues/49#issuecomment-2295071198
+        # Reference:
+        #    https://github.com/leafo/gh-actions-lua/issues/49#issuecomment-2295071198
         #
         luaVersion: "luajit-openresty"
 
