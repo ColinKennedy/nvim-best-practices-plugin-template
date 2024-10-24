@@ -19,9 +19,14 @@ https://dev.to/envoy_/150-badges-for-github-pnk
 Consider more badges
 https://github.com/azratul/live-share.nvim?tab=readme-ov-file
 
+- Make this plugin load faster (defer eval is not that fast)
+
 
 ## Round 4
 - Do a round of finishing TODO notes
+- Make sure the CI works
+ - llscheck
+
 - Document the old manual parser way
 
 
