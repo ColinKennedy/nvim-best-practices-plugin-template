@@ -4,7 +4,13 @@ on: [push]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        neovim: [stable]
+
+    runs-on: ${{ matrix.os }}
+    name: "OS: ${{ matrix.os }} - Neovim ${{ matrix.neovim }}"
 
     steps:
     - uses: actions/checkout@master
