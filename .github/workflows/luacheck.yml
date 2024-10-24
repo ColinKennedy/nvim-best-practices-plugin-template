@@ -1,6 +1,10 @@
 name: luacheck
 
-on: [pull_request]
+on:
+  pull_request: {}
+  push:
+    branches:
+      - main
 
 jobs:
   luacheck:
