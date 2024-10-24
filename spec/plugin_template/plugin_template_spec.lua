@@ -117,7 +117,7 @@ describe("copy logs API", function()
     after_each(_reset_copy_log)
 
     it("runs with an explicit file path", function()
-        local path = vim.fn.tempname() .. "copy_logs_test.txt"
+        local path = vim.fn.tempname() .. "copy_logs_test.log"
         _make_fake_log(path)
 
         plugin_template.run_copy_logs(path)
@@ -126,11 +126,13 @@ describe("copy logs API", function()
         assert.same({ path }, _DATA)
     end)
 
-    it("runs with default arguments #mmm", function()
+    it("runs with default arguments", function()
+        local expected = vim.fs.joinpath(vim.fn.expand("~"), ".local", "share", "nvim", "plugin_template.log")
+        _make_fake_log(expected)
+
         plugin_template.run_copy_logs()
         _wait_for_result()
 
-        local expected = vim.fs.joinpath(vim.fn.expand("~"), ".local", "share", "nvim", "plugin_template.log")
 
         assert.same({ expected }, _DATA)
     end)
@@ -141,7 +143,7 @@ describe("copy logs command", function()
     after_each(_reset_copy_log)
 
     it("runs with an explicit file path", function()
-        local path = vim.fn.tempname() .. "copy_logs_test.txt"
+        local path = vim.fn.tempname() .. "copy_logs_test.log"
         _make_fake_log(path)
 
         vim.cmd(string.format('PluginTemplate copy-logs "%s"', path))
@@ -151,10 +153,12 @@ describe("copy logs command", function()
     end)
 
     it("runs with default arguments", function()
-        vim.cmd([[PluginTemplate copy-logs]])
-        _wait_for_result()
-
         local expected = vim.fs.joinpath(vim.fn.expand("~"), ".local", "share", "nvim", "plugin_template.log")
+        _make_fake_log(expected)
+
+        vim.cmd([[PluginTemplate copy-logs]])
+
+        _wait_for_result()
 
         assert.same({ expected }, _DATA)
     end)

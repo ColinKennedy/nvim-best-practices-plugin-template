@@ -58,9 +58,6 @@ end
 ---
 function M.run(path)
     path = path or vlog:get_log_path()
-    print("\n\n\n")
-    print('DEBUGPRINT[12]: runner.lua:60: path=' .. vim.inspect(path))
-    print("\n\n\n")
 
     if not path or vim.fn.filereadable(path) ~= 1 then
         vim.notify(string.format('No "%s" path. Cannot copy the logs.', path), vim.log.levels.ERROR)
