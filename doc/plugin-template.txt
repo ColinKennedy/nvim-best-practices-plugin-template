@@ -1,49 +1,44 @@
-*plugin-template.txt*     For Neovim >= 0.8.0     Last change: 2024 October 23
+*plugin-template.txt*     For Neovim >= 0.8.0     Last change: 2024 October 24
 
 ==============================================================================
 Table of Contents                          *plugin-template-table-of-contents*
 
-1. Under Construction                    |plugin-template-under-construction-|
-2. A Neovim Plugin Template         |plugin-template-a-neovim-plugin-template|
-3. Features                                         |plugin-template-features|
-4. Using This Template                   |plugin-template-using-this-template|
-5. Installation                                 |plugin-template-installation|
-6. Configuration                               |plugin-template-configuration|
+1. A Neovim Plugin Template         |plugin-template-a-neovim-plugin-template|
+2. Features                                         |plugin-template-features|
+3. Using This Template                   |plugin-template-using-this-template|
+4. Installation                                 |plugin-template-installation|
+5. Configuration                               |plugin-template-configuration|
   - Lualine                            |plugin-template-configuration-lualine|
   - Telescope                        |plugin-template-configuration-telescope|
   - Colors                              |plugin-template-configuration-colors|
-7. Commands                                         |plugin-template-commands|
-8. Tests                                               |plugin-template-tests|
+6. Commands                                         |plugin-template-commands|
+7. Tests                                               |plugin-template-tests|
   - Initialization                      |plugin-template-tests-initialization|
   - Running                                    |plugin-template-tests-running|
-9. Tracking Updates                         |plugin-template-tracking-updates|
-10. Other Plugins                              |plugin-template-other-plugins|
-11. Links                                              |plugin-template-links|
+8. Tracking Updates                         |plugin-template-tracking-updates|
+9. Other Plugins                               |plugin-template-other-plugins|
 
 ==============================================================================
-1. Under Construction                    *plugin-template-under-construction-*
+1. A Neovim Plugin Template         *plugin-template-a-neovim-plugin-template*
 
-Thisrepository doesn’t have all GitHub CI actions working yet but is
-available as an early preview. We will update docs/news.txt once it’s ready.
+  --------------------------------------------------------------------------------
+            
+  --------- ----------------------------------------------------------------------
+  Build     [Unittests] [Documentation] [Luacheck] [Stylua]
+  Status    
 
-Add
-https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom
-to your RSS feed so you don’t miss it!
+  License   [License-MIT]
 
-
-==============================================================================
-2. A Neovim Plugin Template         *plugin-template-a-neovim-plugin-template*
-
-
-
-A template repository for Neovim plugins.
+  Social    [RSS]
+  --------------------------------------------------------------------------------
+A template repository used to create Neovim plugins.
 
 
 ==============================================================================
-3. Features                                         *plugin-template-features*
+2. Features                                         *plugin-template-features*
 
 - Follows nvim-best-practices <https://github.com/nvim-neorocks/nvim-best-practices>
-- Fast start-up (the plugin is super defer-loaded. < 1 ms guarantee)
+- Fast start-up (~1 ms)
 - Auto-release to luarocks <https://luarocks.org>
 - Automated user documentation (using panvimdoc <https://github.com/kdheepak/panvimdoc>)
 - Automated API documentation (using mini.doc <https://github.com/echasnovski/mini.doc>)
@@ -56,6 +51,9 @@ A template repository for Neovim plugins.
 - RSS feed support <tracking-updates>
 - Built-in logging to stdout / files
 - Unittests use the full power of native busted <https://olivinelabs.com/busted>
+- Automated testing matrix supports 6 Neovim/OS combinations
+    - neovim: `[v0.10.0, stable, nightly]`
+    - os: `[ubuntu-latest, macos-latest]`
 - 100% Lua
 - Uses Semantic Versioning <https://semver.org>
 - Integrations
@@ -73,14 +71,14 @@ A template repository for Neovim plugins.
 
 
 ==============================================================================
-4. Using This Template                   *plugin-template-using-this-template*
+3. Using This Template                   *plugin-template-using-this-template*
 
 1. Follow the Wiki instructions <https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/Using-This-Template>
 2. Once you’re done, remove this section (the rest of this README.md file should be kept / customized to your needs)
 
 
 ==============================================================================
-5. Installation                                 *plugin-template-installation*
+4. Installation                                 *plugin-template-installation*
 
 - lazy.nvim <https://github.com/folke/lazy.nvim>
 
@@ -94,7 +92,7 @@ A template repository for Neovim plugins.
 
 
 ==============================================================================
-6. Configuration                               *plugin-template-configuration*
+5. Configuration                               *plugin-template-configuration*
 
 (These are default values)
 
@@ -221,7 +219,7 @@ them, here’s how:
 
 
 ==============================================================================
-7. Commands                                         *plugin-template-commands*
+6. Commands                                         *plugin-template-commands*
 
 Here are some example commands:
 
@@ -241,7 +239,7 @@ Here are some example commands:
 
 
 ==============================================================================
-8. Tests                                               *plugin-template-tests*
+7. Tests                                               *plugin-template-tests*
 
 
 INITIALIZATION                          *plugin-template-tests-initialization*
@@ -273,7 +271,7 @@ Run test based on tags
 
 
 ==============================================================================
-9. Tracking Updates                         *plugin-template-tracking-updates*
+8. Tracking Updates                         *plugin-template-tracking-updates*
 
 See doc/news.txt <doc/news.txt> for updates.
 
@@ -285,18 +283,12 @@ You can add changes to this plugin by adding this URL to your RSS feed:
 
 
 ==============================================================================
-10. Other Plugins                              *plugin-template-other-plugins*
+9. Other Plugins                               *plugin-template-other-plugins*
 
 This template is full of various features. But if your plugin is only meant to
 be a simple plugin and you don’t want the bells and whistles that this
 template provides, consider instead using nvim-plugin-template
 <https://github.com/ellisonleao/nvim-plugin-template>
-
-==============================================================================
-11. Links                                              *plugin-template-links*
-
-1. *GitHub Workflow Status*: https://img.shields.io/github/actions/workflow/status/ColinKennedy/nvim-best-practices-plugin-template/test.yml?branch=main&style=for-the-badge
-2. *Lua*: https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua
 
 Generated by panvimdoc <https://github.com/kdheepak/panvimdoc>
 

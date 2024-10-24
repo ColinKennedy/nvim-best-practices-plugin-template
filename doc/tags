@@ -6,7 +6,6 @@ plugin-template-configuration-lualine	plugin-template.txt	/*plugin-template-conf
 plugin-template-configuration-telescope	plugin-template.txt	/*plugin-template-configuration-telescope*
 plugin-template-features	plugin-template.txt	/*plugin-template-features*
 plugin-template-installation	plugin-template.txt	/*plugin-template-installation*
-plugin-template-links	plugin-template.txt	/*plugin-template-links*
 plugin-template-new-breaking	news.txt	/*plugin-template-new-breaking*
 plugin-template-new-features	news.txt	/*plugin-template-new-features*
 plugin-template-news.txt	news.txt	/*plugin-template-news.txt*
@@ -16,7 +15,6 @@ plugin-template-tests	plugin-template.txt	/*plugin-template-tests*
 plugin-template-tests-initialization	plugin-template.txt	/*plugin-template-tests-initialization*
 plugin-template-tests-running	plugin-template.txt	/*plugin-template-tests-running*
 plugin-template-tracking-updates	plugin-template.txt	/*plugin-template-tracking-updates*
-plugin-template-under-construction-	plugin-template.txt	/*plugin-template-under-construction-*
 plugin-template-using-this-template	plugin-template.txt	/*plugin-template-using-this-template*
 plugin-template.txt	plugin-template.txt	/*plugin-template.txt*
 plugin_template.Configuration	plugin_template_types.txt	/*plugin_template.Configuration*
