@@ -1,8 +1,9 @@
+name: documentation
+
 on:
   push:
     branches:
       - main
-name: documentation
 
 jobs:
   documentation:

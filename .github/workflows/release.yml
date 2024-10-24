@@ -1,9 +1,11 @@
 # Reference: https://github.com/ellisonleao/nvim-plugin-template/blob/922c0d5249076416c5d84e7c0504f1154225a7ab/.github/workflows/release.yml
 name: release
+
 on:
   push:
     tags:
       - 'v*'
+
 jobs:
   luarocks-upload:
     runs-on: ubuntu-22.04

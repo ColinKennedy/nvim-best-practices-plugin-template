@@ -1,10 +1,12 @@
 # Reference: https://github.com/neovim/neovim/blob/9762c5e3406cab8152d8dd161c0178965d841676/.github/workflows/news.yml
 name: "news.txt"
+
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
     branches:
     - main
+
 jobs:
   check:
     runs-on: ubuntu-latest

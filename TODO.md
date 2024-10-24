@@ -1,6 +1,13 @@
 ## Round 3
 https://dev.to/envoy_/150-badges-for-github-pnk
 
+Releases
+Build Status
+- license
+Support Me
+
+https://img.shields.io/badge/RSS-FFA500?style=for-the-badge&logo=rss&logoColor=white
+
 - Add badges to the README.md
  - Add a badge for test.yml
  - RSS
