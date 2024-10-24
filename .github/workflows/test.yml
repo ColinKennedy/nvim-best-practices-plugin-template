@@ -22,7 +22,7 @@ jobs:
         #
         # Reference: https://github.com/leafo/gh-actions-lua/issues/49#issuecomment-2295071198
         #
-        luaVersion: "luajit-openresty"
+        luaVersion: "5.1.5"
 
     - uses: leafo/gh-actions-luarocks@v4
 
