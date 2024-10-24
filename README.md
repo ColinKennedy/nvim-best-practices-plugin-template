@@ -63,6 +63,8 @@ A template repository used to create Neovim plugins.
 # Configuration
 (These are default values)
 
+<!-- TODO: (you) - Remove / Add / Adjust your configuration here -->
+
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
 ```lua
 {
@@ -120,6 +122,8 @@ A template repository used to create Neovim plugins.
 
 ## Lualine
 
+<!-- TODO: (you) - Remove this is you do not want lualine -->
+
 > Note: You can customize lualine colors here or using
 > `vim.g.plugin_template_configuration`.
 
@@ -145,6 +149,8 @@ require("lualine").setup {
 
 ## Telescope
 
+<!-- TODO: (you) - Remove this is you do not want telescope -->
+
 > Note: You can customize telescope colors here or using
 > `vim.g.plugin_template_configuration`.
 
@@ -166,7 +172,7 @@ require("lualine").setup {
 ```
 
 
-## Colors
+### Colors
 This plugin provides two default highlights
 
 - `PluginTemplateTelescopeEntry`
