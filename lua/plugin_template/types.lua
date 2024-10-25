@@ -64,6 +64,8 @@
 ---    spammy. You probably don't want to enable this unless you have to.
 ---@field use_file boolean?
 ---    Should write to a file.
+---@field output_path string?
+---    The default path on-disk where log files will be written to.
 
 ---@class plugin_template.ConfigurationGoodnightMoonRead
 ---    The default values when a user calls `:PluginTemplate goodnight-moon read`.
