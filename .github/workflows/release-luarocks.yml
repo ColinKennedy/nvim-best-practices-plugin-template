@@ -1,6 +1,8 @@
 # TODO: (you) - To enable this workflow, you need to provide a LUAROCKS_API_KEY
 #
-# Reference: https://github.com/ellisonleao/nvim-plugin-template/blob/922c0d5249076416c5d84e7c0504f1154225a7ab/.github/workflows/release.yml
+# References:
+#   https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#publishing-to-luarocks
+#   https://github.com/ellisonleao/nvim-plugin-template/blob/922c0d5249076416c5d84e7c0504f1154225a7ab/.github/workflows/release.yml
 #
 name: Release To LuaRocks
 

@@ -1,6 +1,8 @@
 # TODO: (you) - To enable this worflow, you must create a "Personal Access Token".
 #
-# Reference: https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#generating-a-pat-personal-access-token
+# References:
+#   https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#installing-release-please-recommended
+#   Reference: https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#generating-a-pat-personal-access-token
 #
 name: Release To GitHub
 
