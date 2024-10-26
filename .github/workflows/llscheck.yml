@@ -1,0 +1,48 @@
+name: llscheck
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+    - main
+  push:
+    branches:
+      - main
+
+jobs:
+  llscheck:
+    runs-on: ubuntu-latest
+    name: llscheck
+
+    steps:
+    - uses: actions/checkout@master
+      with:
+        submodules: true  # Ensure submodules are checked out
+
+    - name: Update Submodules
+      run: git submodule update --init --recursive
+
+    - uses: leafo/gh-actions-lua@v10
+      with:
+        # Neovim is compiled with LuaJIT so we might as well match. But it
+        # doesn't look like we can match it exactly.
+        #
+        # Reference:
+        #    https://github.com/leafo/gh-actions-lua/issues/49#issuecomment-2295071198
+        #
+        luaVersion: "luajit-openresty"
+
+    - name: Install lua-language-server
+      uses: jdx/mise-action@v2
+      with:
+        tool_versions: |
+          lua-language-server latest
+
+    - uses: leafo/gh-actions-luarocks@v4
+    - name: Install llscheck
+      run: |
+        luarocks install llscheck
+
+    - name: test
+      run: |
+        llscheck --configpath .github/workflows/.luarc.json .
