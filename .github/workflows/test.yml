@@ -70,17 +70,17 @@ jobs:
       matrix:
         neovim: [v0.10.0]
         # TODO: Replace with -latest, later
-        platform: ["ubuntu-22.04", "macos-11", "windows-2022"]
+        os: ["ubuntu-22.04", "macos-11", "windows-2022"]
 
     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
-    runs-on: ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
     - name: Setup ’msvc’
-      if: ${{ startsWith(matrix.platform, 'windows') && !startsWith(matrix.luaVersion, 'luajit') }}
+      if: ${{ startsWith(matrix.os, 'windows') && !startsWith(matrix.luaVersion, 'luajit') }}
       uses: ilammy/msvc-dev-cmd@v1
 
     - name: Setup ‘lua’
