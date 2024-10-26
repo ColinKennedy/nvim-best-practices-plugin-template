@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.1.0...v1.2.0) (2024-10-26)
+
+
+### Features
+
+* **ci:** Enabled llscheck.yml ([18273bf](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/18273bf3526364ca05d2798318b86f59a3c124e8))
+
 ## [1.1.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.0.3...v1.1.0) (2024-10-26)
 
 
