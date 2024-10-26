@@ -21,7 +21,7 @@ A template repository used to create Neovim plugins.
 - Auto-completes your commands at any cursor position
 - No external dependencies[*](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/External-Dependencies-Disclaimer)
 - [LuaCATS](https://luals.github.io/wiki/annotations/) annotations and type-hints, everywhere
-- [RSS feed support](tracking-updates)
+- [RSS feed support](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom)
 - Built-in logging to stdout / files
 - Unittests use the full power of native [busted](https://github.com/lunarmodules/busted)
 - Automated testing matrix supports 6 Neovim/OS combinations
