@@ -1,5 +1,5 @@
 # Reference: https://github.com/neovim/neovim/blob/9762c5e3406cab8152d8dd161c0178965d841676/.github/workflows/news.yml
-name: "news.txt"
+name: Check news.txt
 
 on:
   pull_request:
@@ -9,6 +9,7 @@ on:
 
 jobs:
   check:
+    name: Check news.txt
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false && !contains(github.event.pull_request.labels.*.name, 'ci:skip-news')
     steps:

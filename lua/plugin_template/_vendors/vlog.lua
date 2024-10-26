@@ -34,7 +34,7 @@ local default_config = {
     },
 
     -- Define this path to redirect the log file to wherever you need it to go
-    outfile = nil,
+    output_path = nil,
 
     -- Can limit the number of decimals displayed for floats
     float_precision = 0.01,
@@ -67,7 +67,7 @@ log.new = function(config, standalone)
 
     obj._is_logging_to_file_enabled = config.use_file
 
-    obj._outfile = config.outfile
+    obj._output_path = config.output_path
         or vim.fs.joinpath(vim.api.nvim_call_function("stdpath", { "data" }), string.format("%s.log", config.plugin))
 
     local levels = {}
@@ -130,10 +130,10 @@ log.new = function(config, standalone)
 
         -- Output to log file
         if obj._is_logging_to_file_enabled then
-            local fp = io.open(obj._outfile, "a")
+            local fp = io.open(obj._output_path, "a")
 
             if not fp then
-                vim.notify(string.format('Unable to log to "%s" path.', obj._outfile), vim.log.levels.ERROR)
+                vim.notify(string.format('Unable to log to "%s" path.', obj._output_path), vim.log.levels.ERROR)
             else
                 local str = string.format("[%-6s%s] %s: %s\n", nameupper, os.date(), lineinfo, msg)
                 fp:write(str)
@@ -169,7 +169,7 @@ log.new = function(config, standalone)
     end
 
     obj["get_log_path"] = function()
-        return obj._outfile
+        return obj._output_path
     end
 
     obj["toggle_file_logging"] = function()

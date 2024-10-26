@@ -135,7 +135,7 @@ describe("copy logs API", function()
 
     it("runs with default arguments", function()
         local expected = vim.fn.tempname() .. "copy_logs_default_test.log"
-        configuration.DATA.logging.outfile = expected
+        configuration.DATA.logging.output_path = expected
         vlog.new(configuration.DATA.logging or {}, true)
         _make_fake_log(expected)
 
@@ -162,7 +162,7 @@ describe("copy logs command", function()
 
     it("runs with default arguments", function()
         local expected = vim.fn.tempname() .. "copy_logs_default_test.log"
-        configuration.DATA.logging.outfile = expected
+        configuration.DATA.logging.output_path = expected
         vlog.new(configuration.DATA.logging or {}, true)
         _make_fake_log(expected)
 

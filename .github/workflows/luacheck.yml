@@ -1,4 +1,4 @@
-name: luacheck
+name: Luacheck
 
 on:
   pull_request: {}
