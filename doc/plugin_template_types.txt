@@ -75,6 +75,8 @@ Fields ~
        spammy. You probably don't want to enable this unless you have to.
     {use_file} `(boolean?)`
        Should write to a file.
+    {output_path} `(string?)`
+       The default path on-disk where log files will be written to.
 
 ------------------------------------------------------------------------------
 *plugin_template.ConfigurationGoodnightMoonRead*

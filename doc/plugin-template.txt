@@ -1,4 +1,4 @@
-*plugin-template.txt*     For Neovim >= 0.8.0     Last change: 2024 October 24
+*plugin-template.txt*     For Neovim >= 0.8.0     Last change: 2024 October 26
 
 ==============================================================================
 Table of Contents                          *plugin-template-table-of-contents*
