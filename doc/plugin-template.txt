@@ -24,7 +24,7 @@ Table of Contents                          *plugin-template-table-of-contents*
             
   --------- ----------------------------------------------------------------------
   Build     [unittests] [documentation] [luacheck] [llscheck] [stylua]
-  Status    
+  Status    [urlchecker]
 
   License   [License-MIT]
 
@@ -38,7 +38,7 @@ A template repository used to create Neovim plugins.
 
 - Follows nvim-best-practices <https://github.com/nvim-neorocks/nvim-best-practices>
 - Fast start-up (~1 ms)
-- Auto-release to luarocks <https://luarocks.org>
+- Auto-release to luarocks <https://luarocks.org> & GitHub <https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases>
 - Automated user documentation (using panvimdoc <https://github.com/kdheepak/panvimdoc>)
 - Automated API documentation (using mini.doc <https://github.com/echasnovski/mini.doc>)
 - Vimtags generation
@@ -63,9 +63,11 @@ A template repository used to create Neovim plugins.
     - StyLua <https://github.com/JohnnyMorganz/StyLua> - Auto-formats Lua code
     - llscheck <https://github.com/jeffzi/llscheck> - Checks for Lua type mismatches
     - luacheck <https://github.com/mpeterv/luacheck> - Checks for Lua code issues
-    - luarocks <https://luarocks.org> auto-release (LUAROCKS_API_KEY secret configuration required)
+    - luarocks <https://luarocks.org> auto-release (LUAROCKS_API_KEY secret <https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#publishing-to-luarocks> configuration required)
+    - GitHub <https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases> auto-release (PERSONAL_ACCESS_TOKEN secret <https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#installing-release-please-recommended> configuration required)
     - mini.doc <https://github.com/echasnovski/mini.doc> - API documentation auto-generator
     - panvimdoc <https://github.com/kdheepak/panvimdoc> - User documentation auto-generator
+    - urlchecker <https://github.com/urlstechie/urlchecker-action> - Checks for broken URL links
     - PR reviews - Reminds users to update `doc/news.txt`
 
 
