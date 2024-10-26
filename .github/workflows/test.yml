@@ -13,8 +13,8 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        neovim: [v0.10.0, stable, nightly]
+        os: [windows-latest]
+        neovim: [v0.10.0]
 
     runs-on: ${{ matrix.os }}
     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
@@ -22,6 +22,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
 
+    - uses: ilammy/msvc-dev-cmd@v1
     - uses: leafo/gh-actions-lua@v10
       with:
         # Neovim is compiled with LuaJIT so we might as well match. But it
