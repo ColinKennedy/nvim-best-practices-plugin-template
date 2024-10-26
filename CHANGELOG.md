@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.2.0...v1.3.0) (2024-10-26)
+
+
+### Features
+
+* **ci:** Added urlchecker.yml ([764f485](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/764f4859522c6c810e75bd82eda6073ef4fc0c0c))
+
 ## [1.2.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.1.0...v1.2.0) (2024-10-26)
 
 
