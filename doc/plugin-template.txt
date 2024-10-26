@@ -49,7 +49,7 @@ A template repository used to create Neovim plugins.
 - LuaCATS <https://luals.github.io/wiki/annotations/>annotations and type-hints, everywhere
 - RSS feed support <tracking-updates>
 - Built-in logging to stdout / files
-- Unittests use the full power of native busted <https://olivinelabs.com/busted>
+- Unittests use the full power of native busted <https://github.com/lunarmodules/busted>
 - Automated testing matrix supports 6 Neovim/OS combinations
     - neovim: `[v0.10.0, stable, nightly]`
     - os: `[ubuntu-latest, macos-latest]`

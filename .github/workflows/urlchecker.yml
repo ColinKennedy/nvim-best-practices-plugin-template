@@ -1,0 +1,52 @@
+name: URLChecker
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+    - main
+  push:
+    branches:
+      - main
+
+jobs:
+  urlchecker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: urlcheck - doc directory
+      uses: urlstechie/urlchecker-action@master
+      with:
+        subfolder: doc
+        # TODO: Check if I can just check all file types with an empty string for glob
+        file_types: .json,.lua,.md,.txt,.vim,.yml
+
+    - name: urlcheck - lua directory
+      uses: urlstechie/urlchecker-action@master
+      with:
+        subfolder: lua
+        # TODO: Check if I can just check all file types with an empty string for glob
+        file_types: .json,.lua,.md,.txt,.vim,.yml
+
+    - name: urlcheck - plugin directory
+      uses: urlstechie/urlchecker-action@master
+      with:
+        subfolder: plugin
+        # TODO: Check if I can just check all file types with an empty string for glob
+        file_types: .json,.lua,.md,.txt,.vim,.yml
+
+    - name: urlcheck - scripts directory
+      uses: urlstechie/urlchecker-action@master
+      with:
+        subfolder: scripts
+        # TODO: Check if I can just check all file types with an empty string for glob
+        file_types: .json,.lua,.md,.txt,.vim,.yml
+
+    - name: urlcheck - spec directory
+      uses: urlstechie/urlchecker-action@master
+      with:
+        subfolder: spec
+        # TODO: Check if I can just check all file types with an empty string for glob
+        file_types: .json,.lua,.md,.txt,.vim,.yml
