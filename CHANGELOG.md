@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.3.0...v1.3.1) (2024-10-26)
+
+
+### Bug Fixes
+
+* **urlchecker:** Added README.md + CHANGELOG.md as a checker ([a4b7d41](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/a4b7d410f4d853d7bf98e4ca6dc198f6ea29bb8d))
+
 ## [1.3.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.2.0...v1.3.0) (2024-10-26)
 
 
