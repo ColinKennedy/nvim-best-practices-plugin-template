@@ -48,6 +48,44 @@
 #       run: |
 #         luarocks test --test-type busted
 
+# name: test
+#
+# on: [push]
+#
+# jobs:
+#   test:
+#     strategy:
+#       matrix:
+#         os: [windows-latest]
+#         neovim: [v0.10.0]
+#
+#     runs-on: ${{ matrix.os }}
+#     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
+#
+#     steps:
+#     - uses: actions/checkout@master
+#
+#     - uses: ilammy/msvc-dev-cmd@v1
+#     - uses: leafo/gh-actions-lua@v10
+#       with:
+#         luaVersion: "5.1.5"
+#
+#     - uses: leafo/gh-actions-luarocks@v4
+#
+#     - name: build
+#       run: |
+#         luarocks install busted
+#         luarocks make
+#
+#     - uses: rhysd/action-setup-vim@v1
+#       with:
+#         neovim: true
+#         version: ${{ matrix.neovim }}
+#
+#     - name: test
+#       run: |
+#         busted -o utfTerminal
+
 name: test
 
 on: [push]
@@ -55,34 +93,25 @@ on: [push]
 jobs:
   test:
     strategy:
+      fail-fast: false
       matrix:
-        os: [windows-latest]
-        neovim: [v0.10.0]
-
+        luaVersion: ["5.1", "5.2", "5.3", "5.4", "luajit"]
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
     runs-on: ${{ matrix.os }}
-    name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
 
+    name: split test (using lua ${{ matrix.luaVersion }} on ${{ matrix.os }}
     steps:
     - uses: actions/checkout@master
-
     - uses: ilammy/msvc-dev-cmd@v1
-    - uses: leafo/gh-actions-lua@v10
+    - uses: leafo/gh-actions-lua@master
       with:
-        luaVersion: "5.1.5"
-
-    - uses: leafo/gh-actions-luarocks@v4
-
-    - name: build
-      run: |
-        luarocks install busted
-        luarocks make
-
-    - uses: rhysd/action-setup-vim@v1
-      with:
-        neovim: true
-        version: ${{ matrix.neovim }}
-
+        luaVersion: ${{ matrix.luaVersion }}
+        buildCache: false
     - name: test
       run: |
-        busted -o utfTerminal
+        cd test
+        bash runner.sh
 
