@@ -1,10 +1,22 @@
 {
-    "diagnostics.globals": [
-        "vim"
-    ],
     "diagnostics.libraryFiles": "Disable",
     "runtime.version": "LuaJIT",
     "workspace.checkThirdParty": "Disable",
-    "workspace.library": ["$PWD/.dependencies"]
+    "workspace.library": [
+        "$PWD/.dependencies",
+        "${3rd}/busted/library",
+        "${3rd}/luv/library",
+        "${3rd}/luassert/library",
+        "$VIMRUNTIME/lua",
+        "lua",
+    ],
+    "runtime.path": [
+        "lua",
+        "lua/?.lua",
+        "lua/?/init.lua",
+        "?.lua",
+        "?/init.lua",
+        "$XDG_DATA_HOME/nvim/lazy",
+      ]
 }
 
