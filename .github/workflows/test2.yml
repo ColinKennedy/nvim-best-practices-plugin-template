@@ -1,0 +1,88 @@
+# name: Test
+#
+# on:
+#   pull_request:
+#     types: [opened, synchronize, reopened, ready_for_review]
+#     branches:
+#     - main
+#   push:
+#     branches:
+#       - main
+#       - add_windows_unittest_support
+#
+# jobs:
+#   test:
+#     strategy:
+#       matrix:
+#         os: [windows-latest]
+#         neovim: [v0.10.0]
+#
+#     runs-on: ${{ matrix.os }}
+#     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
+#
+#     steps:
+#     - uses: actions/checkout@master
+#
+#     - uses: leafo/gh-actions-lua@v10
+#       with:
+#         # Neovim is compiled with LuaJIT so we might as well match. But it
+#         # doesn't look like we can match it exactly.
+#         #
+#         # Reference:
+#         #    https://github.com/leafo/gh-actions-lua/issues/49#issuecomment-2295071198
+#         #
+#         luaVersion: "luajit-openresty"
+#
+#     - uses: leafo/gh-actions-luarocks@v4
+#
+#     - uses: rhysd/action-setup-vim@v1
+#       with:
+#         neovim: true
+#         version: ${{ matrix.neovim }}
+#
+#     - name: build
+#       run: |
+#         luarocks test plugin-template-scm-1.rockspec --prepare
+#
+#     - name: test
+#       run: |
+#         luarocks test --test-type busted
+
+name: test
+
+on: [push]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [windows-latest]
+        neovim: [v0.10.0]
+
+    runs-on: ${{ matrix.os }}
+    name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
+
+    steps:
+    - uses: actions/checkout@master
+
+    - uses: ilammy/msvc-dev-cmd@v1
+    - uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: "5.1.5"
+
+    - uses: leafo/gh-actions-luarocks@v4
+
+    - name: build
+      run: |
+        luarocks install busted
+        luarocks make
+
+    - uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: ${{ matrix.neovim }}
+
+    - name: test
+      run: |
+        busted -o utfTerminal
+
