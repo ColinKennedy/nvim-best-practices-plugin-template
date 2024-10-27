@@ -142,7 +142,7 @@ jobs:
         luaVersion: ${{ matrix.luaVersion }}
         buildCache: false
 
-    - uses: hishamhm/gh-actions-luarocks@v4
+    - uses: hishamhm/gh-actions-luarocks@master
 
     - uses: rhysd/action-setup-vim@v1
       with:
