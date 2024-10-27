@@ -143,6 +143,8 @@ jobs:
         buildCache: false
 
     - uses: hishamhm/gh-actions-luarocks@master
+      with:
+          luarocksVersion: "3.10.0"
 
     - uses: rhysd/action-setup-vim@v1
       with:
