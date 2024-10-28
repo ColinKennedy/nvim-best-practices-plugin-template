@@ -93,6 +93,7 @@ jobs:
 
       - name: dependencies
         run: |
+          luarocks install luafilesystem
           luarocks test plugin-template-scm-1.rockspec --prepare
 
       - name: test
