@@ -129,7 +129,5 @@ jobs:
 
       - name: dependencies
         run: |
-          luarocks --version
-          luarocks install busted
-          busted --version
-          luarocks test plugin-template-scm-1.rockspec --prepare
+          luarocks install busted 2.2.0
+          luarocks install nlua 0.2.0-1
