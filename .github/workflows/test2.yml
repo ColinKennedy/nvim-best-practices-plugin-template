@@ -130,4 +130,4 @@ jobs:
       - name: dependencies
         run: |
           luarocks --version
-          luarocks install say
+          luarocks install busted
