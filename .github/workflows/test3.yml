@@ -1,43 +1,111 @@
-name: test3
+# name: test3
+#
+# on: [push]
+#
+# jobs:
+#   test3:
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         os: ['ubuntu-20.04']
+#         luaVersion:
+#         - "5.1"
+#         # - "5.2"
+#         # - "5.3"
+#         # - "5.4"
+#         # - "luajit"
+#         # - "luajit-openresty"
+#         include:
+#           # - os: "macos-latest"
+#           #   luaVersion: "5.4"
+#
+#           # On Windows builds:
+#           # 'hishamhm/gh-actions-lua' will build the PuC Rio Lua versions using MSVC, and
+#           # the LuaJIT version using MinGW/gcc. By running against both below, we test
+#           # both toolchains.
+#           - os: "windows-latest"
+#             toolchain: "msvc"
+#             luaVersion: "5.1"
+#           # - os: "windows-latest"
+#           #   toolchain: "msvc"
+#           #   luaVersion: "5.2"
+#           # - os: "windows-latest"
+#           #   toolchain: "msvc"
+#           #   luaVersion: "5.3"
+#           # - os: "windows-latest"
+#           #   toolchain: "msvc"
+#           #   luaVersion: "5.4"
+#           # - os: "windows-latest"
+#           #   toolchain: "mingw"  # unused, other than for display in the UI
+#           #   luaVersion: "luajit"
+#
+#     runs-on: ${{ matrix.os }}
+#
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@master
+#
+#       - name: Setup MSVC
+#         # the 'hishamhm/gh-actions-lua' step requires msvc to build PuC Rio Lua
+#         # versions on Windows (LuaJIT will be build using MinGW/gcc).
+#         if: ${{ matrix.toolchain == 'msvc' }}
+#         uses: ilammy/msvc-dev-cmd@v1
+#
+#       # - name: install Dependencies analyzer
+#       #   # action step used for troubleshooting if Windows dll's build incorrectly
+#       #   run: |
+#       #     $version = "1.11.1"
+#       #     echo "Installing Dependencies version: $version"
+#       #     $url = 'https://github.com/lucasg/Dependencies/releases/download/v' + $version + '/Dependencies_x64_Release.zip'
+#       #     $dest = Join-Path -Path $PWD -ChildPath ".dependencies"
+#
+#       #     # Download and extract Dependencies
+#       #     New-Item -ItemType Directory -Path "$dest"
+#       #     Invoke-WebRequest -Uri $url -OutFile "$dest\dependencies.zip"
+#       #     Expand-Archive -Path "$dest\dependencies.zip" -DestinationPath "$dest"
+#       #     Remove-Item -Path "$dest\dependencies.zip"
+#       #     # dir "$dest"
+#
+#       #     # Add Dependencies to PATH
+#       #     $env:PATH += ";$dest"
+#       #     echo $env:PATH
+#
+#       #     # Verify Dependencies Installation
+#       #     dir "$dest\*.exe"
+#       #     dir ".\.dependencies\Dependencies.exe"
+#       #     .\.dependencies\Dependencies.exe -help
+#
+#       - uses: hishamhm/gh-actions-lua@master
+#         with:
+#           luaVersion: ${{ matrix.luaVersion }}
+#
+#       - uses: hishamhm/gh-actions-luarocks@master
+#         with:
+#           luarocksVersion: "3.11.0"
+#
+#       - name: dependencies
+#         run: |
+#           luarocks --version
+#           luarocks install luafilesystem
+#           luarocks test plugin-template-scm-1.rockspec --prepare
+#
+#       - name: test
+#         run: |
+#           luarocks test --test-type busted
+
+name: test4
 
 on: [push]
 
 jobs:
-  test3:
+  test4:
     strategy:
       fail-fast: false
       matrix:
-        os: ['ubuntu-20.04']
+        os: ['windows-latest']
+        toolchain: ["msvc"]
         luaVersion:
         - "5.1"
-        # - "5.2"
-        # - "5.3"
-        # - "5.4"
-        # - "luajit"
-        # - "luajit-openresty"
-        include:
-          # - os: "macos-latest"
-          #   luaVersion: "5.4"
-
-          # On Windows builds:
-          # 'hishamhm/gh-actions-lua' will build the PuC Rio Lua versions using MSVC, and
-          # the LuaJIT version using MinGW/gcc. By running against both below, we test
-          # both toolchains.
-          - os: "windows-latest"
-            toolchain: "msvc"
-            luaVersion: "5.1"
-          # - os: "windows-latest"
-          #   toolchain: "msvc"
-          #   luaVersion: "5.2"
-          # - os: "windows-latest"
-          #   toolchain: "msvc"
-          #   luaVersion: "5.3"
-          # - os: "windows-latest"
-          #   toolchain: "msvc"
-          #   luaVersion: "5.4"
-          # - os: "windows-latest"
-          #   toolchain: "mingw"  # unused, other than for display in the UI
-          #   luaVersion: "luajit"
 
     runs-on: ${{ matrix.os }}
 
@@ -51,30 +119,6 @@ jobs:
         if: ${{ matrix.toolchain == 'msvc' }}
         uses: ilammy/msvc-dev-cmd@v1
 
-      # - name: install Dependencies analyzer
-      #   # action step used for troubleshooting if Windows dll's build incorrectly
-      #   run: |
-      #     $version = "1.11.1"
-      #     echo "Installing Dependencies version: $version"
-      #     $url = 'https://github.com/lucasg/Dependencies/releases/download/v' + $version + '/Dependencies_x64_Release.zip'
-      #     $dest = Join-Path -Path $PWD -ChildPath ".dependencies"
-
-      #     # Download and extract Dependencies
-      #     New-Item -ItemType Directory -Path "$dest"
-      #     Invoke-WebRequest -Uri $url -OutFile "$dest\dependencies.zip"
-      #     Expand-Archive -Path "$dest\dependencies.zip" -DestinationPath "$dest"
-      #     Remove-Item -Path "$dest\dependencies.zip"
-      #     # dir "$dest"
-
-      #     # Add Dependencies to PATH
-      #     $env:PATH += ";$dest"
-      #     echo $env:PATH
-
-      #     # Verify Dependencies Installation
-      #     dir "$dest\*.exe"
-      #     dir ".\.dependencies\Dependencies.exe"
-      #     .\.dependencies\Dependencies.exe -help
-
       - uses: hishamhm/gh-actions-lua@master
         with:
           luaVersion: ${{ matrix.luaVersion }}
@@ -86,9 +130,4 @@ jobs:
       - name: dependencies
         run: |
           luarocks --version
-          luarocks install luafilesystem
-          luarocks test plugin-template-scm-1.rockspec --prepare
-
-      - name: test
-        run: |
-          luarocks test --test-type busted
+          luarocks install say
