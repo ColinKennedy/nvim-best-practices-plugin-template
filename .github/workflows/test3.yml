@@ -1,0 +1,110 @@
+name: test3
+
+concurrency:
+  # for PR's cancel the running task, if another commit is pushed
+  group: ${{ github.workflow }} ${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+on:
+  # build on PR and push-to-main. This works for short-lived branches, and saves
+  # CPU cycles on duplicated tests.
+  # For long-lived branches that diverge, you'll want to run on all pushes, not
+  # just on push-to-main.
+  pull_request: {}
+  push:
+    branches:
+    - add_windows_unittest_support
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['ubuntu-20.04', 'macos-13']
+        luaVersion:
+        - "5.1"
+        - "5.2"
+        - "5.3"
+        - "5.4"
+        - "luajit"
+        - "luajit-openresty"
+        include:
+          - os: "macos-latest"
+            luaVersion: "5.4"
+          # On Windows builds:
+          # 'hishamhm/gh-actions-lua' will build the PuC Rio Lua versions using MSVC, and
+          # the LuaJIT version using MinGW/gcc. By running against both below, we test
+          # both toolchains.
+          - os: "windows-latest"
+            toolchain: "msvc"
+            luaVersion: "5.1"
+          - os: "windows-latest"
+            toolchain: "msvc"
+            luaVersion: "5.2"
+          - os: "windows-latest"
+            toolchain: "msvc"
+            luaVersion: "5.3"
+          - os: "windows-latest"
+            toolchain: "msvc"
+            luaVersion: "5.4"
+          - os: "windows-latest"
+            toolchain: "mingw"  # unused, other than for display in the UI
+            luaVersion: "luajit"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Setup MSVC
+        # the 'hishamhm/gh-actions-lua' step requires msvc to build PuC Rio Lua
+        # versions on Windows (LuaJIT will be build using MinGW/gcc).
+        if: ${{ matrix.toolchain == 'msvc' }}
+        uses: ilammy/msvc-dev-cmd@v1
+
+      # - name: install Dependencies analyzer
+      #   # action step used for troubleshooting if Windows dll's build incorrectly
+      #   run: |
+      #     $version = "1.11.1"
+      #     echo "Installing Dependencies version: $version"
+      #     $url = 'https://github.com/lucasg/Dependencies/releases/download/v' + $version + '/Dependencies_x64_Release.zip'
+      #     $dest = Join-Path -Path $PWD -ChildPath ".dependencies"
+
+      #     # Download and extract Dependencies
+      #     New-Item -ItemType Directory -Path "$dest"
+      #     Invoke-WebRequest -Uri $url -OutFile "$dest\dependencies.zip"
+      #     Expand-Archive -Path "$dest\dependencies.zip" -DestinationPath "$dest"
+      #     Remove-Item -Path "$dest\dependencies.zip"
+      #     # dir "$dest"
+
+      #     # Add Dependencies to PATH
+      #     $env:PATH += ";$dest"
+      #     echo $env:PATH
+
+      #     # Verify Dependencies Installation
+      #     dir "$dest\*.exe"
+      #     dir ".\.dependencies\Dependencies.exe"
+      #     .\.dependencies\Dependencies.exe -help
+
+      - uses: hishamhm/gh-actions-lua@master
+        with:
+          luaVersion: ${{ matrix.luaVersion }}
+
+      - uses: hishamhm/gh-actions-luarocks@master
+        with:
+          luarocksVersion: "3.11.0"
+
+      - name: dependencies
+        run: |
+          luarocks install busted
+
+      - name: install
+        run: |
+          luarocks remove --force luasystem
+          luarocks make
+
+      - name: test
+        run: |
+          busted --exclude-tags=manual --Xoutput "--color"
+
