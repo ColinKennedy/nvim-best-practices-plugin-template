@@ -130,4 +130,4 @@ jobs:
       - name: dependencies
         run: |
           luarocks --version
-          luarocks install busted
+          luarocks test plugin-template-scm-1.rockspec --prepare
