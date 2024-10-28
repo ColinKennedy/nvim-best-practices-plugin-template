@@ -1,0 +1,389 @@
+# name: Test
+#
+# on:
+#   pull_request:
+#     types: [opened, synchronize, reopened, ready_for_review]
+#     branches:
+#     - main
+#   push:
+#     branches:
+#       - main
+#       - add_windows_unittest_support
+#
+# jobs:
+#   test:
+#     strategy:
+#       matrix:
+#         os: [windows-latest]
+#         neovim: [v0.10.0]
+#
+#     runs-on: ${{ matrix.os }}
+#     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
+#
+#     steps:
+#     - uses: actions/checkout@master
+#
+#     - uses: leafo/gh-actions-lua@v10
+#       with:
+#         # Neovim is compiled with LuaJIT so we might as well match. But it
+#         # doesn't look like we can match it exactly.
+#         #
+#         # Reference:
+#         #    https://github.com/leafo/gh-actions-lua/issues/49#issuecomment-2295071198
+#         #
+#         luaVersion: "luajit-openresty"
+#
+#     - uses: leafo/gh-actions-luarocks@v4
+#
+#     - uses: rhysd/action-setup-vim@v1
+#       with:
+#         neovim: true
+#         version: ${{ matrix.neovim }}
+#
+#     - name: build
+#       run: |
+#         luarocks test plugin-template-scm-1.rockspec --prepare
+#
+#     - name: test
+#       run: |
+#         luarocks test --test-type busted
+
+# name: test
+#
+# on: [push]
+#
+# jobs:
+#   test:
+#     strategy:
+#       matrix:
+#         os: [windows-latest]
+#         neovim: [v0.10.0]
+#
+#     runs-on: ${{ matrix.os }}
+#     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
+#
+#     steps:
+#     - uses: actions/checkout@master
+#
+#     - uses: ilammy/msvc-dev-cmd@v1
+#     - uses: leafo/gh-actions-lua@v10
+#       with:
+#         luaVersion: "5.1.5"
+#
+#     - uses: leafo/gh-actions-luarocks@v4
+#
+#     - name: build
+#       run: |
+#         luarocks install busted
+#         luarocks make
+#
+#     - uses: rhysd/action-setup-vim@v1
+#       with:
+#         neovim: true
+#         version: ${{ matrix.neovim }}
+#
+#     - name: test
+#       run: |
+#         busted -o utfTerminal
+
+# name: test
+#
+# on: [push]
+#
+# jobs:
+#   test:
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         luaVersion: ["5.1", "5.2", "5.3", "5.4", "luajit"]
+#         os:
+#           - ubuntu-latest
+#           - macos-latest
+#           - windows-latest
+#     runs-on: ${{ matrix.os }}
+#
+#     name: split test (using lua ${{ matrix.luaVersion }} on ${{ matrix.os }}
+#     steps:
+#     - uses: actions/checkout@master
+#     - uses: ilammy/msvc-dev-cmd@v1
+#     - uses: leafo/gh-actions-lua@master
+#       with:
+#         luaVersion: ${{ matrix.luaVersion }}
+#         buildCache: false
+#     - name: test
+#       run: |
+#         cd test
+#         bash runner.sh
+
+# name: test
+#
+# on: [push]
+#
+# jobs:
+#   test:
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         # luaVersion: ["5.1", "5.2", "5.3", "5.4", "luajit"]
+#         # os:
+#         #   - ubuntu-latest
+#         #   - macos-latest
+#         #   - windows-latest
+#         luaVersion: ["5.1", "luajit"]
+#         os:
+#           # - ubuntu-latest
+#           # - macos-latest
+#           - windows-latest
+#     runs-on: ${{ matrix.os }}
+#
+#     name: split test (using lua ${{ matrix.luaVersion }} on ${{ matrix.os }}
+#     steps:
+#
+#     - uses: actions/checkout@master
+#
+#     - uses: ilammy/msvc-dev-cmd@v1
+#     - uses: leafo/gh-actions-lua@master
+#       with:
+#         luaVersion: ${{ matrix.luaVersion }}
+#         buildCache: false
+#
+#     # - uses: hishamhm/gh-actions-luarocks@master
+#     #   with:
+#     #       luarocksVersion: "3.10.0"
+#
+#     # Install LuaRocks
+#     - name: Install LuaRocks on Linux
+#       if: runner.os == 'Linux'
+#       shell: bash
+#       run: sudo apt-get install -y luarocks
+#
+#     - name: Install LuaRocks on Windows
+#       if: runner.os == 'Windows'
+#       shell: cmd
+#       run: |
+#         choco install luarocks
+#
+#     - uses: rhysd/action-setup-vim@v1
+#       with:
+#         neovim: true
+#         version: ${{ matrix.neovim }}
+#
+#     - name: build - linux
+#       if: runner.os == 'Linux'
+#       run: |
+#         luarocks test plugin-template-scm-1.rockspec --prepare
+#
+#     - name: build - windows
+#       if: runner.os == 'Windows'
+#       run: |
+#         luarocks install nlua
+#         luarocks install busted
+#         luarocks install nui.nvim
+#
+#     - name: test
+#       run: |
+#         luarocks test --test-type busted
+#
+# # name: "Build"
+# #
+# # concurrency:
+# #   # for PR's cancel the running task, if another commit is pushed
+# #   group: ${{ github.workflow }} ${{ github.ref }}
+# #   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+# #
+# # on:
+# #   # build on PR and push-to-main. This works for short-lived branches, and saves
+# #   # CPU cycles on duplicated tests.
+# #   # For long-lived branches that diverge, you'll want to run on all pushes, not
+# #   # just on push-to-main.
+# #   pull_request: {}
+# #   push:
+# #     branches:
+# #     - master
+# #
+# # jobs:
+# #   test:
+# #     strategy:
+# #       fail-fast: false
+# #       matrix:
+# #         os: ['ubuntu-20.04', 'macos-13']
+# #         luaVersion:
+# #         - "5.1"
+# #         - "5.2"
+# #         - "5.3"
+# #         - "5.4"
+# #         - "luajit"
+# #         - "luajit-openresty"
+# #         include:
+# #           - os: "macos-latest"
+# #             luaVersion: "5.4"
+# #           # On Windows builds:
+# #           # 'hishamhm/gh-actions-lua' will build the PuC Rio Lua versions using MSVC, and
+# #           # the LuaJIT version using MinGW/gcc. By running against both below, we test
+# #           # both toolchains.
+# #           - os: "windows-latest"
+# #             toolchain: "msvc"
+# #             luaVersion: "5.1"
+# #           - os: "windows-latest"
+# #             toolchain: "msvc"
+# #             luaVersion: "5.2"
+# #           - os: "windows-latest"
+# #             toolchain: "msvc"
+# #             luaVersion: "5.3"
+# #           - os: "windows-latest"
+# #             toolchain: "msvc"
+# #             luaVersion: "5.4"
+# #           - os: "windows-latest"
+# #             toolchain: "mingw"  # unused, other than for display in the UI
+# #             luaVersion: "luajit"
+# #
+# #     runs-on: ${{ matrix.os }}
+# #
+# #     steps:
+# #       - name: Checkout
+# #         uses: actions/checkout@master
+# #
+# #       - name: Setup MSVC
+# #         # the 'hishamhm/gh-actions-lua' step requires msvc to build PuC Rio Lua
+# #         # versions on Windows (LuaJIT will be build using MinGW/gcc).
+# #         if: ${{ matrix.toolchain == 'msvc' }}
+# #         uses: ilammy/msvc-dev-cmd@v1
+# #
+# #       # - name: install Dependencies analyzer
+# #       #   # action step used for troubleshooting if Windows dll's build incorrectly
+# #       #   run: |
+# #       #     $version = "1.11.1"
+# #       #     echo "Installing Dependencies version: $version"
+# #       #     $url = 'https://github.com/lucasg/Dependencies/releases/download/v' + $version + '/Dependencies_x64_Release.zip'
+# #       #     $dest = Join-Path -Path $PWD -ChildPath ".dependencies"
+# #
+# #       #     # Download and extract Dependencies
+# #       #     New-Item -ItemType Directory -Path "$dest"
+# #       #     Invoke-WebRequest -Uri $url -OutFile "$dest\dependencies.zip"
+# #       #     Expand-Archive -Path "$dest\dependencies.zip" -DestinationPath "$dest"
+# #       #     Remove-Item -Path "$dest\dependencies.zip"
+# #       #     # dir "$dest"
+# #
+# #       #     # Add Dependencies to PATH
+# #       #     $env:PATH += ";$dest"
+# #       #     echo $env:PATH
+# #
+# #       #     # Verify Dependencies Installation
+# #       #     dir "$dest\*.exe"
+# #       #     dir ".\.dependencies\Dependencies.exe"
+# #       #     .\.dependencies\Dependencies.exe -help
+# #
+# #       - uses: hishamhm/gh-actions-lua@master
+# #         with:
+# #           luaVersion: ${{ matrix.luaVersion }}
+# #
+# #       - uses: hishamhm/gh-actions-luarocks@master
+# #         with:
+# #           luarocksVersion: "3.11.0"
+# #
+# #       - name: dependencies
+# #         run: |
+# #           luarocks install busted
+# #
+# #       - name: install
+# #         run: |
+# #           luarocks remove --force luasystem
+# #           luarocks make
+# #
+# #       - name: test
+# #         run: |
+# #           busted --exclude-tags=manual --Xoutput "--color"
+name: test3
+
+on: [push]
+
+jobs:
+  test3:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['ubuntu-20.04']
+        luaVersion:
+        - "5.1"
+        # - "5.2"
+        # - "5.3"
+        # - "5.4"
+        # - "luajit"
+        # - "luajit-openresty"
+        include:
+          # - os: "macos-latest"
+          #   luaVersion: "5.4"
+
+          # On Windows builds:
+          # 'hishamhm/gh-actions-lua' will build the PuC Rio Lua versions using MSVC, and
+          # the LuaJIT version using MinGW/gcc. By running against both below, we test
+          # both toolchains.
+          - os: "windows-latest"
+            toolchain: "msvc"
+            luaVersion: "5.1"
+          # - os: "windows-latest"
+          #   toolchain: "msvc"
+          #   luaVersion: "5.2"
+          # - os: "windows-latest"
+          #   toolchain: "msvc"
+          #   luaVersion: "5.3"
+          # - os: "windows-latest"
+          #   toolchain: "msvc"
+          #   luaVersion: "5.4"
+          # - os: "windows-latest"
+          #   toolchain: "mingw"  # unused, other than for display in the UI
+          #   luaVersion: "luajit"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Setup MSVC
+        # the 'hishamhm/gh-actions-lua' step requires msvc to build PuC Rio Lua
+        # versions on Windows (LuaJIT will be build using MinGW/gcc).
+        if: ${{ matrix.toolchain == 'msvc' }}
+        uses: ilammy/msvc-dev-cmd@v1
+
+      # - name: install Dependencies analyzer
+      #   # action step used for troubleshooting if Windows dll's build incorrectly
+      #   run: |
+      #     $version = "1.11.1"
+      #     echo "Installing Dependencies version: $version"
+      #     $url = 'https://github.com/lucasg/Dependencies/releases/download/v' + $version + '/Dependencies_x64_Release.zip'
+      #     $dest = Join-Path -Path $PWD -ChildPath ".dependencies"
+
+      #     # Download and extract Dependencies
+      #     New-Item -ItemType Directory -Path "$dest"
+      #     Invoke-WebRequest -Uri $url -OutFile "$dest\dependencies.zip"
+      #     Expand-Archive -Path "$dest\dependencies.zip" -DestinationPath "$dest"
+      #     Remove-Item -Path "$dest\dependencies.zip"
+      #     # dir "$dest"
+
+      #     # Add Dependencies to PATH
+      #     $env:PATH += ";$dest"
+      #     echo $env:PATH
+
+      #     # Verify Dependencies Installation
+      #     dir "$dest\*.exe"
+      #     dir ".\.dependencies\Dependencies.exe"
+      #     .\.dependencies\Dependencies.exe -help
+
+      - uses: hishamhm/gh-actions-lua@master
+        with:
+          luaVersion: ${{ matrix.luaVersion }}
+
+      - uses: hishamhm/gh-actions-luarocks@master
+        with:
+          luarocksVersion: "3.11.0"
+
+      - name: dependencies
+        run: |
+          luarocks --version
+          luarocks install luafilesystem
+          luarocks test plugin-template-scm-1.rockspec --prepare
+
+      - name: test
+        run: |
+          luarocks test --test-type busted
