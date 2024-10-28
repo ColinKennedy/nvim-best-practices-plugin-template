@@ -168,9 +168,17 @@ jobs:
         neovim: true
         version: ${{ matrix.neovim }}
 
-    - name: build
+    - name: build - linux
+      if: runner.os == 'Linux'
       run: |
         luarocks test plugin-template-scm-1.rockspec --prepare
+
+    - name: build - windows
+      if: runner.os == 'Windows'
+      run: |
+        luarocks install nlua
+        luarocks install busted
+        luarocks install nui.nvim
 
     - name: test
       run: |
