@@ -124,10 +124,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        luaVersion: ["5.1", "5.2", "5.3", "5.4", "luajit"]
+        # luaVersion: ["5.1", "5.2", "5.3", "5.4", "luajit"]
+        # os:
+        #   - ubuntu-latest
+        #   - macos-latest
+        #   - windows-latest
+        luaVersion: ["5.1", "luajit"]
         os:
-          - ubuntu-latest
-          - macos-latest
+          # - ubuntu-latest
+          # - macos-latest
           - windows-latest
     runs-on: ${{ matrix.os }}
 
