@@ -1,14 +1,6 @@
 name: test3
 
-on:
-  # build on PR and push-to-main. This works for short-lived branches, and saves
-  # CPU cycles on duplicated tests.
-  # For long-lived branches that diverge, you'll want to run on all pushes, not
-  # just on push-to-main.
-  pull_request: {}
-  push:
-    branches:
-    - add_windows_unittest_support
+on: [push]
 
 jobs:
   test:
