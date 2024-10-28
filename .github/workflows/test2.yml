@@ -142,9 +142,21 @@ jobs:
         luaVersion: ${{ matrix.luaVersion }}
         buildCache: false
 
-    - uses: hishamhm/gh-actions-luarocks@master
-      with:
-          luarocksVersion: "3.10.0"
+    # - uses: hishamhm/gh-actions-luarocks@master
+    #   with:
+    #       luarocksVersion: "3.10.0"
+
+    # Install LuaRocks
+    - name: Install LuaRocks on Linux
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo apt-get install -y luarocks
+
+    - name: Install LuaRocks on Windows
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        choco install luarocks
 
     - uses: rhysd/action-setup-vim@v1
       with:
