@@ -3,7 +3,7 @@ name: test3
 on: [push]
 
 jobs:
-  test:
+  test3:
     strategy:
       fail-fast: false
       matrix:
