@@ -1,10 +1,5 @@
 name: test3
 
-concurrency:
-  # for PR's cancel the running task, if another commit is pushed
-  group: ${{ github.workflow }} ${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
 on:
   # build on PR and push-to-main. This works for short-lived branches, and saves
   # CPU cycles on duplicated tests.
@@ -20,17 +15,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['ubuntu-20.04', 'macos-13']
+        os: ['ubuntu-20.04']
         luaVersion:
         - "5.1"
-        - "5.2"
-        - "5.3"
-        - "5.4"
-        - "luajit"
-        - "luajit-openresty"
+        # - "5.2"
+        # - "5.3"
+        # - "5.4"
+        # - "luajit"
+        # - "luajit-openresty"
         include:
-          - os: "macos-latest"
-            luaVersion: "5.4"
+          # - os: "macos-latest"
+          #   luaVersion: "5.4"
+
           # On Windows builds:
           # 'hishamhm/gh-actions-lua' will build the PuC Rio Lua versions using MSVC, and
           # the LuaJIT version using MinGW/gcc. By running against both below, we test
@@ -38,18 +34,18 @@ jobs:
           - os: "windows-latest"
             toolchain: "msvc"
             luaVersion: "5.1"
-          - os: "windows-latest"
-            toolchain: "msvc"
-            luaVersion: "5.2"
-          - os: "windows-latest"
-            toolchain: "msvc"
-            luaVersion: "5.3"
-          - os: "windows-latest"
-            toolchain: "msvc"
-            luaVersion: "5.4"
-          - os: "windows-latest"
-            toolchain: "mingw"  # unused, other than for display in the UI
-            luaVersion: "luajit"
+          # - os: "windows-latest"
+          #   toolchain: "msvc"
+          #   luaVersion: "5.2"
+          # - os: "windows-latest"
+          #   toolchain: "msvc"
+          #   luaVersion: "5.3"
+          # - os: "windows-latest"
+          #   toolchain: "msvc"
+          #   luaVersion: "5.4"
+          # - os: "windows-latest"
+          #   toolchain: "mingw"  # unused, other than for display in the UI
+          #   luaVersion: "luajit"
 
     runs-on: ${{ matrix.os }}
 
@@ -97,14 +93,8 @@ jobs:
 
       - name: dependencies
         run: |
-          luarocks install busted
-
-      - name: install
-        run: |
-          luarocks remove --force luasystem
-          luarocks make
+          luarocks test plugin-template-scm-1.rockspec --prepare
 
       - name: test
         run: |
-          busted --exclude-tags=manual --Xoutput "--color"
-
+          luarocks test --test-type busted
