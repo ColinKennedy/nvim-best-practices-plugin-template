@@ -86,6 +86,7 @@ jobs:
       - name: dependencies
         run: |
           luarocks --version
+          luarocks install luafilesystem
           luarocks install busted 2.2.0
           luarocks install nlua 0.2.0-1
 
