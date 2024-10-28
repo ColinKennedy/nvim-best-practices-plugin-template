@@ -92,7 +92,7 @@ jobs:
 
       - name: test
         run: |
-          luarocks test --test-type busted
+          busted --helper spec/minimal_init.lua .
 
 # name: test4
 #
