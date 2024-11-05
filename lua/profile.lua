@@ -2,21 +2,11 @@ local autocmd = require("profile.autocmd")
 local clock = require("profile.clock")
 local instrument = require("profile.instrument")
 local util = require("profile.util")
-
----@class profile.Event A single, recorded profile event.
----@field cat string The category of the profiler event. e.g. `"function"`, `"test"`, etc.
----@field dur number The length of CPU time needed to complete the event.
----@field name string The function call, file path, or other ID.
----@field pid number? The process ID number.
----@field tid number The thread ID number.
----@field ts number The start CPU time.
-
----@class Profiler
 local M = {}
 
 local event_defaults = {
-  pid = util.DEFAULT_PROCESS_ID,
-  tid = util.DEFAULT_THREAD_ID,
+  pid = 1,
+  tid = 1,
 }
 
 ---Call this at the top of your init.vim to get durations for autocmds. If you
@@ -81,8 +71,6 @@ M.log_start = function(name, ...)
     args = util.format_args(...),
     cat = "function,manual",
     ph = "B",
-    pid = util.get_process_id(),
-    tid = util.get_thread_id(),
     ts = clock(),
   })
 end
@@ -98,8 +86,6 @@ M.log_end = function(name, ...)
     name = name,
     args = util.format_args(...),
     cat = "function,manual",
-    pid = util.get_process_id(),
-    tid = util.get_thread_id(),
     ph = "E",
     ts = clock(),
   })
@@ -117,8 +103,6 @@ M.log_instant = function(name, ...)
     args = util.format_args(...),
     cat = "",
     ph = "i",
-    pid = util.get_process_id(),
-    tid = util.get_thread_id(),
     ts = clock(),
     s = "g",
   })
@@ -131,12 +115,9 @@ end
 
 ---Write the trace to a file
 ---@param filename string
----@param events profile.Event[]?
-M.export = function(filename, events)
+M.export = function(filename)
   local file = assert(io.open(filename, "w"))
-  events = events or instrument.get_events()
-  local original = instrument.recording
-  instrument.recording = false
+  local events = vim.deepcopy(instrument.get_events())
   file:write("[")
   local count = #events
   for i, event in ipairs(events) do
@@ -158,8 +139,6 @@ M.export = function(filename, events)
   end
   file:write("]")
   file:close()
-
-  instrument.recording = original
 end
 
 return M
