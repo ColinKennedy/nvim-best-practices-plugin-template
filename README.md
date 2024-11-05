@@ -12,7 +12,7 @@ A template repository used to create Neovim plugins.
 # Features
 - Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices)
 - Fast start-up (~1 ms)
-- Auto-release to [luarocks](https://luarocks.org) & [GitHub](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases)
+- Auto-release to [luarocks](https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#publishing-to-luarocks) & [GitHub](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases)
 - Automated user documentation (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
 - Automated API documentation (using [mini.doc](https://github.com/echasnovski/mini.doc))
 - Vimtags generation
@@ -229,6 +229,25 @@ make test
 Run test based on tags
 ```sh
 busted . --tags=simple
+```
+
+# Profiling
+## Initialization
+Run this line once before calling any `busted` command
+
+```sh
+eval $(luarocks path --lua-version 5.1 --bin)
+```
+
+## Flamegraph
+TODO: Make sure this works
+```sh
+BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make profile_using_flamegraph
+```
+
+### Timing
+```sh
+BUSTED_PROFILER_TIMING_OUTPUT_PATH=/tmp/directory make profile_using_vim
 ```
 
 

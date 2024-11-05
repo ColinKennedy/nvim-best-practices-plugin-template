@@ -1,0 +1,96 @@
+# Run profiler / timing benchmarks and output them as flamegraph details.
+# This workflow takes into account past profiler results and graphs the changes over time.
+#
+name: benchmark
+on:
+  release:
+    types: [released]
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+# TODO: Write documentation explaining why this exists and how to run it
+# TODO: Consider updating the main branch using the output of this flamegraph / etc data.
+
+jobs:
+  run_benchmark:
+    name: run_benchmark
+    runs-on: ubuntu-latest
+
+jobs:
+  flamegraph:
+    runs-on: ubuntu-latest
+    name: "Create Profiler Flamegraph"
+
+    # TODO: Add documentation about the PR labels
+    if: ${{ github.event_name == 'release' || contains(github.event.pull_request.labels.*.name, 'run-benchmarks') }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Check If profiling Branch Exists
+      id: check_branch
+      run: |
+        git fetch origin
+        if git show-ref --verify --quiet refs/heads/profiling; then
+          echo "Branch exists. Proceeding with merge."
+          echo "::set-output name=branch_exists::true"
+        else
+          echo "Branch does not exist. Will create a new one."
+          echo "::set-output name=branch_exists::false"
+        fi
+
+    - name: Create New profiling Branch
+      if: steps.check_branch.outputs.branch_exists == 'false'
+      run: |
+        git checkout -b profiling
+
+    - name: Merge Latest Changes From main
+      if: steps.check_branch.outputs.branch_exists == 'true'
+      run: |
+        git checkout profiling
+        git merge `git symbolic-ref refs/remotes/origin/HEAD --short` --no-edit
+
+    - uses: leafo/gh-actions-lua@v10
+      with:
+        # Neovim is compiled with LuaJIT so we might as well match. But it
+        # doesn't look like we can match it exactly.
+        #
+        # Reference:
+        #    https://github.com/leafo/gh-actions-lua/issues/49#issuecomment-2295071198
+        #
+        luaVersion: "luajit-openresty"
+
+    - uses: leafo/gh-actions-luarocks@v4
+
+    - name: Install Gnuplot
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gnuplot || /bin/true
+
+    - uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: stable
+
+    - name: Build Dependencies
+      run: |
+        luarocks test plugin-template-scm-1.rockspec --prepare
+
+    - name: Create Flamegraph
+      env:
+        BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH: ${{ github.workspace }}
+        BUSTED_PROFILER_FLAMEGRAPH_VERSION: ${{ github.event.release.tag_name }}
+        BUSTED_PROFILER_TIMING_THRESHOLD: 30  # This is an arbitrary number. Change it at will
+        LUA_PATH: "lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH"
+      run: |
+        echo "BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=$BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH"
+        echo "BUSTED_PROFILER_FLAMEGRAPH_VERSION=$BUSTED_PROFILER_FLAMEGRAPH_VERSION"
+        make flamegraph
+
+      - name: Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "chore(profiler): Auto-generate flamegraph & timing statistics"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
