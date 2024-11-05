@@ -22,8 +22,6 @@ local ignore_list = {
   "^profile.*$",
   "^lspconfig%.util%.script_path$",
   "^plenary%.async_lib.*$",
-
-  "^pl%..*",  -- This is a dependency of `busted`
 }
 
 local instrument_list = {}
@@ -68,8 +66,6 @@ local function wrap_function(name, fn)
       local delta = clock() - start
       M.add_event({
         name = name,
-        pid = util.get_process_id(),
-        tid = util.get_thread_id(),
         args = arg_string,
         cat = "function",
         ph = "X",
