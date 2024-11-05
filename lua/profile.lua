@@ -117,7 +117,7 @@ end
 ---@param filename string
 M.export = function(filename)
   local file = assert(io.open(filename, "w"))
-  local events = vim.deepcopy(instrument.get_events())
+  local events = vim.tbl_extend("force", {}, instrument.get_events())
   file:write("[")
   local count = #events
   for i, event in ipairs(events) do
