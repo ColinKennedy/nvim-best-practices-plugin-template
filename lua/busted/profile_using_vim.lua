@@ -7,12 +7,16 @@ local instrument = require("profile.instrument")
 local profile = require("profile")
 local tabler = require("plugin_template._core.tabler")
 
+---@class profile.Entry A quick, sparse way to refer to a function call.
+---@field duration number The time taken (in milliseconds) for the function to run.
+---@field name string The function that was called.
 
----@class _TimeRange
----@field start number
----@field end number
+---@class _TimeRange Some starting point and ending point, in milliseconds.
+---@field start number The first millisecond of the time range, (inclusive).
+---@field end number The last millisecond of the time range, (inclusive).
 
 local _PLUGIN_PREFIX = "plugin_template."
+
 
 local function _get_function_details(totals)
     -- NOTE: Consider allowing other functions here in the future?
@@ -99,10 +103,6 @@ local function _get_profile_report(events)
 end
 
 
----@class profile.Entry A quick, sparse way to refer to a function call.
----@field duration number The time taken (in milliseconds) for the function to run.
----@field name string The function that was called.
-
 --- Create an output handler (that records profiling data and outputs it afterwards).
 ---
 ---@param options busted.CallerOptions The user-provided terminal statistics.
@@ -132,10 +132,10 @@ return function(options)
         local path = os.getenv("BUSTED_PROFILER_VIM_OUTPUT_PATH") or vim.fn.tempname() .. ".txt"
         vim.notify('Writing profile output to "%s" path.', path)
 
-        -- -- TODO: Finish this part
-        -- -- local report = _get_profile_report(instrument.get_events())
-        -- -- vim.notify(report, vim.log.levels.INFO)
-        --
+        local report = _get_profile_report(instrument.get_events())
+        vim.notify(report, vim.log.levels.INFO)
+
+        -- TODO: Finish this part
         -- local file = io.open(path, "w")
         --
         -- if not file then
