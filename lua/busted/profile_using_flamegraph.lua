@@ -109,11 +109,15 @@ return function(options)
     ---@param total number A 1-or-more value - the maximum times that tests can run.
     ---
     handler.suiteEnd = function(suite, count, total)
-        if count == total then
-            -- TODO: Replace with a real path. later
-            profile.export("/mnt/c/Users/korinkite/temp/profile3.json")
-            -- profile.export("/mnt/c/Users/korinkite/temp/profile3.json")
+        if count ~= total then
+            -- NOTE: Testing hasn't completed yet.
+            return
         end
+
+        local path = os.getenv("BUSTED_PROFILER_OUTPUT_PATH") or vim.fn.tempname() .. ".txt"
+        vim.notify('Writing profile output to "%s" path.', path)
+
+        profile.export(path)
     end
 
     ---@param element busted.Element The `describe` / `it` / etc that just completed.
