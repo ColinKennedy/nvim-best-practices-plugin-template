@@ -114,7 +114,7 @@ return function(options)
             return
         end
 
-        local path = os.getenv("BUSTED_PROFILER_OUTPUT_PATH") or vim.fn.tempname() .. ".txt"
+        local path = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH") or vim.fn.tempname() .. ".txt"
         vim.notify('Writing profile output to "%s" path.', path)
 
         profile.export(path)
