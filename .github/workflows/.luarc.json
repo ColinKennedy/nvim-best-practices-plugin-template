@@ -1,10 +1,13 @@
 {
-    "diagnostics.globals": [
-        "vim"
-    ],
     "diagnostics.libraryFiles": "Disable",
     "runtime.version": "LuaJIT",
     "workspace.checkThirdParty": "Disable",
     "workspace.ignoreDir": [".lua", ".luarocks"],
-    "workspace.library": ["$PWD/.dependencies"]
+    "workspace.library": [
+        "$PWD/.dependencies/busted/library",
+        "$PWD/.dependencies/luassert/library",
+        "$PWD/.dependencies/luvit-meta/library",
+        "$VIMRUNTIME/lua",
+        "lua"
+    ]
 }

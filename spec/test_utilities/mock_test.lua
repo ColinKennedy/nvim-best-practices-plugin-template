@@ -34,6 +34,7 @@ end
 
 --- Make it so no existing API calls or commands print text.
 function M.silence_all_internal_prints()
+    ---@diagnostic disable-next-line: duplicate-set-field
     vim.notify = function(...) end -- luacheck: ignore 212
 end
 

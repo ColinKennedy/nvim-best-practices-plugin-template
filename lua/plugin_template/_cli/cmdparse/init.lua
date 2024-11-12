@@ -960,7 +960,7 @@ end
 --- If the parser is a child of a subparser then this instance must be given
 --- a name via `{name="foo"}` or this function will error.
 ---
----@param options cmdparse.ParameterParserOptions
+---@param options cmdparse.ParameterParserInputOptions | cmdparse.ParameterParserOptions
 ---    The options that we might pass to `cmdparse.ParameterParser.new`.
 ---@return cmdparse.ParameterParser
 ---    The created instance.
@@ -971,6 +971,7 @@ function M.ParameterParser.new(options)
     end
 
     if options.parent then
+        ---@cast options cmdparse.ParameterParserOptions
         types_input.validate_name(options)
     end
 

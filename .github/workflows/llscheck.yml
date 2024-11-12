@@ -22,6 +22,13 @@ jobs:
     - name: Update Submodules
       run: git submodule update --init --recursive
 
+    - uses: rhysd/action-setup-vim@v1
+      # NOTE: We need Neovim installed in order to expose the $VIMRUNTIME
+      # environment variable
+      with:
+        neovim: true
+        version: stable
+
     - uses: leafo/gh-actions-lua@v10
       with:
         # Neovim is compiled with LuaJIT so we might as well match. But it
@@ -45,4 +52,4 @@ jobs:
 
     - name: test
       run: |
-        llscheck --configpath .github/workflows/.luarc.json .
+        VIMRUNTIME=`nvim -l scripts/print_vimruntime_environment_variable.lua` llscheck --configpath .github/workflows/.luarc.json .

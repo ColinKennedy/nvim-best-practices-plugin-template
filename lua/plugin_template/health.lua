@@ -86,6 +86,11 @@ local function _append_validated(array, name, value_creator, expected, message)
 
     local validated
     success, validated = pcall(vim.validate, {
+        -- TODO: I think the Neovim type annotation is wrong. Once Neovim
+        -- 0.10 is dropped let's just change this over to the new
+        -- vim.validate signature.
+        --
+        ---@diagnostic disable-next-line: assign-type-mismatch
         [name] = { value, expected, message },
     })
 
@@ -112,6 +117,11 @@ local function _get_boolean_issue(key, data)
 
                 return type(value) == "boolean"
             end,
+            -- TODO: I think the Neovim type annotation is wrong. Once Neovim
+            -- 0.10 is dropped let's just change this over to the new
+            -- vim.validate signature.
+            --
+            ---@diagnostic disable-next-line: assign-type-mismatch
             "a boolean",
         },
     })
