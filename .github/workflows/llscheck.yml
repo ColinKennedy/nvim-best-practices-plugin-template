@@ -52,4 +52,4 @@ jobs:
 
     - name: test
       run: |
-        VIMRUNTIME=`nvim -l scripts/print_vimruntime_environment_variable.lua` llscheck --configpath .github/workflows/.luarc.json .
+        VIMRUNTIME=`nvim -es +'verbose echo $VIMRUNTIME' 2>&1` llscheck --configpath .luarc.json .

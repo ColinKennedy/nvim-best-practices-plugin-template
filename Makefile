@@ -4,7 +4,7 @@ api_documentation:
 	nvim -u scripts/make_api_documentation/minimal_init.lua -l scripts/make_api_documentation/main.lua
 
 llscheck:
-	VIMRUNTIME=`nvim -l scripts/print_vimruntime_environment_variable.lua` llscheck --configpath .luarc.json .
+	VIMRUNTIME=`nvim -es +'verbose echo $VIMRUNTIME' 2>&1` llscheck --configpath .luarc.json .
 
 luacheck:
 	luacheck lua plugin scripts spec
