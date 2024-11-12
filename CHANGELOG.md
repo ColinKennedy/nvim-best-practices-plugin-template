@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.3.1...v1.3.2) (2024-11-12)
+
+
+### Bug Fixes
+
+* **luals:** Added missing diagnostics paths ([d5f93ef](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/d5f93ef89c47ae5dd09c684526f7050a0f829e11))
+
 ## [1.3.1](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.3.0...v1.3.1) (2024-10-26)
 
 
