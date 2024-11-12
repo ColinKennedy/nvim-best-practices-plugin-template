@@ -50,21 +50,19 @@ function _P.handle_test_end()
     local name = _P.get_current_test_path()
     local start = _TEST_CACHE[name]
     local duration = clock() - start
-    instrument.add_event(
-        {
-            name=name,
-            args = {},
-            cat = "function",
-            ph = "X",
-            ts = start,
-            dur = duration,
-        }
-    )
+    instrument.add_event({
+        name = name,
+        args = {},
+        cat = "function",
+        ph = "X",
+        ts = start,
+        dur = duration,
+    })
 
     _TEST_CACHE[name] = nil
 end
 
-local function _P.make_graph(path)
+function _P.make_graph(path)
     -- TODO: Finish
 end
 
@@ -77,38 +75,32 @@ function _P.stop_profiling_file(path)
     local start = _FILE_CACHE[path]
     local duration = clock() - start
 
-    instrument.add_event(
-        {
-            name=path,
-            args = {},
-            cat = "file",
-            ph = "X",
-            ts = start,
-            dur = duration,
-        }
-    )
+    instrument.add_event({
+        name = path,
+        args = {},
+        cat = "file",
+        ph = "X",
+        ts = start,
+        dur = duration,
+    })
 
     _FILE_CACHE[path] = nil
 end
-
 
 function _P.write_all_summary_directory()
     _P.write_flamegraph(vim.fs.joinpath(all_root, "flamegraph.json"), profile)
     local profile_data = _P.write_profile_summary(vim.fs.joinpath(all_root, "profile.json"))
     _P.append_to_summary_readme(vim.fs.joinpath(all_root, "README.md"), profile_data)
     _P.make_graph(vim.fs.joinpath(all_root, "timing.png"))
-
 end
 
-function _P.write_by_release_directory()
-end
+function _P.write_by_release_directory() end
 
 function _P.write_flamegraph(path, profile)
     _P.make_parent_directory(path)
 
     profile.export(path)
 end
-
 
 function _P.write_profile_summary(path)
     _P.make_parent_directory(path)
@@ -138,13 +130,13 @@ end
 ---@return busted.Handler # The generated handler.
 ---
 return function(options)
-    local busted = require('busted')
-    local handler = require('busted.outputHandlers.base')()
+    local busted = require("busted")
+    local handler = require("busted.outputHandlers.base")()
 
     local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
 
     if not root then
-        error('Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.')
+        error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.")
     end
 
     profile.start("*")
