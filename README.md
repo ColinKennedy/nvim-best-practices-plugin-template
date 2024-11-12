@@ -231,6 +231,18 @@ Run test based on tags
 busted . --tags=simple
 ```
 
+## Profiling
+### Flamegraph
+TODO: Make sure this works
+```sh
+BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/profile.json make profile_using_flamegraph
+```
+
+### Timing
+```sh
+BUSTED_PROFILER_TIMING_OUTPUT_PATH=/tmp/profile.json make profile_using_vim
+```
+
 
 # Tracking Updates
 See [doc/news.txt](doc/news.txt) for updates.
