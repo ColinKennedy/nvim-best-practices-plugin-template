@@ -34,14 +34,20 @@ local _TEST_CACHE = {}
 ---@type string[]
 local _NAME_STACK = {}
 
+local _P = {}
+
 ---@return string # The found test name (of all `describe` + `it` blocks).
-local function _get_current_test_path()
+function _P.get_current_test_path()
     return vim.fn.join(_NAME_STACK, " ")
 end
 
+function _P.append_to_summary_readme(data, path)
+    -- TODO: Finish
+end
+
 --- Close the profile results on a test that is ending.
-local function _handle_test_end()
-    local name = _get_current_test_path()
+function _P.handle_test_end()
+    local name = _P.get_current_test_path()
     local start = _TEST_CACHE[name]
     local duration = clock() - start
     instrument.add_event(
@@ -58,12 +64,16 @@ local function _handle_test_end()
     _TEST_CACHE[name] = nil
 end
 
-local function _make_parent_directory(path)
+local function _P.make_graph(path)
+    -- TODO: Finish
+end
+
+function _P.make_parent_directory(path)
     vim.fn.mkdir(vim.fn.fnamemodify(path, ":p:h"), "p")
 end
 
 -- path is relative or absolute
-local function _stop_profiling_file(path)
+function _P.stop_profiling_file(path)
     local start = _FILE_CACHE[path]
     local duration = clock() - start
 
@@ -82,6 +92,46 @@ local function _stop_profiling_file(path)
 end
 
 
+function _P.write_all_summary_directory()
+    _P.write_flamegraph(vim.fs.joinpath(all_root, "flamegraph.json"), profile)
+    local profile_data = _P.write_profile_summary(vim.fs.joinpath(all_root, "profile.json"))
+    _P.append_to_summary_readme(vim.fs.joinpath(all_root, "README.md"), profile_data)
+    _P.make_graph(vim.fs.joinpath(all_root, "timing.png"))
+
+end
+
+function _P.write_by_release_directory()
+end
+
+function _P.write_flamegraph(path, profile)
+    _P.make_parent_directory(path)
+
+    profile.export(path)
+end
+
+
+function _P.write_profile_summary(path)
+    _P.make_parent_directory(path)
+
+    local file = io.open(path, "w")
+
+    if not file then
+        error(string.format('Path "%s" could not be exported.', path))
+    end
+
+    local data = {}
+
+    -- TODO: Add data here. Look at Rez as an example
+    -- for _,
+    -- print("WRITE THE SUMMARY")
+    -- instrument.get_events()
+
+    file:write(vim.fn.json_encode(data))
+    file:close()
+
+    return data
+end
+
 --- Create an output handler (that records profiling data and outputs it afterwards).
 ---
 ---@param options busted.CallerOptions The user-provided terminal statistics.
@@ -91,9 +141,9 @@ return function(options)
     local busted = require('busted')
     local handler = require('busted.outputHandlers.base')()
 
-    local export_path = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
+    local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
 
-    if not export_path then
+    if not root then
         error('Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.')
     end
 
@@ -120,7 +170,7 @@ return function(options)
     handler.fileEnd = function(file)
         table.remove(_NAME_STACK)
 
-        _stop_profiling_file(file.name)
+        _P.stop_profiling_file(file.name)
     end
 
     --- Output the profile logs after unittesting ends.
@@ -135,11 +185,10 @@ return function(options)
             return
         end
 
-        _make_parent_directory(export_path)
+        all_root = vim.fs.joinpath(root, "benchmarks", "all")
 
-        print(string.format('Writing profile output to "%s" path.', export_path))
-
-        profile.export(export_path)
+        _P.write_all_summary_directory()
+        _P.write_by_release_directory()
     end
 
     ---@param element busted.Element The `describe` / `it` / etc that just completed.
@@ -147,13 +196,13 @@ return function(options)
     handler.testStart = function(element, parent)
         table.insert(_NAME_STACK, element.name)
 
-        _TEST_CACHE[_get_current_test_path()] = clock()
+        _TEST_CACHE[_P.get_current_test_path()] = clock()
     end
 
     ---@param element busted.Element The `describe` / `it` / etc that just completed.
     ---@param parent busted.Element The `describe` block that includes `element`.
     handler.testEnd = function(element, parent)
-        _handle_test_end()
+        _P.handle_test_end()
 
         table.remove(_NAME_STACK)
     end
@@ -161,20 +210,20 @@ return function(options)
     ---@param element busted.Element The `describe` / `it` / etc that just completed.
     ---@param parent busted.Element The `describe` block that includes `element`.
     handler.testFailure = function(element, parent)
-        _handle_test_end()
+        _P.handle_test_end()
     end
 
     ---@param element busted.Element The `describe` / `it` / etc that just completed.
     ---@param parent busted.Element The `describe` block that includes `element`.
     handler.testError = function(element, parent)
-        _handle_test_end()
+        _P.handle_test_end()
     end
 
     ---@param element busted.Element The `describe` / `it` / etc that just completed.
     ---@param parent busted.Element The `describe` block that includes `element`.
     handler.error = function(element, parent)
         if element.descriptor == "test" then
-            _handle_test_end()
+            _P.handle_test_end()
 
             return
         end
