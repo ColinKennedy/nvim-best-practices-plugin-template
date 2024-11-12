@@ -362,9 +362,7 @@ function M.make_subcommand_triager(subcommands)
         end
 
         if subcommand.run then
-            subcommand.run(vim.tbl_deep_extend("force", opts, {
-                input = argparse.parse_arguments(stripped_text),
-            }))
+            subcommand.run(vim.tbl_deep_extend("keep", { input = argparse.parse_arguments(stripped_text) }, opts))
 
             return
         end

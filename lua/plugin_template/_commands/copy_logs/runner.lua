@@ -32,13 +32,28 @@ end
 function M._read_file(path, callback)
     -- NOTE: mode 428 == rw-rw-rw-
     vim.uv.fs_open(path, "r", 438, function(error_open, handler)
-        assert(not error_open, error_open)
+        if error_open then
+            error(error_open)
+        end
+        if not handler then
+            error(string.format('Path "%s" could not be opened.', path))
+        end
 
         vim.uv.fs_fstat(handler, function(error_stat, stat)
-            assert(not error_stat, error_stat)
+            if error_stat then
+                error(error_stat)
+            end
+            if not stat then
+                error(string.format('Path "%s" could not be stat-ed.', path))
+            end
 
             vim.uv.fs_read(handler, stat.size, 0, function(error_read, data)
-                assert(not error_read, error_read)
+                if error_read then
+                    error(error_read)
+                end
+                if not data then
+                    error(string.format('Path "%s" could no be read for data.', path))
+                end
 
                 vim.uv.fs_close(handler, function(error_close)
                     assert(not error_close, error_close)
