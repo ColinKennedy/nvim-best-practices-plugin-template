@@ -17,7 +17,6 @@ local tabler = require("plugin_template._core.tabler")
 
 local _PLUGIN_PREFIX = "plugin_template."
 
-
 local function _get_function_details(totals)
     -- NOTE: Consider allowing other functions here in the future?
     local predicate = function(entry)
@@ -32,7 +31,7 @@ local function _get_function_details(totals)
 
     for name, total_duration in pairs(totals) do
         ---@type profile.Entry
-        local entry = {duration=total_duration, name=name}
+        local entry = { duration = total_duration, name = name }
 
         if predicate(entry) then
             table.insert(functions, entry)
@@ -59,7 +58,7 @@ local function _get_totals(events)
                 ranges[name] = {}
             end
 
-            table.insert(ranges[name], {start=event.ts, ["end"]=event.ts + event.dur})
+            table.insert(ranges[name], { start = event.ts, ["end"] = event.ts + event.dur })
         end
     end
 
@@ -73,12 +72,13 @@ local function _get_self_times(entries, ranges)
     -- end
 end
 
-
 local function _get_profile_report(events)
     local totals, ranges = _get_totals(events)
     local counts, functions = _get_function_details(totals)
 
-    local slowest_functions = vim.fn.sort(functions, function(left, right) return left.duration < right.duration end)
+    local slowest_functions = vim.fn.sort(functions, function(left, right)
+        return left.duration < right.duration
+    end)
     local threshold = 20
     local top_slowest = tabler.get_slice(slowest_functions, 1, threshold)
     -- TODO: Add support for self_times later
@@ -102,6 +102,20 @@ local function _get_profile_report(events)
     return string.format("Total Time:\n")
 end
 
+local function _write(report, path)
+    local file = io.open(path, "w")
+
+    if not file then
+        vim.notify(string.format('Failed to open "%s" path for writing.', path), vim.log.levels.ERROR)
+
+        return
+    end
+
+    file:write(report)
+    file:close()
+
+    vim.notify(string.format('Wrote the report to "%s" path.', path), vim.log.levels.INFO)
+end
 
 --- Create an output handler (that records profiling data and outputs it afterwards).
 ---
@@ -109,11 +123,14 @@ end
 ---@return busted.Handler # The generated handler.
 ---
 return function(options)
-    local busted = require('busted')
-    local handler = require('busted.outputHandlers.base')()
+    local busted = require("busted")
+    local handler = require("busted.outputHandlers.base")()
 
-    -- TODO: Replace with a real path. later
-    local export_path = "/tmp/profile.txt"
+    local export_path = os.getenv("BUSTED_PROFILER_TIMING_OUTPUT_PATH")
+
+    if not export_path then
+        error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.")
+    end
 
     profile.start("*")
 
@@ -129,26 +146,10 @@ return function(options)
             return
         end
 
-        local path = os.getenv("BUSTED_PROFILER_VIM_OUTPUT_PATH") or vim.fn.tempname() .. ".txt"
-        vim.notify('Writing profile output to "%s" path.', path)
+        vim.notify('Writing profile output to "%s" path.', export_path)
 
         local report = _get_profile_report(instrument.get_events())
-        vim.notify(report, vim.log.levels.INFO)
-
-        -- TODO: Finish this part
-        -- local file = io.open(path, "w")
-        --
-        -- if not file then
-        --     vim.notify(
-        --         string.format('Failed to open "%s" path for writing.', path),
-        --         vim.log.levels.ERROR
-        --     )
-        --
-        --     return
-        -- end
-        --
-        -- file:write(report)
-        -- file:close()
+        _write(report, path)
     end
 
     busted.subscribe({ "suite", "end" }, handler.suiteEnd)
