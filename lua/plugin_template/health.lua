@@ -410,6 +410,8 @@ function M.get_issues(data)
         data = configuration_.resolve_data(vim.g.plugin_template_configuration)
     end
 
+    ---@cast data plugin_template.Configuration
+
     local output = {}
     vim.list_extend(output, _get_command_issues(data))
 
