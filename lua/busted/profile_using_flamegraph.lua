@@ -79,6 +79,9 @@ function _P.get_graph_artifacts(root, maximum)
 
     local template = vim.fs.joinpath(root, "*", _DETAILS_FILE_NAME)
 
+    -- TODO: Sort these paths based on the version number (directory name).
+    -- need to sort it as numbers, not as a string
+    --
     for index, path in ipairs(vim.fn.glob(template, false, true)) do
         local file = io.open(path, "r")
 
