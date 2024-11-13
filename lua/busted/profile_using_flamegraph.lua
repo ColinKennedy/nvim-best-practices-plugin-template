@@ -336,6 +336,12 @@ return function(options)
         error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.", 0)
     end
 
+    local export_path = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
+
+    if not export_path then
+        error('Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.')
+    end
+
     profile.start("*")
 
     ---@param describe busted.Element The starting file.
@@ -375,6 +381,7 @@ return function(options)
         end
 
         _P.write_all_summary_directory(vim.fs.joinpath(root, "benchmarks", "all"))
+        -- TODO: Finish this part
         -- _P.write_by_release_directory(vim.fs.joinpath(root, "benchmarks", "by_release"))
     end
 
