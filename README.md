@@ -231,16 +231,23 @@ Run test based on tags
 busted . --tags=simple
 ```
 
-## Profiling
-### Flamegraph
+# Profiling
+## Initialization
+Run this line once before calling any `busted` command
+
+```sh
+eval $(luarocks path --lua-version 5.1 --bin)
+```
+
+## Flamegraph
 TODO: Make sure this works
 ```sh
-BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/profile.json make profile_using_flamegraph
+BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make profile_using_flamegraph
 ```
 
 ### Timing
 ```sh
-BUSTED_PROFILER_TIMING_OUTPUT_PATH=/tmp/profile.json make profile_using_vim
+BUSTED_PROFILER_TIMING_OUTPUT_PATH=/tmp/directory make profile_using_vim
 ```
 
 
