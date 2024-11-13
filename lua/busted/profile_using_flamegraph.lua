@@ -5,8 +5,6 @@
 --- @module 'busted.profile'
 ---
 
--- TODO: Docstrings
-
 ---@see https://github.com/hishamhm/busted-htest/blob/master/src/busted/outputHandlers/htest.lua
 
 local clock = require("profile.clock")
@@ -24,6 +22,8 @@ local profile = require("profile")
 ---@field median number
 ---@field standard_deviation number
 ---@field total number
+
+-- TODO: Add logging in this file / around
 
 ---@class busted.CallerOptions
 
@@ -61,18 +61,30 @@ end
 --- Raises:
 ---     If a found results file cannot be read from JSON.
 ---
+---     Or if the given `maximum` is invalid.
+---
 ---@param root string
 ---    An absolute path to the direct-parent directory. e.g. `".../benchmarks/all/artifacts".
+---@param maximum number?
+---    The number of artifacts to read. If not provided, read all of them.
 ---@return _GraphArtifact[]
 ---    All found records so far, if any.
 ---
-function _P.get_graph_artifacts(root)
+function _P.get_graph_artifacts(root, maximum)
+    if maximum ~= nil then
+        if maximum < 1 then
+            error(string.format('Maximum "%s" must be >= 1', maximum), 0)
+        end
+    else
+        maximum = 2^40  -- NOTE: Just some arbitrary, really big number
+    end
+
     ---@type _GraphArtifact[]
     local output = {}
 
     local template = vim.fs.joinpath(root, "*", _DETAILS_FILE_NAME)
 
-    for _, path in ipairs(vim.fn.glob(template, false, true)) do
+    for index, path in ipairs(vim.fn.glob(template, false, true)) do
         local file = io.open(path, "r")
 
         if not file then
@@ -88,6 +100,11 @@ function _P.get_graph_artifacts(root)
         end
 
         table.insert(output, result)
+
+        if index >= maximum then
+            -- TODO: Add logging
+            return output
+        end
     end
 
     return output
@@ -248,7 +265,7 @@ function _P.write_all_summary_directory(root)
     -- TODO: Change this code to generate the {YYYY_MM_DD-VERSION_TAG}/
     -- directory first and then just copy its flamegraph.json and profile.json
     -- to the all/ root directory.
-    _P.write_flamegraph(vim.fs.joinpath(root, "flamegraph.json"), profile)
+    _P.write_flamegraph(profile, vim.fs.joinpath(root, "flamegraph.json"))
     local profile_data = _P.write_profile_summary(vim.fs.joinpath(root, "profile.json"))
     _P.append_to_summary_readme(profile_data, vim.fs.joinpath(root, "README.md"))
     -- TODO: Find a way to pass in the release, maybe
