@@ -276,7 +276,7 @@ end
 function _P.validate_release(version)
     local pattern = "^v%d+%.%d+%.%d+$"
 
-    if string.match(version, pattern) ~= nil then
+    if not string.match(version, pattern) then
         error(
             string.format('Version "%s" is invalid. Expected Semantic Versioning. See semver.org for details.', version),
             0
@@ -391,7 +391,6 @@ return function(options)
     local handler = require("busted.outputHandlers.base")()
 
     local root, release = _P.parse_input_arguments()
-    local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
 
     profile.start("*")
 
@@ -400,8 +399,7 @@ return function(options)
         table.insert(_NAME_STACK, describe.name)
     end
 
-    ---@param describe busted.Element The starting file.
-    handler.describeEnd = function(describe)
+    handler.describeEnd = function()
         table.remove(_NAME_STACK)
     end
 
@@ -436,36 +434,28 @@ return function(options)
     end
 
     ---@param element busted.Element The `describe` / `it` / etc that just completed.
-    ---@param parent busted.Element The `describe` block that includes `element`.
-    handler.testStart = function(element, parent)
+    handler.testStart = function(element)
         table.insert(_NAME_STACK, element.name)
 
         _TEST_CACHE[_P.get_current_test_path()] = clock()
     end
 
-    ---@param element busted.Element The `describe` / `it` / etc that just completed.
-    ---@param parent busted.Element The `describe` block that includes `element`.
-    handler.testEnd = function(element, parent)
+    handler.testEnd = function()
         _P.handle_test_end()
 
         table.remove(_NAME_STACK)
     end
 
-    ---@param element busted.Element The `describe` / `it` / etc that just completed.
-    ---@param parent busted.Element The `describe` block that includes `element`.
-    handler.testFailure = function(element, parent)
+    handler.testFailure = function()
+        _P.handle_test_end()
+    end
+
+    handler.testError = function()
         _P.handle_test_end()
     end
 
     ---@param element busted.Element The `describe` / `it` / etc that just completed.
-    ---@param parent busted.Element The `describe` block that includes `element`.
-    handler.testError = function(element, parent)
-        _P.handle_test_end()
-    end
-
-    ---@param element busted.Element The `describe` / `it` / etc that just completed.
-    ---@param parent busted.Element The `describe` block that includes `element`.
-    handler.error = function(element, parent)
+    handler.error = function(element)
         if element.descriptor == "test" then
             _P.handle_test_end()
 
