@@ -2,6 +2,8 @@ local autocmd = require("profile.autocmd")
 local clock = require("profile.clock")
 local instrument = require("profile.instrument")
 local util = require("profile.util")
+
+---@class Profiler
 local M = {}
 
 local event_defaults = {
