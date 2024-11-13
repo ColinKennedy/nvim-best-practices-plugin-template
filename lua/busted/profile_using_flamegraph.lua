@@ -76,7 +76,7 @@ function _P.get_graph_artifacts(root, maximum)
             error(string.format('Maximum "%s" must be >= 1', maximum), 0)
         end
     else
-        maximum = 2^40  -- NOTE: Just some arbitrary, really big number
+        maximum = 2 ^ 40 -- NOTE: Just some arbitrary, really big number
     end
 
     ---@type _GraphArtifact[]
@@ -238,7 +238,7 @@ function _P.parse_input_arguments()
     local release = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_VERSION")
 
     if not release then
-        error('Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_VERSION is not defined.', 0)
+        error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_VERSION is not defined.", 0)
     end
 
     _P.validate_release(release)
@@ -277,7 +277,10 @@ function _P.validate_release(version)
     local pattern = "^v%d+%.%d+%.%d+$"
 
     if string.match(version, pattern) ~= nil then
-        error(string.format('Version "%s" is invalid. Expected Semantic Versioning. See semver.org for details.', version), 0)
+        error(
+            string.format('Version "%s" is invalid. Expected Semantic Versioning. See semver.org for details.', version),
+            0
+        )
     end
 end
 
