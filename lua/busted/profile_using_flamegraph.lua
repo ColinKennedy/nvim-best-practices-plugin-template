@@ -45,6 +45,11 @@ local _TEST_CACHE = {}
 
 ---@type string[]
 local _NAME_STACK = {}
+local _MAXIMUM_ARTIFACTS = 40 -- TODO: Do some tests to figure out what maximum number should be
+
+local _PROFILE_FILE_NAME = "profile.json"
+
+local _P = {}
 
 ---@return string # The found test name (of all `describe` + `it` blocks).
 local function _get_current_test_name()
@@ -77,7 +82,7 @@ function _P.get_graph_artifacts(root, maximum)
     ---@type _GraphArtifact[]
     local output = {}
 
-    local template = vim.fs.joinpath(root, "*", _DETAILS_FILE_NAME)
+    local template = vim.fs.joinpath(root, "*", _PROFILE_FILE_NAME)
 
     for index, path in ipairs(_P.get_sorted_datetime_paths(vim.fn.glob(template, false, true))) do
         local file = io.open(path, "r")
@@ -301,8 +306,14 @@ local function _handle_test_end()
     _TEST_CACHE[name] = nil
 end
 
-local function _make_parent_directory(path)
-    vim.fn.mkdir(vim.fn.fnamemodify(path, ":p:h"), "p")
+--- Create the parent directory that will contain `path`.
+---
+---@param path string
+---    An absolute path to a file / symlink. It's expected that `path` does not
+---    already exist on disk and probably neither does its parent directory.
+---
+function _P.make_parent_directory(path)
+    vim.fn.mkdir(vim.fs.dirname(path), "p")
 end
 
 --- Get all input data needed for us to run + save flamegraph data to-disk.
@@ -393,13 +404,20 @@ end
 ---@param root string The ".../benchmarks/all" directory to create or update.
 ---
 function _P.write_all_summary_directory(release, profiler, root)
-    local flamegraph_path, profile_path, profile_data = _P.write_graph_artifact(release, profiler, root)
+    local artifacts_root = vim.fs.joinpath(root, "artifacts")
+    local flamegraph_path, profile_path, profile_data = _P.write_graph_artifact(release, profiler, artifacts_root)
 
     _P.copy_file_to_directory(flamegraph_path, root)
     _P.copy_file_to_directory(profile_path, root)
 
+    -- TODO: Change this from "append to summary" to just "generate the whole
+    -- thing from scratch each time".
+    --
     _P.append_to_summary_readme(profile_data, vim.fs.joinpath(root, "README.md"), release)
-    _P.make_graph(_P.get_graph_artifacts(root, _MAXIMUM_ARTIFACTS), vim.fs.joinpath(root, "timing.png"))
+    _P.write_graph_image(
+        _P.get_graph_artifacts(artifacts_root, _MAXIMUM_ARTIFACTS),
+        vim.fs.joinpath(root, "timing.png")
+    )
 end
 
 -- TODO: Docstring
@@ -417,6 +435,142 @@ function _P.write_flamegraph(profiler, path)
     profiler.export(path)
 end
 
+--- Make the .dat file. We will load this file and plot it as a graph later.
+---
+---@param artifacts _GraphArtifact[]
+---    All past profiling / timing records to make a graph.
+---@param path string
+---    An absolute path on-disk to write the .dat file to.
+---
+function _P.write_gnuplot_data(artifacts, path)
+    -- NOTE: Since timings can vary drastically between Neovim / Lua
+    -- versions we don't want to pollute the timing information. We could
+    -- create graphs for every permutation but really, most people probably
+    -- only care about the latest version. So let's only graph that.
+    --
+    local neovim_version = _P.get_latest_neovim_version(artifacts)
+
+    if not neovim_version then
+        error(
+            string.format(
+                'Cannot write to "%s". A "latest Neovim version" could not be found.',
+                path
+            ),
+            0
+        )
+    end
+
+    local file = io.open(path, "w")
+
+    if not file then
+        error(string.format('Path "%s" is not writeable. We cannot write the graph data.', path), 0)
+    end
+
+    for _, artifact in ipairs(artifacts) do
+        if artifact.neovim_version == neovim_version then
+            file:write(
+                string.format(
+                    "%s %f %f %f\n",
+                    artifact.neovim_version,
+                    artifact.mean,
+                    artifact.median,
+                    artifact.standard_deviation
+                )
+            )
+        end
+    end
+
+    file:close()
+end
+
+--- Make a .gnuplot file so we can use it to generate the line-graph later.
+---
+---@param path string An absolute path on-disk where the .gnuplot file will write to.
+---
+function _P.write_gnuplot_script(path)
+    -- TODO: See if absolute paths are allowed here
+    local header = [[
+set xtics rotate
+set term png
+set border 1
+set output 'solvetimes.png'
+plot "solvetimes.dat" using 2:xtic(1) title 'Mean' with lines, \
+  "_temporary.dat" using 3:xtic(1) title 'Median' with lines lc "gray", \
+  "_temporary.dat" using 2:4 title 'Stddev' with errorbars
+    ]]
+
+    local file = io.open(path, "w")
+
+    if not file then
+        error(string.format('Path "%s" is not writable. Cannot make the graph.', path), 0)
+    end
+
+    file:write(header)
+    file:close()
+end
+
+--- Create a line-graph at `path` using `artifacts`.
+---
+---@param artifacts _GraphArtifact[]
+---    All past profiling / timing records to make a graph.
+---@param path string
+---    An absolute path on-disk to write this graph image to.
+---
+function _P.write_graph_image(artifacts, path)
+    local root = vim.fs.dirname(path)
+
+    local gnuplot_data_path = vim.fs.joinpath(root, "_temporary.dat")
+    local success, message = pcall(_P.write_gnuplot_data, artifacts, path)
+
+    if not success then
+        os.remove(gnuplot_data_path)
+
+        error(
+            string.format(
+                'Error: "%s". Could not make a .dat file at "%s" path.',
+                message,
+                gnuplot_data_path
+            ),
+            0
+        )
+    end
+
+    local gnuplot_script_path = vim.fs.joinpath(root, "_temporary.gnuplot")
+    success, message = pcall(_P.write_gnuplot_script, path)
+
+    if not success then
+        os.remove(gnuplot_data_path)
+        os.remove(gnuplot_script_path)
+
+        error(
+            string.format(
+                'Error: "%s". Could not make a .gnuplot file. Deleting all temporary files.',
+                message,
+                gnuplot_script_path
+            ),
+            0
+        )
+    end
+
+    success, message = pcall(vim.fn.system, {"gnuplot", gnuplot_script_path})
+
+    -- NOTE: We don't need these temporary files anymore. So delete them.
+    os.remove(gnuplot_data_path)
+    os.remove(gnuplot_script_path)
+
+    if not success then
+        error(
+            string.format(
+                'Error: "%s". Could not make "%s" into a graph.',
+                message,
+                gnuplot_script_path,
+                gnuplot_script_path
+            ),
+            0
+        )
+    end
+end
+
 --- Create the `"benchmarks/all/artifacts/{YYYY_MM_DD-VERSION_TAG}"` directory.
 ---
 ---@param release string The current release to make. e.g. `"v1.2.3"`.
@@ -430,7 +584,7 @@ function _P.write_graph_artifact(release, profiler, root)
     local flamegraph_path = vim.fs.joinpath(directory, "flamegraph.json")
     _P.write_flamegraph(profiler, flamegraph_path)
 
-    local profile_path = vim.fs.joinpath(directory, "profile.json")
+    local profile_path = vim.fs.joinpath(directory, _PROFILE_FILE_NAME)
     local profile_data = _P.write_profile_summary(profile_path)
 
     return flamegraph_path, profile_path, profile_data
@@ -456,11 +610,18 @@ function _P.write_profile_summary(path)
 
     ---@type _SummaryTimingLine
     local data = {
-        -- TODO: Finish these values somehow
-        mean = 1.23,
-        median = 1.45,
-        standard_deviation = 1.78,
-        total = 1.90,
+        versions = {
+            neovim = vim.version(),
+            lua = jit.version,
+            uv = vim.uv.version(),
+        },
+        statistics = {
+            -- TODO: Finish these values somehow
+            mean = 1.23,
+            median = 1.45,
+            standard_deviation = 1.78,
+            total = 1.90,
+        }
     }
 
     -- TODO: Add data here. Look at Rez as an example
