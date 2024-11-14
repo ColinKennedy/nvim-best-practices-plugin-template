@@ -79,10 +79,7 @@ function _P.get_graph_artifacts(root, maximum)
 
     local template = vim.fs.joinpath(root, "*", _DETAILS_FILE_NAME)
 
-    -- TODO: Sort these paths based on the version number (directory name).
-    -- need to sort it as numbers, not as a string
-    --
-    for index, path in ipairs(vim.fn.glob(template, false, true)) do
+    for index, path in ipairs(_P.get_sorted_datetime_paths(vim.fn.glob(template, false, true))) do
         local file = io.open(path, "r")
 
         if not file then
@@ -108,14 +105,57 @@ function _P.get_graph_artifacts(root, maximum)
     return output
 end
 
+--- Read `"/path/to/2024_08_23-11_03_01/foo.bar"` for the date + time data.
+---
+---@param path string The absolute path to a file. Its parent directory has date + time data.
+---@return number[] # All of the date information.
+---
+function _P.get_parent_directory_name_data(path)
+    local text = vim.fn.fnamemodify(vim.fn.fnamemodify(path, ":h"), ":t")
+
+    local output = {}
+
+    for number_text in string.gmatch(text, "%d+") do
+        table.insert(output, tonumber(number_text))
+    end
+
+    if #output < 6 then
+        error(string.format('Text "%s" did not match "YYYY_MM_DD-vMAJOR.MINOR.PATCH" pattern.', text), 0)
+    end
+
+    return output
+end
+
+--- Sort all file-paths on-disk based on their date + time data.
+---
+--- We assume that these paths follow a format similar to
+--- `"/path/to/2024_08_23-11_03_01/foo.bar"`.
+---
+---@param paths string[] All of the absolute paths on-disk to sort.
+---@return string[] # All sorted paths, in ascending order.
+---
+function _P.get_sorted_datetime_paths(paths)
+    return vim.fn.sort(paths, function(left, right)
+        if left == right then
+            return 0
+        end
+
+        return _P.compare_number_arrays(
+            _P.get_parent_directory_name_data(left),
+            _P.get_parent_directory_name_data(right)
+        )
+    end)
+end
+
 --- Add graph data to the "benchmarks/all/README.md" file.
 ---
 --- Or create the file if it does not exist.
 ---
 ---@param data _SummaryTimingLine Some timing data to append to the README.md's markdown table.
 ---@param path string The path on-disk to write the README.md to.
+---@param release string A version / release tag. e.g. `"v1.2.3"`.
 ---
-function _P.append_to_summary_readme(data, path)
+function _P.append_to_summary_readme(data, path, release)
     -- TODO: Change the code for the summary README.md - Make it easy for anyone
     -- their own "highlight this specific thing that I want to track" API.
     _P.create_summary_readme_if_needed(path)
@@ -126,8 +166,6 @@ function _P.append_to_summary_readme(data, path)
         error(string.format('Cannot append to "%s" path.', path), 0)
     end
 
-    -- TODO: Find a way to pass in the release, maybe
-    local release = "TODO"
     local platform = vim.loop.os_uname().sysname
     -- TODO: To the get CPU
     -- TODO: Maybe vim.uv.cpu_info() but really we should use something better here
@@ -135,15 +173,80 @@ function _P.append_to_summary_readme(data, path)
     local cpu = "TODO"
 
     file:write(
-        "| %s | %s | %s | %s | %s | %s | %s |",
-        release,
-        platform,
-        cpu,
-        data.total,
-        data.median,
-        data.mean,
-        data.standard_deviation
+        string.format(
+            "| %s | %s | %s | %s | %s | %s | %s |\n",
+            release,
+            platform,
+            cpu,
+            data.total,
+            data.median,
+            data.mean,
+            data.standard_deviation
+        )
     )
+end
+
+--- Check if `left` should be sorted before `right`.
+---
+--- This function follows the expected outputs of Vim's built-in sort function.
+--- See the "{how}" section within `:help sort()` for details.
+---
+---@param left number[]
+---    All of the numbers to compare.
+---@param right number[]
+---    All of the numbers to compare. We expect this value to come to the right.
+---@return number
+---    A number that indicates the sorting position. 0 == `left` comes neither
+---    before or after `right`. 1 == `left` comes after `right`. -1 == `left`
+---    comes before `right`.
+---
+function _P.compare_number_arrays(left, right)
+    local left_count = #left
+    local right_count = #right
+
+    for index = 1, math.min(left_count, right_count) do
+        if left[index] < right[index] then
+            return -1
+        elseif left[index] > right[index] then
+            return 1
+        end
+    end
+
+    if left_count < right_count then
+        return -1 -- left is smaller because it has fewer elements
+    elseif left_count > right_count then
+        return 1 -- left is greater because it has more elements
+    end
+
+    return 1
+end
+
+--- Copy `source` file on-disk to the `destination` directory.
+---
+--- The copied file has the same file name as `source`.
+---
+---@param source string Some file to copy. e.g. `"/foo/bar.txt".
+---@param destination string A directory to copy into. e.g. `"/fizz"`.
+---
+function _P.copy_file_to_directory(source, destination)
+    local source_file = io.open(source, "r")
+
+    if not source_file then
+        error(string.format('Cannot open "%s" file.', source), 0)
+    end
+
+    local data = source_file:read("*a")
+
+    source_file:close()
+
+    local destination_file = io.open(vim.fs.joinpath(destination, vim.fn.fnamemodify(source, ":t")), "w")
+
+    if not destination_file then
+        error(string.format('Cannot open "%s" file.', destination), 0)
+    end
+
+    destination_file:write(data)
+    destination_file:close()
 end
 
 --- Make the "benchmarks/all/README.md" file if it doesn't exist already.
@@ -167,17 +270,17 @@ function _P.create_summary_readme_if_needed(path)
     end
 
     file:write([[
-        # Benchmarking Results
+# Benchmarking Results
 
-        This document contains historical benchmarking results. These measure the speed
-        of resolution of a list of predetermined requests. Do **NOT** change this file
-        by hand; the Github workflows will do this automatically.
+This document contains historical benchmarking results. These measure the speed
+of resolution of a list of predetermined requests. Do **NOT** change this file
+by hand; the Github workflows will do this automatically.
 
-        <p align="center"><img src="solvetimes.png" /></p>
+<p align="center"><img src="solvetimes.png" /></p>
 
-        | Release | Platform | CPU | Total | Median | Mean | StdDev |
-        |---------|----------|-----|-------|--------|------|--------|
-        ]])
+| Release | Platform | CPU | Total | Median | Mean | StdDev |
+|---------|----------|-----|-------|--------|------|--------|
+]])
     file:close()
 end
 
@@ -285,18 +388,17 @@ end
 ---     - profile.json - The latest release's total time, self time, etc
 ---     - timing.png - A line-graph of tests over-time.
 ---
----@param root string The ".../benchmarks/all" directory to create or update.
 ---@param release string The current release to make. e.g. `"v1.2.3"`.
+---@param profiler Profiler The object used to record function call times.
+---@param root string The ".../benchmarks/all" directory to create or update.
 ---
-function _P.write_all_summary_directory(root, release)
-    -- TODO: Change this code to generate the {YYYY_MM_DD-VERSION_TAG}/
-    -- directory first and then just copy its flamegraph.json and profile.json
-    -- to the all/ root directory.
-    _P.write_flamegraph(profile, vim.fs.joinpath(root, "flamegraph.json"))
-    local profile_data = _P.write_profile_summary(vim.fs.joinpath(root, "profile.json"))
-    _P.append_to_summary_readme(profile_data, vim.fs.joinpath(root, "README.md"))
-    -- TODO: Find a way to pass in the release, maybe
-    _P.write_graph_artifact(release, root)
+function _P.write_all_summary_directory(release, profiler, root)
+    local flamegraph_path, profile_path, profile_data = _P.write_graph_artifact(release, profiler, root)
+
+    _P.copy_file_to_directory(flamegraph_path, root)
+    _P.copy_file_to_directory(profile_path, root)
+
+    _P.append_to_summary_readme(profile_data, vim.fs.joinpath(root, "README.md"), release)
     _P.make_graph(_P.get_graph_artifacts(root, _MAXIMUM_ARTIFACTS), vim.fs.joinpath(root, "timing.png"))
 end
 
@@ -318,15 +420,23 @@ end
 --- Create the `"benchmarks/all/artifacts/{YYYY_MM_DD-VERSION_TAG}"` directory.
 ---
 ---@param release string The current release to make. e.g. `"v1.2.3"`.
+---@param profiler Profiler The object used to record function call times.
 ---@param root string The ".../benchmarks/all" directory to create or update.
 ---
-function _P.write_graph_artifact(release, root)
-    local current_date_time = os.date("%Y_%m_%d-%H_%M_%S")
-    local path = vim.fs.joinpath(root, string.format("%s-%s", current_date_time, release, _DETAILS_FILE_NAME))
+function _P.write_graph_artifact(release, profiler, root)
+    local directory = vim.fs.joinpath(root, string.format("%s-%s", os.date("%Y_%m_%d-%H_%M_%S"), release))
+    vim.fn.mkdir(directory, "p")
 
-    _P.make_parent_directory(path)
+    local flamegraph_path = vim.fs.joinpath(directory, "flamegraph.json")
+    _P.write_flamegraph(profiler, flamegraph_path)
+
+    local profile_path = vim.fs.joinpath(directory, "profile.json")
+    local profile_data = _P.write_profile_summary(profile_path)
+
+    return flamegraph_path, profile_path, profile_data
 end
 
+-- TODO: Missing docstring return value
 -- TODO: Maybe rename this file to "summary.json"?
 --- Create a profile.json file to summarize the final results of the profiler.
 ---
@@ -348,9 +458,9 @@ function _P.write_profile_summary(path)
     local data = {
         -- TODO: Finish these values somehow
         mean = 1.23,
-        median = 1.23,
-        standard_deviation = 1.23,
-        total = 1.23,
+        median = 1.45,
+        standard_deviation = 1.78,
+        total = 1.90,
     }
 
     -- TODO: Add data here. Look at Rez as an example
@@ -412,7 +522,7 @@ return function(options)
             return
         end
 
-        _P.write_all_summary_directory(vim.fs.joinpath(root, "benchmarks", "all"), release)
+        _P.write_all_summary_directory(release, profile, vim.fs.joinpath(root, "benchmarks", "all"))
         -- TODO: Finish this part
         -- _P.write_by_release_directory(vim.fs.joinpath(root, "benchmarks", "by_release"))
     end
