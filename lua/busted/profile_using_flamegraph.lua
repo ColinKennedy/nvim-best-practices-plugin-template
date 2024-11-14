@@ -361,6 +361,21 @@ function _P.stop_profiling_test_file(path)
     _FILE_CACHE[path] = nil
 end
 
+--- Make sure `gnuplot` is installed and is accessible.
+---
+--- We can't generate a line-graph if we don't have access to this terminal command.
+---
+--- Raises:
+---     If no `gnuplot` is found or is not callable.
+---
+function _P.validate_gnuplot()
+    local success, _ = pcall(vim.fn.system, {"gnuplot"})
+
+    if not success then
+        error("gnuplot does not exist or is not executable.", 0)
+    end
+end
+
 --- Make sure `version` is an expected semantic version convention.
 ---
 --- Raises:
@@ -652,6 +667,8 @@ return function(options)
     local handler = require("busted.outputHandlers.base")()
 
     local root, release = _P.parse_input_arguments()
+
+    _P.validate_gnuplot()
 
     profile.start("*")
 
