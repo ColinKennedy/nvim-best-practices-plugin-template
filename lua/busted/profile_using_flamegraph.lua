@@ -435,6 +435,9 @@ end
 
 --- Make the .dat file. We will load this file and plot it as a graph later.
 ---
+--- Raises:
+---     If the .dat file could not be made.
+---
 ---@param artifacts _GraphArtifact[]
 ---    All past profiling / timing records to make a graph.
 ---@param path string
@@ -483,6 +486,9 @@ end
 
 --- Make a .gnuplot file so we can use it to generate the line-graph later.
 ---
+--- Raises:
+---     If the .gnuplot file could not be made.
+---
 ---@param path string An absolute path on-disk where the .gnuplot file will write to.
 ---
 function _P.write_gnuplot_script(path)
@@ -508,6 +514,9 @@ plot "solvetimes.dat" using 2:xtic(1) title 'Mean' with lines, \
 end
 
 --- Create a line-graph at `path` using `artifacts`.
+---
+--- Raises:
+---     If any temporary file needed to create the line-graph could not be made.
 ---
 ---@param artifacts _GraphArtifact[]
 ---    All past profiling / timing records to make a graph.
