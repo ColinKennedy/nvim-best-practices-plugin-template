@@ -11,12 +11,9 @@ local clock = require("profile.clock")
 local instrument = require("profile.instrument")
 local profile = require("profile")
 
--- TODO: Finish this
----@class _GraphArtifact
----@field mean number
----@field median number
----@field neovim_version string
----@field standard_deviation number
+---@class _GraphArtifacts Summary data about a whole suite of profiler data.
+---@field versions _Versions All software / hardware metadata that generated `statistics`.
+---@field statistics _Statistics Summary data about a whole suite of profiler data.
 
 ---@class _NeovimFullVersion The output of Neovim's built-in `vim.version()` function.
 ---@field major number The breaking-change indicator.
@@ -28,23 +25,29 @@ local profile = require("profile")
 ---@field [2] number The minor version.
 ---@field [3] number The patch version.
 
--- TODO: Finish
----@class _Statistics
----@field mean number
----@field median number
----@field standard_deviation number
----@field total number
+---@class _ProfileEvent A single, recorded profile event.
+---@field cat string The category of the profiler event. e.g. `"function"`, `"test"`, etc.
+---@field dur number The length of CPU clocks needed to complete the event.
+---@field ts number The start CPU clock time.
 
--- TODO: Finish
----@class _SummaryTimingLine
----@field versions _Versions
----@field statistics _Statistics
+---@class _Statistics Summary data about a whole suite of profiler data.
+---@field mean number (1 + 2 + 3 + ... n) / count
+---@field median number The exact middle value of all profile durations.
+---@field standard_deviation number The amount of variation in the duration values.
+---@field total number The total number of CPU clocks recorded over the profile.
 
--- TODO: Finish
 ---@class _Versions
----@field neovim _NeovimFullVersion
+---    All software / hardware metadata that generated `statistics`.
 ---@field lua string
+---    The Lua version that was included with Neovim.
+---@field neovim _NeovimFullVersion
+---    The user's Neovim version that was used to make the profile results.
+---@field release string
+---    The version / release tag. e.g. `"v1.2.3"`.
 ---@field uv number
+---    The libuv version that was included with Neovim.
+
+-- TODO: Consider graphing standard deviation again
 
 -- TODO: Add logging in this file / around
 
@@ -90,7 +93,7 @@ end
 ---    An absolute path to the direct-parent directory. e.g. `".../benchmarks/all/artifacts".
 ---@param maximum number?
 ---    The number of artifacts to read. If not provided, read all of them.
----@return _SummaryTimingLine[]
+---@return _GraphArtifacts[]
 ---    All found records so far, if any.
 ---
 function _P.get_graph_artifacts(root, maximum)
@@ -102,7 +105,7 @@ function _P.get_graph_artifacts(root, maximum)
         maximum = 2 ^ 40 -- NOTE: Just some arbitrary, really big number
     end
 
-    ---@type _SummaryTimingLine[]
+    ---@type _GraphArtifacts[]
     local output = {}
 
     local template = vim.fs.joinpath(root, "*", _PROFILE_FILE_NAME)
@@ -133,7 +136,15 @@ function _P.get_graph_artifacts(root, maximum)
     return output
 end
 
--- TODO: Add docstring
+--- Find the most up-to-date Neovim version, if possible.
+---
+---@param artifacts _GraphArtifacts[]
+---    All past profiling / timing records to make a graph.
+---@return _NeovimSimplifiedVersion?
+---    The found version, if any. Only stable versions are allowed. Neovim
+---    nightly / prerelease versions are not considered when finding the latest
+---    Neovim version.
+---
 function _P.get_latest_neovim_version(artifacts)
     ---@type _NeovimSimplifiedVersion?
     local output
@@ -168,6 +179,46 @@ function _P.get_latest_neovim_version(artifacts)
     return output
 end
 
+--- Search `events` for the last event that contains CPU clock data.
+---
+--- Raises:
+---     If `events` has no CPU clock data.
+---
+---@param events _ProfileEvent[] All of the profiler event data to consider.
+---@return _ProfileEvent # The found, latest event.
+---
+function _P.get_latest_timed_event(events)
+    for index=#events,1,-1 do
+        local event = events[index]
+
+        if event.ts and event.dur then
+            return event
+        end
+    end
+
+    error('Unable to find a latest event.', 0)
+end
+
+--- Find the exact middle value of all profile durations.
+---
+---@param values number[] All of the values to considered for the median.
+---@return number # The found middle value.
+---
+function _P.get_median(values)
+    -- Sort the numbers in ascending order
+    values = vim.fn.sort(values)
+    local count = #values
+
+    if count % 2 == 1 then
+        return values[math.ceil(count / 2)]
+    end
+
+    local middle_left_index = count / 2
+    local middle_right_index = middle_left_index + 1
+
+    return (values[middle_left_index] + values[middle_right_index]) / 2
+end
+
 --- Read `"/path/to/2024_08_23-11_03_01/foo.bar"` for the date + time data.
 ---
 ---@param path string The absolute path to a file. Its parent directory has date + time data.
@@ -189,11 +240,74 @@ function _P.get_parent_directory_name_data(path)
     return output
 end
 
+--- Summarize all of `events` (get the mean, median, etc).
+---
+---@param events _ProfileEvent[] All of the profiler event data to consider.
+---@return _Statistics # Summary data about a whole suite of profiler data.
+---
+function _P.get_profile_statistics(events)
+    if vim.tbl_isempty(events) then
+        error("Events cannot be empty.")
+    end
+
+    ---@type number[]
+    local durations = {}
+    local sum = 0
+
+    for _, event in ipairs(events) do
+        -- TODO: Considering filtering so that only test durations are considered
+        if event.cat == "test" then
+            local duration = event.dur
+            table.insert(durations, duration)
+            sum = sum + duration
+        end
+    end
+
+    local last_event = _P.get_latest_timed_event(events)
+
+    return {
+        median = _P.get_median(durations),
+        mean=sum / #durations,
+        total=last_event.ts + last_event.dur,
+        standard_deviation=_P.get_standard_deviation(durations),
+    }
+end
+
 -- TODO: Finish docstring
 ---@param version _NeovimFullVersion
 ---@return _NeovimSimplifiedVersion
 function _P.get_simple_version(version)
     return {version.major, version.minor, version.patch}
+end
+
+--- Measure the variation in `values`.
+---
+---@param values number[] All of the values to consider (does not need to be sorted).
+---@param mean number? The average value from `values`.
+---@return number # The computed standard deviation value.
+---
+function _P.get_standard_deviation(values, mean)
+    local count = #values
+
+    if not mean then
+        local sum = 0
+
+        for _, value in ipairs(values) do
+            sum = sum + value
+        end
+
+        mean = sum / count
+    end
+
+    local squared_diff_sum = 0
+
+    for _, value in ipairs(values) do
+        squared_diff_sum = squared_diff_sum + (value - mean)^2
+    end
+
+    local variance = squared_diff_sum / count
+
+    return math.sqrt(variance)
 end
 
 --- Sort all file-paths on-disk based on their date + time data.
@@ -217,18 +331,21 @@ function _P.get_sorted_datetime_paths(paths)
     end)
 end
 
--- TODO: Docstring
----@param version _NeovimFullVersion
----@return string
-function _P.get_version_text(version)
-    return string.format("v%s.%s.%s", version.major, version.minor, version.patch)
-end
+-- TODO: Remove
+-- --- Create a human-readable representation of `version`.
+-- ---
+-- ---@param version _NeovimFullVersion
+-- ---@return string # The generated version, e.g. `"v1.2.3"`.
+-- ---
+-- function _P.get_version_text(version)
+--     return string.format("v%s.%s.%s", version.major, version.minor, version.patch)
+-- end
 
 --- Add graph data to the "benchmarks/all/README.md" file.
 ---
 --- Or create the file if it does not exist.
 ---
----@param data _SummaryTimingLine Some timing data to append to the README.md's markdown table.
+---@param data _GraphArtifacts Some timing data to append to the README.md's markdown table.
 ---@param path string The path on-disk to write the README.md to.
 ---@param release string A version / release tag. e.g. `"v1.2.3"`.
 ---
@@ -302,6 +419,9 @@ end
 ---
 --- The copied file has the same file name as `source`.
 ---
+--- Raises:
+---     If `source` or `destination` could not be read / written.
+---
 ---@param source string Some file to copy. e.g. `"/foo/bar.txt".
 ---@param destination string A directory to copy into. e.g. `"/fizz"`.
 ---
@@ -369,7 +489,7 @@ function _P.handle_test_end()
     instrument.add_event({
         name = name,
         args = {},
-        cat = "function",
+        cat = "test",
         ph = "X",
         ts = start,
         dur = duration,
@@ -389,6 +509,9 @@ function _P.make_parent_directory(path)
 end
 
 --- Get all input data needed for us to run + save flamegraph data to-disk.
+---
+--- Raises:
+---     If a required environment variable was not defined correctly.
 ---
 ---@return string # The absolute directory on-disk where flamegraph info will be written.
 ---@return string # The version to write to-disk. e.g. `"v1.2.3"`.
@@ -525,7 +648,7 @@ end
 --- Raises:
 ---     If the .dat file could not be made.
 ---
----@param artifacts _SummaryTimingLine[]
+---@param artifacts _GraphArtifacts[]
 ---    All past profiling / timing records to make a graph.
 ---@param path string
 ---    An absolute path on-disk to write the .dat file to.
@@ -559,11 +682,10 @@ function _P.write_gnuplot_data(artifacts, path)
             file:write(
                 string.format(
                     -- TODO: Maybe include a total time value here, too?
-                    "%s %f %f %f\n",
-                    _P.get_version_text(artifact.versions.neovim),
+                    "%s %f %f\n",
+                    artifact.versions.release,
                     artifact.statistics.mean,
-                    artifact.statistics.median,
-                    artifact.statistics.standard_deviation
+                    artifact.statistics.median
                 )
             )
         end
@@ -585,10 +707,10 @@ function _P.write_gnuplot_script(path)
 set xtics rotate
 set term png
 set border 1
+set autoscale
 set output 'timing.png'
 plot "_temporary.dat" using 2:xtic(1) title 'Mean' with lines, \
-  "_temporary.dat" using 3:xtic(1) title 'Median' with lines lc "gray", \
-  "_temporary.dat" using 2:4 title 'Stddev' with errorbars
+  "_temporary.dat" using 3:xtic(1) title 'Median' with lines lc "gray"
     ]]
 
     local file = io.open(path, "w")
@@ -606,7 +728,7 @@ end
 --- Raises:
 ---     If any temporary file needed to create the line-graph could not be made.
 ---
----@param artifacts _SummaryTimingLine[]
+---@param artifacts _GraphArtifacts[]
 ---    All past profiling / timing records to make a graph.
 ---@param root string
 ---    An absolute directory on-disk to write this graph image to.
@@ -681,21 +803,22 @@ function _P.write_graph_artifact(release, profiler, root)
     _P.write_flamegraph(profiler, flamegraph_path)
 
     local profile_path = vim.fs.joinpath(directory, _PROFILE_FILE_NAME)
-    local profile_data = _P.write_profile_summary(profile_path)
+    local profile_data = _P.write_profile_summary(release, profile_path)
 
     return flamegraph_path, profile_path, profile_data
 end
 
--- TODO: Missing docstring return value
+-- TODO: Missing docstring data
 -- TODO: Maybe rename this file to "summary.json"?
 --- Create a profile.json file to summarize the final results of the profiler.
 ---
 --- Raises:
 ---     If `path` is not writable or fails to write.
 ---
+---@param release string The current release to make. e.g. `"v1.2.3"`.
 ---@param path string An absolute path to the ".../benchmarks/all/profile.json" to create.
 ---
-function _P.write_profile_summary(path)
+function _P.write_profile_summary(release, path)
     _P.make_parent_directory(path)
 
     local file = io.open(path, "w")
@@ -704,20 +827,15 @@ function _P.write_profile_summary(path)
         error(string.format('Path "%s" could not be exported.', path), 0)
     end
 
-    ---@type _SummaryTimingLine
+    ---@type _GraphArtifacts
     local data = {
         versions = {
-            neovim = vim.version(),
             lua = jit.version,
+            neovim = vim.version(),
+            release = release,
             uv = vim.uv.version(),
         },
-        statistics = {
-            -- TODO: Finish these values somehow
-            mean = 1.23,
-            median = 1.45,
-            standard_deviation = 1.78,
-            total = 1.90,
-        }
+        statistics = _P.get_profile_statistics(instrument.get_events()),
     }
 
     -- TODO: Add data here. Look at Rez as an example
