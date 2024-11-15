@@ -15,8 +15,13 @@ local profile = require("profile")
 -- change the docstrings to the new unit of measure
 
 ---@class _GraphArtifacts Summary data about a whole suite of profiler data.
+---@field hardware _Hardware All computer platform details.
 ---@field versions _Versions All software / hardware metadata that generated `statistics`.
 ---@field statistics _Statistics Summary data about a whole suite of profiler data.
+
+---@class _Hardware All computer platform details.
+---@field cpu string The name of the CPU that was used when the profiler ran.
+---@field platform string The architecture + OS that was used when the profiler ran.
 
 ---@class _NeovimFullVersion The output of Neovim's built-in `vim.version()` function.
 ---@field major number The breaking-change indicator.
@@ -345,45 +350,6 @@ end
 --     return string.format("v%s.%s.%s", version.major, version.minor, version.patch)
 -- end
 
---- Add graph data to the "benchmarks/all/README.md" file.
----
---- Or create the file if it does not exist.
----
----@param data _GraphArtifacts Some timing data to append to the README.md's markdown table.
----@param path string The path on-disk to write the README.md to.
----@param release string A version / release tag. e.g. `"v1.2.3"`.
----
-function _P.append_to_summary_readme(data, path, release)
-    -- TODO: Change the code for the summary README.md - Make it easy for anyone
-    -- their own "highlight this specific thing that I want to track" API.
-    _P.create_summary_readme_if_needed(path)
-
-    local file = io.open(path, "a")
-
-    if not file then
-        error(string.format('Cannot append to "%s" path.', path), 0)
-    end
-
-    local platform = vim.loop.os_uname().sysname
-    -- TODO: To the get CPU
-    -- TODO: Maybe vim.uv.cpu_info() but really we should use something better here
-    -- https://docs.python.org/3/library/platform.html#platform.processor
-    local cpu = "TODO"
-
-    file:write(
-        string.format(
-            "| %s | %s | %s | %s | %s | %s | %s |\n",
-            release,
-            platform,
-            cpu,
-            data.statistics.total,
-            data.statistics.median,
-            data.statistics.mean,
-            data.statistics.standard_deviation
-        )
-    )
-end
-
 --- Check if `left` should be sorted before `right`.
 ---
 --- This function follows the expected outputs of Vim's built-in sort function.
@@ -448,41 +414,6 @@ function _P.copy_file_to_directory(source, destination)
 
     destination_file:write(data)
     destination_file:close()
-end
-
---- Make the "benchmarks/all/README.md" file if it doesn't exist already.
----
---- Raises:
----     If `path` is not writeable.
----
----@param path string The absolute path on-disk to write the file.
----
-function _P.create_summary_readme_if_needed(path)
-    if vim.fn.filereadable(path) == 1 then
-        return
-    end
-
-    _P.make_parent_directory(path)
-
-    local file = io.open(path, "w")
-
-    if not file then
-        error(string.format('Path "%s" could not be created.', path))
-    end
-
-    file:write([[
-# Benchmarking Results
-
-This document contains historical benchmarking results. These measure the speed
-of resolution of a list of predetermined requests. Do **NOT** change this file
-by hand; the Github workflows will do this automatically.
-
-<p align="center"><img src="timing.png" /></p>
-
-| Release | Platform | CPU | Total | Median | Mean | StdDev |
-|---------|----------|-----|-------|--------|------|--------|
-]])
-    file:close()
 end
 
 --- Close the profile results on a test that is ending.
@@ -625,11 +556,9 @@ function _P.write_all_summary_directory(release, profiler, root)
     -- TODO: Change this from "append to summary" to just "generate the whole
     -- thing from scratch each time".
     --
-    _P.append_to_summary_readme(profile_data, vim.fs.joinpath(root, "README.md"), release)
-    _P.write_graph_image(
-        _P.get_graph_artifacts(artifacts_root, _MAXIMUM_ARTIFACTS),
-        root
-    )
+    local artifacts = _P.get_graph_artifacts(artifacts_root, _MAXIMUM_ARTIFACTS)
+    _P.write_summary_readme(artifacts, release)
+    _P.write_graph_image(artifacts, root)
 end
 
 -- TODO: Docstring
@@ -827,6 +756,11 @@ function _P.write_profile_summary(release, path)
         error(string.format('Path "%s" could not be exported.', path), 0)
     end
 
+    -- TODO: To the get CPU
+    -- TODO: Maybe vim.uv.cpu_info() but really we should use something better here
+    -- https://docs.python.org/3/library/platform.html#platform.processor
+    local cpu = "TODO"
+
     ---@type _GraphArtifacts
     local data = {
         versions = {
@@ -836,12 +770,61 @@ function _P.write_profile_summary(release, path)
             uv = vim.uv.version(),
         },
         statistics = _P.get_profile_statistics(instrument.get_events()),
+        hardware = { cpu = cpu, platform = vim.loop.os_uname().sysname }
     }
 
     file:write(vim.fn.json_encode(data))
     file:close()
 
     return data
+end
+
+--- Add graph data to the "benchmarks/all/README.md" file.
+---
+--- Or create the file if it does not exist.
+---
+--- Raises:
+---     If `path` is not writeable.
+---
+---@param artifacts _GraphArtifacts[] All found profile record events so far, if any.
+---@param path string The path on-disk to write the README.md to.
+---
+function _P.write_summary_readme(artifacts, path)
+    _P.make_parent_directory(path)
+
+    local file = io.open(path, "w")
+
+    if not file then
+        error(string.format('Cannot append to "%s" path.', path), 0)
+    end
+
+    file:write([[
+# Benchmarking Results
+
+This document contains historical benchmarking results. These measure the speed
+of resolution of a list of predetermined requests. Do **NOT** change this file
+by hand; the Github workflows will do this automatically.
+
+<p align="center"><img src="timing.png" /></p>
+
+| Release | Platform | CPU | Total | Median | Mean | StdDev |
+|---------|----------|-----|-------|--------|------|--------|
+]])
+
+    for _, artifact in ipairs(artifacts) do
+        file:write(
+            string.format(
+                "| %s | %s | %s | %s | %s | %s | %s |\n",
+                artifact.versions.release,
+                artifact.hardware.platform,
+                artifact.hardware.cpu,
+                artifact.statistics.total,
+                artifact.statistics.median,
+                artifact.statistics.mean,
+                artifact.statistics.standard_deviation
+            )
+        )
+    end
 end
 
 --- Create an output handler (that records profiling data and outputs it afterwards).
