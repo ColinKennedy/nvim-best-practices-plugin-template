@@ -11,6 +11,9 @@ local clock = require("profile.clock")
 local instrument = require("profile.instrument")
 local profile = require("profile")
 
+-- TODO: Double check if I'm actually recording CPU clocks. If not, need to
+-- change the docstrings to the new unit of measure
+
 ---@class _GraphArtifacts Summary data about a whole suite of profiler data.
 ---@field versions _Versions All software / hardware metadata that generated `statistics`.
 ---@field statistics _Statistics Summary data about a whole suite of profiler data.
@@ -255,7 +258,6 @@ function _P.get_profile_statistics(events)
     local sum = 0
 
     for _, event in ipairs(events) do
-        -- TODO: Considering filtering so that only test durations are considered
         if event.cat == "test" then
             local duration = event.dur
             table.insert(durations, duration)
@@ -273,9 +275,11 @@ function _P.get_profile_statistics(events)
     }
 end
 
--- TODO: Finish docstring
----@param version _NeovimFullVersion
----@return _NeovimSimplifiedVersion
+--- Strip unnecessary information from `version`.
+---
+---@param version _NeovimFullVersion The full `vim.version()` output.
+---@return _NeovimSimplifiedVersion # Just the major.minor.patch values.
+---
 function _P.get_simple_version(version)
     return {version.major, version.minor, version.patch}
 end
@@ -523,8 +527,6 @@ function _P.parse_input_arguments()
         error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.", 0)
     end
 
-    -- TODO: Provide this env-var to the GitHub workflow using GitHub's ${{
-    -- github.event.release.tag_name }} support
     local release = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_VERSION")
 
     if not release then
@@ -683,7 +685,6 @@ function _P.write_gnuplot_data(artifacts, path)
         if vim.version.eq(_P.get_simple_version(artifact.versions.neovim), neovim_version) then
             file:write(
                 string.format(
-                    -- TODO: Maybe include a total time value here, too?
                     "%s %f %f\n",
                     artifact.versions.release,
                     artifact.statistics.mean,
@@ -769,7 +770,6 @@ function _P.write_graph_image(artifacts, root)
         )
     end
 
-    -- TODO: Need to set the cwd here, properly
     success, message = pcall(vim.fn.system, {"gnuplot", gnuplot_script_path})
     local job = vim.fn.jobstart({"gnuplot", gnuplot_script_path}, {cwd=root})
     local result = vim.fn.jobwait({job})[1]
@@ -810,8 +810,6 @@ function _P.write_graph_artifact(release, profiler, root)
     return flamegraph_path, profile_path, profile_data
 end
 
--- TODO: Missing docstring data
--- TODO: Maybe rename this file to "summary.json"?
 --- Create a profile.json file to summarize the final results of the profiler.
 ---
 --- Raises:
@@ -839,11 +837,6 @@ function _P.write_profile_summary(release, path)
         },
         statistics = _P.get_profile_statistics(instrument.get_events()),
     }
-
-    -- TODO: Add data here. Look at Rez as an example
-    -- for _,
-    -- print("WRITE THE SUMMARY")
-    -- instrument.get_events()
 
     file:write(vim.fn.json_encode(data))
     file:close()
