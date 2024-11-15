@@ -13,15 +13,38 @@ local profile = require("profile")
 
 -- TODO: Finish this
 ---@class _GraphArtifact
----@field release string
----@field total number
+---@field mean number
+---@field median number
+---@field neovim_version string
+---@field standard_deviation number
+
+---@class _NeovimFullVersion The output of Neovim's built-in `vim.version()` function.
+---@field major number The breaking-change indicator.
+---@field minor number The feature indicator.
+---@field patch number The bug / fix indicator.
+
+---@class _NeovimSimplifiedVersion A simple major, minor, patch trio.
+---@field [1] number The major version.
+---@field [2] number The minor version.
+---@field [3] number The patch version.
 
 -- TODO: Finish
----@class _SummaryTimingLine
+---@class _Statistics
 ---@field mean number
 ---@field median number
 ---@field standard_deviation number
 ---@field total number
+
+-- TODO: Finish
+---@class _SummaryTimingLine
+---@field versions _Versions
+---@field statistics _Statistics
+
+-- TODO: Finish
+---@class _Versions
+---@field neovim _NeovimFullVersion
+---@field lua string
+---@field uv number
 
 -- TODO: Add logging in this file / around
 
@@ -67,7 +90,7 @@ end
 ---    An absolute path to the direct-parent directory. e.g. `".../benchmarks/all/artifacts".
 ---@param maximum number?
 ---    The number of artifacts to read. If not provided, read all of them.
----@return _GraphArtifact[]
+---@return _SummaryTimingLine[]
 ---    All found records so far, if any.
 ---
 function _P.get_graph_artifacts(root, maximum)
@@ -79,7 +102,7 @@ function _P.get_graph_artifacts(root, maximum)
         maximum = 2 ^ 40 -- NOTE: Just some arbitrary, really big number
     end
 
-    ---@type _GraphArtifact[]
+    ---@type _SummaryTimingLine[]
     local output = {}
 
     local template = vim.fs.joinpath(root, "*", _PROFILE_FILE_NAME)
@@ -110,6 +133,41 @@ function _P.get_graph_artifacts(root, maximum)
     return output
 end
 
+-- TODO: Add docstring
+function _P.get_latest_neovim_version(artifacts)
+    ---@type _NeovimSimplifiedVersion?
+    local output
+
+    for _, artifact in ipairs(artifacts) do
+        local version = artifact.versions.neovim
+
+    --     -- TODO: Add this if-statement in, later. But remove it for now because I do use Neovim nightly.
+    --     -- if not version.prerelease then  -- version.prerelease indicates a nightly build
+    --     --     -- NOTE: We ignore nightly versions because those could cause
+    --     --     -- issues during profiling. Instead we favor stable, known
+    --     --     -- major.minor.patch versions (like here)
+    --     --     --
+    --     --     local simplified_version = {version.major, version.minor, version.patch}
+    --     --
+    --     --     if not output or _P.compare_number_arrays(simplified_version, output) == 1 then
+    --     --         output = simplified_version
+    --     --     end
+    --     -- end
+
+        -- NOTE: We ignore nightly versions because those could cause
+        -- issues during profiling. Instead we favor stable, known
+        -- major.minor.patch versions (like here)
+        --
+        local simplified_version = _P.get_simple_version(version)
+
+        if not output or _P.compare_number_arrays(simplified_version, output) == 1 then
+            output = simplified_version
+        end
+    end
+
+    return output
+end
+
 --- Read `"/path/to/2024_08_23-11_03_01/foo.bar"` for the date + time data.
 ---
 ---@param path string The absolute path to a file. Its parent directory has date + time data.
@@ -131,6 +189,13 @@ function _P.get_parent_directory_name_data(path)
     return output
 end
 
+-- TODO: Finish docstring
+---@param version _NeovimFullVersion
+---@return _NeovimSimplifiedVersion
+function _P.get_simple_version(version)
+    return {version.major, version.minor, version.patch}
+end
+
 --- Sort all file-paths on-disk based on their date + time data.
 ---
 --- We assume that these paths follow a format similar to
@@ -150,6 +215,13 @@ function _P.get_sorted_datetime_paths(paths)
             _P.get_parent_directory_name_data(right)
         )
     end)
+end
+
+-- TODO: Docstring
+---@param version _NeovimFullVersion
+---@return string
+function _P.get_version_text(version)
+    return string.format("v%s.%s.%s", version.major, version.minor, version.patch)
 end
 
 --- Add graph data to the "benchmarks/all/README.md" file.
@@ -183,10 +255,10 @@ function _P.append_to_summary_readme(data, path, release)
             release,
             platform,
             cpu,
-            data.total,
-            data.median,
-            data.mean,
-            data.standard_deviation
+            data.statistics.total,
+            data.statistics.median,
+            data.statistics.mean,
+            data.statistics.standard_deviation
         )
     )
 end
@@ -281,7 +353,7 @@ This document contains historical benchmarking results. These measure the speed
 of resolution of a list of predetermined requests. Do **NOT** change this file
 by hand; the Github workflows will do this automatically.
 
-<p align="center"><img src="solvetimes.png" /></p>
+<p align="center"><img src="timing.png" /></p>
 
 | Release | Platform | CPU | Total | Median | Mean | StdDev |
 |---------|----------|-----|-------|--------|------|--------|
@@ -429,7 +501,7 @@ function _P.write_all_summary_directory(release, profiler, root)
     _P.append_to_summary_readme(profile_data, vim.fs.joinpath(root, "README.md"), release)
     _P.write_graph_image(
         _P.get_graph_artifacts(artifacts_root, _MAXIMUM_ARTIFACTS),
-        vim.fs.joinpath(root, "timing.png")
+        root
     )
 end
 
@@ -453,7 +525,7 @@ end
 --- Raises:
 ---     If the .dat file could not be made.
 ---
----@param artifacts _GraphArtifact[]
+---@param artifacts _SummaryTimingLine[]
 ---    All past profiling / timing records to make a graph.
 ---@param path string
 ---    An absolute path on-disk to write the .dat file to.
@@ -483,14 +555,15 @@ function _P.write_gnuplot_data(artifacts, path)
     end
 
     for _, artifact in ipairs(artifacts) do
-        if artifact.neovim_version == neovim_version then
+        if vim.version.eq(_P.get_simple_version(artifact.versions.neovim), neovim_version) then
             file:write(
                 string.format(
+                    -- TODO: Maybe include a total time value here, too?
                     "%s %f %f %f\n",
-                    artifact.neovim_version,
-                    artifact.mean,
-                    artifact.median,
-                    artifact.standard_deviation
+                    _P.get_version_text(artifact.versions.neovim),
+                    artifact.statistics.mean,
+                    artifact.statistics.median,
+                    artifact.statistics.standard_deviation
                 )
             )
         end
@@ -512,8 +585,8 @@ function _P.write_gnuplot_script(path)
 set xtics rotate
 set term png
 set border 1
-set output 'solvetimes.png'
-plot "solvetimes.dat" using 2:xtic(1) title 'Mean' with lines, \
+set output 'timing.png'
+plot "_temporary.dat" using 2:xtic(1) title 'Mean' with lines, \
   "_temporary.dat" using 3:xtic(1) title 'Median' with lines lc "gray", \
   "_temporary.dat" using 2:4 title 'Stddev' with errorbars
     ]]
@@ -533,16 +606,14 @@ end
 --- Raises:
 ---     If any temporary file needed to create the line-graph could not be made.
 ---
----@param artifacts _GraphArtifact[]
+---@param artifacts _SummaryTimingLine[]
 ---    All past profiling / timing records to make a graph.
----@param path string
----    An absolute path on-disk to write this graph image to.
+---@param root string
+---    An absolute directory on-disk to write this graph image to.
 ---
-function _P.write_graph_image(artifacts, path)
-    local root = vim.fs.dirname(path)
-
+function _P.write_graph_image(artifacts, root)
     local gnuplot_data_path = vim.fs.joinpath(root, "_temporary.dat")
-    local success, message = pcall(_P.write_gnuplot_data, artifacts, path)
+    local success, message = pcall(_P.write_gnuplot_data, artifacts, gnuplot_data_path)
 
     if not success then
         os.remove(gnuplot_data_path)
@@ -558,7 +629,7 @@ function _P.write_graph_image(artifacts, path)
     end
 
     local gnuplot_script_path = vim.fs.joinpath(root, "_temporary.gnuplot")
-    success, message = pcall(_P.write_gnuplot_script, path)
+    success, message = pcall(_P.write_gnuplot_script, gnuplot_script_path)
 
     if not success then
         os.remove(gnuplot_data_path)
@@ -574,13 +645,16 @@ function _P.write_graph_image(artifacts, path)
         )
     end
 
+    -- TODO: Need to set the cwd here, properly
     success, message = pcall(vim.fn.system, {"gnuplot", gnuplot_script_path})
+    local job = vim.fn.jobstart({"gnuplot", gnuplot_script_path}, {cwd=root})
+    local result = vim.fn.jobwait({job})[1]
 
     -- NOTE: We don't need these temporary files anymore. So delete them.
     os.remove(gnuplot_data_path)
     os.remove(gnuplot_script_path)
 
-    if not success then
+    if result ~= 0 then
         error(
             string.format(
                 'Error: "%s". Could not make "%s" into a graph.',
