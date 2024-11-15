@@ -559,7 +559,6 @@ function _P.write_all_summary_directory(release, profiler, root)
 
     _P.copy_file_to_directory(flamegraph_path, root)
     _P.copy_file_to_directory(profile_path, root)
-    _P.copy_file_to_directory(profile_path, root)
 
     _P.write_graph_image(artifacts, root)
 end
