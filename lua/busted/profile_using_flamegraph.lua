@@ -548,16 +548,19 @@ end
 ---
 function _P.write_all_summary_directory(release, profiler, root)
     local artifacts_root = vim.fs.joinpath(root, "artifacts")
-    local flamegraph_path, profile_path, profile_data = _P.write_graph_artifact(release, profiler, artifacts_root)
-
-    _P.copy_file_to_directory(flamegraph_path, root)
-    _P.copy_file_to_directory(profile_path, root)
+    local flamegraph_path, profile_path = _P.write_graph_artifact(release, profiler, artifacts_root)
+    local readme_path = vim.fs.joinpath(root, "README.md")
 
     -- TODO: Change this from "append to summary" to just "generate the whole
     -- thing from scratch each time".
     --
     local artifacts = _P.get_graph_artifacts(artifacts_root, _MAXIMUM_ARTIFACTS)
-    _P.write_summary_readme(artifacts, release)
+    _P.write_summary_readme(artifacts, readme_path)
+
+    _P.copy_file_to_directory(flamegraph_path, root)
+    _P.copy_file_to_directory(profile_path, root)
+    _P.copy_file_to_directory(profile_path, root)
+
     _P.write_graph_image(artifacts, root)
 end
 
@@ -725,6 +728,8 @@ end
 ---@param release string The current release to make. e.g. `"v1.2.3"`.
 ---@param profiler Profiler The object used to record function call times.
 ---@param root string The ".../benchmarks/all" directory to create or update.
+---@return string # An absolute path to the created flamegraph.json file.
+---@return string # An absolute path to the created profile.json.
 ---
 function _P.write_graph_artifact(release, profiler, root)
     local directory = vim.fs.joinpath(root, string.format("%s-%s", os.date("%Y_%m_%d-%H_%M_%S"), release))
@@ -734,9 +739,9 @@ function _P.write_graph_artifact(release, profiler, root)
     _P.write_flamegraph(profiler, flamegraph_path)
 
     local profile_path = vim.fs.joinpath(directory, _PROFILE_FILE_NAME)
-    local profile_data = _P.write_profile_summary(release, profile_path)
+    _P.write_profile_summary(release, profile_path)
 
-    return flamegraph_path, profile_path, profile_data
+    return flamegraph_path, profile_path
 end
 
 --- Create a profile.json file to summarize the final results of the profiler.
