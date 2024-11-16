@@ -5,9 +5,14 @@ local tablex = require 'pl.tablex'
 local term = require('term')
 
 local _HELPER = "spec/minimal_init.lua"
+local _LANGUAGE = "en"
 local _LPATH_EXTENSIONS = 'lua/?.lua;lua/?/init.lua;spec/?.lua'
 local _OUTPUT_HANDLER = "busted.profile_using_flamegraph"
 
+-- TODO: Finish docstring
+---@class _CumulativeRunnerState
+---@field errors number
+---@field failures number
 
 local function _get_current_file()
     local level = 2
@@ -24,7 +29,7 @@ local function _get_default_output()
     return options.output or (isatty and 'utfTerminal' or 'plainTerminal')
 end
 
-local function _initialize_busted(busted, state)
+local function _initialize_busted(busted, state, force_exit)
     require("busted")(busted)  -- TODO: not sure if this is meant to go here or before each test (in the for-loop)
 
     -- TODO: I'm pretty sure we want to skip on-error. But for now disable it
@@ -61,8 +66,6 @@ local function _initialize_busted(busted, state)
         return nil, true
     end)
 
-    local language = "en"
-
     busted.sort = true
 
     local output_handler_loader = require("busted.modules.output_handler_loader")()
@@ -70,14 +73,14 @@ local function _initialize_busted(busted, state)
         defaultOutput = _get_default_output(),
         deferPrint = true,
         enableSound = false,
-        language = language,
+        language = _LANGUAGE,
         verbose = false,
     })
 
     require("busted.luajit")()
 
     local helper_loader = require("busted.modules.helper_loader")()
-    local ok, message = helper_loader(busted, _HELPER, { verbose = true, language = language })
+    local ok, message = helper_loader(busted, _HELPER, { verbose = true, language = _LANGUAGE })
 
     if not ok then
         io.stderr:write(
@@ -95,7 +98,7 @@ end
 local function _run_busted_suite(busted, state, force_exit)
     local execute = require("busted.execute")(busted)
 
-    execute(1, { language = language, sort = true })
+    execute(1, { language = _LANGUAGE, sort = true })
 
     -- TODO: Not sure if we need this. Probably we do.
     -- if state.failures > 0 or state.errors > 0 then
@@ -110,13 +113,12 @@ local function main()
 
     local force_exit = _get_current_file() == nil
 
-    local busted = require("busted.core")()
+    ---@type _CumulativeRunnerState
     local state = {errors = 0, failures = 0}
-    _initialize_busted(busted, state)
+    local busted = require("busted.core")()
+    _initialize_busted(busted, state, force_exit)
 
     while true do
-        -- TODO: Remove print
-        print("NEW ITERATION")
         local before = os.clock()
 
         _run_busted_suite(busted, state, force_exit)
