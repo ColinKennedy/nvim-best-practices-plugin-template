@@ -11,10 +11,21 @@ local clock = require("profile.clock")
 local instrument = require("profile.instrument")
 local profile = require("profile")
 
+-- TODO: Change the grapher to only plot leaf-level tests. e.g. describe blocks
+-- and be nested and graphing the "bigger" blocks is going to skew the results.
+-- We need to avoid that.
+
 -- TODO: Double check if I'm actually recording CPU clocks. If not, need to
 -- change the docstrings to the new unit of measure
 
----@class _GraphArtifacts Summary data about a whole suite of profiler data.
+---@class _GnuplotData The data that we need to generate a graph, using gnuplot.
+---@field data_getter fun(artifact: _GraphArtifact): number Grab the value to plot on the graph.
+---@field data_path string The .dat file used to read x/y values for the graph.
+---@field image_path string The output path where the .png graph will be written to.
+---@field script_data string Gnuplot requires a script to generate the graph. This is the script's contents.
+---@field script_path string The path on-disk where `script_data` is written to.
+
+---@class _GraphArtifact Summary data about a whole suite of profiler data.
 ---@field hardware _Hardware All computer platform details.
 ---@field versions _Versions All software / hardware metadata that generated `statistics`.
 ---@field statistics _Statistics Summary data about a whole suite of profiler data.
@@ -79,9 +90,35 @@ local _TEST_CACHE = {}
 
 ---@type string[]
 local _NAME_STACK = {}
-local _MAXIMUM_ARTIFACTS = 40 -- TODO: Do some tests to figure out what maximum number should be
+
+-- NOTE: The X-axis gets crowded if you include too many points so we cap it
+-- before it can get to that point
+--
+local _MAXIMUM_ARTIFACTS = 5
 
 local _PROFILE_FILE_NAME = "profile.json"
+
+local _MEAN_SCRIPT_TEMPLATE = [[
+set xtics rotate
+set term png
+set output '%s'
+plot "%s" using 2:xtic(1) title 'Mean' with lines linetype 1 linewidth 3
+]]
+
+local _MEDIAN_SCRIPT_TEMPLATE = [[
+set xtics rotate
+set term png
+set output '%s'
+plot "%s" using 2:xtic(1) title 'Median' with lines linetype 1 linewidth 3
+]]
+
+local _STD_SCRIPT_TEMPLATE = [[
+set terminal pngcairo enhanced font 'Arial,12' linewidth 2
+set xtics rotate
+set term png
+set output '%s'
+plot "%s" using 2:xtic(1) title 'Standard Deviation' with lines linetype 1 linewidth 3
+]]
 
 local _P = {}
 
@@ -101,7 +138,7 @@ end
 ---    An absolute path to the direct-parent directory. e.g. `".../benchmarks/all/artifacts".
 ---@param maximum number?
 ---    The number of artifacts to read. If not provided, read all of them.
----@return _GraphArtifacts[]
+---@return _GraphArtifact[]
 ---    All found records so far, if any.
 ---
 function _P.get_graph_artifacts(root, maximum)
@@ -113,12 +150,16 @@ function _P.get_graph_artifacts(root, maximum)
         maximum = 2 ^ 40 -- NOTE: Just some arbitrary, really big number
     end
 
-    ---@type _GraphArtifacts[]
+    ---@type _GraphArtifact[]
     local output = {}
 
     local template = vim.fs.joinpath(root, "*", _PROFILE_FILE_NAME)
 
-    for index, path in ipairs(_P.get_sorted_datetime_paths(vim.fn.glob(template, false, true))) do
+    local all_paths = _P.get_sorted_datetime_paths(vim.fn.glob(template, false, true))
+    local count = #all_paths
+    local paths = _P.get_slice(all_paths, math.max(count - maximum + 1, 0), count)
+
+    for index, path in ipairs(paths) do
         local file = io.open(path, "r")
 
         if not file then
@@ -146,7 +187,7 @@ end
 
 --- Find the most up-to-date Neovim version, if possible.
 ---
----@param artifacts _GraphArtifacts[]
+---@param artifacts _GraphArtifact[]
 ---    All past profiling / timing records to make a graph.
 ---@return _NeovimSimplifiedVersion?
 ---    The found version, if any. Only stable versions are allowed. Neovim
@@ -289,6 +330,31 @@ function _P.get_simple_version(version)
     return {version.major, version.minor, version.patch}
 end
 
+--- Get a sub-section copy of `table_` as a new table.
+---
+---@param table_ table<any, any>
+---    A list / array / dictionary / sequence to copy + reduce.
+---@param first? number
+---    The start index to use. This value is **inclusive** (the given index
+---    will be returned). Uses `table_`'s first index if not provided.
+---@param last? number
+---    The end index to use. This value is **inclusive** (the given index will
+---    be returned). Uses every index to the end of `table_`' if not provided.
+---@param step? number
+---    The step size between elements in the slice. Defaults to 1 if not provided.
+---@return table<any, any>
+---    The subset of `table_`.
+---
+function _P.get_slice(table_, first, last, step)
+    local sliced = {}
+
+    for i = first or 1, last or #table_, step or 1 do
+        sliced[#sliced + 1] = table_[i]
+    end
+
+    return sliced
+end
+
 --- Measure the variation in `values`.
 ---
 ---@param values number[] All of the values to consider (does not need to be sorted).
@@ -414,6 +480,23 @@ function _P.copy_file_to_directory(source, destination)
 
     destination_file:write(data)
     destination_file:close()
+end
+
+--- Delete the temporary files from `graphs`.
+---
+---@param graphs _GnuplotData[] All of the graphs that were written to-disk.
+---@param attributes string[] All of the attributes to delete from the `graphs`.
+---
+function _P.delete_gnuplot_paths(graphs, attributes)
+    for _, data in ipairs(graphs) do
+        for _, name in ipairs(attributes) do
+            local path = data[name]
+
+            if path and vim.fn.filereadable(path) == 1 then
+                os.remove(path)
+            end
+        end
+    end
 end
 
 --- Close the profile results on a test that is ending.
@@ -553,17 +636,37 @@ function _P.write_all_summary_directory(release, profiler, root)
     -- thing from scratch each time".
     --
     local artifacts = _P.get_graph_artifacts(artifacts_root, _MAXIMUM_ARTIFACTS)
-    _P.write_summary_readme(artifacts, readme_path)
 
     _P.copy_file_to_directory(flamegraph_path, root)
     _P.copy_file_to_directory(profile_path, root)
 
-    _P.write_graph_image(artifacts, root)
+    local graphs = _P.write_graph_images(artifacts, root)
+    _P.write_summary_readme(artifacts, graphs, readme_path)
 end
 
 -- TODO: Docstring
 -- Do I even still need this directory anymore? Probably but just checking
 function _P.write_by_release_directory(root) end
+
+--- Write `data` to `path` on-disk.
+---
+--- Raises:
+---     If we cannot write to `path`.
+---
+---@param data string The blob of text to put into `path`.
+---@param path string An absolute path on-disk where `data` will be written to.
+---
+function _P.write_data_to_file(data, path)
+    local file = io.open(path, "w")
+
+    if not file then
+        error(string.format('Path "%s" is not writeable.', path), 0)
+    end
+
+    file:write(data)
+
+    file:close()
+end
 
 --- Export `profile` to `path` as a new profiler flamegraph.
 ---
@@ -581,7 +684,7 @@ end
 --- Raises:
 ---     If the .dat file could not be made.
 ---
----@param artifacts _GraphArtifacts[]
+---@param artifacts _GraphArtifact[]
 ---    All past profiling / timing records to make a graph.
 ---@param path string
 ---    An absolute path on-disk to write the .dat file to.
@@ -626,98 +729,146 @@ function _P.write_gnuplot_data(artifacts, path)
     file:close()
 end
 
---- Make a .gnuplot file so we can use it to generate the line-graph later.
+--- Create the gnuplot line-graphs.
 ---
 --- Raises:
----     If the .gnuplot file could not be made.
+---     If we cannot write the graphs (because of missing data, usually).
 ---
----@param path string An absolute path on-disk where the .gnuplot file will write to.
+---@param artifacts _GraphArtifact[] All past profiling / timing records to make a graph.
+---@param graphs _GnuplotData[] The graph data / images to write to-disk.
 ---
-function _P.write_gnuplot_script(path)
-    -- TODO: See if absolute paths are allowed here
-    local header = [[
-set xtics rotate
-set term png
-set border 1
-set autoscale
-set output 'timing.png'
-plot "_temporary.dat" using 2:xtic(1) title 'Mean' with lines, \
-  "_temporary.dat" using 3:xtic(1) title 'Median' with lines lc "gray"
-    ]]
+function _P.write_gnuplot_images(artifacts, graphs)
+    -- NOTE: Since timings can vary drastically between Neovim / Lua
+    -- versions we don't want to pollute the timing information. We could
+    -- create graphs for every permutation but really, most people probably
+    -- only care about the latest version. So let's only graph that.
+    --
+    local neovim_version = _P.get_latest_neovim_version(artifacts)
 
-    local file = io.open(path, "w")
-
-    if not file then
-        error(string.format('Path "%s" is not writable. Cannot make the graph.', path), 0)
+    if not neovim_version then
+        error(
+            'Cannot write gnuplot graphs. A "latest Neovim version" could not be found.',
+            0
+        )
     end
 
-    file:write(header)
-    file:close()
+    for _, gnuplot in ipairs(graphs) do
+        _P.write_data_to_file(gnuplot.script_data, gnuplot.script_path)
+    end
+
+    for _, gnuplot in ipairs(graphs) do
+        local file = io.open(gnuplot.data_path, "w")
+
+        if not file then
+            error(string.format('Path "%s" is not writable.', gnuplot.data_path), 0)
+        end
+
+        for _, artifact in ipairs(artifacts) do
+            if vim.version.eq(_P.get_simple_version(artifact.versions.neovim), neovim_version) then
+                file:write(
+                    string.format(
+                        "%s %f\n",
+                        artifact.versions.release,
+                        gnuplot.data_getter(artifact)
+                    )
+                )
+
+            end
+        end
+
+        file:close()
+    end
+
+    for _, gnuplot in ipairs(graphs) do
+        local path = gnuplot.script_path
+        local job = vim.fn.jobstart({"gnuplot", path})
+        local result = vim.fn.jobwait({job})[1]
+
+        if result ~= 0 then
+            error(string.format('Could not make "%s" into a graph.', path), 0)
+        end
+    end
 end
 
---- Create a line-graph at `path` using `artifacts`.
+--- Create the gnuplot line-graphs.
 ---
 --- Raises:
----     If any temporary file needed to create the line-graph could not be made.
+---     If we cannot write the graphs (because of missing data, usually).
 ---
----@param artifacts _GraphArtifacts[]
----    All past profiling / timing records to make a graph.
----@param root string
----    An absolute directory on-disk to write this graph image to.
+---@param artifacts _GraphArtifact[] All past profiling / timing records to make a graph.
+---@param root string The ".../benchmarks/all" directory to create or update.
+---@return _GnuplotData[] # The gnuplot data that was written to-disk.
 ---
-function _P.write_graph_image(artifacts, root)
-    local gnuplot_data_path = vim.fs.joinpath(root, "_temporary.dat")
-    local success, message = pcall(_P.write_gnuplot_data, artifacts, gnuplot_data_path)
+function _P.write_graph_images(artifacts, root)
+    local keep = os.getenv("BUSTED_PROFILER_KEEP_TEMPORARY_FILES") == "1"
+
+    local mean_data_path
+    local mean_image_path = vim.fs.joinpath(root, "mean.png")
+    local mean_script_path
+    local median_data_path
+    local median_image_path = vim.fs.joinpath(root, "median.png")
+    local median_script_path
+    local std_data_path
+    local std_image_path = vim.fs.joinpath(root, "standard_deviation.png")
+    local std_script_path
+
+    if keep then
+        mean_data_path = vim.fs.joinpath(root, "_mean.dat")
+        mean_script_path = vim.fs.joinpath(root, "_mean.gnuplot")
+        median_data_path = vim.fs.joinpath(root, "_median.dat")
+        median_script_path = vim.fs.joinpath(root, "_media.gnuplot")
+        std_data_path = vim.fs.joinpath(root, "_standard_deviation.dat")
+        std_script_path = vim.fs.joinpath(root, "_standard_deviation.gnuplot")
+    else
+        mean_data_path = vim.fn.tempname() .. "_mean.dat"
+        mean_script_path = vim.fn.tempname() .. "_mean.gnuplot"
+        median_data_path = vim.fn.tempname() .. "_media.dat"
+        median_script_path = vim.fn.tempname() .. "_media.gnuplot"
+        std_data_path = vim.fn.tempname() .. "_standard_deviation.dat"
+        std_script_path = vim.fn.tempname() .. "_standard_deviation.gnuplot"
+    end
+
+    ---@type _GnuplotData[]
+    local graphs = {
+        {
+            data_getter=function(artifact) return artifact.statistics.mean end,
+            data_path=mean_data_path,
+            image_path=mean_image_path,
+            script_data=string.format(_MEAN_SCRIPT_TEMPLATE, mean_image_path, mean_data_path),
+            script_path=mean_script_path,
+        },
+        {
+            data_getter=function(artifact) return artifact.statistics.median end,
+            data_path=median_data_path,
+            image_path=median_image_path,
+            script_data=string.format(_MEDIAN_SCRIPT_TEMPLATE, median_image_path, median_data_path),
+            script_path=median_script_path,
+        },
+        {
+            data_getter=function(artifact) return artifact.statistics.standard_deviation end,
+            data_path=std_data_path,
+            image_path=std_image_path,
+            script_data=string.format(_STD_SCRIPT_TEMPLATE, std_image_path, std_data_path),
+            script_path=std_script_path,
+        },
+        -- TODO: Add a "all combined" graph here
+    }
+
+    local success, _ = pcall(_P.write_gnuplot_images, artifacts, graphs)
+
+    if not keep then
+        _P.delete_gnuplot_paths(graphs, {"data_path", "script_path"})
+    end
 
     if not success then
-        os.remove(gnuplot_data_path)
+        if not keep then
+            _P.delete_gnuplot_paths(graphs, {"image_path"})
+        end
 
-        error(
-            string.format(
-                'Error: "%s". Could not make a .dat file at "%s" path.',
-                message,
-                gnuplot_data_path
-            ),
-            0
-        )
+        error('Failed to write all gnuplot graphs. Rolling back all files.', 0)
     end
 
-    local gnuplot_script_path = vim.fs.joinpath(root, "_temporary.gnuplot")
-    success, message = pcall(_P.write_gnuplot_script, gnuplot_script_path)
-
-    if not success then
-        os.remove(gnuplot_data_path)
-        os.remove(gnuplot_script_path)
-
-        error(
-            string.format(
-                'Error: "%s". Could not make a .gnuplot file. Deleting all temporary files.',
-                message,
-                gnuplot_script_path
-            ),
-            0
-        )
-    end
-
-    success, message = pcall(vim.fn.system, {"gnuplot", gnuplot_script_path})
-    local job = vim.fn.jobstart({"gnuplot", gnuplot_script_path}, {cwd=root})
-    local result = vim.fn.jobwait({job})[1]
-
-    -- NOTE: We don't need these temporary files anymore. So delete them.
-    os.remove(gnuplot_data_path)
-    os.remove(gnuplot_script_path)
-
-    if result ~= 0 then
-        error(
-            string.format(
-                'Error: "%s". Could not make "%s" into a graph.',
-                message,
-                gnuplot_script_path,
-                gnuplot_script_path
-            ),
-            0
-        )
-    end
+    return graphs
 end
 
 --- Create the `"benchmarks/all/artifacts/{YYYY_MM_DD-VERSION_TAG}"` directory.
@@ -763,7 +914,7 @@ function _P.write_profile_summary(release, path)
     -- https://docs.python.org/3/library/platform.html#platform.processor
     local cpu = "TODO"
 
-    ---@type _GraphArtifacts
+    ---@type _GraphArtifact
     local data = {
         versions = {
             lua = jit.version,
@@ -788,10 +939,11 @@ end
 --- Raises:
 ---     If `path` is not writeable.
 ---
----@param artifacts _GraphArtifacts[] All found profile record events so far, if any.
+---@param artifacts _GraphArtifact[] All found profile record events so far, if any.
+---@param graphs _GnuplotData[] All of the graphs that were written to-disk.
 ---@param path string The path on-disk to write the README.md to.
 ---
-function _P.write_summary_readme(artifacts, path)
+function _P.write_summary_readme(artifacts, graphs, path)
     _P.make_parent_directory(path)
 
     local file = io.open(path, "w")
@@ -807,7 +959,21 @@ This document contains historical benchmarking results. These measure the speed
 of resolution of a list of predetermined requests. Do **NOT** change this file
 by hand; the Github workflows will do this automatically.
 
-<p align="center"><img src="timing.png" /></p>
+In the graph and data below, lower numbers are better
+
+]])
+
+    for _, graph in ipairs(graphs) do
+        -- TODO: Add validation here. Make sure that graph.image_path is
+        -- relative to the final output location
+        -- TODO: Add the missing title here
+        --
+        file:write(
+            string.format('<p align="center"><img src="%s"/></p>', vim.fs.basename(graph.image_path))
+        )
+    end
+
+file:write([[
 
 | Release | Platform | CPU | Total | Median | Mean | StdDev |
 |---------|----------|-----|-------|--------|------|--------|
