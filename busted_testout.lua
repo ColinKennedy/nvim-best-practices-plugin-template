@@ -5,6 +5,7 @@ local tablex = require 'pl.tablex'
 local term = require('term')
 
 local _HELPER = "spec/minimal_init.lua"
+local _LPATH_EXTENSIONS = 'lua/?.lua;lua/?/init.lua;spec/?.lua'
 local _OUTPUT_HANDLER = "busted.profile_using_flamegraph"
 
 
@@ -23,15 +24,11 @@ local function _get_default_output()
     return options.output or (isatty and 'utfTerminal' or 'plainTerminal')
 end
 
-local function _run_busted_suite(busted)
-    local helperLoader = require("busted.modules.helper_loader")()
-    local outputHandlerLoader = require("busted.modules.output_handler_loader")()
+local function _initialize_busted(busted, state)
+    require("busted")(busted)  -- TODO: not sure if this is meant to go here or before each test (in the for-loop)
 
-    local force_exit = _get_current_file() == nil
-
-    local failures = 0
-    local errors = 0
-    local quit_on_error = true
+    -- TODO: I'm pretty sure we want to skip on-error. But for now disable it
+    -- local quit_on_error = true
 
     busted.subscribe({ "error", "output" }, function(element, parent, message)
         io.stderr:write("busted: error: Cannot load output library: " .. element.name .. "\n" .. message .. "\n")
@@ -46,7 +43,7 @@ local function _run_busted_suite(busted)
     end)
 
     busted.subscribe({ "error" }, function(element, parent, message)
-        errors = errors + 1
+        state.errors = state.errors + 1
         busted.skipAll = quit_on_error
 
         return nil, true
@@ -54,9 +51,9 @@ local function _run_busted_suite(busted)
 
     busted.subscribe({ "failure" }, function(element, parent, message)
         if element.descriptor == "it" then
-            failures = failures + 1
+            state.failures = state.failures + 1
         else
-            errors = errors + 1
+            state.errors = state.errors + 1
         end
 
         busted.skipAll = quit_on_error
@@ -68,18 +65,19 @@ local function _run_busted_suite(busted)
 
     busted.sort = true
 
-    -- TODO: Add this
-    -- outputHandlerLoader(busted, _OUTPUT_HANDLER, {
-    --     defaultOutput = _get_default_output(),
-    --     deferPrint = false,
-    --     enableSound = false,
-    --     language = language,
-    --     verbose = false,
-    -- })
+    local output_handler_loader = require("busted.modules.output_handler_loader")()
+    output_handler_loader(busted, _OUTPUT_HANDLER, {
+        defaultOutput = _get_default_output(),
+        deferPrint = true,
+        enableSound = false,
+        language = language,
+        verbose = false,
+    })
 
     require("busted.luajit")()
 
-    local ok, message = helperLoader(busted, _HELPER, { verbose = true, language = language })
+    local helper_loader = require("busted.modules.helper_loader")()
+    local ok, message = helper_loader(busted, _HELPER, { verbose = true, language = language })
 
     if not ok then
         io.stderr:write(
@@ -88,16 +86,21 @@ local function _run_busted_suite(busted)
         compatibility.exit(1, force_exit)
     end
 
+    package.path = _LPATH_EXTENSIONS .. ';' .. package.path
+
     local load_tests = require("busted.modules.test_file_loader")(busted, {"lua"})
     load_tests({"."}, {"_spec"}, { excludes = {}, recursive = true })
+end
 
+local function _run_busted_suite(busted, state, force_exit)
     local execute = require("busted.execute")(busted)
 
     execute(1, { language = language, sort = true })
 
-    if failures > 0 or errors > 0 then
-        compatibility.exit(failures + errors, force_exit)
-    end
+    -- TODO: Not sure if we need this. Probably we do.
+    -- if state.failures > 0 or state.errors > 0 then
+    --     compatibility.exit(state.failures + state.errors, force_exit)
+    -- end
 end
 
 local function main()
@@ -105,13 +108,18 @@ local function main()
     local counter = 10
     local fastest_time = 2 ^ 1023
 
+    local force_exit = _get_current_file() == nil
+
     local busted = require("busted.core")()
-    require("busted")(busted)  -- TODO: not sure if this is meant to go here or before each test (in the for-loop)
+    local state = {errors = 0, failures = 0}
+    _initialize_busted(busted, state)
 
     while true do
+        -- TODO: Remove print
+        print("NEW ITERATION")
         local before = os.clock()
 
-        _run_busted_suite(busted)
+        _run_busted_suite(busted, state, force_exit)
 
         local duration = os.clock() - before
 
