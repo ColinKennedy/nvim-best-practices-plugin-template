@@ -631,10 +631,6 @@ function _P.write_all_summary_directory(release, profiler, root)
     _P.write_summary_readme(artifacts, graphs, readme_path)
 end
 
--- TODO: Docstring
--- Do I even still need this directory anymore? Probably but just checking
-function _P.write_by_release_directory(root) end
-
 --- Write `data` to `path` on-disk.
 ---
 --- Raises:
@@ -1030,8 +1026,6 @@ return function(options)
         end
 
         _P.write_all_summary_directory(release, profile, vim.fs.joinpath(root, "benchmarks", "all"))
-        -- TODO: Finish this part
-        -- _P.write_by_release_directory(vim.fs.joinpath(root, "benchmarks", "by_release"))
     end
 
     ---@param element busted.Element The `describe` / `it` / etc that just completed.
