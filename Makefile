@@ -13,13 +13,10 @@ stylua:
 	stylua lua plugin scripts spec
 
 test:
-	eval $(luarocks path --lua-version 5.1 --bin)
 	busted --helper spec/minimal_init.lua .
 
 profile_using_flamegraph:
-	eval $(luarocks path --lua-version 5.1 --bin)
 	busted --helper spec/minimal_init.lua --output=busted.profile_using_flamegraph .
 
 profile_using_vim:
-	eval $(luarocks path --lua-version 5.1 --bin)
 	busted --helper spec/minimal_init.lua --output=busted.profile_using_vim .
