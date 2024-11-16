@@ -11,13 +11,6 @@ local clock = require("profile.clock")
 local instrument = require("profile.instrument")
 local profile = require("profile")
 
--- TODO: Change the grapher to only plot leaf-level tests. e.g. describe blocks
--- and be nested and graphing the "bigger" blocks is going to skew the results.
--- We need to avoid that.
-
--- TODO: Double check if I'm actually recording CPU clocks. If not, need to
--- change the docstrings to the new unit of measure
-
 ---@class _GnuplotData The data that we need to generate a graph, using gnuplot.
 ---@field data_getter fun(artifact: _GraphArtifact): number Grab the value to plot on the graph.
 ---@field data_path string The .dat file used to read x/y values for the graph.
@@ -46,14 +39,14 @@ local profile = require("profile")
 
 ---@class _ProfileEvent A single, recorded profile event.
 ---@field cat string The category of the profiler event. e.g. `"function"`, `"test"`, etc.
----@field dur number The length of CPU clocks needed to complete the event.
----@field ts number The start CPU clock time.
+---@field dur number The length of CPU time needed to complete the event.
+---@field ts number The start CPU time.
 
 ---@class _Statistics Summary data about a whole suite of profiler data.
 ---@field mean number (1 + 2 + 3 + ... n) / count
 ---@field median number The exact middle value of all profile durations.
 ---@field standard_deviation number The amount of variation in the duration values.
----@field total number The total number of CPU clocks recorded over the profile.
+---@field total number The total number of CPU time recorded over the profile.
 
 ---@class _Versions
 ---    All software / hardware metadata that generated `statistics`.
@@ -119,6 +112,10 @@ set term png
 set output '%s'
 plot "%s" using 2:xtic(1) title 'Standard Deviation' with lines linetype 1 linewidth 3
 ]]
+
+local _PROCESSOR = vim.uv.cpu_info()[1].model
+
+local unpack = table.unpack or unpack
 
 local _P = {}
 
@@ -228,10 +225,10 @@ function _P.get_latest_neovim_version(artifacts)
     return output
 end
 
---- Search `events` for the last event that contains CPU clock data.
+--- Search `events` for the last event that contains CPU time data.
 ---
 --- Raises:
----     If `events` has no CPU clock data.
+---     If `events` has no CPU time data.
 ---
 ---@param events _ProfileEvent[] All of the profiler event data to consider.
 ---@return _ProfileEvent # The found, latest event.
@@ -404,6 +401,17 @@ function _P.get_sorted_datetime_paths(paths)
             _P.get_parent_directory_name_data(right)
         )
     end)
+end
+
+--- Make `version` into something more human-readable.
+---
+--- We assume `version` is not a nightly version.
+---
+---@param version _NeovimFullVersion The unabridged version data about Neovim.
+---@return string # A simplified version name, e.g. `"v0.11.0"`.
+---
+function _P.get_version_text(version)
+    return string.format("v%s.%s.%s", unpack(_P.get_simple_version(version)))
 end
 
 --- Check if `left` should be sorted before `right`.
@@ -880,10 +888,7 @@ function _P.write_profile_summary(release, path)
         error(string.format('Path "%s" could not be exported.', path), 0)
     end
 
-    -- TODO: To the get CPU
-    -- TODO: Maybe vim.uv.cpu_info() but really we should use something better here
-    -- https://docs.python.org/3/library/platform.html#platform.processor
-    local cpu = "TODO"
+    local cpu = _PROCESSOR
 
     ---@type _GraphArtifact
     local data = {
@@ -953,17 +958,18 @@ In the graph and data below, lower numbers are better
 
     file:write([[
 
-| Release | Platform | CPU | Total | Median | Mean | StdDev |
-|---------|----------|-----|-------|--------|------|--------|
+| Release | Platform | CPU | Neovim | Total | Median | Mean | StdDev |
+|---------|----------|-----|--------|-------|--------|------|--------|
 ]])
 
     for _, artifact in ipairs(artifacts) do
         file:write(
             string.format(
-                "| %s | %s | %s | %s | %s | %s | %s |\n",
+                "| %s | %s | %s | %s | %s | %s | %s | %s |\n",
                 artifact.versions.release,
                 artifact.hardware.platform,
                 artifact.hardware.cpu,
+                _P.get_version_text(artifact.versions.neovim),
                 artifact.statistics.total,
                 artifact.statistics.median,
                 artifact.statistics.mean,
