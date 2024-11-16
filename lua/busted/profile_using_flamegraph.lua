@@ -94,7 +94,7 @@ local _NAME_STACK = {}
 -- NOTE: The X-axis gets crowded if you include too many points so we cap it
 -- before it can get to that point
 --
-local _MAXIMUM_ARTIFACTS = 5
+local _MAXIMUM_ARTIFACTS = 35
 
 local _PROFILE_FILE_NAME = "profile.json"
 
@@ -406,16 +406,6 @@ function _P.get_sorted_datetime_paths(paths)
     end)
 end
 
--- TODO: Remove
--- --- Create a human-readable representation of `version`.
--- ---
--- ---@param version _NeovimFullVersion
--- ---@return string # The generated version, e.g. `"v1.2.3"`.
--- ---
--- function _P.get_version_text(version)
---     return string.format("v%s.%s.%s", version.major, version.minor, version.patch)
--- end
-
 --- Check if `left` should be sorted before `right`.
 ---
 --- This function follows the expected outputs of Vim's built-in sort function.
@@ -605,7 +595,6 @@ function _P.validate_release(version)
     end
 end
 
--- TODO: Make sure this file structure works
 --- Write all files for the "benchmarks/all" directory.
 ---
 --- The basic directory structure looks like this:
@@ -613,15 +602,14 @@ end
 --- - all/
 ---     - artifacts/
 ---         - {YYYY_MM_DD-VERSION_TAG}/
----             - Contains their own README.md + details.json
----             - profile.json
 ---             - flamegraph.json
+---             - profile.json
 ---     - README.md
 ---         - Show the graph of the output, across versions
 ---         - A table summary of the timing
 ---     - flamegraph.json
 ---     - profile.json - The latest release's total time, self time, etc
----     - timing.png - A line-graph of tests over-time.
+---     - *.png - Profiler-related line-graphs
 ---
 ---@param release string The current release to make. e.g. `"v1.2.3"`.
 ---@param profiler Profiler The object used to record function call times.
@@ -632,9 +620,6 @@ function _P.write_all_summary_directory(release, profiler, root)
     local flamegraph_path, profile_path = _P.write_graph_artifact(release, profiler, artifacts_root)
     local readme_path = vim.fs.joinpath(root, "README.md")
 
-    -- TODO: Change this from "append to summary" to just "generate the whole
-    -- thing from scratch each time".
-    --
     local artifacts = _P.get_graph_artifacts(artifacts_root, _MAXIMUM_ARTIFACTS)
 
     _P.copy_file_to_directory(flamegraph_path, root)
@@ -953,11 +938,20 @@ In the graph and data below, lower numbers are better
 
 ]])
 
+    local directory = vim.fs.normalize(vim.fs.dirname(path))
+
     for _, graph in ipairs(graphs) do
-        -- TODO: Add validation here. Make sure that graph.image_path is
-        -- relative to the final output location
-        -- TODO: Add the missing title here
-        --
+        if vim.fs.normalize(vim.fs.dirname(graph.image_path)) ~= directory then
+            error(
+                string.format(
+                    'Path "%s" is not relative to "%s". Cannot add it to the README.md',
+                    graph.image_path,
+                    directory
+                ),
+                0
+            )
+        end
+
         file:write(string.format('<p align="center"><img src="%s"/></p>\n', vim.fs.basename(graph.image_path)))
     end
 
