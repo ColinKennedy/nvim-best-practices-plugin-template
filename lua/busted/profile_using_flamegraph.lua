@@ -201,18 +201,18 @@ function _P.get_latest_neovim_version(artifacts)
     for _, artifact in ipairs(artifacts) do
         local version = artifact.versions.neovim
 
-    --     -- TODO: Add this if-statement in, later. But remove it for now because I do use Neovim nightly.
-    --     -- if not version.prerelease then  -- version.prerelease indicates a nightly build
-    --     --     -- NOTE: We ignore nightly versions because those could cause
-    --     --     -- issues during profiling. Instead we favor stable, known
-    --     --     -- major.minor.patch versions (like here)
-    --     --     --
-    --     --     local simplified_version = {version.major, version.minor, version.patch}
-    --     --
-    --     --     if not output or _P.compare_number_arrays(simplified_version, output) == 1 then
-    --     --         output = simplified_version
-    --     --     end
-    --     -- end
+        --     -- TODO: Add this if-statement in, later. But remove it for now because I do use Neovim nightly.
+        --     -- if not version.prerelease then  -- version.prerelease indicates a nightly build
+        --     --     -- NOTE: We ignore nightly versions because those could cause
+        --     --     -- issues during profiling. Instead we favor stable, known
+        --     --     -- major.minor.patch versions (like here)
+        --     --     --
+        --     --     local simplified_version = {version.major, version.minor, version.patch}
+        --     --
+        --     --     if not output or _P.compare_number_arrays(simplified_version, output) == 1 then
+        --     --         output = simplified_version
+        --     --     end
+        --     -- end
 
         -- NOTE: We ignore nightly versions because those could cause
         -- issues during profiling. Instead we favor stable, known
@@ -237,7 +237,7 @@ end
 ---@return _ProfileEvent # The found, latest event.
 ---
 function _P.get_latest_timed_event(events)
-    for index=#events,1,-1 do
+    for index = #events, 1, -1 do
         local event = events[index]
 
         if event.ts and event.dur then
@@ -245,7 +245,7 @@ function _P.get_latest_timed_event(events)
         end
     end
 
-    error('Unable to find a latest event.', 0)
+    error("Unable to find a latest event.", 0)
 end
 
 --- Find the exact middle value of all profile durations.
@@ -315,9 +315,9 @@ function _P.get_profile_statistics(events)
 
     return {
         median = _P.get_median(durations),
-        mean=sum / #durations,
-        total=last_event.ts + last_event.dur,
-        standard_deviation=_P.get_standard_deviation(durations),
+        mean = sum / #durations,
+        total = last_event.ts + last_event.dur,
+        standard_deviation = _P.get_standard_deviation(durations),
     }
 end
 
@@ -327,7 +327,7 @@ end
 ---@return _NeovimSimplifiedVersion # Just the major.minor.patch values.
 ---
 function _P.get_simple_version(version)
-    return {version.major, version.minor, version.patch}
+    return { version.major, version.minor, version.patch }
 end
 
 --- Get a sub-section copy of `table_` as a new table.
@@ -377,7 +377,7 @@ function _P.get_standard_deviation(values, mean)
     local squared_diff_sum = 0
 
     for _, value in ipairs(values) do
-        squared_diff_sum = squared_diff_sum + (value - mean)^2
+        squared_diff_sum = squared_diff_sum + (value - mean) ^ 2
     end
 
     local variance = squared_diff_sum / count
@@ -582,7 +582,7 @@ end
 ---     If no `gnuplot` is found or is not callable.
 ---
 function _P.validate_gnuplot()
-    local success, _ = pcall(vim.fn.system, {"gnuplot"})
+    local success, _ = pcall(vim.fn.system, { "gnuplot" })
 
     if not success then
         error("gnuplot does not exist or is not executable.", 0)
@@ -700,13 +700,7 @@ function _P.write_gnuplot_data(artifacts, path)
     local neovim_version = _P.get_latest_neovim_version(artifacts)
 
     if not neovim_version then
-        error(
-            string.format(
-                'Cannot write to "%s". A "latest Neovim version" could not be found.',
-                path
-            ),
-            0
-        )
+        error(string.format('Cannot write to "%s". A "latest Neovim version" could not be found.', path), 0)
     end
 
     local file = io.open(path, "w")
@@ -748,10 +742,7 @@ function _P.write_gnuplot_images(artifacts, graphs)
     local neovim_version = _P.get_latest_neovim_version(artifacts)
 
     if not neovim_version then
-        error(
-            'Cannot write gnuplot graphs. A "latest Neovim version" could not be found.',
-            0
-        )
+        error('Cannot write gnuplot graphs. A "latest Neovim version" could not be found.', 0)
     end
 
     for _, gnuplot in ipairs(graphs) do
@@ -767,14 +758,7 @@ function _P.write_gnuplot_images(artifacts, graphs)
 
         for _, artifact in ipairs(artifacts) do
             if vim.version.eq(_P.get_simple_version(artifact.versions.neovim), neovim_version) then
-                file:write(
-                    string.format(
-                        "%s %f\n",
-                        artifact.versions.release,
-                        gnuplot.data_getter(artifact)
-                    )
-                )
-
+                file:write(string.format("%s %f\n", artifact.versions.release, gnuplot.data_getter(artifact)))
             end
         end
 
@@ -783,8 +767,8 @@ function _P.write_gnuplot_images(artifacts, graphs)
 
     for _, gnuplot in ipairs(graphs) do
         local path = gnuplot.script_path
-        local job = vim.fn.jobstart({"gnuplot", path})
-        local result = vim.fn.jobwait({job})[1]
+        local job = vim.fn.jobstart({ "gnuplot", path })
+        local result = vim.fn.jobwait({ job })[1]
 
         if result ~= 0 then
             error(string.format('Could not make "%s" into a graph.', path), 0)
@@ -833,25 +817,31 @@ function _P.write_graph_images(artifacts, root)
     ---@type _GnuplotData[]
     local graphs = {
         {
-            data_getter=function(artifact) return artifact.statistics.mean end,
-            data_path=mean_data_path,
-            image_path=mean_image_path,
-            script_data=string.format(_MEAN_SCRIPT_TEMPLATE, mean_image_path, mean_data_path),
-            script_path=mean_script_path,
+            data_getter = function(artifact)
+                return artifact.statistics.mean
+            end,
+            data_path = mean_data_path,
+            image_path = mean_image_path,
+            script_data = string.format(_MEAN_SCRIPT_TEMPLATE, mean_image_path, mean_data_path),
+            script_path = mean_script_path,
         },
         {
-            data_getter=function(artifact) return artifact.statistics.median end,
-            data_path=median_data_path,
-            image_path=median_image_path,
-            script_data=string.format(_MEDIAN_SCRIPT_TEMPLATE, median_image_path, median_data_path),
-            script_path=median_script_path,
+            data_getter = function(artifact)
+                return artifact.statistics.median
+            end,
+            data_path = median_data_path,
+            image_path = median_image_path,
+            script_data = string.format(_MEDIAN_SCRIPT_TEMPLATE, median_image_path, median_data_path),
+            script_path = median_script_path,
         },
         {
-            data_getter=function(artifact) return artifact.statistics.standard_deviation end,
-            data_path=std_data_path,
-            image_path=std_image_path,
-            script_data=string.format(_STD_SCRIPT_TEMPLATE, std_image_path, std_data_path),
-            script_path=std_script_path,
+            data_getter = function(artifact)
+                return artifact.statistics.standard_deviation
+            end,
+            data_path = std_data_path,
+            image_path = std_image_path,
+            script_data = string.format(_STD_SCRIPT_TEMPLATE, std_image_path, std_data_path),
+            script_path = std_script_path,
         },
         -- TODO: Add a "all combined" graph here
     }
@@ -859,15 +849,15 @@ function _P.write_graph_images(artifacts, root)
     local success, _ = pcall(_P.write_gnuplot_images, artifacts, graphs)
 
     if not keep then
-        _P.delete_gnuplot_paths(graphs, {"data_path", "script_path"})
+        _P.delete_gnuplot_paths(graphs, { "data_path", "script_path" })
     end
 
     if not success then
         if not keep then
-            _P.delete_gnuplot_paths(graphs, {"image_path"})
+            _P.delete_gnuplot_paths(graphs, { "image_path" })
         end
 
-        error('Failed to write all gnuplot graphs. Rolling back all files.', 0)
+        error("Failed to write all gnuplot graphs. Rolling back all files.", 0)
     end
 
     return graphs
@@ -925,7 +915,7 @@ function _P.write_profile_summary(release, path)
             uv = vim.uv.version(),
         },
         statistics = _P.get_profile_statistics(instrument.get_events()),
-        hardware = { cpu = cpu, platform = vim.loop.os_uname().sysname }
+        hardware = { cpu = cpu, platform = vim.loop.os_uname().sysname },
     }
 
     file:write(vim.fn.json_encode(data))
@@ -970,12 +960,10 @@ In the graph and data below, lower numbers are better
         -- relative to the final output location
         -- TODO: Add the missing title here
         --
-        file:write(
-            string.format('<p align="center"><img src="%s"/></p>', vim.fs.basename(graph.image_path))
-        )
+        file:write(string.format('<p align="center"><img src="%s"/></p>\n', vim.fs.basename(graph.image_path)))
     end
 
-file:write([[
+    file:write([[
 
 | Release | Platform | CPU | Total | Median | Mean | StdDev |
 |---------|----------|-----|-------|--------|------|--------|
