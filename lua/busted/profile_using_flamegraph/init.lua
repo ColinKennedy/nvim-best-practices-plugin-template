@@ -59,8 +59,6 @@ local profile = require("profile")
 ---@field uv number
 ---    The libuv version that was included with Neovim.
 
--- TODO: Consider graphing standard deviation again
-
 -- TODO: Add logging in this file / around
 
 ---@class busted.CallerOptions
