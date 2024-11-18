@@ -38,14 +38,15 @@ end
 
 --- Run the tests, once, and gather profile / timing data while we do it.
 ---
+---@param profiler Profiler The object used to record function call times.
 ---@param runner busted.MultiRunner A unittest suite runner to call.
 ---@param options busted.MultiRunnerOptions? The settings to apply to the runner.
 ---
-function _P.profile_and_run(runner, options)
+function _P.profile_and_run(profiler, runner, options)
     local before = os.clock()
-    profile.start("*")
+    profiler.start("*")
     _P.run_busted_suite(runner, options)
-    profile.stop()
+    profiler.stop()
 
     return os.clock() - before
 end
@@ -93,19 +94,21 @@ end
 --- Raises:
 ---     If `maximum_tries` is invalid.
 ---
+---@param profiler Profiler
+---    The object used to record function call times.
+---@param release string
+---    A version / release tag. e.g. `"v1.2.3"`.
+---@param root string
+---    An absolute path to the directory on-disk where files are written.
 ---@param maximum_tries number
 ---    This controls the number of times that tests can run before we determine
 ---    that we've found a "fastest" test run. The higher the value, the longer
 ---    but more accurate this function becomes.
 ---
-local function run_tests(maximum_tries)
+local function run_tests(profiler, release, root, maximum_tries)
     if maximum_tries < 1 then
         error(string.format('Maximum tries must be 1-or-more. Got "%s".', maximum_tries), 0)
     end
-
-    local root, release = helper.parse_input_arguments()
-
-    helper.validate_gnuplot()
 
     local maximum_tries = 10
     local counter = 10
@@ -118,7 +121,7 @@ local function run_tests(maximum_tries)
         ---@diagnostic disable-next-line: cast-type-mismatch
         ---@cast runner busted.MultiRunner
 
-        local duration = _P.profile_and_run(runner, {release=release, root=root})
+        local duration = _P.profile_and_run(profiler, runner, {release=release, root=root})
 
         if duration < fastest_time then
             counter = maximum_tries
@@ -143,7 +146,16 @@ end
 
 --- Run these tests.
 local function main()
-    run_tests(10)
+    local root, release = helper.parse_input_arguments()
+
+    helper.validate_gnuplot()
+
+    -- NOTE: Don't profile the unittest framework
+    local profiler = profile
+    profiler.ignore("busted*")
+    -- TODO: Replace name here later
+    profiler.ignore("busted_testout2*")
+    run_tests(profiler, release, root, 10)
 end
 
 main()
