@@ -88,6 +88,90 @@ local _PROCESSOR = vim.uv.cpu_info()[1].model
 
 local unpack = table.unpack or unpack
 
+--- Check if `release` is a greater version number than everything in `root`.
+---
+--- Most of the time this function returns `true`. But if a user is
+--- back-patching a version this might return `false`.
+---
+---@param release number[] A major / minor / patch. e.g. "v1.2.3" would be `{1, 2, 3}`.
+---@param root string The directory on-disk where past releases live.
+---@return boolean # If `release` is an earlier release number, return `false`.
+---
+function _P.is_latest_version(release, root)
+    for _, directory in ipairs(_P.get_directories(root)) do
+        local full_name = vim.fs.basename(directory)
+        local version = _P.get_version_from_directory_name(full_name)
+
+        if _P.compare_number_arrays(version, release) == 1 then
+            return false
+        end
+    end
+
+    return true
+end
+
+--- Find all sub-directories starting at `root`.
+---
+--- Raises:
+---     If `root` could not be read.
+---
+---@param root string The parent directory on-disk to search within.
+---@return string[] # All found sub-directories, if any.
+---
+function _P.get_directories(root)
+    local handler = vim.uv.fs_opendir(root)
+
+    if not handler then
+        error(string.format('Unable to list "%s" directory.', root), 0)
+    end
+
+    ---@type string[]
+    local output = {}
+
+    while true do
+        local entry = vim.uv.fs_readdir(handler)
+
+        if not entry then
+            break
+        end
+
+        if entry.type == "directory" then
+            table.insert(output, entry.name)
+        end
+    end
+
+    vim.uv.fs_closedir(handler)
+
+    return output
+end
+
+--- Read `"/path/to/2024_08_23-11_03_01-v1.2.3/foo.bar"` for the date + time data.
+---
+--- If we couldn't find an expected set of date
+---
+---@param text string The absolute path to the date + time directory.
+---@return number[] # All of the date information.
+---
+function _P.get_directory_name_data(text)
+    local output = {}
+
+    for number_text in string.gmatch(text, "%d+") do
+        table.insert(output, tonumber(number_text))
+    end
+
+    if #output < 9 then
+        error(
+            string.format(
+                'Text "%s" did not match "YYYY_MM_DD-HH_MM_SS-vMAJOR.MINOR.PATCH" pattern.',
+                text
+            ),
+            0
+        )
+    end
+
+    return output
+end
+
 --- Read all past profile / timing results into a single array.
 ---
 --- Raises:
@@ -232,27 +316,6 @@ function _P.get_median(values)
     return (values[middle_left_index] + values[middle_right_index]) / 2
 end
 
---- Read `"/path/to/2024_08_23-11_03_01/foo.bar"` for the date + time data.
----
----@param path string The absolute path to a file. Its parent directory has date + time data.
----@return number[] # All of the date information.
----
-function _P.get_parent_directory_name_data(path)
-    local text = vim.fn.fnamemodify(vim.fn.fnamemodify(path, ":h"), ":t")
-
-    local output = {}
-
-    for number_text in string.gmatch(text, "%d+") do
-        table.insert(output, tonumber(number_text))
-    end
-
-    if #output < 6 then
-        error(string.format('Text "%s" did not match "YYYY_MM_DD-vMAJOR.MINOR.PATCH" pattern.', text), 0)
-    end
-
-    return output
-end
-
 --- Summarize all of `events` (get the mean, median, etc).
 ---
 ---@param events _ProfileEvent[]
@@ -336,9 +399,12 @@ function _P.get_sorted_datetime_paths(paths)
             return 0
         end
 
+        -- TODO: This is incorrect. We need to sort version, then by date!
+        -- Which means we're also writing the data incorrectly.
+        --
         return _P.compare_number_arrays(
-            _P.get_parent_directory_name_data(left),
-            _P.get_parent_directory_name_data(right)
+            _P.get_directory_name_data(vim.fs.dirname(left)),
+            _P.get_directory_name_data(vim.fs.dirname(right))
         )
     end)
 end
@@ -577,8 +643,7 @@ function _P.write_gnuplot_images(artifacts, graphs)
     end
 end
 
-
---- Create the `"benchmarks/all/artifacts/{YYYY_MM_DD-VERSION_TAG}"` directory.
+--- Create the `"benchmarks/all/artifacts/{YYYY_MM_DD-HH_MM_SS-VERSION_TAG}"` directory.
 ---
 ---@param release string
 ---    The current release to make. e.g. `"v1.2.3"`.
@@ -730,7 +795,7 @@ function _P.write_profile_summary(release, path, events)
         hardware = { cpu = cpu, platform = vim.loop.os_uname().sysname },
     }
 
-    file:write(vim.fn.json_encode(data))
+    file:write(vim.json.encode(data))
     file:close()
 
     return data
@@ -854,7 +919,7 @@ end
 ---
 --- - all/
 ---     - artifacts/
----         - {YYYY_MM_DD-VERSION_TAG}/
+---         - {YYYY_MM_DD-HH_MM_SS-VERSION_TAG}/
 ---             - flamegraph.json
 ---             - profile.json
 ---     - README.md
@@ -881,8 +946,12 @@ function M.write_all_summary_directory(release, profiler, root, events)
 
     local artifacts = _P.get_graph_artifacts(artifacts_root, _MAXIMUM_ARTIFACTS)
 
-    _P.copy_file_to_directory(flamegraph_path, root)
-    _P.copy_file_to_directory(profile_path, root)
+    if not vim.fn.isdirectory(artifacts_root) or _P.is_latest_version(_P.get_version_data(release), artifacts_root) then
+        _P.copy_file_to_directory(flamegraph_path, root)
+        _P.copy_file_to_directory(profile_path, root)
+    else
+        -- TODO: Add logging
+    end
 
     local graphs = _P.write_graph_images(artifacts, root)
     _P.write_summary_readme(artifacts, graphs, readme_path)
