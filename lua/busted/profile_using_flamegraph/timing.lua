@@ -8,12 +8,41 @@ local tabler = require("plugin_template._core.tabler")
 local _P = {}
 local M = {}
 
-local _PLUGIN_PREFIX = "plugin_template."
+local _PLUGIN_PREFIX = "plugin_template"
 
 -- TODO: Docstring
 ---@class _ProfileEventSummary[]
 ---@field duration number
 ---@field name string
+
+--- Check if this plugin defined this `event` function.
+---
+---@param event _ProfileEvent
+---    The profiler event to check. It might be a function, or describe block
+---    or anything else.
+---@return boolean
+---    If `event` is defined here, return `true`. Otherwise if it is an
+---    external function or a Neovim core function, return `false`.
+---
+function _P.is_plugin_function(event)
+    if not event.cat or event.cat ~= "function" then
+        return false
+    end
+
+    local _ALLOWED_NAMES = {_PLUGIN_PREFIX}
+
+    if vim.tbl_contains(_ALLOWED_NAMES, event.name) then
+        return true
+    end
+
+    for _, name in ipairs(_ALLOWED_NAMES) do
+        if string.match(event.name, name .. "%.") then
+            return true
+        end
+    end
+
+    return false
+end
 
 --- Find out how many times a function was called.
 ---
@@ -58,10 +87,15 @@ end
 --- Collect `events` based on the total time across all `events`.
 ---
 ---@param events _ProfileEvent[] All of the profiler event data to consider.
+---@param predicate (fun(event: _ProfileEvent): boolean)? Returns `true` to display an event.
 ---@return _ProfileEventSummary[] # Each event name and its total time taken.
 ---@return table<string, _TimeRange[]> # All start/end ranges for each time the event was found.
 ---
-function _P.get_totals(events)
+function _P.get_totals(events, predicate)
+    if not predicate then
+        predicate = function(_) return true end
+    end
+
     ---@type table<string, number>
     local totals = {}
 
@@ -69,7 +103,7 @@ function _P.get_totals(events)
     local ranges = {}
 
     for _, event in ipairs(events) do
-        if event.cat and event.cat == "function" then
+        if predicate(event) then
             local name = event.name
             totals[name] = (totals[name] or 0) + event.dur
 
@@ -99,7 +133,7 @@ end
 ---
 function M.get_profile_report(events, threshold)
     threshold = threshold or 20
-    local functions, ranges = _P.get_totals(events, {_PLUGIN_PREFIX})
+    local functions, ranges = _P.get_totals(events, _P.is_plugin_function)
     local counts = _P.get_function_counts(ranges)
 
     local slowest_functions = vim.fn.sort(functions, function(left, right)
@@ -108,6 +142,7 @@ function M.get_profile_report(events, threshold)
 
     local top_slowest = tabler.get_slice(slowest_functions, 1, threshold)
     local self_times = _P.get_self_times(top_slowest, ranges)
+    local lines = {}
 
     for _, entry in ipairs(top_slowest) do
         local name = entry.name
@@ -116,10 +151,10 @@ function M.get_profile_report(events, threshold)
         local total_time = entry.duration
 
         -- TODO: Make this better formatted, later
-        print(string.format("%s %s %s %s", count, total_time, self_time, name))
+        table.insert(lines, string.format("%s %s %s %s", count, total_time, self_time, name))
     end
 
-    return string.format("Total Time:\n")
+    return string.format("Total Time:\n%s", vim.fn.join(lines, "\n"))
 end
 
 local function main()
@@ -132,7 +167,7 @@ local function main()
     local raw_data = file:read("*a")
     file:close()
     local data = vim.json.decode(raw_data)
-    print(vim.inspect(M.get_profile_report(data)))
+    print(M.get_profile_report(data))
 end
 
 main()
