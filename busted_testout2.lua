@@ -43,12 +43,12 @@ end
 ---@param options busted.MultiRunnerOptions? The settings to apply to the runner.
 ---
 function _P.profile_and_run(profiler, runner, options)
-    local before = os.clock()
+    local before = vim.uv.hrtime()
     profiler.start("*")
     _P.run_busted_suite(runner, options)
     profiler.stop()
 
-    return os.clock() - before
+    return vim.uv.hrtime() - before
 end
 
 --- Remove any caches that would prevent us from running busted multiple times.
@@ -155,6 +155,7 @@ local function main()
     profiler.ignore("busted*")
     -- TODO: Replace name here later
     profiler.ignore("busted_testout2*")
+
     run_tests(profiler, release, root, 10)
 end
 
