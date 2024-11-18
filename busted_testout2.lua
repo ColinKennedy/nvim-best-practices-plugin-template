@@ -44,7 +44,7 @@ end
 ---
 function _P.profile_and_run(profiler, runner, options)
     local before = vim.uv.hrtime()
-    profiler.start("*")
+    profiler.start()
     _P.run_busted_suite(runner, options)
     profiler.stop()
 
@@ -110,7 +110,6 @@ local function run_tests(profiler, release, root, maximum_tries)
         error(string.format('Maximum tries must be 1-or-more. Got "%s".', maximum_tries), 0)
     end
 
-    local maximum_tries = 10
     local counter = maximum_tries
     local fastest_time = 2^1023
     local fastest_events = nil
@@ -155,6 +154,8 @@ local function main()
     profiler.ignore("busted*")
     -- TODO: Replace name here later
     profiler.ignore("busted_testout2*")
+
+    instrument("*")
 
     run_tests(profiler, release, root, 10)
 end
