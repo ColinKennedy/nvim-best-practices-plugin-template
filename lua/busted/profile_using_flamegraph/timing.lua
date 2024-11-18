@@ -164,6 +164,7 @@ local function main()
     -- {"tid":1,"ph":"X","ts":164155.201,"args":{"3":"Parameter \"É§elp\" cannot use action=\"store_true\".","2":1,"n":3},"dur":1.2000000000116,"cat":"function","pid":1,"name":"luassert.util.tinsert"},
     local path = "/tmp/directory/benchmarks/all/flamegraph.json"
     local file = io.open(path, "r")
+    if not file then error("STOP", 0) end
     local raw_data = file:read("*a")
     file:close()
     local data = vim.json.decode(raw_data)
