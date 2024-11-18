@@ -1,6 +1,17 @@
 ## TODO
-- Add a "suite" profiler event option. So there are events for describe blocks
- - Document how to get a flame graph from that output easily
+- Fix issue where logs are not profiling as expected
+ - Make a minimum repro, maybe
+- Document how to get a flame graph from that output easily
+- Make sure that we only copy to the all/ folder if the release tag is the
+latest of all tags
+ - e.g. flamegraph.json and profile.json
+
+- Change YYYY_MM_DD-vX.Y.Z to vX.Y.Z-YYYY_MM_DD
+
+- only copy to the all/ folder if it's the latest
+ - don't copy beta / alpha versions
+ - do copy vX.Y.Z.A version, if applicable
+- Add logging everywhere
 
 - A GitHub workflow that can keep in sync with main + add more commits
  - on a separate branch
