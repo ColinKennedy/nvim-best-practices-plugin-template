@@ -111,7 +111,7 @@ local function run_tests(profiler, release, root, maximum_tries)
     end
 
     local maximum_tries = 10
-    local counter = 10
+    local counter = maximum_tries
     local fastest_time = 2^1023
     local fastest_events = nil
 
