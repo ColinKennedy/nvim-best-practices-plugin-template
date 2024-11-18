@@ -1,4 +1,16 @@
--- Busted command-line runner
+--- Busted command-line runner
+---
+--- This page is a slight fork of
+--- https://github.com/lunarmodules/busted/blob/master/busted/runner.lua, which
+--- unfortunately is unusable because it is too strict for our needs.
+---
+---@module 'busted.multi_runner'
+---
+
+-- TODO: Docstring
+--- @class busted.MultiRunner A unittest suite runner.
+--- @class busted.MultiRunnerOptions The settings used to control how the runner executes the tests.
+
 
 local path = require 'pl.path'
 local tablex = require 'pl.tablex'
@@ -7,6 +19,10 @@ local utils = require 'busted.utils'
 local exit = require 'busted.compatibility'.exit
 local loadstring = require 'busted.compatibility'.loadstring
 
+--- Execute the test suite.
+---
+---@param options busted.MultiRunnerOptions The settings to apply to the runner.
+---
 return function(options)
   local isatty = io.type(io.stdout) == 'file' and term.isatty(io.stdout)
   options = tablex.update(require 'busted.options', options or {})

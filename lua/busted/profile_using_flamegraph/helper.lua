@@ -1,73 +1,18 @@
---- The module that handles writing graph and profile and timing data to-disk.
----
----@module 'busted.profile_using_flamegraph.helper'
----
+-- TODO: Docstring
 
-local constant = require("busted.profile_using_flamegraph.constant")
 local instrument = require("profile.instrument")
-local logging = require("plugin_template._vendors.aggro.logging")
-local numeric = require("busted.profile_using_flamegraph.numeric")
-local timing = require("busted.profile_using_flamegraph.timing")
 
----@class _GraphArtifact Summary data about a whole suite of profiler data.
----@field hardware _Hardware All computer platform details.
----@field versions _Versions All software / hardware metadata that generated `statistics`.
----@field statistics _Statistics Summary data about a whole suite of profiler data.
-
----@class _GnuplotData The data that we need to generate a graph, using gnuplot.
----@field data_getter fun(artifact: _GraphArtifact): number Grab the value to plot on the graph.
----@field data_path string The .dat file used to read x/y values for the graph.
----@field image_path string The output path where the .png graph will be written to.
----@field script_data string Gnuplot requires a script to generate the graph. This is the script's contents.
----@field script_path string The path on-disk where `script_data` is written to.
-
----@class _Hardware All computer platform details.
----@field cpu string The name of the CPU that was used when the profiler ran.
----@field platform string The architecture + OS that was used when the profiler ran.
-
----@class _NeovimFullVersion The output of Neovim's built-in `vim.version()` function.
----@field major number The breaking-change indicator.
----@field minor number The feature indicator.
----@field patch number The bug / fix indicator.
-
----@class _NeovimSimplifiedVersion A simple major, minor, patch trio.
----@field [1] number The major version.
----@field [2] number The minor version.
----@field [3] number The patch version.
-
----@class _Statistics Summary data about a whole suite of profiler data.
----@field mean number (1 + 2 + 3 + ... n) / count
----@field median number The exact middle value of all profile durations.
----@field standard_deviation number The amount of variation in the duration values.
----@field total number The total number of CPU time recorded over the profile.
-
----@class _Versions
----    All software / hardware metadata that generated `statistics`.
----@field lua string
----    The Lua version that was included with Neovim.
----@field neovim _NeovimFullVersion
----    The user's Neovim version that was used to make the profile results.
----@field release string
----    The version / release tag. e.g. `"v1.2.3"`.
----@field uv number
----    The libuv version that was included with Neovim.
-
-local _LOGGER = logging.get_logger("busted.profile_using_flamegraph.helper")
 local _P = {}
 local M = {}
 
 -- NOTE: The X-axis gets crowded if you include too many points so we cap it
 -- before it can get to that point
 --
-local _DEFAULT_MAXIMUM_ARTIFACTS = 35
+local _MAXIMUM_ARTIFACTS = 35
 
-local _FLAMEGRAPH_FILE_NAME = "flamegraph.json"
 local _PROFILE_FILE_NAME = "profile.json"
-local _TIMING_FILE_NAME = "timing.txt"
 
 local _MEAN_SCRIPT_TEMPLATE = [[
-set xlabel "Release"
-set ylabel "Nanoseconds (lower is better)"
 set xtics rotate
 set term png
 set output '%s'
@@ -75,8 +20,6 @@ plot "%s" using 2:xtic(1) title 'Mean' with lines linetype 1 linewidth 3
 ]]
 
 local _MEDIAN_SCRIPT_TEMPLATE = [[
-set xlabel "Release"
-set ylabel "Nanoseconds (lower is better)"
 set xtics rotate
 set term png
 set output '%s'
@@ -84,8 +27,6 @@ plot "%s" using 2:xtic(1) title 'Median' with lines linetype 1 linewidth 3
 ]]
 
 local _STD_SCRIPT_TEMPLATE = [[
-set xlabel "Release"
-set ylabel "(lower is better)"
 set terminal pngcairo enhanced font 'Arial,12' linewidth 2
 set xtics rotate
 set term png
@@ -98,120 +39,6 @@ local _PROCESSOR = vim.uv.cpu_info()[1].model
 
 local unpack = table.unpack or unpack
 
---- Check if `tag` matches at least one of `patterns`.
----
----@param tag string Any text to check.
----@param patterns string[] All regex paterns to search for. e.g. `{"foo.*bar", "thing"}`.
----@return boolean # If found, return `true`.
----
-function _P.is_allowed_tag(tag, patterns)
-    for _, pattern in ipairs(patterns) do
-        if tag:match(pattern) then
-            return true
-        end
-    end
-
-    return false
-end
-
---- Check if `release` is a greater version number than everything in `root`.
----
---- Most of the time this function returns `true`. But if a user is
---- back-patching a version this might return `false`.
----
----@param release number[] A major / minor / patch. e.g. "v1.2.3" would be `{1, 2, 3}`.
----@param root string The directory on-disk where past releases live.
----@return boolean # If `release` is an earlier release number, return `false`.
----
-function _P.is_latest_version(release, root)
-    for _, directory in ipairs(_P.get_directories(root)) do
-        local full_name = vim.fs.basename(directory)
-        local version = _P.get_version_from_directory_name(full_name)
-
-        if _P.compare_number_arrays(version, release) == 1 then
-            return false
-        end
-    end
-
-    return true
-end
-
---- Check if `version` is not meant to be directly used to users.
----
----@param version string A full version tag, e.g. `"v1.2.3"`.
----@return boolean # If `"v1.2.3"` return `true`. If `"v4.5.6-beta.1"`, return `false`.
----
-function _P.is_stable_release(version)
-    for _, word in ipairs({ "-alpha", "-beta", "-rc" }) do
-        if string.match(version, word) then
-            return false
-        end
-    end
-
-    return true
-end
-
----@return string[] # Get the allowes tags that may write to disk. e.g. `{"foo.*bar", "thing"}`.
-function _P.get_allowed_tags_from_environment_variable()
-    return vim.fn.split(os.getenv("BUSTED_PROFILER_TAGGED_DIRECTORIES") or ".*", _TAG_SEPARATOR)
-end
-
---- Find all sub-directories starting at `root`.
----
---- Raises:
----     If `root` could not be read.
----
----@param root string The parent directory on-disk to search within.
----@return string[] # All found sub-directories, if any.
----
-function _P.get_directories(root)
-    local handler = vim.uv.fs_opendir(root)
-
-    if not handler then
-        error(string.format('Unable to list "%s" directory.', root), 0)
-    end
-
-    ---@type string[]
-    local output = {}
-
-    while true do
-        local entry = vim.uv.fs_readdir(handler)
-
-        if not entry then
-            break
-        end
-
-        if entry.type == "directory" then
-            table.insert(output, entry.name)
-        end
-    end
-
-    vim.uv.fs_closedir(handler)
-
-    return output
-end
-
---- Read `"/path/to/2024_08_23-11_03_01-v1.2.3/foo.bar"` for the date + time data.
----
---- If we couldn't find an expected set of date
----
----@param text string The absolute path to the date + time directory.
----@return number[] # All of the date information.
----
-function _P.get_directory_name_data(text)
-    local output = {}
-
-    for number_text in string.gmatch(text, "%d+") do
-        table.insert(output, tonumber(number_text))
-    end
-
-    if #output < 9 then
-        error(string.format('Text "%s" did not match "vMAJOR.MINOR.PATCH-YYYY_MM_DD-HH_MM_SS" pattern.', text), 0)
-    end
-
-    return output
-end
-
 --- Read all past profile / timing results into a single array.
 ---
 --- Raises:
@@ -221,12 +48,20 @@ end
 ---
 ---@param root string
 ---    An absolute path to the direct-parent directory. e.g. `".../benchmarks/all/artifacts".
----@param maximum number
+---@param maximum number?
 ---    The number of artifacts to read. If not provided, read all of them.
 ---@return _GraphArtifact[]
 ---    All found records so far, if any.
 ---
 function _P.get_graph_artifacts(root, maximum)
+    if maximum ~= nil then
+        if maximum < 1 then
+            error(string.format('Maximum "%s" must be >= 1', maximum), 0)
+        end
+    else
+        maximum = 2 ^ 40 -- NOTE: Just some arbitrary, really big number
+    end
+
     ---@type _GraphArtifact[]
     local output = {}
 
@@ -234,12 +69,9 @@ function _P.get_graph_artifacts(root, maximum)
 
     local all_paths = _P.get_sorted_datetime_paths(vim.fn.glob(template, false, true))
     local count = #all_paths
-
-    _LOGGER:fmt_debug('Writing "%s" artifacts.', count)
     local paths = _P.get_slice(all_paths, math.max(count - maximum + 1, 0), count)
 
     for index, path in ipairs(paths) do
-        _LOGGER:fmt_debug('Reading "%s" artifact.', path)
         local file = io.open(path, "r")
 
         if not file then
@@ -251,17 +83,13 @@ function _P.get_graph_artifacts(root, maximum)
         local success, result = pcall(vim.fn.json_decode, data)
 
         if not success then
-            error(
-                string.format('Path "%s" could not be read as JSON. Please fix! (Remove the broken directory)', path),
-                0
-            )
+            error(string.format('Path "%s" could not be read as JSON.', path), 0)
         end
 
         table.insert(output, result)
 
         if index >= maximum then
-            _LOGGER:fmt_info('We have reached the "%s" maximum value. All other artifacts will be ignored.', maximum)
-
+            -- TODO: Add logging
             return output
         end
     end
@@ -305,7 +133,6 @@ function _P.get_latest_neovim_version(artifacts)
         local simplified_version = _P.get_simple_version(version)
 
         if not output or _P.compare_number_arrays(simplified_version, output) == 1 then
-            _LOGGER:fmt_info('Found later "%s" Neovim version.', simplified_version)
             output = simplified_version
         end
     end
@@ -318,10 +145,10 @@ end
 --- Raises:
 ---     If `events` has no CPU time data.
 ---
----@param events profile.Event[]
+---@param events _ProfileEvent[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
----@return profile.Event
+---@return _ProfileEvent
 ---    The found, latest event.
 ---
 function _P.get_latest_timed_event(events)
@@ -336,12 +163,50 @@ function _P.get_latest_timed_event(events)
     error("Unable to find a latest event.", 0)
 end
 
+--- Find the exact middle value of all profile durations.
+---
+---@param values number[] All of the values to considered for the median.
+---@return number # The found middle value.
+---
+function _P.get_median(values)
+    -- Sort the numbers in ascending order
+    values = vim.fn.sort(values)
+    local count = #values
+
+    if count % 2 == 1 then
+        return values[math.ceil(count / 2)]
+    end
+
+    local middle_left_index = count / 2
+    local middle_right_index = middle_left_index + 1
+
+    return (values[middle_left_index] + values[middle_right_index]) / 2
+end
+
+--- Read `"/path/to/2024_08_23-11_03_01/foo.bar"` for the date + time data.
+---
+---@param path string The absolute path to a file. Its parent directory has date + time data.
+---@return number[] # All of the date information.
+---
+function _P.get_parent_directory_name_data(path)
+    local text = vim.fn.fnamemodify(vim.fn.fnamemodify(path, ":h"), ":t")
+
+    local output = {}
+
+    for number_text in string.gmatch(text, "%d+") do
+        table.insert(output, tonumber(number_text))
+    end
+
+    if #output < 6 then
+        error(string.format('Text "%s" did not match "YYYY_MM_DD-vMAJOR.MINOR.PATCH" pattern.', text), 0)
+    end
+
+    return output
+end
+
 --- Summarize all of `events` (get the mean, median, etc).
 ---
---- Raises:
----     If `events` is empty.
----
----@param events profile.Event[]
+---@param events _ProfileEvent[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
 ---@return _Statistics
@@ -357,27 +222,17 @@ function _P.get_profile_statistics(events)
     local sum = 0
 
     for _, event in ipairs(events) do
-        if event.cat == constant.Category.test then
+        if event.cat == "test" then
             local duration = event.dur
             table.insert(durations, duration)
             sum = sum + duration
         end
     end
 
-    if vim.tbl_isempty(durations) then
-        error(
-            string.format(
-                'Durations is empty. Event count is "%s". Cannot continue.',
-                #events
-            ),
-            0
-        )
-    end
-
     local last_event = _P.get_latest_timed_event(events)
 
     return {
-        median = numeric.get_median(durations),
+        median = _P.get_median(durations),
         mean = sum / #durations,
         total = last_event.ts + last_event.dur,
         standard_deviation = _P.get_standard_deviation(durations),
@@ -433,8 +288,8 @@ function _P.get_sorted_datetime_paths(paths)
         end
 
         return _P.compare_number_arrays(
-            _P.get_directory_name_data(vim.fs.dirname(left)),
-            _P.get_directory_name_data(vim.fs.dirname(right))
+            _P.get_parent_directory_name_data(left),
+            _P.get_parent_directory_name_data(right)
         )
     end)
 end
@@ -467,38 +322,6 @@ function _P.get_standard_deviation(values, mean)
     local variance = squared_diff_sum / count
 
     return math.sqrt(variance)
-end
-
----@return number? # The number of (slowest function) entries to write in the output.
-function _P.get_timing_threshold()
-    local text = os.getenv("BUSTED_PROFILER_TIMING_THRESHOLD")
-
-    if not text then
-        return nil
-    end
-
-    local value = tonumber(text)
-
-    if not value or math.floor(value) ~= value then
-        error(string.format('Invalid timing threshold. Got "%s" expected an integer.', text), 0)
-    end
-
-    return value
-end
-
---- Get version major / minor / patch details from a `version` text.
----
----@param version string Any version text. e.g. `"v1.2.3"`.
----@return number[] # All found version details.
----
-function _P.get_version_numbers(version)
-    local output = {}
-
-    for value in version:gmatch("%d+") do
-        table.insert(output, value)
-    end
-
-    return output
 end
 
 --- Make `version` into something more human-readable.
@@ -544,7 +367,7 @@ function _P.compare_number_arrays(left, right)
         return 1 -- left is greater because it has more elements
     end
 
-    return 0
+    return 1
 end
 
 --- Copy `source` file on-disk to the `destination` directory.
@@ -558,8 +381,6 @@ end
 ---@param destination string A directory to copy into. e.g. `"/fizz"`.
 ---
 function _P.copy_file_to_directory(source, destination)
-    _LOGGER:fmt_info('Copying "%s" source to "%s" destination.', source, destination)
-
     local source_file = io.open(source, "r")
 
     if not source_file then
@@ -618,7 +439,10 @@ function _P.validate_release(version)
     local pattern = "^v%d+%.%d+%.%d+$"
 
     if not string.match(version, pattern) then
-        error(string.format('Version "%s" is invalid. Expected Semantic Versioning. See semver.org.', version), 0)
+        error(
+            string.format('Version "%s" is invalid. Expected Semantic Versioning. See semver.org for details.', version),
+            0
+        )
     end
 end
 
@@ -645,14 +469,12 @@ end
 --- Export `profile` to `path` as a new profiler flamegraph.
 ---
 ---@param profiler Profiler The object used to record function call times.
----@param events profile.Event[] The events to write to-disk.
 ---@param path string An absolute path to a flamegraph.json to create.
 ---
-function _P.write_flamegraph(profiler, events, path)
-    _LOGGER:fmt_info('Writing flamegraph to "%s" path.', path)
+function _P.write_flamegraph(profiler, path)
     _P.make_parent_directory(path)
 
-    profiler.export(path, events)
+    profiler.export(path)
 end
 
 --- Create the gnuplot line-graphs.
@@ -706,7 +528,8 @@ function _P.write_gnuplot_images(artifacts, graphs)
     end
 end
 
---- Create the `"benchmarks/all/artifacts/{VERSION_TAG-YYYY_MM_DD-HH_MM_SS}"` directory.
+
+--- Create the `"benchmarks/all/artifacts/{YYYY_MM_DD-VERSION_TAG}"` directory.
 ---
 ---@param release string
 ---    The current release to make. e.g. `"v1.2.3"`.
@@ -714,33 +537,25 @@ end
 ---    The object used to record function call times.
 ---@param root string
 ---    The ".../benchmarks/all" directory to create or update.
----@param events profile.Event[]
+---@param events _ProfileEvent[]?
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
 ---@return string
 ---    An absolute path to the created flamegraph.json file.
 ---@return string
----    An absolute path to the created profile.json file.
----@return string
----    An absolute path to the created timing.txt file.
----@return string
----    The contents of the timing.txt file.
+---    An absolute path to the created profile.json.
 ---
 function _P.write_graph_artifact(release, profiler, root, events)
-    _LOGGER:info("Writing date-time profiler directory data.")
-    local directory = vim.fs.joinpath(root, string.format("%s-%s", release, os.date("%Y_%m_%d-%H_%M_%S")))
+    local directory = vim.fs.joinpath(root, string.format("%s-%s", os.date("%Y_%m_%d-%H_%M_%S"), release))
     vim.fn.mkdir(directory, "p")
 
-    local flamegraph_path = vim.fs.joinpath(directory, _FLAMEGRAPH_FILE_NAME)
-    _P.write_flamegraph(profiler, events, flamegraph_path)
+    local flamegraph_path = vim.fs.joinpath(directory, "flamegraph.json")
+    _P.write_flamegraph(profiler, flamegraph_path)
 
     local profile_path = vim.fs.joinpath(directory, _PROFILE_FILE_NAME)
-    _P.write_profile_summary(release, events, profile_path)
+    _P.write_profile_summary(release, profile_path, events)
 
-    local timing_path = vim.fs.joinpath(directory, _TIMING_FILE_NAME)
-    local timing_text = _P.write_timing(events, timing_path)
-
-    return flamegraph_path, profile_path, timing_path, timing_text
+    return flamegraph_path, profile_path
 end
 
 --- Create the gnuplot line-graphs.
@@ -764,8 +579,6 @@ function _P.write_graph_images(artifacts, root)
     local std_data_path
     local std_image_path = vim.fs.joinpath(root, "standard_deviation.png")
     local std_script_path
-
-    -- TODO: Make sure these images are in the README.md file
 
     if keep then
         mean_data_path = vim.fs.joinpath(root, "_mean.dat")
@@ -815,21 +628,17 @@ function _P.write_graph_images(artifacts, root)
         -- TODO: Add a "all combined" graph here
     }
 
-    local success, message = pcall(_P.write_gnuplot_images, artifacts, graphs)
+    local success, _ = pcall(_P.write_gnuplot_images, artifacts, graphs)
 
     if not keep then
-        _LOGGER:fmt_debug('Deleting temporary files from "%s" graphs.', graphs)
         _P.delete_gnuplot_paths(graphs, { "data_path", "script_path" })
     end
 
     if not success then
         if not keep then
-            _LOGGER:fmt_debug('Failed to write images. Deleting "%s" graphs.', graphs)
             _P.delete_gnuplot_paths(graphs, { "image_path" })
         end
 
-        _LOGGER:error("Error found while writing gnuplot graphs. The message is below.")
-        _LOGGER:error(message)
         error("Failed to write all gnuplot graphs. Rolling back all files.", 0)
     end
 
@@ -843,14 +652,13 @@ end
 ---
 ---@param release string
 ---    The current release to make. e.g. `"v1.2.3"`.
----@param events profile.Event[]
----    All of the profiler event data to consider. If no events are given, we
----    will use the global profiler's events instead.
 ---@param path string
 ---    An absolute path to the ".../benchmarks/all/profile.json" to create.
+---@param events _ProfileEvent[]?
+---    All of the profiler event data to consider. If no events are given, we
+---    will use the global profiler's events instead.
 ---
-function _P.write_profile_summary(release, events, path)
-    _LOGGER:fmt_info('Writing profile summary to "%s" path.', path)
+function _P.write_profile_summary(release, path, events)
     _P.make_parent_directory(path)
 
     local file = io.open(path, "w")
@@ -869,11 +677,11 @@ function _P.write_profile_summary(release, events, path)
             release = release,
             uv = vim.uv.version(),
         },
-        statistics = _P.get_profile_statistics(events),
+        statistics = _P.get_profile_statistics(events or instrument.get_events()),
         hardware = { cpu = cpu, platform = vim.loop.os_uname().sysname },
     }
 
-    file:write(vim.json.encode(data))
+    file:write(vim.fn.json_encode(data))
     file:close()
 
     return data
@@ -889,9 +697,8 @@ end
 ---@param artifacts _GraphArtifact[] All found profile record events so far, if any.
 ---@param graphs _GnuplotData[] All of the graphs that were written to-disk.
 ---@param path string The path on-disk to write the README.md to.
----@param timing_text string The contents of the timing.txt file.
 ---
-function _P.write_summary_readme(artifacts, graphs, path, timing_text)
+function _P.write_summary_readme(artifacts, graphs, path)
     _P.make_parent_directory(path)
 
     local file = io.open(path, "w")
@@ -925,15 +732,10 @@ In the graph and data below, lower numbers are better
             )
         end
 
-        file:write(string.format('<p align="center"><img src="%s"/></p>\n\n', vim.fs.basename(graph.image_path)))
+        file:write(string.format('<p align="center"><img src="%s"/></p>\n', vim.fs.basename(graph.image_path)))
     end
 
-
-    file:write(string.format("\n\n## Most Recent Timing\n\n```\n%s\n```\n\n", timing_text))
-
     file:write([[
-
-## Past Runs
 
 | Release | Platform | CPU | Neovim | Total | Median | Mean | StdDev |
 |---------|----------|-----|--------|-------|--------|------|--------|
@@ -956,25 +758,6 @@ In the graph and data below, lower numbers are better
     end
 end
 
---- TODO: Docstring
----@param events profile.Event[]
----@param path string
----@return string
-function _P.write_timing(events, path)
-    _LOGGER:fmt_info('Writing "%s" timing file.', path)
-    local file = io.open(path, "w")
-
-    if not file then
-        error(string.format('Path "%s" could not be written.', path), 0)
-    end
-
-    local text = timing.get_profile_report_as_text(events, {thresold=_P.get_timing_threshold()})
-    file:write(text)
-    file:close()
-
-    return text
-end
-
 --- Get all input data needed for us to run + save flamegraph data to-disk.
 ---
 --- Raises:
@@ -983,7 +766,7 @@ end
 ---@return string # The absolute directory on-disk where flamegraph info will be written.
 ---@return string # The version to write to-disk. e.g. `"v1.2.3"`.
 ---
-function M.get_environment_variable_data()
+function M.parse_input_arguments()
     local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
 
     if not root then
@@ -1022,7 +805,7 @@ end
 ---
 --- - all/
 ---     - artifacts/
----         - {VERSION_TAG-YYYY_MM_DD-HH_MM_SS}/
+---         - {YYYY_MM_DD-VERSION_TAG}/
 ---             - flamegraph.json
 ---             - profile.json
 ---     - README.md
@@ -1032,220 +815,28 @@ end
 ---     - profile.json - The latest release's total time, self time, etc
 ---     - *.png - Profiler-related line-graphs
 ---
---- Raises:
----    If an invalid `maximum` is given.
----
 ---@param release string
 ---    The current release to make. e.g. `"v1.2.3"`.
 ---@param profiler Profiler
 ---    The object used to record function call times.
 ---@param root string
 ---    The ".../benchmarks/all" directory to create or update.
----@param events profile.Event[]?
+---@param events _ProfileEvent[]?
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
----@param maximum number?
----    A 1-or-more value. The number of samples to collect for graphing. If
----    there are more samples than `maximum` allows, the later smples are
----    preferred. Note: It is unwise to set this number higher than the default
----    (35). Experimentation showed that the X-axis of the graph becomes
----    unreadable after 35.
 ---
-function M.write_summary_directory(release, profiler, root, events, maximum)
-    _LOGGER:fmt_info('Now writing profiler "%s" results to "%s" path.', release, root)
-    maximum = maximum or _DEFAULT_MAXIMUM_ARTIFACTS
-
-    if maximum < 1 then
-        error(string.format('Maximum "%s" must be >= 1.', maximum), 0)
-    end
-
+function M.write_all_summary_directory(release, profiler, root, events)
     local artifacts_root = vim.fs.joinpath(root, "artifacts")
-    events = events or instrument.get_events()
-    local flamegraph_path, profile_path, timing_path, timing_text = _P.write_graph_artifact(
-        release,
-        profiler,
-        artifacts_root,
-        events
-    )
+    local flamegraph_path, profile_path = _P.write_graph_artifact(release, profiler, artifacts_root, events)
     local readme_path = vim.fs.joinpath(root, "README.md")
 
-    local artifacts = _P.get_graph_artifacts(artifacts_root, maximum)
+    local artifacts = _P.get_graph_artifacts(artifacts_root, _MAXIMUM_ARTIFACTS)
 
-    if vim.tbl_isempty(artifacts) then
-        error(string.format('Path "%s" has no artifacts that we can use.', root), 0)
-    end
-
-    if _P.is_stable_release(release) and _P.is_latest_version(_P.get_version_numbers(release), artifacts_root) then
-        _LOGGER:fmt_info('Copying "%s" release to "%s" path.', release, root)
-        _P.copy_file_to_directory(flamegraph_path, root)
-        _P.copy_file_to_directory(profile_path, root)
-        _P.copy_file_to_directory(timing_path, root)
-    else
-        _LOGGER:fmt_warning(
-            'Release "%s" is not the latest, stable version. We skipped copying to the "%s" root directory.',
-            release,
-            root
-        )
-    end
+    _P.copy_file_to_directory(flamegraph_path, root)
+    _P.copy_file_to_directory(profile_path, root)
 
     local graphs = _P.write_graph_images(artifacts, root)
-    _P.write_summary_readme(artifacts, graphs, readme_path, timing_text)
-end
-
---- Write all files for the "benchmarks/tags" directory.
----
---- The basic directory structure looks like this:
----
---- - tags/
----     - {tag_name_here}/
----         - artifacts/
----             - {VERSION_TAG-YYYY_MM_DD-HH_MM_SS}/
----                 - flamegraph.json
----                 - profile.json
----         - README.md
----             - Show the graph of the output, across versions
----             - A table summary of the timing
----         - flamegraph.json
----         - profile.json - The latest release's total time, self time, etc
----         - *.png - Profiler-related line-graphs
----
---- Raises:
----    If an invalid `maximum` is given.
----
----@param release string
----    The current release to make. e.g. `"v1.2.3"`.
----@param profiler Profiler
----    The object used to record function call times.
----@param root string
----    The ".../benchmarks/all" directory to create or update.
----@param events profile.Event[]?
----    All of the profiler event data to consider. If no events are given, we
----    will use the global profiler's events instead.
----@param maximum number?
----    A 1-or-more value. The number of samples to collect for graphing. If
----    there are more samples than `maximum` allows, the later smples are
----    preferred. Note: It is unwise to set this number higher than the default
----    (35). Experimentation showed that the X-axis of the graph becomes
----    unreadable after 35.
----
-function M.write_tags_directory(release, profiler, root, events, maximum)
-    ---@param event profile.Event
-    ---@return boolean
-    function _P.is_test_end(event)
-        return event.cat == constant.Category.test
-    end
-
-    ---@param event profile.Event
-    ---@return boolean
-    function _P.is_test_start(event)
-        return event.cat == constant.Category.start
-    end
-
-    ---@param events profile.Event[]
-    ---@return table<string, profile.Event[]>
-    function _P.get_events_by_tag(events)
-        ---@type table<string, profile.Event[]>
-        local output = {}
-
-        --- NOTE: Though extremely rare, it's possible to test a test within a test.
-        ---@type string[]
-        local test_stack = {}
-
-        ---@type string[]
-        local tag_stack = {}
-
-        ---@type profile.Event[]
-        local events_buffer = {}
-
-        for _, event in ipairs(vim.fn.sort(events, function(left, right) return left.ts < right.ts end)) do
-            if _P.is_test_start(event) then
-                table.insert(test_stack, event.name)
-                local tags = _P.get_tags(event.name)
-                table.insert(tag_stack, tags)
-            elseif _P.is_test_end(event) then
-                local test_name = test_stack[#test_stack]
-
-                if event.name ~= test_name then
-                    error(
-                        string.format(
-                            'Something went wrong. Expected "%s" test but got "%s".',
-                            test_name,
-                            event.name
-                        ),
-                        0
-                    )
-                end
-
-                table.remove(test_stack)
-                ---@type string[]
-                local current_tags = table.remove(tag_stack)
-
-                for _, tag in ipairs(current_tags) do
-                    output[tag] = output[tag] or {}
-                    vim.list_extend(output[tag], events_buffer)
-                    table.insert(output[tag], event)
-                end
-
-                events_buffer = {}
-            else
-                table.insert(events_buffer, event)
-            end
-        end
-
-        return output
-    end
-
-    ---@param text string
-    ---@return string[]
-    function _P.get_tags(text)
-        ---@type string[]
-        local output = {}
-
-        for tag in string.gmatch(text, "#([^#%s]+)") do
-            table.insert(output, tag)
-        end
-
-        return output
-    end
-
-    -- TODO: Add logic to delete artifacts that are out of date / no longer apply
-    -- e.g. a user deletes a unittest - that tag's work should be deleted
-
-    _LOGGER:fmt_info('Now writing profiler "%s" tag results to "%s" path.', release, root)
-    events = events or instrument.get_events()
-    local events_by_tag = _P.get_events_by_tag(events)
-
-    ---@type string[]
-    local created_directories = {}
-
-    local allowed_tags = _P.get_allowed_tags_from_environment_variable()
-
-    for tag, events_ in pairs(events_by_tag) do
-        if _P.is_allowed_tag(tag, allowed_tags) and not vim.tbl_isempty(events_) then
-            local directory = vim.fs.joinpath(root, tag)
-            M.write_summary_directory(release, profiler, directory, events_, maximum)
-            table.insert(created_directories, directory)
-        end
-    end
-
-    if os.getenv("BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES") ~= "1" then
-        for _, path in ipairs(vim.fn.glob(vim.fs.joinpath(root, "*"), false, true)) do
-            if not vim.tbl_contains(created_directories, path) then
-                -- NOTE: `path` is old. For one of these reasons
-                --
-                -- 1. The user no longer uses the tag (all tests that used it
-                --    were deleted or renamed).
-                -- 2. The unittests still exist but the user changed `allowed_tags`.
-                --    So the tag was ignored.
-                --
-                -- Rather than keep old data around that isn't used
-                -- anymore, we delete the directory instead.
-                --
-                _LOGGER:fmt_info('Deleting "%s" directory.', path)
-                vim.fn.delete(path, "d")
-            end
-        end
-    end
+    _P.write_summary_readme(artifacts, graphs, readme_path)
 end
 
 return M
