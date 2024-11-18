@@ -1,46 +1,31 @@
+- Create a CPU cycle counter. Incorporate it
+
+
 ## TODO
-- Do TODO notes
-
-- /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/busted/multi_runner.lua
- - document to users that they can send any busted call to this runner
-
-- Document all of the environment variables
-BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH
-BUSTED_PROFILER_FLAMEGRAPH_VERSION
-BUSTED_PROFILER_KEEP_TEMPORARY_FILES
-BUSTED_PROFILER_TAGGED_DIRECTORIES
-BUSTED_PROFILER_TIMING_THRESHOLD
-BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES
-
-- Make a minimum repro explaining why profiler.nvim is not working as expected
-    - Make sure thet the flamegraph is outputting correctly. It seems that
-      plugin_template functions are far fewer than expectged
-
-- Document how to get a flame graph from that output easily
-
-- Replace my profiler fork with the other one
-- Allow the timing output to be a GitHub-style table
-
 - A GitHub workflow that can keep in sync with main + add more commits
  - on a separate branch
- - A dedicated git branch called profiling
-    - It is up to date with main at all times
- - Consider Allowing the summary page in the main branch to exist - but only as a link / reference to the images that are in the other branch
-    - e.g. Get the URL to the other branch and copy the data into the main branch. Or something
 
 https://github.com/lunarmodules/busted/blob/94d008108b028817534047b44fdb1f7f7ca0dcc3/busted/runner.lua#L215-L217
-
-- TODO: IMPORTANT: @colin-k profile.nvim changes
- - pid
- - tid
- - Added `events` to profile.export
- - Any other changes
 
 https://github.com/AcademySoftwareFoundation/rez/blob/main/.github/scripts/store_benchmark.py
 
 - It should output this:
-
-
+    - A dedicated git branch called profiling
+        - It is up to date with main at all times
+    - Consider Allowing the summary page in the main branch to exist - but only as a link / reference to the images that are in the other branch
+        - e.g. Get the URL to the other branch and copy the data into the main branch. Or something
+    - benchmarks/
+        - busted/
+            - all/
+                - artifacts/
+                    - {YYYY_MM_DD-VERSION_TAG}/
+                        - Contains their own README.md + summary.json
+                - README.md
+                    - Show the graph of the output, across versions
+                    - A table summary of the timing
+                - flamegraph.json
+                - profile.json - total time, self time, etc information here
+                - timing.png
             - by_release/
                 - {UUID}-test_name_with_invalid_characters_replaced/ (generate a UUID for each busted test)
                     - (Use md5.lua to generate the UUID)
@@ -56,9 +41,24 @@ https://github.com/AcademySoftwareFoundation/rez/blob/main/.github/scripts/store
                   generated UUIDs with the folder. Any folder name that isn't
                   found mustve been removed. So it gets deleted. like that
 
+    - A summary view of all past releases
+    - Detailed information
+
+
+- Need to find a way to run unittests as "get the best time of 10 consecutive runs"
+    - Test the runs-remaining to 10
+    - run a suite
+        - If it's faster than the previous run, reset the runs-remaining to 10
+        - If slower, decrement the runs-remaining by 1
+    - If runs-remaining is 0, that's the final statistics
+    - We need this to be able to compute timing while the CPU cache is hot
+    - Make this above behavior configurable. e.g. `testing_method = "consecutive-10"` vs `testing_method = "normal"`
+
 
 ## Profiling
 - Profiling
+ - flamegraph
+ - timing
   - write results to a separate branch on each PR/release
    - https://github.com/orgs/community/discussions/24567
     - On PR, warn over a certain threshold
@@ -70,14 +70,33 @@ https://github.com/AcademySoftwareFoundation/rez/blob/main/.github/scripts/store
 ### TODO Later
 Find a way to not need to inline md5.lua (get it from luarocks, instead)
 
+- Create a GitHub workflow that genberate
 - Create a make command that creates the flame graph to a file path (have a default path if not provided)
 
-- Document how the user should create profiles / view flamegraph results to view it
 
-- On PR, make a GitHub workflow that errors if a threshold is met (10%)
+- Ask busted maintainers how to get a name for a test if it is in a nested describe block
 
-- In GitHub workflows, make sure to print out the top 20 slowest, as part of the steps
 
+- Create flame graph
+    - Document how the user should to view it
+
+- Show timing / graph output of past runs
+    - Creates per-file JSON information
+    - Creates a graphviz showing the slowest tests, or something
+
+    - Create a GitHub workflow runs on-release
+    - On PR, make a GitHub workflow that errors if a threshold is met (10%)
+
+- In GitHub workflows, make sure to print out statistics as part of the steps
+
+
+https://github.com/hishamhm/busted-htest/blob/master/src/busted/outputHandlers/htest.lua
+https://github.com/stevearc/profile.nvim/blob/master/lua/profile/instrument.lua
+
+
+- Add a "whole suite" profiler option
+ - Document how to get a flame graph from that output easily
+ - Maybe also print to the terminal so that users in GitHub actions can read it in the output logs
 - Add a thing that times the unittests and notifies if the code is much slower
  - maybe make it ignore feat() commits?
 
