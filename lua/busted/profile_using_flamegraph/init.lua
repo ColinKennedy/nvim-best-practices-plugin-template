@@ -78,7 +78,14 @@ local profile = require("profile")
 ---@class busted.Handler
 
 ---@type table<string, number>
+local _DESCRIBE_CACHE = {}
+
+---@type string[]
+local _DESCRIBE_STACK = {}
+
+---@type table<string, number>
 local _FILE_CACHE = {}
+
 ---@type table<string, number>
 local _TEST_CACHE = {}
 
@@ -86,6 +93,11 @@ local _TEST_CACHE = {}
 local _NAME_STACK = {}
 
 local _P = {}
+
+---@return string # The found test name (of all `describe` blocks).
+function _P.get_current_describe_path()
+    return vim.fn.join(_DESCRIBE_STACK, " ")
+end
 
 ---@return string # The found test name (of all `describe` + `it` blocks).
 function _P.get_current_test_path()
@@ -155,10 +167,29 @@ return function(options)
     ---@param describe busted.Element The starting file.
     handler.describeStart = function(describe)
         table.insert(_NAME_STACK, describe.name)
+        table.insert(_DESCRIBE_STACK, describe.name)
+
+        _DESCRIBE_CACHE[_P.get_current_describe_path()] = clock()
     end
 
     handler.describeEnd = function()
         table.remove(_NAME_STACK)
+
+        local name = _P.get_current_describe_path()
+        local start = _DESCRIBE_CACHE[name]
+        local duration = clock() - start
+        instrument.add_event({
+            name = name,
+            args = {},
+            cat = "test",
+            ph = "X",
+            ts = start,
+            dur = duration,
+        })
+
+        _DESCRIBE_CACHE[name] = nil
+
+        table.remove(_DESCRIBE_STACK)
     end
 
     ---@param file busted.Element The starting file.
