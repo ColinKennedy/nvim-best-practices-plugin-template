@@ -9,51 +9,24 @@ BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3
 
 BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l busted_testout2.lua
 
-LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
-
-LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
-
-LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_TAGGED_DIRECTORIES="simple" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
+LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l busted_testout2.lua
 
 eog /tmp/directory/benchmarks/all/median.png
 
-- Check if the new logger setup has caused start-up to become slow. If so, fix it
-
 - Do the TODO_profiler.md work
 - Do all current branch (add_profiling) TODO notes
-    - Can I just use the regular profile.lua module? Do I need the fork?
-- Fix the URL to luarocks link to show the other location
-- Mention the Google "release please" workflow in the README.md
-    - Explain releases in the Wiki
 
-- Add documentation on setting up renovate
- - Add details on how to delete renovate (remove the .json file)
 
-- release URLs should ignore the diff URL because, on release pages, that diff
-  URL will always be broken. It's a false negative, basisically. Example:
- - https://github.com/ColinKennedy/cursor-text-objects.nvim/pull/6
+Running busted more than once doesn't work because the runner returns nothing on the 2+ run.
 
 
 ## Miscellaneous
-- Update instrucdtions to include cli_subcommand.lua
-- The instructions need to do a better job explaining how to remove the test spec files
-- missing information on how to set up release-please
-- Tell people to remove the CHANGELOG.md
+- Fix the URL to luarocks to show the other location
+- Mention the Google "release please" workflow in the README.md
+ - Explain releases in the Wiki
 
-Add better linting. selene?
-
-https://raw.githubusercontent.com/folke/lazydev.nvim/refs/heads/main/stylua.toml
-
-https://github.com/neovim/nvim-lspconfig/blob/master/selene.toml
-https://github.com/Kampfkarren/selene/issues/284
-
-https://kampfkarren.github.io/selene/
-Lua's simple syntax and efficient use of memory make it an ideal choice for scripting. What are the best Lua static analysis tools and linters? The most popular Lua tools ranked by user votes are: Mega-Linter, Sigrid, callGraph, luacheck, Luanalysis.
-
-
-- Replace the old vim class type names
-- Windows busted support
- - https://www.reddit.com/r/lua/comments/hainmo/am_i_retarded_or_luarocks_on_windows_is_this/
+- Add documentation on setting up renovate
+ - Add details on how to delete renovate (remove the .json file)
 
 - Consider adding LuaCov coverage reports. It could be a PR review tool?
 
