@@ -16,6 +16,7 @@ eog /tmp/directory/benchmarks/all/median.png
 - Do the TODO_profiler.md work
 - Do all current branch (add_profiling) TODO notes
 
+- Can I just use the regular profile.lua module? Do I need the fork?
 
 Running busted more than once doesn't work because the runner returns nothing on the 2+ run.
 
