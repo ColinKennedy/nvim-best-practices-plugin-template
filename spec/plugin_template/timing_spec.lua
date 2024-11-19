@@ -15,7 +15,7 @@ end
 -- TODO: Need a test for if there are really small differences between numbers (floating precision issues)
 
 -- TODO: Remove tag
-describe("self-time #asdf", function()
+describe("self-time", function()
     it("works with a leaf-event that's at the end of the events stack #range", function()
         _run_simple_test(
             {
@@ -29,7 +29,16 @@ describe("self-time #asdf", function()
     end)
 
     it("works with different threads and unsorted event data #threads", function()
-        -- TODO: Finish
+        _run_simple_test(
+            {
+                { cat="function", dur=10, name="outer_most", tid=1, ts=14 },
+                { cat="function", dur=6, name="other_thread", tid=2, ts=1 },
+                { cat="function", dur=2, name="first_child", tid=1, ts=4 },
+                { cat="function", dur=2, name="second_child", tid=1, ts=7 },
+                { cat="function", dur=2, name="another_event_that_is_past", tid=1, ts=11 },
+            },
+            {"1 10 6 outer_most"}
+        )
     end)
 
     it("works with no results #empty", function()
