@@ -15,20 +15,16 @@ eog /tmp/directory/benchmarks/all/median.png
 
 - Do the TODO_profiler.md work
 - Do all current branch (add_profiling) TODO notes
-
-- Can I just use the regular profile.lua module? Do I need the fork?
-
-Running busted more than once doesn't work because the runner returns nothing on the 2+ run.
-
-
-## Miscellaneous
+    - Can I just use the regular profile.lua module? Do I need the fork?
 - Fix the URL to luarocks to show the other location
 - Mention the Google "release please" workflow in the README.md
- - Explain releases in the Wiki
+    - Explain releases in the Wiki
 
 - Add documentation on setting up renovate
  - Add details on how to delete renovate (remove the .json file)
 
+## Miscellaneous
+- Windows busted support
 - Consider adding LuaCov coverage reports. It could be a PR review tool?
 
 ```
