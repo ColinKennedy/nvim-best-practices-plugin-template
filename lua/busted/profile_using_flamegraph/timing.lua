@@ -3,6 +3,7 @@
 ---@module 'busted.profile_using_flamegraph.timing'
 ---
 
+local self_timing = require("busted.profile_using_flamegraph.self_timing")
 local tabler = require("plugin_template._core.tabler")
 
 local _P = {}
@@ -44,22 +45,6 @@ function _P.is_plugin_function(event)
     return false
 end
 
---- Find out how many times a function was called.
----
----@param all_ranges table<string, _TimeRange[]> # Each event name and each of its calls.
----@return table<string, number> # Each function and the number of times it was called.
----
-function _P.get_function_counts(all_ranges)
-    ---@type table<string, number>
-    local output = {}
-
-    for name, ranges in pairs(all_ranges) do
-        output[name] = #ranges
-    end
-
-    return output
-end
-
 --- Find out how much time a function took to run.
 ---
 --- If a function calls another function, that function's inner time is
@@ -67,18 +52,87 @@ end
 --- which functions are actually slow and which functions are simply slow
 --- because they call other (slow) functions.
 ---
----@param events _ProfileEvent[] All of the profiler event data to consider.
+--- Important:
+---     This function expects `events` and `all_events` to be ascended-sorted!
+---
+---@param events _ProfileEvent[] All of the profiler event data to compute self-time for.
+---@param all_events _ProfileEvent[] All reference profiler event data.
 ---@return table<string, number> # Each event name and its computed self-time.
 ---
-function _P.get_self_times(events, ranges)
+function _P.get_self_times(events, all_events)
     ---@type table<string, number>
     local output = {}
 
-    for _, entry in ipairs(events) do
-        -- TODO: When computing self-time, make sure to account for floating point
-        -- / rounding errors
-        -- TODO: Replace with a real value later
-        output[entry.name] = 10
+    -- Let's explain what this is doing.
+    --
+    -- Each event log has a start time, labelled `ts`.
+    -- We assume that all events are sorted from the earliest to the latest start time.
+    --
+    -- - We then keep track of the **first** index that is **after** that start time
+    --     - We have to do this on a per-thread basis, to account for multi-threaded code
+    -- - For each event that we must compute self-time
+    --     - From the starting index, check each range until we find a range
+    --       that is just after the start time
+    --         - This range is a direct child of the event. We know this
+    --           because the ranges were **sorted in advance**.
+    --     - Search the ranges until we find a range that is beyond that previous range's end time.
+    --         - All previous ranges were function "calls-within-calls" and can be ignored
+    --             - Again, we can do this because ranges were **sorted in advance**
+    --     - Set the starting index to that later range's index
+    --     - Repeat with the next event. We use the new staring index to avoid
+    --       scanning all ranges from scratch again.
+    --
+    -- Using this technique, we find all direct children for all events. We
+    -- then subtract the direct child durations to compute each event's
+    -- self-time.
+
+    --- Each thread ID and the index to start searching within `ranges`.
+    ---@type table<number, number>
+    ---
+    local starting_indices = {}
+    local all_events_count = #all_events
+
+    for _, event in ipairs(vim.fn.sort(events, function(left, right) return left.ts < right.ts end)) do
+        ---@cast event _ProfileEvent
+
+        local starting_index = _P.get_next_starting_index(
+            event,
+            (starting_indices[event.tid] or 1),
+            all_events,
+            all_events_count
+        )
+
+        if starting_index == self_timing.NOT_FOUND_INDEX then
+            -- TODO: Add logging
+
+            -- NOTE: If we're on the very last event and there are no other events then it means
+            -- 1. We're on the very last call that was profiled.
+            -- 2. That last function is also a leaf function (it doesn't call anything else).
+            --
+            -- This should be a really rare occurrence. But could happen.
+            --
+            output[event.name] = event.dur
+        end
+
+        local event_end_time = event.ts + event.dur
+
+        -- TODO: Need to handle this part better. Somehow
+        while all_events[starting_index].ts < event_end_time do
+            local reference_event = all_events[starting_index]
+            local reference_event_end_time = reference_event.ts + reference_event.dur
+            local reference_thread_id = reference_event.tid
+
+            for index=starting_index + 1,all_events_count do
+                local next_reference_event = all_events[index]
+
+                if next_reference_event.tid == reference_thread_id and next_reference_event.ts > reference_event_end_time then
+                    starting_indices[reference_event.tid] = index
+                    starting_index = index
+
+                    break
+                end
+            end
+        end
     end
 
     return output
@@ -89,7 +143,8 @@ end
 ---@param events _ProfileEvent[] All of the profiler event data to consider.
 ---@param predicate (fun(event: _ProfileEvent): boolean)? Returns `true` to display an event.
 ---@return _ProfileEventSummary[] # Each event name and its total time taken.
----@return table<string, _TimeRange[]> # All start/end ranges for each time the event was found.
+---@return _ProfileEvent[] # All start/end ranges for each time the event was found.
+---@return table<string, number> # The number of times that each event was found.
 ---
 function _P.get_totals(events, predicate)
     if not predicate then
@@ -99,19 +154,18 @@ function _P.get_totals(events, predicate)
     ---@type table<string, number>
     local totals = {}
 
-    ---@type table<string, _TimeRange[]>
+    ---@type _ProfileEvent[]
     local ranges = {}
+
+    ---@type table<string, number>
+    local counts = {}
 
     for _, event in ipairs(events) do
         if predicate(event) then
             local name = event.name
             totals[name] = (totals[name] or 0) + event.dur
-
-            if not ranges[name] then
-                ranges[name] = {}
-            end
-
-            table.insert(ranges[name], { start = event.ts, ["end"] = event.ts + event.dur })
+            counts[name] = (counts[name] or 0) + 1
+            table.insert(ranges, event)
         end
     end
 
@@ -122,7 +176,7 @@ function _P.get_totals(events, predicate)
         table.insert(functions, {duration=total, name=name})
     end
 
-    return functions, ranges
+    return functions, ranges, counts
 end
 
 --- Print `events` as a summary.
@@ -133,15 +187,15 @@ end
 ---
 function M.get_profile_report(events, threshold)
     threshold = threshold or 20
-    local functions, ranges = _P.get_totals(events, _P.is_plugin_function)
-    local counts = _P.get_function_counts(ranges)
+    -- TODO: Remove ranges
+    local functions, ranges, counts = _P.get_totals(events, _P.is_plugin_function)
 
     local slowest_functions = vim.fn.sort(functions, function(left, right)
         return left.duration < right.duration
     end)
 
     local top_slowest = tabler.get_slice(slowest_functions, 1, threshold)
-    local self_times = _P.get_self_times(top_slowest, ranges)
+    local self_times = _P.get_self_times(top_slowest, slowest_functions)
     local lines = {}
 
     for _, entry in ipairs(top_slowest) do
