@@ -215,48 +215,56 @@ end
 ---
 ---@param events _ProfileEvent[] All of the profiler event data to consider.
 ---@param threshold number? A 1-or-more value. The "top slowest" functions to show.
----@return string # The generated report, in human-readable format.
+---@return string[] # The generated report, in human-readable format.
 ---
-function M.get_profile_report(events, threshold)
+function M.get_profile_report_lines(events, threshold, predicate)
+    predicate = predicate or _P.is_plugin_function
     threshold = threshold or 20
-    -- TODO: Remove ranges
-    local functions, ranges, counts = _P.get_totals(events, _P.is_plugin_function)
+    local functions, counts = _P.get_totals(events, predicate)
 
     local slowest_functions = vim.fn.sort(functions, function(left, right)
-        return left.duration < right.duration
+        return left.dur < right.dur
     end)
+
+    ---@cast slowest_functions _ProfileEvent[]
 
     local top_slowest = tabler.get_slice(slowest_functions, 1, threshold)
     local self_times = _P.get_self_times(top_slowest, slowest_functions)
-    local lines = {}
+    local output = {}
 
     for _, entry in ipairs(top_slowest) do
         local name = entry.name
         local count = counts[name]
         local self_time = self_times[name]
-        local total_time = entry.duration
+        local total_time = entry.ts + entry.dur
 
         -- TODO: Make this better formatted, later
-        table.insert(lines, string.format("%s %s %s %s", count, total_time, self_time, name))
+        table.insert(output, string.format("%s %s %s %s", count, total_time, self_time, name))
     end
+
+    return output
+end
+
+function M.get_profile_report_as_text(events, threshold)
+    local lines = M.get_profile_report_lines(events, threshold)
 
     return string.format("Total Time:\n%s", vim.fn.join(lines, "\n"))
 end
 
-local function main()
-    -- TODO: Remove this test later
-    -- local path = "/tmp/directory/benchmarks/all/artifacts/2024_11_18-00_16_00-v1.2.3/profile.json"
-    -- local path = "/tmp/directory/benchmarks/all/flamegraph.json"
-    -- {"tid":1,"ph":"X","ts":164155.201,"args":{"3":"Parameter \"É§elp\" cannot use action=\"store_true\".","2":1,"n":3},"dur":1.2000000000116,"cat":"function","pid":1,"name":"luassert.util.tinsert"},
-    local path = "/tmp/directory/benchmarks/all/flamegraph.json"
-    local file = io.open(path, "r")
-    if not file then error("STOP", 0) end
-    local raw_data = file:read("*a")
-    file:close()
-    local data = vim.json.decode(raw_data)
-    print(M.get_profile_report(data))
-end
-
-main()
+-- local function main()
+--     -- TODO: Remove this test later
+--     -- local path = "/tmp/directory/benchmarks/all/artifacts/2024_11_18-00_16_00-v1.2.3/profile.json"
+--     -- local path = "/tmp/directory/benchmarks/all/flamegraph.json"
+--     -- {"tid":1,"ph":"X","ts":164155.201,"args":{"3":"Parameter \"É§elp\" cannot use action=\"store_true\".","2":1,"n":3},"dur":1.2000000000116,"cat":"function","pid":1,"name":"luassert.util.tinsert"},
+--     local path = "/tmp/directory/benchmarks/all/flamegraph.json"
+--     local file = io.open(path, "r")
+--     if not file then error("STOP", 0) end
+--     local raw_data = file:read("*a")
+--     file:close()
+--     local data = vim.json.decode(raw_data)
+--     print(M.get_profile_report(data))
+-- end
+--
+-- main()
 
 return M
