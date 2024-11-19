@@ -45,6 +45,62 @@ function _P.is_plugin_function(event)
     return false
 end
 
+--- Find all child events of `event`.
+---
+--- This does not include childs-of-childs of `event`.
+---
+---@param event _ProfileEvent The event to get children for.
+---@param starting_index number The starting point to look for children. (Optimization).
+---@param starting_indices table<number, number> All of the indices across all threads (Optimization).
+---@param all_events _ProfileEvent[] All of the events to search for children.
+---@param all_events_count number? The (precomputed) size of `all_events`.
+---@return _ProfileEvent[] # The found children, if any.
+---
+function _P.get_direct_children(event, starting_index, starting_indices, all_events, all_events_count)
+    local event_end_time = event.ts + event.dur
+
+    ---@type _ProfileEvent[]
+    local children = {}
+
+    -- TODO: Need to handle this part better. Somehow
+    while all_events[starting_index].ts < event_end_time do
+        -- NOTE: Because we pre-sorted, we know that `reference_event` is
+        -- a direct child of `event`.
+        --
+        -- We now need to scan for more children.
+        --
+        local reference_event = all_events[starting_index]
+        local reference_event_end_time = reference_event.ts + reference_event.dur
+        local reference_thread_id = reference_event.tid
+
+        for index=starting_index + 1,all_events_count do
+            local next_reference_event = all_events[index]
+
+            if next_reference_event.tid == reference_thread_id and next_reference_event.ts > reference_event_end_time then
+                -- NOTE: We've found the start of the next child. Which means
+                -- every event index from the first `starting_index` to `index`
+                -- is a direct child or nested child of `event`.
+                --
+                starting_indices[reference_event.tid] = index
+                starting_index = index
+                table.insert(children, reference_event)
+
+                if next_reference_event.ts + next_reference_event.dur > event_end_time then
+                    -- NOTE: We've reached the end. The next event is
+                    -- completely outside of the original `event`.
+                    --
+                    return children
+                end
+
+                -- NOTE: We haven't reached the event's end yet. Keep looking for children.
+                break
+            end
+        end
+    end
+
+    return children
+end
+
 --- Find out how much time a function took to run.
 ---
 --- If a function calls another function, that function's inner time is
@@ -92,10 +148,10 @@ function _P.get_self_times(events, all_events)
     local starting_indices = {}
     local all_events_count = #all_events
 
-    for _, event in ipairs(vim.fn.sort(events, function(left, right) return left.ts < right.ts end)) do
+    for _, event in ipairs(vim.fn.sort(events, function(left, right) return left.ts > right.ts end)) do
         ---@cast event _ProfileEvent
 
-        local starting_index = _P.get_next_starting_index(
+        local starting_index = self_timing.get_next_starting_index(
             event,
             (starting_indices[event.tid] or 1),
             all_events,
@@ -114,25 +170,13 @@ function _P.get_self_times(events, all_events)
             output[event.name] = event.dur
         end
 
-        local event_end_time = event.ts + event.dur
+        local other_time = 0
 
-        -- TODO: Need to handle this part better. Somehow
-        while all_events[starting_index].ts < event_end_time do
-            local reference_event = all_events[starting_index]
-            local reference_event_end_time = reference_event.ts + reference_event.dur
-            local reference_thread_id = reference_event.tid
-
-            for index=starting_index + 1,all_events_count do
-                local next_reference_event = all_events[index]
-
-                if next_reference_event.tid == reference_thread_id and next_reference_event.ts > reference_event_end_time then
-                    starting_indices[reference_event.tid] = index
-                    starting_index = index
-
-                    break
-                end
-            end
+        for _, child in ipairs(_P.get_direct_children(event, starting_index, starting_indices, all_events, all_events_count)) do
+            other_time = other_time + child.dur
         end
+
+        output[event.name] = event.dur - other_time
     end
 
     return output
@@ -142,7 +186,6 @@ end
 ---
 ---@param events _ProfileEvent[] All of the profiler event data to consider.
 ---@param predicate (fun(event: _ProfileEvent): boolean)? Returns `true` to display an event.
----@return _ProfileEventSummary[] # Each event name and its total time taken.
 ---@return _ProfileEvent[] # All start/end ranges for each time the event was found.
 ---@return table<string, number> # The number of times that each event was found.
 ---
@@ -151,11 +194,8 @@ function _P.get_totals(events, predicate)
         predicate = function(_) return true end
     end
 
-    ---@type table<string, number>
-    local totals = {}
-
     ---@type _ProfileEvent[]
-    local ranges = {}
+    local output_events = {}
 
     ---@type table<string, number>
     local counts = {}
@@ -163,20 +203,12 @@ function _P.get_totals(events, predicate)
     for _, event in ipairs(events) do
         if predicate(event) then
             local name = event.name
-            totals[name] = (totals[name] or 0) + event.dur
             counts[name] = (counts[name] or 0) + 1
-            table.insert(ranges, event)
+            table.insert(output_events, event)
         end
     end
 
-    ---@type _ProfileEventSummary[]
-    local functions = {}
-
-    for name, total in pairs(totals) do
-        table.insert(functions, {duration=total, name=name})
-    end
-
-    return functions, ranges, counts
+    return output_events, counts
 end
 
 --- Print `events` as a summary.
