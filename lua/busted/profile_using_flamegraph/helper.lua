@@ -32,6 +32,7 @@ local instrument = require("profile.instrument")
 ---@field cat string The category of the profiler event. e.g. `"function"`, `"test"`, etc.
 ---@field dur number The length of CPU time needed to complete the event.
 ---@field name string The function call, file path, or other ID.
+---@field tid number The thread index number.
 ---@field ts number The start CPU time.
 
 ---@class _Statistics Summary data about a whole suite of profiler data.
@@ -103,6 +104,21 @@ function _P.is_latest_version(release, root)
         local version = _P.get_version_from_directory_name(full_name)
 
         if _P.compare_number_arrays(version, release) == 1 then
+            return false
+        end
+    end
+
+    return true
+end
+
+--- Check if `version` is not meant to be directly used to users.
+---
+---@param version string A full version tag, e.g. `"v1.2.3"`.
+---@return boolean # If `"v1.2.3"` return `true`. If `"v4.5.6-beta.1"`, return `false`.
+---
+function _P.is_stable_release(version)
+    for _, word in ipairs({"-alpha", "-beta", "-rc"}) do
+        if string.match(version, word) then
             return false
         end
     end
@@ -437,6 +453,21 @@ function _P.get_standard_deviation(values, mean)
     local variance = squared_diff_sum / count
 
     return math.sqrt(variance)
+end
+
+--- Get version major / minor / patch details from a `version` text.
+---
+---@param version string Any version text. e.g. `"v1.2.3"`.
+---@return number[] # All found version details.
+---
+function _P.get_version_numbers(version)
+    local output = {}
+
+    for value in version:gmatch("%d+") do
+        table.insert(output, value)
+    end
+
+    return output
 end
 
 --- Make `version` into something more human-readable.
@@ -946,9 +977,11 @@ function M.write_all_summary_directory(release, profiler, root, events)
 
     local artifacts = _P.get_graph_artifacts(artifacts_root, _MAXIMUM_ARTIFACTS)
 
-    if not vim.fn.isdirectory(artifacts_root) or _P.is_latest_version(_P.get_version_data(release), artifacts_root) then
-        _P.copy_file_to_directory(flamegraph_path, root)
-        _P.copy_file_to_directory(profile_path, root)
+    if vim.fn.isdirectory(artifacts_root) == 1 then
+        if _P.is_stable_release(release) and _P.is_latest_version(_P.get_version_numbers(release), artifacts_root) then
+            _P.copy_file_to_directory(flamegraph_path, root)
+            _P.copy_file_to_directory(profile_path, root)
+        end
     else
         -- TODO: Add logging
     end

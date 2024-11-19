@@ -1,17 +1,19 @@
 ## TODO
-- Fix issue where logs are not profiling as expected
- - Make a minimum repro, maybe
-- Document how to get a flame graph from that output easily
-- Make sure that we only copy to the all/ folder if the release tag is the
-latest of all tags
- - e.g. flamegraph.json and profile.json
+- Fix basic LLSCHECK stuf
+- Make a minimal example of cases
+ - try having a leaf-event at the end of the events stack
+ - try it with only one direct child
+ - try it with only one direct child + one inner child
+ - try it with only multiple direct children + multiple inner children per child
+ - try with no results
+ - try it with different threads and unsorted event data
 
 - Change YYYY_MM_DD-vX.Y.Z to vX.Y.Z-YYYY_MM_DD
 
-- only copy to the all/ folder if it's the latest
- - don't copy beta / alpha versions
- - do copy vX.Y.Z.A version, if applicable
+- Make a minimum repro explaining why profiler is not working as expected
 - Add logging everywhere
+
+- Document how to get a flame graph from that output easily
 
 - A GitHub workflow that can keep in sync with main + add more commits
  - on a separate branch
