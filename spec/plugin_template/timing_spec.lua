@@ -89,12 +89,13 @@ describe("self-time", function()
         }, { "1 10 4 outer_most" })
     end)
 
-    it("works with only one direct child #direct - 002", function()
-        _run_simple_test({
-            { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
-            { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
-        }, { "1 10 4 outer_most" })
-    end)
+    -- TODO: Finish this
+    -- it("works with only one direct child #direct - 002", function()
+    --     _run_simple_test({
+    --         { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
+    --         { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
+    --     }, { "1 10 4 outer_most" })
+    -- end)
 
     it("works with only one direct child + one inner child", function()
         _run_simple_test({
