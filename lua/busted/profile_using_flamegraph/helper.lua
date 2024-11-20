@@ -414,9 +414,6 @@ function _P.get_sorted_datetime_paths(paths)
             return 0
         end
 
-        -- TODO: This is incorrect. We need to sort version, then by date!
-        -- Which means we're also writing the data incorrectly.
-        --
         return _P.compare_number_arrays(
             _P.get_directory_name_data(vim.fs.dirname(left)),
             _P.get_directory_name_data(vim.fs.dirname(right))
@@ -691,8 +688,7 @@ end
 ---    An absolute path to the created profile.json.
 ---
 function _P.write_graph_artifact(release, profiler, root, events)
-    -- TODO: Replace this datetime path later
-    local directory = vim.fs.joinpath(root, string.format("%s-%s", os.date("%Y_%m_%d-%H_%M_%S"), release))
+    local directory = vim.fs.joinpath(root, string.format("%s-%s", release, os.date("%Y_%m_%d-%H_%M_%S")))
     vim.fn.mkdir(directory, "p")
 
     local flamegraph_path = vim.fs.joinpath(directory, "flamegraph.json")
