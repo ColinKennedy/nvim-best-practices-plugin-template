@@ -11,11 +11,6 @@ local M = {}
 
 local _PLUGIN_PREFIX = "plugin_template"
 
--- TODO: Docstring
----@class _ProfileEventSummary[]
----@field duration number
----@field name string
-
 --- Check if this plugin defined this `event` function.
 ---
 ---@param event _ProfileEvent
@@ -30,7 +25,7 @@ function _P.is_plugin_function(event)
         return false
     end
 
-    local _ALLOWED_NAMES = {_PLUGIN_PREFIX}
+    local _ALLOWED_NAMES = { _PLUGIN_PREFIX }
 
     if vim.tbl_contains(_ALLOWED_NAMES, event.name) then
         return true
@@ -45,143 +40,6 @@ function _P.is_plugin_function(event)
     return false
 end
 
---- Find all child events of `event`.
----
---- This does not include childs-of-childs of `event`.
----
----@param event _ProfileEvent The event to get children for.
----@param starting_index number The starting point to look for children. (Optimization).
----@param starting_indices table<number, number> All of the indices across all threads (Optimization).
----@param all_events _ProfileEvent[] All of the events to search for children.
----@param all_events_count number? The (precomputed) size of `all_events`.
----@return _ProfileEvent[] # The found children, if any.
----
-function _P.get_direct_children(event, starting_index, starting_indices, all_events, all_events_count)
-    local event_end_time = event.ts + event.dur
-
-    ---@type _ProfileEvent[]
-    local children = {}
-
-    -- TODO: Need to handle this part better. Somehow
-    while all_events[starting_index].ts < event_end_time do
-        -- NOTE: Because we pre-sorted, we know that `reference_event` is
-        -- a direct child of `event`.
-        --
-        -- We now need to scan for more children.
-        --
-        local reference_event = all_events[starting_index]
-        local reference_event_end_time = reference_event.ts + reference_event.dur
-        local reference_thread_id = reference_event.tid
-
-        for index=starting_index + 1,all_events_count do
-            local next_reference_event = all_events[index]
-
-            if next_reference_event.tid == reference_thread_id and next_reference_event.ts > reference_event_end_time then
-                -- NOTE: We've found the start of the next child. Which means
-                -- every event index from the first `starting_index` to `index`
-                -- is a direct child or nested child of `event`.
-                --
-                starting_indices[reference_event.tid] = index
-                starting_index = index
-                table.insert(children, reference_event)
-
-                if next_reference_event.ts + next_reference_event.dur > event_end_time then
-                    -- NOTE: We've reached the end. The next event is
-                    -- completely outside of the original `event`.
-                    --
-                    return children
-                end
-
-                -- NOTE: We haven't reached the event's end yet. Keep looking for children.
-                break
-            end
-        end
-    end
-
-    return children
-end
-
---- Find out how much time a function took to run.
----
---- If a function calls another function, that function's inner time is
---- substracted from the outer function's self-time. So you can see, clearly,
---- which functions are actually slow and which functions are simply slow
---- because they call other (slow) functions.
----
---- Important:
----     This function expects `events` and `all_events` to be ascended-sorted!
----
----@param events _ProfileEvent[] All of the profiler event data to compute self-time for.
----@param all_events _ProfileEvent[] All reference profiler event data.
----@return table<string, number> # Each event name and its computed self-time.
----
-function _P.get_self_times(events, all_events)
-    ---@type table<string, number>
-    local output = {}
-
-    -- Let's explain what this is doing.
-    --
-    -- Each event log has a start time, labelled `ts`.
-    -- We assume that all events are sorted from the earliest to the latest start time.
-    --
-    -- - We then keep track of the **first** index that is **after** that start time
-    --     - We have to do this on a per-thread basis, to account for multi-threaded code
-    -- - For each event that we must compute self-time
-    --     - From the starting index, check each range until we find a range
-    --       that is just after the start time
-    --         - This range is a direct child of the event. We know this
-    --           because the ranges were **sorted in advance**.
-    --     - Search the ranges until we find a range that is beyond that previous range's end time.
-    --         - All previous ranges were function "calls-within-calls" and can be ignored
-    --             - Again, we can do this because ranges were **sorted in advance**
-    --     - Set the starting index to that later range's index
-    --     - Repeat with the next event. We use the new staring index to avoid
-    --       scanning all ranges from scratch again.
-    --
-    -- Using this technique, we find all direct children for all events. We
-    -- then subtract the direct child durations to compute each event's
-    -- self-time.
-
-    --- Each thread ID and the index to start searching within `ranges`.
-    ---@type table<number, number>
-    ---
-    local starting_indices = {}
-    local all_events_count = #all_events
-
-    for _, event in ipairs(vim.fn.sort(events, function(left, right) return left.ts > right.ts end)) do
-        ---@cast event _ProfileEvent
-
-        local starting_index = self_timing.get_next_starting_index(
-            event,
-            (starting_indices[event.tid] or 1),
-            all_events,
-            all_events_count
-        )
-
-        if starting_index == self_timing.NOT_FOUND_INDEX then
-            -- TODO: Add logging
-
-            -- NOTE: If we're on the very last event and there are no other events then it means
-            -- 1. We're on the very last call that was profiled.
-            -- 2. That last function is also a leaf function (it doesn't call anything else).
-            --
-            -- This should be a really rare occurrence. But could happen.
-            --
-            output[event.name] = event.dur
-        end
-
-        local other_time = 0
-
-        for _, child in ipairs(_P.get_direct_children(event, starting_index, starting_indices, all_events, all_events_count)) do
-            other_time = other_time + child.dur
-        end
-
-        output[event.name] = event.dur - other_time
-    end
-
-    return output
-end
-
 --- Collect `events` based on the total time across all `events`.
 ---
 ---@param events _ProfileEvent[] All of the profiler event data to consider.
@@ -191,7 +49,9 @@ end
 ---
 function _P.get_totals(events, predicate)
     if not predicate then
-        predicate = function(_) return true end
+        predicate = function(_)
+            return true
+        end
     end
 
     ---@type _ProfileEvent[]
@@ -211,10 +71,58 @@ function _P.get_totals(events, predicate)
     return output_events, counts
 end
 
---- Print `events` as a summary.
+---@param self_times table<string, number> Each event name and its computed self-time.
+---@param events _ProfileEvent[] All of the events to consider.
+---
+function _P.validate_self_times(self_times, events)
+    ---@type table<string, number>
+    local events_by_time = {}
+
+    for _, event in ipairs(events) do
+        events_by_time[event.name] = event.dur
+    end
+
+    ---@type table<string, number>
+    local less_than_zero = {}
+
+    ---@type table<string, number>
+    local greater_than_total_time = {}
+
+    for name, self_time in pairs(self_times) do
+        if self_time < 0 then
+            less_than_zero[name] = self_time
+        elseif self_time > events_by_time[name] then
+            greater_than_total_time[name] = { self_time, events_by_time[name] }
+        end
+    end
+
+    if not vim.tbl_isempty(less_than_zero) then
+        error(
+            string.format(
+                'Bug: Invalid self-times were found. "%s" events are less than zero, which cannot be possible.',
+                vim.inspect(less_than_zero)
+            ),
+            0
+        )
+    end
+
+    if not vim.tbl_isempty(greater_than_total_time) then
+        error(
+            string.format(
+                'Bug: Invalid self-times were found. "%s" events have self times '
+                .. 'that are greater than the total possible time, which cannot be possible.',
+                vim.inspect(greater_than_total_time)
+            ),
+            0
+        )
+    end
+end
+
+--- Get `events` as summary lines.
 ---
 ---@param events _ProfileEvent[] All of the profiler event data to consider.
 ---@param threshold number? A 1-or-more value. The "top slowest" functions to show.
+---@param predicate (fun(event: _ProfileEvent): boolean)? Returns `true` to display an event.
 ---@return string[] # The generated report, in human-readable format.
 ---
 function M.get_profile_report_lines(events, threshold, predicate)
@@ -229,22 +137,29 @@ function M.get_profile_report_lines(events, threshold, predicate)
     ---@cast slowest_functions _ProfileEvent[]
 
     local top_slowest = tabler.get_slice(slowest_functions, 1, threshold)
-    local self_times = _P.get_self_times(top_slowest, slowest_functions)
+    local self_times = self_timing.get_self_times(top_slowest, slowest_functions)
+    _P.validate_self_times(self_times, top_slowest)
+
     local output = {}
 
     for _, entry in ipairs(top_slowest) do
         local name = entry.name
         local count = counts[name]
         local self_time = self_times[name]
-        local total_time = entry.ts + entry.dur
 
         -- TODO: Make this better formatted, later
-        table.insert(output, string.format("%s %s %s %s", count, total_time, self_time, name))
+        table.insert(output, string.format("%s %s %s %s", count, entry.dur, self_time, name))
     end
 
     return output
 end
 
+--- Get `events` as a summary.
+---
+---@param events _ProfileEvent[] All of the profiler event data to consider.
+---@param threshold number? A 1-or-more value. The "top slowest" functions to show.
+---@return string # The generated report, in human-readable format.
+---
 function M.get_profile_report_as_text(events, threshold)
     local lines = M.get_profile_report_lines(events, threshold)
 
@@ -255,7 +170,10 @@ end
 --     -- TODO: Remove this test later
 --     -- local path = "/tmp/directory/benchmarks/all/artifacts/2024_11_18-00_16_00-v1.2.3/profile.json"
 --     -- local path = "/tmp/directory/benchmarks/all/flamegraph.json"
---     -- {"tid":1,"ph":"X","ts":164155.201,"args":{"3":"Parameter \"É§elp\" cannot use action=\"store_true\".","2":1,"n":3},"dur":1.2000000000116,"cat":"function","pid":1,"name":"luassert.util.tinsert"},
+--     -- {"tid":1,"ph":"X","ts":164155.201,"args":{"3":"Parameter \"É§elp\"
+--     cannot use
+--     action=\"store_true\".","2":1,"n":3},
+--     "dur":1.2000000000116,"cat":"function","pid":1,"name":"luassert.util.tinsert"},
 --     local path = "/tmp/directory/benchmarks/all/flamegraph.json"
 --     local file = io.open(path, "r")
 --     if not file then error("STOP", 0) end
