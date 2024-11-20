@@ -119,7 +119,9 @@ end
 ---@param filename string
 M.export = function(filename)
   local file = assert(io.open(filename, "w"))
-  local events = vim.tbl_extend("force", {}, instrument.get_events())
+  local original = instrument.recording
+  instrument.recording = false
+  local events = instrument.get_events()
   file:write("[")
   local count = #events
   for i, event in ipairs(events) do
@@ -141,6 +143,8 @@ M.export = function(filename)
   end
   file:write("]")
   file:close()
+
+  instrument.recording = original
 end
 
 return M

@@ -9,6 +9,10 @@ local tabler = require("plugin_template._core.tabler")
 local _P = {}
 local M = {}
 
+---@class _SelfTotalTimes The self-time and total-time.
+---@field [1] number Self-time.
+---@field [2] number Total-time.
+
 local _PLUGIN_PREFIX = "plugin_template"
 
 --- Check if this plugin defined this `event` function.
@@ -85,7 +89,7 @@ function _P.validate_self_times(self_times, events)
     ---@type table<string, number>
     local less_than_zero = {}
 
-    ---@type table<string, number>
+    ---@type table<string, _SelfTotalTimes>
     local greater_than_total_time = {}
 
     for name, self_time in pairs(self_times) do
