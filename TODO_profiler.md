@@ -1,19 +1,17 @@
 ## TODO
-- Fix basic LLSCHECK stuf
-- Make a minimal example of cases
- - try having a leaf-event at the end of the events stack
- - try it with only one direct child
- - try it with only one direct child + one inner child
- - try it with only multiple direct children + multiple inner children per child
- - try with no results
- - try it with different threads and unsorted event data
-
+- Do Docstrings
+- Do TODO notes
 - Change YYYY_MM_DD-vX.Y.Z to vX.Y.Z-YYYY_MM_DD
 
-- Make a minimum repro explaining why profiler is not working as expected
+- Make a minimum repro explaining why profiler.nvim is not working as expected
 - Add logging everywhere
 
 - Document how to get a flame graph from that output easily
+
+- Add a self-time validator
+ - if negative or greater than total, error out
+
+- Write timing data to the timing.txt file. Add an env var for threshold to control it
 
 - A GitHub workflow that can keep in sync with main + add more commits
  - on a separate branch
