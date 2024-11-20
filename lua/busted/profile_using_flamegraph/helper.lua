@@ -180,7 +180,7 @@ function _P.get_directory_name_data(text)
     end
 
     if #output < 9 then
-        error(string.format('Text "%s" did not match "YYYY_MM_DD-HH_MM_SS-vMAJOR.MINOR.PATCH" pattern.', text), 0)
+        error(string.format('Text "%s" did not match "vMAJOR.MINOR.PATCH-YYYY_MM_DD-HH_MM_SS" pattern.', text), 0)
     end
 
     return output
@@ -674,7 +674,7 @@ function _P.write_gnuplot_images(artifacts, graphs)
     end
 end
 
---- Create the `"benchmarks/all/artifacts/{YYYY_MM_DD-HH_MM_SS-VERSION_TAG}"` directory.
+--- Create the `"benchmarks/all/artifacts/{VERSION_TAG-YYYY_MM_DD-HH_MM_SS}"` directory.
 ---
 ---@param release string
 ---    The current release to make. e.g. `"v1.2.3"`.
@@ -954,7 +954,7 @@ end
 ---
 --- - all/
 ---     - artifacts/
----         - {YYYY_MM_DD-HH_MM_SS-VERSION_TAG}/
+---         - {VERSION_TAG-YYYY_MM_DD-HH_MM_SS}/
 ---             - flamegraph.json
 ---             - profile.json
 ---     - README.md
