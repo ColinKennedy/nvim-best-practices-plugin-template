@@ -1,6 +1,10 @@
--- TODO: Docstring
+--- The module that handles writing graph and profile and timing data to-disk.
+---
+---@module 'busted.profile_using_flamegraph.helper'
+---
 
 local instrument = require("profile.instrument")
+local vlog = require("plugin_template._vendors.vlog")
 
 ---@class _GraphArtifact Summary data about a whole suite of profiler data.
 ---@field hardware _Hardware All computer platform details.
@@ -58,7 +62,7 @@ local M = {}
 -- NOTE: The X-axis gets crowded if you include too many points so we cap it
 -- before it can get to that point
 --
-local _MAXIMUM_ARTIFACTS = 35
+local _DEFAULT_MAXIMUM_ARTIFACTS = 35
 
 local _PROFILE_FILE_NAME = "profile.json"
 
@@ -117,7 +121,7 @@ end
 ---@return boolean # If `"v1.2.3"` return `true`. If `"v4.5.6-beta.1"`, return `false`.
 ---
 function _P.is_stable_release(version)
-    for _, word in ipairs({"-alpha", "-beta", "-rc"}) do
+    for _, word in ipairs({ "-alpha", "-beta", "-rc" }) do
         if string.match(version, word) then
             return false
         end
@@ -176,13 +180,7 @@ function _P.get_directory_name_data(text)
     end
 
     if #output < 9 then
-        error(
-            string.format(
-                'Text "%s" did not match "YYYY_MM_DD-HH_MM_SS-vMAJOR.MINOR.PATCH" pattern.',
-                text
-            ),
-            0
-        )
+        error(string.format('Text "%s" did not match "YYYY_MM_DD-HH_MM_SS-vMAJOR.MINOR.PATCH" pattern.', text), 0)
     end
 
     return output
@@ -197,20 +195,12 @@ end
 ---
 ---@param root string
 ---    An absolute path to the direct-parent directory. e.g. `".../benchmarks/all/artifacts".
----@param maximum number?
+---@param maximum number
 ---    The number of artifacts to read. If not provided, read all of them.
 ---@return _GraphArtifact[]
 ---    All found records so far, if any.
 ---
 function _P.get_graph_artifacts(root, maximum)
-    if maximum ~= nil then
-        if maximum < 1 then
-            error(string.format('Maximum "%s" must be >= 1', maximum), 0)
-        end
-    else
-        maximum = 2 ^ 40 -- NOTE: Just some arbitrary, really big number
-    end
-
     ---@type _GraphArtifact[]
     local output = {}
 
@@ -221,6 +211,7 @@ function _P.get_graph_artifacts(root, maximum)
     local paths = _P.get_slice(all_paths, math.max(count - maximum + 1, 0), count)
 
     for index, path in ipairs(paths) do
+        vlog.fmt_debug('Reading "%s" artifact.', path)
         local file = io.open(path, "r")
 
         if not file then
@@ -238,7 +229,11 @@ function _P.get_graph_artifacts(root, maximum)
         table.insert(output, result)
 
         if index >= maximum then
-            -- TODO: Add logging
+            vlog.fmt_info(
+                'We have reached the "%s" maximum value. All other artifacts will be ignored.',
+                maximum
+            )
+
             return output
         end
     end
@@ -282,6 +277,7 @@ function _P.get_latest_neovim_version(artifacts)
         local simplified_version = _P.get_simple_version(version)
 
         if not output or _P.compare_number_arrays(simplified_version, output) == 1 then
+            vlog.fmt_info('Found later "%s" Neovim version.', simplified_version)
             output = simplified_version
         end
     end
@@ -333,6 +329,9 @@ function _P.get_median(values)
 end
 
 --- Summarize all of `events` (get the mean, median, etc).
+---
+--- Raises:
+---     If `events` is empty.
 ---
 ---@param events _ProfileEvent[]
 ---    All of the profiler event data to consider. If no events are given, we
@@ -586,7 +585,7 @@ function _P.validate_release(version)
 
     if not string.match(version, pattern) then
         error(
-            string.format('Version "%s" is invalid. Expected Semantic Versioning. See semver.org for details.', version),
+            string.format('Version "%s" is invalid. Expected Semantic Versioning. See semver.org.', version),
             0
         )
     end
@@ -618,6 +617,7 @@ end
 ---@param path string An absolute path to a flamegraph.json to create.
 ---
 function _P.write_flamegraph(profiler, path)
+    vlog.fmt_info('Writing flamegraph to "%s" path.', path)
     _P.make_parent_directory(path)
 
     profiler.export(path)
@@ -691,6 +691,7 @@ end
 ---    An absolute path to the created profile.json.
 ---
 function _P.write_graph_artifact(release, profiler, root, events)
+    -- TODO: Replace this datetime path later
     local directory = vim.fs.joinpath(root, string.format("%s-%s", os.date("%Y_%m_%d-%H_%M_%S"), release))
     vim.fn.mkdir(directory, "p")
 
@@ -776,11 +777,13 @@ function _P.write_graph_images(artifacts, root)
     local success, _ = pcall(_P.write_gnuplot_images, artifacts, graphs)
 
     if not keep then
+        vlog.fmt_debug('Deleting temporary files from "%s" graphs.', graphs)
         _P.delete_gnuplot_paths(graphs, { "data_path", "script_path" })
     end
 
     if not success then
         if not keep then
+            vlog.fmt_debug('Failed to write images. Deleting "%s" graphs.', graphs)
             _P.delete_gnuplot_paths(graphs, { "image_path" })
         end
 
@@ -804,6 +807,7 @@ end
 ---    will use the global profiler's events instead.
 ---
 function _P.write_profile_summary(release, path, events)
+    vlog.fmt_info('Writing profile summary to "%s" path.', path)
     _P.make_parent_directory(path)
 
     local file = io.open(path, "w")
@@ -911,7 +915,7 @@ end
 ---@return string # The absolute directory on-disk where flamegraph info will be written.
 ---@return string # The version to write to-disk. e.g. `"v1.2.3"`.
 ---
-function M.parse_input_arguments()
+function M.get_environment_variable_data()
     local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
 
     if not root then
@@ -960,6 +964,9 @@ end
 ---     - profile.json - The latest release's total time, self time, etc
 ---     - *.png - Profiler-related line-graphs
 ---
+--- Raises:
+---    If an invalid `maximum` is given.
+---
 ---@param release string
 ---    The current release to make. e.g. `"v1.2.3"`.
 ---@param profiler Profiler
@@ -969,21 +976,35 @@ end
 ---@param events _ProfileEvent[]?
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
+---@param maximum number?
+---    A 1-or-more value. The number of samples to collect for graphing. If
+---    there are more samples than `maximum` allows, the later smples are
+---    preferred. Note: It is unwise to set this number higher than the default
+---    (35). Experimentation showed that the X-axis of the graph becomes
+---    unreadable after 35.
 ---
-function M.write_all_summary_directory(release, profiler, root, events)
+function M.write_all_summary_directory(release, profiler, root, events, maximum)
+    maximum = maximum or _DEFAULT_MAXIMUM_ARTIFACTS
+
+    if maximum < 1 then
+        error(string.format('Maximum "%s" must be >= 1.', maximum), 0)
+    end
+
     local artifacts_root = vim.fs.joinpath(root, "artifacts")
     local flamegraph_path, profile_path = _P.write_graph_artifact(release, profiler, artifacts_root, events)
     local readme_path = vim.fs.joinpath(root, "README.md")
 
-    local artifacts = _P.get_graph_artifacts(artifacts_root, _MAXIMUM_ARTIFACTS)
+    local artifacts = _P.get_graph_artifacts(artifacts_root, maximum)
 
-    if vim.fn.isdirectory(artifacts_root) == 1 then
-        if _P.is_stable_release(release) and _P.is_latest_version(_P.get_version_numbers(release), artifacts_root) then
-            _P.copy_file_to_directory(flamegraph_path, root)
-            _P.copy_file_to_directory(profile_path, root)
-        end
+    if _P.is_stable_release(release) and _P.is_latest_version(_P.get_version_numbers(release), artifacts_root) then
+        _P.copy_file_to_directory(flamegraph_path, root)
+        _P.copy_file_to_directory(profile_path, root)
     else
-        -- TODO: Add logging
+        vlog.fmt_warn(
+            'Release "%s" is not the latest, stable version. We skipped copying to the "%s" root directory.',
+            release,
+            root
+        )
     end
 
     local graphs = _P.write_graph_images(artifacts, root)
