@@ -11,6 +11,8 @@
 - Add a self-time validator
  - if negative or greater than total, error out
 
+- Replace my profiler fork with the other one
+
 - Write timing data to the timing.txt file. Add an env var for threshold to control it
 
 - A GitHub workflow that can keep in sync with main + add more commits
