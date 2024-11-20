@@ -145,7 +145,7 @@ end
 
 --- Run these tests.
 local function main()
-    local root, release = helper.parse_input_arguments()
+    local root, release = helper.get_environment_variable_data()
 
     helper.validate_gnuplot()
 
