@@ -8,6 +8,8 @@
 ---@module 'busted.profile_using_flamegraph.self_timing'
 ---
 
+local vlog = require("plugin_template._vendors.vlog")
+
 local _P = {}
 local M = {}
 
@@ -79,7 +81,6 @@ end
 ---
 ---@param event _ProfileEvent The event to check for. We want the index **just after** this event.
 ---@param starting_index number The starting point to look for children. (Optimization).
----@param starting_indices table<number, number> All of the indices across all threads (Optimization).
 ---@param all_events _ProfileEvent[] All of the events to search for children.
 ---@param all_events_count number? The (precomputed) size of `all_events`.
 ---@return number -1 if not found but okay. 1-or-more if found.
@@ -167,7 +168,7 @@ function M.get_self_times(events, all_events)
         local starting_index =
             _P.get_next_starting_index(event, (starting_indices[event.tid] or 1), all_events, all_events_count)
 
-        if starting_index == self_timing.NOT_FOUND_INDEX then
+        if starting_index == M.NOT_FOUND_INDEX then
             -- NOTE: If we're on the very last event and there are no other events then it means
             -- 1. We're on the very last call that was profiled.
             -- 2. That last function is also a leaf function (it doesn't call anything else).
