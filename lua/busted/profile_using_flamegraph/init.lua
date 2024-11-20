@@ -11,8 +11,7 @@ local clock = require("profile.clock")
 local helper = require("busted.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
 local profile = require("profile")
-
--- TODO: Add logging in this file / around
+local vlog = require("plugin_template._vendors.vlog")
 
 ---@class busted.FlamegraphCallerOptions Control how an output handler runs.
 ---@field release string A version / release tag. e.g. `"v1.2.3"`.
@@ -106,13 +105,18 @@ return function(options)
     local release = options.release
 
     if not root or not release then
-        -- TODO: Add logger here
-        root, release = helper.parse_input_arguments()
+        vlog.info(
+            'Either root or release was not found. '
+            .. 'Getting root / release from environment variables instead.'
+        )
+        root, release = helper.get_environment_variable_data()
     end
 
     local is_standalone = not profile.is_recording()
 
     if is_standalone then
+        vlog.info('Now capturing all profile logs.')
+
         profile.start("*")
     end
 
@@ -160,17 +164,19 @@ return function(options)
 
     --- Output the profile logs after unittesting ends.
     ---
-    ---@param suite busted.Element The top-most object that runs the unittests.
+    ---@param _ busted.Element The top-most object that runs the unittests.
     ---@param count number A 1-or-more value indicating the current test iteration.
     ---@param total number A 1-or-more value - the maximum times that tests can run.
     ---
-    handler.suiteEnd = function(suite, count, total)
+    handler.suiteEnd = function(_, count, total)
         if count ~= total then
             -- NOTE: Testing hasn't completed yet.
             return
         end
 
         if is_standalone then
+            profile.stop()
+            vlog.info("Profiling was stopped. Now writing to disk.")
             helper.write_all_summary_directory(release, profile, vim.fs.joinpath(root, "benchmarks", "all"))
         end
     end
