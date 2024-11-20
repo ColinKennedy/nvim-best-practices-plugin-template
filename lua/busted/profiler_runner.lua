@@ -8,96 +8,14 @@
 local helper = require("busted.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
 local profile = require("profile")
-local logging = require("plugin_template._vendors.aggro.logging")
 
-local _LOGGER = logging.get_logger("busted.profiler_runner")
 local _P = {}
 
-
---- Add arguments that this file needs in order to time / profile the unittest suite.
-function _P.append_profiler_arg_values()
-    local index = #arg + 1
-
-    if not vim.tbl_contains(arg or {}, "--ignore-lua") then
-        arg[index] = "--ignore-lua"
-        index = index + 1
-    end
-
-    arg[index] = "--helper=spec/minimal_init.lua"
-    arg[index + 1] = "--output=busted.profile_using_flamegraph"
-end
-
---- Replace parts of the user's arguments with our own.
----
---- Try to keep as much of the user's data as possible.
----
-function _P.bootstrap_arg()
-    _P.strip_arg()
-    _P.append_profiler_arg_values()
-    _P.fix_arg()
-end
-
---- Remove all positional arguments from the user's input.
+--- Delete all Lua terminal-provided arguments (so we can replace them later).
 function _P.clear_arg()
     for key, _ in pairs(arg or {}) do
         if key ~= 0 then
             arg[key] = nil
-        end
-    end
-end
-
---- Make sure Lua `arg` is formatted correctly.
----
---- A number of edits from other functions may leave `arg` in a state where
---- some of its indices are `nil`. Busted doesn't parse that correctly so we
---- need to do some clean-up here.
----
-function _P.fix_arg()
-    local values = {}
-
-    for index=1,#arg do
-        if arg[index] then
-            table.insert(values, arg[index])
-        end
-    end
-
-    _P.clear_arg()
-
-    for index, value in ipairs(values) do
-        arg[index] = value
-    end
-end
-
---- Delete any Lua terminal-provided arguments that we must change.
----
---- These arguments are needed by this file in order to run the unittests.
----
-function _P.strip_arg()
-    local count = #arg or {}
-    local key = 1
-
-    while key < count do
-        local value = arg[key]
-
-        if value:match("^--helper=") then
-            arg[key] = nil
-            key = key + 1
-        elseif value == "--helper" then
-            arg[key] = nil
-            arg[key + 1] = nil
-            key = key + 2
-
-        elseif value:match("^%-o=") or value:match("^--output=") then
-            arg[key] = nil
-            key = key + 1
-        elseif value == "-o" or value == "--output" then
-            arg[key] = nil
-            arg[key + 1] = nil
-            key = key + 2
-
-        else
-            -- NOTE: No match was found. We'll just keep searching
-            key = key + 1
         end
     end
 end
@@ -147,9 +65,13 @@ end
 ---
 function _P.run_busted_suite(runner, options)
     _P.keep_arg(function()
-        _P.bootstrap_arg()
+        _P.clear_arg()
 
-        runner(vim.tbl_deep_extend("force", options or {}, { standalone = false }))
+        arg[1] = "--ignore-lua"
+        arg[2] = "--helper=spec/minimal_init.lua"
+        arg[3] = "--output=busted.profile_using_flamegraph"
+
+        runner(vim.tbl_deep_extend("force", options or {}, { standalone=false }))
     end)
 end
 
@@ -187,7 +109,7 @@ local function run_tests(profiler, release, root, maximum_tries)
     end
 
     local counter = maximum_tries
-    local fastest_time = 2 ^ 1023
+    local fastest_time = 2^1023
     local fastest_events = nil
 
     while true do
@@ -196,11 +118,9 @@ local function run_tests(profiler, release, root, maximum_tries)
         ---@diagnostic disable-next-line: cast-type-mismatch
         ---@cast runner busted.MultiRunner
 
-        local duration = _P.profile_and_run(profiler, runner, { release = release, output_handler_root = root })
+        local duration = _P.profile_and_run(profiler, runner, {release=release, root=root})
 
         if duration < fastest_time then
-            _LOGGER:fmt_debug('Faster time found. New: "%s". Old: "%s".', duration, fastest_time)
-
             counter = maximum_tries
             fastest_time = duration
             -- TODO: CHECK if copying here is actually needed
@@ -210,8 +130,6 @@ local function run_tests(profiler, release, root, maximum_tries)
         end
 
         if counter == 0 then
-            _LOGGER:debug("Reached end of the profiler tests.")
-
             break
         end
     end
@@ -220,10 +138,7 @@ local function run_tests(profiler, release, root, maximum_tries)
         error("Something went wrong. We didn't find any profiler events to record.", 0)
     end
 
-    local benchmarks = vim.fs.joinpath(root, "benchmarks")
-    helper.write_summary_directory(release, profile, vim.fs.joinpath(benchmarks, "all"), fastest_events)
-    helper.write_tags_directory(release, profile, vim.fs.joinpath(benchmarks, "tags"), fastest_events)
-    _LOGGER:fmt_info('Finished writing all of "%s" directory.', benchmarks)
+    helper.write_all_summary_directory(release, profile, vim.fs.joinpath(root, "benchmarks", "all"), fastest_events)
 end
 
 --- Run these tests.
