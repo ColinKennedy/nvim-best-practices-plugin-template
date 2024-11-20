@@ -2,10 +2,8 @@
 ---
 --- It runs tests multiple times and, each time, records profiler and timing results.
 ---
----@module 'busted_testout2'
+---@module 'busted.profiler_runner'
 ---
-
--- TODO: Fix @module later
 
 local helper = require("busted.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
@@ -152,8 +150,6 @@ local function main()
     -- NOTE: Don't profile the unittest framework
     local profiler = profile
     profiler.ignore("busted*")
-    -- TODO: Replace name here later
-    profiler.ignore("busted_testout2*")
 
     instrument("*")
 
