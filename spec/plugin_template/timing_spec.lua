@@ -85,7 +85,7 @@ describe("self-time", function()
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 8 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 14 },
-        }, { "1 10 10 outer_most" })
+        }, { { ["self-time"] = 10, ["total-time"] = 10, count = 1, name = "outer_most" } })
     end)
 
     it("works with different threads and unsorted event data #threads", function()
@@ -95,7 +95,7 @@ describe("self-time", function()
             { cat = "function", dur = 2, name = "first_child", tid = 1, ts = 4 },
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 7 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { "1 10 6 outer_most" })
+        }, { { ["self-time"] = 6, ["total-time"] = 10, count = 1, name = "outer_most" } })
     end)
 
     it("works with no results #empty", function()
@@ -105,7 +105,7 @@ describe("self-time", function()
     it("works with single event #single", function()
         _P.run_simple_test({
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
-        }, { "1 10 10 outer_most" })
+        }, { { count = 1, ["total-time"] = 10, ["self-time"] = 10, name = "10 outer_most" } })
     end)
 
     it("works with only multiple direct children + multiple inner child per child #nested", function()
@@ -118,7 +118,7 @@ describe("self-time", function()
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 8 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { "1 10 2 outer_most" })
+        }, { { ["self-time"] = 2, ["total-time"] = 10, count = 1, name = "outer_most" } })
     end)
 
     it("works with only one direct child #direct - 001", function()
@@ -126,7 +126,7 @@ describe("self-time", function()
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { "1 10 4 outer_most" })
+        }, { { ["self-time"] = 4, ["total-time"] = 10, count = 1, name = "outer_most" } })
     end)
 
     -- TODO: Finish this
@@ -143,6 +143,6 @@ describe("self-time", function()
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "inner_child", tid = 1, ts = 3 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { "1 10 4 outer_most" })
+        }, { { ["self-time"] = 8, ["total-time"] = 10, count = 1, name = "outer_most" } })
     end)
 end)
