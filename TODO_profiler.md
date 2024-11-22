@@ -11,8 +11,6 @@
 - Replace my profiler fork with the other one
 - Allow the timing output to be a GitHub-style table
 
-- Add sections support
-
 - Add average / median / mean computations to the timing statistics? Per function?
 - Do timing for functions and timing for (unit)tests
 
