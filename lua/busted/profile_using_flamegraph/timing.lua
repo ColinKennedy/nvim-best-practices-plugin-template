@@ -14,6 +14,7 @@ local tabler = require("plugin_template._core.tabler")
 
 ---@class _ProfileReportOptions All user settings to customize the report.
 ---@field threshold number? A 1-or-more value. The "top slowest" functions to show.
+---@field precision number? A 0-or-more value and the number of decimal places to show. 0 means "show all decimals".
 ---@field predicate (fun(event: _ProfileEvent): boolean)? Returns `true` to display an event.
 ---@field sections _ProfileReportSection[]? The columns to include in the output report.
 
@@ -46,7 +47,7 @@ local _SectionLabel = {
 }
 
 -- This is meant to be a number that we shouldn't be able to actually hit
-local _DEFAULT_PRECISION = 99999999999999
+local _DEFAULT_PRECISION = 2
 local _DEFAULT_SECTIONS = { _Section.count, _Section.total_time, _Section.self_time, _Section.name }
 local _PLUGIN_PREFIX = "plugin_template"
 
@@ -91,13 +92,11 @@ end
 --- Compute all padding needed to display the timing information with uniform columns.
 ---
 ---@param lines _ProfilerLine[] The computed data (that will later become the report).
----@return number # A 1-or-more padding value for a function's call-count.
----@return number # A 1-or-more padding value for a function's total-time.
----@return number # A 1-or-more padding value for a function's self-time.
----@return number # A 1-or-more padding value for a function's name.
+---@param precision number? The number of decimal point digits to show, if any.
+---@return _ProfilerReportPaddings # All of the column padding data.
 ---@return number # The total time that all functions took to run.
 ---
-function _P.get_header_data(lines)
+function _P.get_header_padding_data(lines, precision)
     local count_padding = 0
     local name_padding = 0
     local self_time_padding = 0
@@ -112,51 +111,46 @@ function _P.get_header_data(lines)
         total_time = total_time + line.total_time
     end
 
-    return count_padding, total_time_padding, self_time_padding, name_padding, total_time
+    return {
+        count = count_padding,
+        name = name_padding,
+        self_time = self_time_padding,
+        total_time = total_time_padding,
+    }, total_time
 end
 
 --- Create the header text. While we do that, also compute padding information.
 ---
 ---@param lines _ProfilerLine[] The computed data (that will later become the report).
----@param precision number? The number of decimal point digits to show, if any.
+---@param sections _ProfileReportSection[] The columns to show in the template.
 ---@return string # The blob of header text.
 ---@return _ProfilerReportPaddings # All of the column padding data.
 ---
-function _P.get_header_text(lines, precision)
-    local _get_cropped_max = function(precision_)
-        local maxer = function(left, right)
-            return math.min(math.max(left, right), precision_)
-        end
+function _P.get_header_text(lines, sections)
+    local output = ""
 
-        return maxer
+    local paddings, total_time = _P.get_header_padding_data(lines)
+    ---@type string[]
+    local summary_labels = {}
+    local computed_paddings = {}
+
+    for _, section in ipairs(sections) do
+        local label = _SectionLabel[section]
+        local suggested_padding = paddings[section]
+        local padding = math.max(suggested_padding, #label)
+        computed_paddings[section] = padding
+        table.insert(summary_labels, ("%%-%ds"):format(padding):format(label))
     end
 
-    -- TODO: This precision code doesn't actually work. Fix it later
-    precision = precision or _DEFAULT_PRECISION
+    local summary_line = vim.fn.join(summary_labels, " ")
 
-    local get_max = _get_cropped_max(precision)
-    local output = ""
     -- TODO: total_time is bugged. It only shows the total from `lines`. And
     -- `lines` is a subset of the real events. It doesn't talk about the total
     -- across all functions
-    --
-    local count_padding, total_time_padding, self_time_padding, name_padding, total_time = _P.get_header_data(lines)
-    local count_label = "count"
-    local name_label = "name"
-    local self_time_label = "self-time"
-    local total_time_label = "total-time"
-    count_padding = get_max(count_padding, #count_label)
-    name_padding = get_max(name_padding, #name_label)
-    self_time_padding = get_max(self_time_padding, #self_time_label)
-    total_time_padding = get_max(total_time_padding, #total_time_label)
-
-    -- TODO: Consider precision here. e.g. crop at the hundreths place
-    local summary_line = ("%%-%ds %%-%ds %%-%ds %%-%ds")
-        :format(count_padding, total_time_padding, self_time_padding, name_padding)
-        :format(count_label, total_time_label, self_time_label, name_label)
 
     local full_padding = #summary_line
-    local top_line = ("%%-%ds %%7.2f"):format(full_padding - #total_time_label + 2):format(total_time_label, total_time)
+    -- TODO: Add precision here. e.g. crop at the hundreths place
+    local top_line = ("%%-%ds %%7.2f"):format(full_padding - #_SectionLabel.total_time + 2):format(_SectionLabel.total_time, total_time)
     local line_break = ("─"):rep(full_padding) .. "\n"
     output = output .. line_break
     output = output .. top_line .. "\n"
@@ -164,14 +158,7 @@ function _P.get_header_text(lines, precision)
     output = output .. summary_line .. "\n"
     output = output .. line_break
 
-    return output,
-        {
-            count = count_padding,
-            full = full_padding,
-            name = name_padding,
-            self_time = self_time_padding,
-            total_time = total_time_padding,
-        }
+    return output, computed_paddings
 end
 
 --- Combine all `paddings` that are found in `sections` into a formattable template.
@@ -220,6 +207,16 @@ function _P.get_totals(events, predicate)
     end
 
     return output_events, counts
+end
+
+--- Strip excess decimals off of `value` according to `precision`.
+---
+---@param value number Some float to crop. e.g. `123.06789`.
+---@param precision number The number of decimals to keep. e.g. `123.06789`. 0 means "don't crop".
+---@return string # The output, e.g. `"123.07"`.
+---
+function _P.crop_to_precision(value, precision)
+    return string.format("%%.%sf", precision):format(value)
 end
 
 --- Make sure `self_times` don't have any out-of-bounds values.
@@ -296,10 +293,12 @@ function M.get_profile_report_lines(events, options)
     ---@cast slowest_functions _ProfileEvent[]
 
     local top_slowest = tabler.get_slice(slowest_functions, 1, threshold)
-    local self_times = self_timing.get_self_times(top_slowest, slowest_functions)
+    local self_times = self_timing.get_self_times(top_slowest, functions)
     _P.validate_self_times(self_times, top_slowest)
 
     local output = {}
+
+    local precision = options.precision or _DEFAULT_PRECISION
 
     for _, entry in ipairs(top_slowest) do
         local name = entry.name
@@ -309,8 +308,8 @@ function M.get_profile_report_lines(events, options)
         table.insert(output, {
             count = count,
             name = name,
-            self_time = self_time,
-            total_time = entry.dur,
+            self_time = _P.crop_to_precision(self_time, precision),
+            total_time = _P.crop_to_precision(entry.dur, precision),
         })
     end
 
@@ -325,15 +324,23 @@ end
 ---
 function M.get_profile_report_as_text(events, options)
     options = options or {}
+    local sections = options.sections or _DEFAULT_SECTIONS
     local lines = M.get_profile_report_lines(events, options)
 
-    local header, paddings = _P.get_header_text(lines)
-    local line_template = _P.get_line_template(paddings, options.sections or _DEFAULT_SECTIONS) .. "\n"
+    local header, paddings = _P.get_header_text(lines, sections)
+    local line_template = _P.get_line_template(paddings, sections) .. "\n"
 
     local output = header
 
     for _, line in ipairs(lines) do
-        output = output .. string.format(line_template, line.count, line.total_time, line.self_time, line.name)
+        ---@type string[]
+        local data = {}
+
+        for _, section in ipairs(sections) do
+            table.insert(data, line[section])
+        end
+
+        output = output .. string.format(line_template, unpack(data))
     end
 
     return output
