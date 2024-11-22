@@ -1,17 +1,18 @@
 ## TODO
-- Do Docstrings
 - Do TODO notes
-- Change YYYY_MM_DD-vX.Y.Z to vX.Y.Z-YYYY_MM_DD
 
 - Make a minimum repro explaining why profiler.nvim is not working as expected
 - Add logging everywhere
 
 - Document how to get a flame graph from that output easily
 
-- Add a self-time validator
- - if negative or greater than total, error out
-
+- Change the README.md file to HTML-include the contents of other pages (e.g. put the table on another file instead of in the README.md)
+- Consider adding the timing output to the summary README.md file
 - Replace my profiler fork with the other one
+- Allow the timing output to be a GitHub-style table
+
+- Add average / median / mean computations to the timing statistics? Per function?
+- Do timing for functions and timing for (unit)tests
 
 - Write timing data to the timing.txt file. Add an env var for threshold to control it
 

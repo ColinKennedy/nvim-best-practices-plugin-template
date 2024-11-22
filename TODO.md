@@ -16,14 +16,28 @@ eog /tmp/directory/benchmarks/all/median.png
 - Do the TODO_profiler.md work
 - Do all current branch (add_profiling) TODO notes
     - Can I just use the regular profile.lua module? Do I need the fork?
-- Fix the URL to luarocks to show the other location
+- Fix the URL to luarocks link to show the other location
+- Add more health checks
+ - Minimum Vim version
+ - Developer health checks
+  - has busted / stylua / llscheck / luacheck
 - Mention the Google "release please" workflow in the README.md
     - Explain releases in the Wiki
 
 - Add documentation on setting up renovate
  - Add details on how to delete renovate (remove the .json file)
 
+- release URLs should ignore the diff URL because, on release pages, that diff URL will always be broken. It's a false negative, basisically. Example:
+ - https://github.com/ColinKennedy/cursor-text-objects.nvim/pull/6
+
+
 ## Miscellaneous
+- Update instrucdtions to include cli_subcommand.lua
+- The instructions need to do a better job explaining how to remove the test spec files
+- missing information on how to set up release-please
+- Tell people to remove the CHANGELOG.md
+
+- Replace the old vim class type names
 - Windows busted support
 - Consider adding LuaCov coverage reports. It could be a PR review tool?
 
