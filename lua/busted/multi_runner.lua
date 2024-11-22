@@ -67,12 +67,14 @@ return function(options)
     end
 
     -- Load current working directory
-    local ok, err = path.chdir(path.normpath(cliArgs.directory))
+    err = path.chdir(path.normpath(cliArgs.directory))[2]
 
     if err then
         io.stderr:write(appName .. ": error: " .. err .. "\n")
         exit(1, forceExit)
     end
+
+    local ok
 
     -- If coverage arg is passed in, load LuaCovsupport
     if cliArgs.coverage then
