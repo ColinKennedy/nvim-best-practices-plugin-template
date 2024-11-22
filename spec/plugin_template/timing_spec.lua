@@ -5,7 +5,18 @@
 
 -- TODO: Finish the tests here
 
+local _P = {}
+
 local timing = require("busted.profile_using_flamegraph.timing")
+
+--- Check if the profiler `event` is an auto-profiled function.
+---
+---@param event _ProfileEvent The event to check.
+---@return boolean # If `event` was captured by the profiler or not.
+---
+function _P.is_function(event)
+    return event.cat == "function"
+end
 
 --- Get the timing report for `events` + `threshold`.
 ---
@@ -13,10 +24,13 @@ local timing = require("busted.profile_using_flamegraph.timing")
 ---@param threshold number? A 1-or-more value. The "top slowest" functions to show.
 ---@return string[] # The generated report, in human-readable format.
 ---
-local _get_profile_report_lines = function(events, threshold)
-    return timing.get_profile_report_lines(events, threshold, function(_)
-        return true
-    end)
+function _P.get_profile_report_lines(events, threshold)
+    return timing.get_profile_report_lines(events, {
+        predicate = function(_)
+            return true
+        end,
+        threshold = threshold,
+    })
 end
 
 --- Test using some `events` and make sure we get `expected`.
@@ -24,8 +38,8 @@ end
 ---@param events _ProfileEvent[] All of the flamegraph data to consider.
 ---@param expected string[] The generated reports.
 ---
-local function _run_simple_test(events, expected)
-    assert.same(expected, _get_profile_report_lines(events, #expected))
+function _P.run_simple_test(events, expected)
+    assert.same(expected, _P.get_profile_report_lines(events, #expected))
 end
 
 -- TODO: Add tests for
@@ -38,9 +52,35 @@ end
 ---     - leaf
 -- TODO: Need a test for if there are really small differences between numbers (floating precision issues)
 
+describe("get_profile_report_as_text", function()
+    it("works with basic events", function()
+        local events = {
+            { cat = "function", dur = 6.13, name = "first_child", tid = 1, ts = 1 },
+            { cat = "function", dur = 2.1561212333333, name = "second_child", tid = 1, ts = 8 },
+            { cat = "function", dur = 2.02, name = "another_event_that_is_past", tid = 1, ts = 11 },
+            { cat = "function", dur = 10.00, name = "outer_most", tid = 1, ts = 14 },
+        }
+
+        assert.equal(
+            [[
+────────────────────────────────────────────────────────────────
+total-time                                                 20.31
+────────────────────────────────────────────────────────────────
+count total-time      self-time       name
+────────────────────────────────────────────────────────────────
+1     10              10              outer_most
+1     6.13            6.13            first_child
+1     2.1561212333333 2.1561212333333 second_child
+1     2.02            2.02            another_event_that_is_past
+]],
+            timing.get_profile_report_as_text(events, { predicate = _P.is_function })
+        )
+    end)
+end)
+
 describe("self-time", function()
     it("works with a leaf-event that's at the end of the events stack #range", function()
-        _run_simple_test({
+        _P.run_simple_test({
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 8 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
@@ -49,7 +89,7 @@ describe("self-time", function()
     end)
 
     it("works with different threads and unsorted event data #threads", function()
-        _run_simple_test({
+        _P.run_simple_test({
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
             { cat = "function", dur = 6, name = "other_thread", tid = 2, ts = 1 },
             { cat = "function", dur = 2, name = "first_child", tid = 1, ts = 4 },
@@ -59,11 +99,11 @@ describe("self-time", function()
     end)
 
     it("works with no results #empty", function()
-        _run_simple_test({}, {})
+        _P.run_simple_test({}, {})
     end)
 
     it("works with single event #single", function()
-        _run_simple_test({
+        _P.run_simple_test({
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
         }, { "1 10 10 outer_most" })
     end)
@@ -73,7 +113,7 @@ describe("self-time", function()
     end)
 
     it("works with only multiple direct children #direct", function()
-        _run_simple_test({
+        _P.run_simple_test({
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 8 },
@@ -82,7 +122,7 @@ describe("self-time", function()
     end)
 
     it("works with only one direct child #direct - 001", function()
-        _run_simple_test({
+        _P.run_simple_test({
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
@@ -91,14 +131,14 @@ describe("self-time", function()
 
     -- TODO: Finish this
     -- it("works with only one direct child #direct - 002", function()
-    --     _run_simple_test({
+    --     _P.run_simple_test({
     --         { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
     --         { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
     --     }, { "1 10 4 outer_most" })
     -- end)
 
     it("works with only one direct child + one inner child", function()
-        _run_simple_test({
+        _P.run_simple_test({
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "inner_child", tid = 1, ts = 3 },
