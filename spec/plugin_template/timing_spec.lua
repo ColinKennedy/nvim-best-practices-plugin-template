@@ -22,7 +22,7 @@ end
 ---
 ---@param events _ProfileEvent[] All of the flamegraph data to consider.
 ---@param threshold number? A 1-or-more value. The "top slowest" functions to show.
----@return string[] # The generated report, in human-readable format.
+---@return _ProfilerLine[] # The computed data (that will later become the report).
 ---
 function _P.get_profile_report_lines(events, threshold)
     return timing.get_profile_report_lines(events, {
@@ -36,7 +36,7 @@ end
 --- Test using some `events` and make sure we get `expected`.
 ---
 ---@param events _ProfileEvent[] All of the flamegraph data to consider.
----@param expected string[] The generated reports.
+---@param expected _ProfilerLine[] # The computed data (that will later become the report).
 ---
 function _P.run_simple_test(events, expected)
     assert.same(expected, _P.get_profile_report_lines(events, #expected))
@@ -76,6 +76,30 @@ count total-time      self-time       name
             timing.get_profile_report_as_text(events, { predicate = _P.is_function })
         )
     end)
+
+    it("works direct-children #direct #asdf", function()
+        local events = {
+            { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 1 },
+            { cat = "function", dur = 3, name = "first_child", tid = 1, ts = 2 },
+            { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 7 },
+            { cat = "function", dur = 2.02, name = "another_event_that_is_past", tid = 1, ts = 11 },
+        }
+
+        assert.equal(
+            [[
+─────────────────────────────────────────────────────
+total-time                                      17.02
+─────────────────────────────────────────────────────
+count total-time self-time name                      
+─────────────────────────────────────────────────────
+1     10         10        outer_most                
+1     3          3         first_child               
+1     2.02       2.02      another_event_that_is_past
+1     2          2         second_child              
+]],
+            timing.get_profile_report_as_text(events, { predicate = _P.is_function })
+        )
+    end)
 end)
 
 describe("self-time", function()
@@ -85,7 +109,7 @@ describe("self-time", function()
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 8 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 14 },
-        }, { { ["self-time"] = 10, ["total-time"] = 10, count = 1, name = "outer_most" } })
+        }, { { count = 1, name = "outer_most", self_time = 10, total_time = 10 } })
     end)
 
     it("works with different threads and unsorted event data #threads", function()
@@ -95,7 +119,7 @@ describe("self-time", function()
             { cat = "function", dur = 2, name = "first_child", tid = 1, ts = 4 },
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 7 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { { ["self-time"] = 6, ["total-time"] = 10, count = 1, name = "outer_most" } })
+        }, { { count = 1, name = "outer_most", self_time = 6, total_time = 10 } })
     end)
 
     it("works with no results #empty", function()
@@ -105,7 +129,7 @@ describe("self-time", function()
     it("works with single event #single", function()
         _P.run_simple_test({
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
-        }, { { count = 1, ["total-time"] = 10, ["self-time"] = 10, name = "10 outer_most" } })
+        }, { { count = 1, name = "10 outer_most", self_time = 10, total_time = 10 } })
     end)
 
     it("works with only multiple direct children + multiple inner child per child #nested", function()
@@ -118,7 +142,7 @@ describe("self-time", function()
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 8 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { { ["self-time"] = 2, ["total-time"] = 10, count = 1, name = "outer_most" } })
+        }, { { count = 1, name = "outer_most", self_time = 2, total_time = 10 } })
     end)
 
     it("works with only one direct child #direct - 001", function()
@@ -126,7 +150,7 @@ describe("self-time", function()
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { { ["self-time"] = 4, ["total-time"] = 10, count = 1, name = "outer_most" } })
+        }, { { count = 1, name = "outer_most", self_time = 4, total_time = 10 } })
     end)
 
     -- TODO: Finish this
@@ -143,6 +167,6 @@ describe("self-time", function()
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "inner_child", tid = 1, ts = 3 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { { ["self-time"] = 8, ["total-time"] = 10, count = 1, name = "outer_most" } })
+        }, { { count = 1, name = "outer_most", self_time = 8, total_time = 10 } })
     end)
 end)
