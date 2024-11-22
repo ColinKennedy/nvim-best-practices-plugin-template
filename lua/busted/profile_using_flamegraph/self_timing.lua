@@ -13,20 +13,7 @@ local vlog = require("plugin_template._vendors.vlog")
 local _P = {}
 local M = {}
 
-local _DELTA = 1 ^ -12
 M.NOT_FOUND_INDEX = 1
-
---- Make sure `left` is greater than `right`.
----
---- This function tries to exclude possible floating point rounding issues.
----
----@param left number The number that we think is greater than `right`.
----@param right number The (expected) smaller value.
----@return boolean # If `left` is greater than `right`, return `true`.
----
-function _P.is_greater_number(left, right)
-    return left - _DELTA > right
-end
 
 --- Find all child events of `event`.
 ---
@@ -107,7 +94,7 @@ function _P.get_next_starting_index(event, starting_index, all_events, all_event
         found_index = index
 
         if reference_event.tid == event.tid then
-            if _P.is_greater_number(reference_event.ts, event.ts) then
+            if reference_event.ts > event.ts then
                 return index
             end
 
