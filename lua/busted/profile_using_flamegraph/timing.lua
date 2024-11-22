@@ -34,6 +34,13 @@ local M = {}
 local _Section = {
     count = "count",
     name = "name",
+    self_time = "self_time",
+    total_time = "total_time",
+}
+
+local _SectionLabel = {
+    count = "count",
+    name = "name",
     self_time = "self-time",
     total_time = "total-time",
 }
@@ -300,10 +307,10 @@ function M.get_profile_report_lines(events, options)
         local self_time = self_times[name]
 
         table.insert(output, {
-            [_Section.count] = count,
-            [_Section.total_time] = entry.dur,
-            [_Section.self_time] = self_time,
-            [_Section.name] = name,
+            count = count,
+            name = name,
+            self_time = self_time,
+            total_time = entry.dur,
         })
     end
 
