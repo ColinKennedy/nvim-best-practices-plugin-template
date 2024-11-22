@@ -13,9 +13,8 @@ local vlog = require("plugin_template._vendors.vlog")
 local _P = {}
 local M = {}
 
-local _DELTA = 1^-12
+local _DELTA = 1 ^ -12
 M.NOT_FOUND_INDEX = 1
-
 
 --- Make sure `left` is greater than `right`.
 ---
@@ -189,8 +188,8 @@ function M.get_self_times(events, all_events)
             --
             vlog.fmt_info(
                 'We think "%s" event is the last of its kind'
-                .. ' (last event in thread + calls no other functions) '
-                .. ' so we are using its full duration as its self-time.',
+                    .. " (last event in thread + calls no other functions) "
+                    .. " so we are using its full duration as its self-time.",
                 event
             )
 
@@ -210,6 +209,5 @@ function M.get_self_times(events, all_events)
 
     return output
 end
-
 
 return M

@@ -1,7 +1,10 @@
-.PHONY: api_documentation llscheck luacheck stylua test
+.PHONY: api_documentation flamegraph llscheck luacheck stylua test
 
 api_documentation:
 	nvim -u scripts/make_api_documentation/minimal_init.lua -l scripts/make_api_documentation/main.lua
+
+flamegraph:
+	nvim -l lua/busted/profiler_runner.lua
 
 llscheck:
 	VIMRUNTIME=`nvim -l scripts/print_vimruntime_environment_variable.lua` llscheck --configpath .luarc.json .
