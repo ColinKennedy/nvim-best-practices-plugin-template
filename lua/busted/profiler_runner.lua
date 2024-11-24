@@ -122,6 +122,8 @@ local function run_tests(profiler, release, root, maximum_tries)
         local duration = _P.profile_and_run(profiler, runner, { release = release, root = root })
 
         if duration < fastest_time then
+            vlog.fmt_debug('Faster time found. New: "%s". Old: "%s".', duration, fastest_time)
+
             counter = maximum_tries
             fastest_time = duration
             -- TODO: CHECK if copying here is actually needed
@@ -131,6 +133,8 @@ local function run_tests(profiler, release, root, maximum_tries)
         end
 
         if counter == 0 then
+            vlog.debug('Reached end of the profiler tests.')
+
             break
         end
     end
@@ -139,6 +143,7 @@ local function run_tests(profiler, release, root, maximum_tries)
         error("Something went wrong. We didn't find any profiler events to record.", 0)
     end
 
+    vlog.info("Now writing profiler results.")
     helper.write_all_summary_directory(release, profile, vim.fs.joinpath(root, "benchmarks", "all"), fastest_events)
 end
 
