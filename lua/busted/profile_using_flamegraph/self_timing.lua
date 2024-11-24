@@ -183,6 +183,8 @@ function M.get_self_times(events, all_events)
                 )
 
                 output[event.name] = event.dur
+
+                break
             end
 
             local other_time = 0
