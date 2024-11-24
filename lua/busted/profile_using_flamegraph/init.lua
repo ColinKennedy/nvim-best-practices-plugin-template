@@ -80,13 +80,17 @@ end
 --- we don't want to do. In that case, exit the Lua program instead.
 ---
 function _P.initialize_logging()
-    local success, _ = pcall(function() vlog.debug("Starting flamegraph generator.") end)
+    local success, _ = pcall(function()
+        vlog.debug("Starting flamegraph generator.")
+    end)
 
     if not success then
         vlog.new({}, true)
     end
 
-    local success, _ = pcall(function() vlog.debug("Starting flamegraph generator.") end)
+    success, _ = pcall(function()
+        vlog.debug("Starting flamegraph generator.")
+    end)
 
     if not success then
         io.stderr:write("Unable to initialize the logger. Stopping profiling.\n")

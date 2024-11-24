@@ -128,7 +128,8 @@ function _P.get_header_padding_data(lines)
         name = name_padding,
         self_time = self_time_padding,
         total_time = total_time_padding,
-    }, total_time
+    },
+        total_time
 end
 
 --- Create the header text. While we do that, also compute padding information.
@@ -162,7 +163,9 @@ function _P.get_header_text(lines, sections)
 
     local full_padding = #summary_line
     -- TODO: Add precision here. e.g. crop at the hundreths place
-    local top_line = ("%%-%ds %%7.2f"):format(full_padding - #_SectionLabel.total_time + 2):format(_SectionLabel.total_time, total_time)
+    local top_line = ("%%-%ds %%7.2f")
+        :format(full_padding - #_SectionLabel.total_time + 2)
+        :format(_SectionLabel.total_time, total_time)
     local line_break = ("─"):rep(full_padding) .. "\n"
     output = output .. line_break
     output = output .. top_line .. "\n"
@@ -210,7 +213,7 @@ function _P.get_slowest_functions(all_events)
             duration = duration + event.dur
         end
 
-        table.insert(durations, { name=name, events=events, duration=duration })
+        table.insert(durations, { name = name, events = events, duration = duration })
     end
 
     return vim.fn.sort(durations, function(left, right)
