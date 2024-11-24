@@ -157,9 +157,10 @@ function M.get_self_times(events, all_events)
     local all_events_count = #all_events
 
     for _, entry in ipairs(events) do
-        for _, event in ipairs(vim.fn.sort(entry.events, function(left, right)
-            return left.ts > right.ts
-        end))
+        for _, event in
+            ipairs(vim.fn.sort(entry.events, function(left, right)
+                return left.ts > right.ts
+            end))
         do
             ---@cast event _ProfileEvent
 
