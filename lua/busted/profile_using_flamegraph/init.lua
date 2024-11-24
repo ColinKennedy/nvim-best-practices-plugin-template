@@ -43,6 +43,8 @@ local _TEST_CACHE = {}
 ---@type string[]
 local _NAME_STACK = {}
 
+local _LOGGER_FAIL = 3
+
 local _P = {}
 
 ---@return string # The found test name (of all `describe` blocks).
@@ -70,6 +72,27 @@ function _P.handle_test_end()
     })
 
     _TEST_CACHE[name] = nil
+end
+
+--- Setup the logger for the first time, if needed.
+---
+--- If we cannot setup the logger then we're running the profiler blind, which
+--- we don't want to do. In that case, exit the Lua program instead.
+---
+function _P.initialize_logging()
+    local success, _ = pcall(function() vlog.debug("Starting flamegraph generator.") end)
+
+    if not success then
+        vlog.new({}, true)
+    end
+
+    local success, _ = pcall(function() vlog.debug("Starting flamegraph generator.") end)
+
+    if not success then
+        io.stderr:write("Unable to initialize the logger. Stopping profiling.\n")
+        io.stderr:flush()
+        os.exit(_LOGGER_FAIL)
+    end
 end
 
 --- Stop recording timging events for some unittest `path`
@@ -103,6 +126,8 @@ return function(options)
 
     local root = options.root
     local release = options.release
+
+    _P.initialize_logging()
 
     if not root or not release then
         vlog.info(

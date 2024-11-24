@@ -1741,6 +1741,8 @@ end
 ---    A 1-or-more index value of the argument that we stopped parsing on.
 ---
 function M.ParameterParser:_compute_matching_parsers(data, contexts)
+    ---@param flag_parameters cmdparse.Parameter[]
+    ---@param arguments argparse.Argument[]
     ---@return cmdparse.Parameter?
     ---@return number
     local function _seek_next_argument_from_flag(flag_parameters, arguments)
