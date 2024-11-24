@@ -150,13 +150,14 @@ function M.get_self_times(events, all_events)
     -- then subtract the direct child durations to compute each event's
     -- self-time.
 
-    --- Each thread ID and the index to start searching within `ranges`.
-    ---@type table<number, number>
-    ---
-    local starting_indices = {}
     local all_events_count = #all_events
 
     for _, entry in ipairs(events) do
+        --- Each thread ID and the index to start searching within `ranges`.
+        ---@type table<number, number>
+        ---
+        local starting_indices = {}
+
         for _, event in
             ipairs(vim.fn.sort(entry.events, function(left, right)
                 return left.ts > right.ts
@@ -192,7 +193,7 @@ function M.get_self_times(events, all_events)
                 other_time = other_time + child.dur
             end
 
-            output[event.name] = event.dur - other_time
+            output[event.name] = (output[event.name] or 0) + event.dur - other_time
         end
     end
 
