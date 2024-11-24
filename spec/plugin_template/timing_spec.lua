@@ -54,7 +54,7 @@ end
 
 describe("get_profile_report_as_text", function()
     describe("basic", function()
-        it("#multiple duplicate events #asdf", function()
+        it("#multiple duplicate events", function()
             local events = {
                 { cat = "function", dur = 10, name = "multicall", tid = 1, ts = 1 },
                 { cat = "function", dur = 2, name = "first_child", tid = 1, ts = 2 },
@@ -71,7 +71,7 @@ total-time                                17.02
 ───────────────────────────────────────────────
 count total-time self-time name
 ───────────────────────────────────────────────
-asdfasfsdfasfd
+ttttttttttttttttt
 ]],
                 timing.get_profile_report_as_text(events, { predicate = _P.is_function })
             )
