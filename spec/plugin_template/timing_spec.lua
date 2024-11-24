@@ -66,7 +66,7 @@ describe("get_profile_report_as_text", function()
             }, {
                 {
                     count = 4,
-                    mean_time = "1.125",
+                    mean_time = "1.13",
                     median_time = "1.00",
                     name = "tiny_child_big_total_duration",
                     self_time = "4.00",
@@ -95,14 +95,20 @@ describe("get_profile_report_as_text", function()
             })
 
             assert.equal(
-                [[
-───────────────────────────────────────────────
-total-time                                17.02
-───────────────────────────────────────────────
-count total-time self-time name
-───────────────────────────────────────────────
-ttttttttttttttttt
-]],
+                vim.fn.join(
+                    {
+                        "─────────────────────────────────────────────────────",
+                        "total-time                                      18.02",
+                        "─────────────────────────────────────────────────────",
+                        "count total-time self-time name                      ",
+                        "─────────────────────────────────────────────────────",
+                        "3     14.00      12.00     multicall                 ",
+                        "1     2.02       2.02      another_event_that_is_past",
+                        "1     2.00       2.00      first_child               ",
+                        ""
+                    },
+                    "\n"
+                ),
                 timing.get_profile_report_as_text(events, { predicate = _P.is_function })
             )
         end)
@@ -208,7 +214,7 @@ ttttttttttttttttt
 
         it("use non-default sections", function()
             local events = {
-                { cat = "function", dur = 5, name = "multicall", tid = 1, ts = 1 },
+                { cat = "function", dur = 4, name = "multicall", tid = 1, ts = 1 },
                 { cat = "function", dur = 2, name = "first_child", tid = 1, ts = 2 },
                 { cat = "function", dur = 3, name = "multicall", tid = 1, ts = 6 },
                 { cat = "function", dur = 1, name = "multicall", tid = 1, ts = 10 },
@@ -218,11 +224,11 @@ ttttttttttttttttt
             assert.equal(
                 [[
 ──────────────────────────────────────
-total-time                       17.02
+total-time                       12.02
 ──────────────────────────────────────
 name                       median mean
 ──────────────────────────────────────
-multicall                  10.00  5.00
+multicall                  3.00   2.67
 another_event_that_is_past 2.02   2.02
 first_child                2.00   2.00
 ]],
