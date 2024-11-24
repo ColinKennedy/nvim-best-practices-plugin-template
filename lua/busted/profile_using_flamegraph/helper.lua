@@ -910,7 +910,9 @@ end
 ---
 function M.get_median(values)
     -- Sort the numbers in ascending order
-    values = vim.fn.sort(values, function(left, right) return left > right end)
+    values = vim.fn.sort(values, function(left, right)
+        return left > right
+    end)
     local count = #values
 
     if count % 2 == 1 then

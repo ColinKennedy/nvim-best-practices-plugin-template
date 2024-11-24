@@ -68,7 +68,7 @@ return function(options)
         exit(0, forceExit)
     end
 
-    -- Load current working directory
+    local _
     _, err = path.chdir(path.normpath(cliArgs.directory))
 
     if err then
