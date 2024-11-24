@@ -54,6 +54,25 @@ end
 
 describe("get_profile_report_as_text", function()
     describe("basic", function()
+        it("sorts events correctly even if many small events sum up to be greater than single larger events", function()
+            _P.run_simple_test({
+                { cat = "function", dur = 1, name = "tiny_child_big_total_duration", tid = 1, ts = 0 },
+                { cat = "function", dur = 3, name = "single_big_event", tid = 2, ts = 2 },
+                { cat = "function", dur = 2, name = "tiny_child_big_total_duration", tid = 1, ts = 6 },
+                { cat = "function", dur = 0.5, name = "tiny_subchild", tid = 1, ts = 7 },
+                { cat = "function", dur = 2.5, name = "another_big_event", tid = 2, ts = 9 },
+                { cat = "function", dur = 0.5, name = "tiny_child_big_total_duration", tid = 1, ts = 12 },
+                { cat = "function", dur = 1, name = "tiny_child_big_total_duration", tid = 1, ts = 14 },
+            }, { {
+                count = 4,
+                mean_time = "1.125",
+                median_time = "1.00",
+                name = "tiny_child_big_total_duration",
+                self_time = '4.00',
+                total_time = '4.5',
+            } })
+        end)
+
         it("#multiple duplicate events", function()
             local events = {
                 { cat = "function", dur = 10, name = "multicall", tid = 1, ts = 1 },
@@ -62,7 +81,7 @@ describe("get_profile_report_as_text", function()
                 { cat = "function", dur = 1, name = "multicall", tid = 1, ts = 15 },
                 { cat = "function", dur = 2.02, name = "another_event_that_is_past", tid = 1, ts = 20 },
             }
-            _P.run_simple_test(events, { { count=3, mean='4.67', median='3.00', name='multicall', self_time='8.00', total_time='14.00' } })
+            _P.run_simple_test(events, { { count=3, mean_time='4.67', median_time='3.00', name='multicall', self_time='12.00', total_time='14.00' } })
 
             assert.equal(
                 [[
@@ -86,11 +105,11 @@ ttttttttttttttttt
             }
             _P.run_simple_test(
                 events,
-                { { count = 1, mean = '10.00', median = '10.00', name = "outer_most", self_time = '5.00', total_time = '10.00' } }
+                { { count = 1, mean_time = '10.00', median_time = '10.00', name = "outer_most", self_time = '5.00', total_time = '10.00' } }
             )
         end)
 
-        it("works with basic events", function()
+        it("works with #simple events", function()
             local events = {
                 { cat = "function", dur = 6.13, name = "first_child", tid = 1, ts = 1 },
                 { cat = "function", dur = 2.1561212333333, name = "second_child", tid = 1, ts = 8 },
@@ -181,21 +200,20 @@ second_child               2.00       2.00
 
             assert.equal(
                 [[
-───────────────────────────────────────────────
-total-time                                17.02
-───────────────────────────────────────────────
-name                       average median mean
-───────────────────────────────────────────────
-outer_most                 10.00      5.00
-first_child                3.00       3.00
-another_event_that_is_past 2.02       2.02
-second_child               2.00       2.00
+──────────────────────────────────────
+total-time                       17.02
+──────────────────────────────────────
+name                       median mean
+──────────────────────────────────────
+multicall                  10.00  5.00
+another_event_that_is_past 2.02   2.02
+first_child                2.00   2.00
 ]],
                 timing.get_profile_report_as_text(
                     events,
                     {
                         predicate = _P.is_function,
-                        sections = {"mean_time", "median_time", "average_time"},
+                        sections = {"name", "median_time", "mean_time"},
                     }
                 )
             )
@@ -210,7 +228,7 @@ describe("self-time", function()
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 8 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 14 },
-        }, { { count = 1, mean = '10.00', median = '10.00', name = "outer_most", self_time = '10.00', total_time = '10.00' } })
+        }, { { count = 1, mean_time = '10.00', median_time = '10.00', name = "outer_most", self_time = '10.00', total_time = '10.00' } })
     end)
 
     it("works with different threads and unsorted event data #threads", function()
@@ -220,7 +238,7 @@ describe("self-time", function()
             { cat = "function", dur = 2, name = "first_child", tid = 1, ts = 4 },
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 7 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { { count = 1, mean = "10.00", median = "10.00", name = "outer_most", self_time = '6.00', total_time = '10.00' } })
+        }, { { count = 1, mean_time = "10.00", median_time = "10.00", name = "outer_most", self_time = '6.00', total_time = '10.00' } })
     end)
 
     it("works with no results #empty", function()
@@ -232,8 +250,8 @@ describe("self-time", function()
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
         }, { {
             count = 1,
-            mean = "10.00",
-            median = "10.00",
+            mean_time = "10.00",
+            median_time = "10.00",
             name = "outer_most",
             self_time = '10.00',
             total_time = '10.00',
@@ -250,7 +268,7 @@ describe("self-time", function()
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 8 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { { count = 1, mean = '10.00', median = '10.00', name = "outer_most", self_time = '2.00', total_time = '10.00' } })
+        }, { { count = 1, mean_time = '10.00', median_time = '10.00', name = "outer_most", self_time = '2.00', total_time = '10.00' } })
     end)
 
     it("works with only one direct child #direct - 001", function()
@@ -258,7 +276,7 @@ describe("self-time", function()
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { { count = 1, mean = "10.00", median = "10.00", name = "outer_most", self_time = '4.00', total_time = '10.00' } })
+        }, { { count = 1, mean_time = "10.00", median_time = "10.00", name = "outer_most", self_time = '4.00', total_time = '10.00' } })
     end)
 
     -- TODO: Finish this
@@ -277,8 +295,8 @@ describe("self-time", function()
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
         }, { {
             count = 1,
-            mean = "10.00",
-            median = "10.00",
+            mean_time = "10.00",
+            median_time = "10.00",
             name = "outer_most",
             self_time = '2.00',
             total_time = '10.00',

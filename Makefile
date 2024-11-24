@@ -33,7 +33,7 @@ test: clone_git_dependencies
 	busted --helper spec/minimal_init.lua .
 
 profile_using_flamegraph:
-	busted --helper spec/minimal_init.lua --output=busted.profile_using_flamegraph .
+	nvim -l lua/busted/profiler_runner.lua
 
 profile_using_vim:
 	busted --helper spec/minimal_init.lua --output=busted.profile_using_vim .

@@ -8,6 +8,7 @@
 local helper = require("busted.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
 local profile = require("profile")
+local vlog = require("plugin_template._vendors.vlog")
 
 local _P = {}
 
@@ -146,6 +147,7 @@ local function main()
     local root, release = helper.get_environment_variable_data()
 
     helper.validate_gnuplot()
+    vlog.new({}, true)
 
     -- NOTE: Don't profile the unittest framework
     local profiler = profile
