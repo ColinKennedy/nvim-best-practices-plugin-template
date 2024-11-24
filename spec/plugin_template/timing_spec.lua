@@ -63,14 +63,16 @@ describe("get_profile_report_as_text", function()
                 { cat = "function", dur = 2.5, name = "another_big_event", tid = 2, ts = 9 },
                 { cat = "function", dur = 0.5, name = "tiny_child_big_total_duration", tid = 1, ts = 12 },
                 { cat = "function", dur = 1, name = "tiny_child_big_total_duration", tid = 1, ts = 14 },
-            }, { {
-                count = 4,
-                mean_time = "1.125",
-                median_time = "1.00",
-                name = "tiny_child_big_total_duration",
-                self_time = '4.00',
-                total_time = '4.5',
-            } })
+            }, {
+                {
+                    count = 4,
+                    mean_time = "1.125",
+                    median_time = "1.00",
+                    name = "tiny_child_big_total_duration",
+                    self_time = "4.00",
+                    total_time = "4.50",
+                },
+            })
         end)
 
         it("#multiple duplicate events", function()
@@ -81,7 +83,16 @@ describe("get_profile_report_as_text", function()
                 { cat = "function", dur = 1, name = "multicall", tid = 1, ts = 15 },
                 { cat = "function", dur = 2.02, name = "another_event_that_is_past", tid = 1, ts = 20 },
             }
-            _P.run_simple_test(events, { { count=3, mean_time='4.67', median_time='3.00', name='multicall', self_time='12.00', total_time='14.00' } })
+            _P.run_simple_test(events, {
+                {
+                    count = 3,
+                    mean_time = "4.67",
+                    median_time = "3.00",
+                    name = "multicall",
+                    self_time = "12.00",
+                    total_time = "14.00",
+                },
+            })
 
             assert.equal(
                 [[
@@ -103,10 +114,16 @@ ttttttttttttttttt
                 { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 7 },
                 { cat = "function", dur = 2.02, name = "another_event_that_is_past", tid = 1, ts = 11 },
             }
-            _P.run_simple_test(
-                events,
-                { { count = 1, mean_time = '10.00', median_time = '10.00', name = "outer_most", self_time = '5.00', total_time = '10.00' } }
-            )
+            _P.run_simple_test(events, {
+                {
+                    count = 1,
+                    mean_time = "10.00",
+                    median_time = "10.00",
+                    name = "outer_most",
+                    self_time = "5.00",
+                    total_time = "10.00",
+                },
+            })
         end)
 
         it("works with #simple events", function()
@@ -118,17 +135,18 @@ ttttttttttttttttt
             }
 
             assert.equal(
-                [[
-─────────────────────────────────────────────────────
-total-time                                      20.31
-─────────────────────────────────────────────────────
-count total-time self-time name                      
-─────────────────────────────────────────────────────
-1     10.00      10.00     outer_most                
-1     6.13       6.13      first_child               
-1     2.16       2.16      second_child              
-1     2.02       2.02      another_event_that_is_past
-]],
+                vim.fn.join({
+                    "─────────────────────────────────────────────────────",
+                    "total-time                                      20.31",
+                    "─────────────────────────────────────────────────────",
+                    "count total-time self-time name                      ",
+                    "─────────────────────────────────────────────────────",
+                    "1     10.00      10.00     outer_most                ",
+                    "1     6.13       6.13      first_child               ",
+                    "1     2.16       2.16      second_child              ",
+                    "1     2.02       2.02      another_event_that_is_past",
+                    "",
+                }, "\n"),
                 timing.get_profile_report_as_text(events, { predicate = _P.is_function })
             )
         end)
@@ -142,17 +160,18 @@ count total-time self-time name
             }
 
             assert.equal(
-                [[
-─────────────────────────────────────────────────────
-total-time                                      17.02
-─────────────────────────────────────────────────────
-count total-time self-time name                      
-─────────────────────────────────────────────────────
-1     10.00      5.00      outer_most                
-1     3.00       3.00      first_child               
-1     2.02       2.02      another_event_that_is_past
-1     2.00       2.00      second_child              
-]],
+                vim.fn.join({
+                    "─────────────────────────────────────────────────────",
+                    "total-time                                      17.02",
+                    "─────────────────────────────────────────────────────",
+                    "count total-time self-time name                      ",
+                    "─────────────────────────────────────────────────────",
+                    "1     10.00      5.00      outer_most                ",
+                    "1     3.00       3.00      first_child               ",
+                    "1     2.02       2.02      another_event_that_is_past",
+                    "1     2.00       2.00      second_child              ",
+                    "",
+                }, "\n"),
                 timing.get_profile_report_as_text(events, { predicate = _P.is_function })
             )
         end)
@@ -168,24 +187,22 @@ count total-time self-time name
             }
 
             assert.equal(
-                [[
-───────────────────────────────────────────────
-total-time                                17.02
-───────────────────────────────────────────────
-name                       total-time self-time
-───────────────────────────────────────────────
-outer_most                 10.00      5.00     
-first_child                3.00       3.00     
-another_event_that_is_past 2.02       2.02     
-second_child               2.00       2.00     
-]],
-                timing.get_profile_report_as_text(
-                    events,
-                    {
-                        predicate = _P.is_function,
-                        sections = {"name", "total_time", "self_time"},
-                    }
-                )
+                vim.fn.join({
+                    "───────────────────────────────────────────────",
+                    "total-time                                17.02",
+                    "───────────────────────────────────────────────",
+                    "name                       total-time self-time",
+                    "───────────────────────────────────────────────",
+                    "outer_most                 10.00      5.00     ",
+                    "first_child                3.00       3.00     ",
+                    "another_event_that_is_past 2.02       2.02     ",
+                    "second_child               2.00       2.00     ",
+                    "",
+                }, "\n"),
+                timing.get_profile_report_as_text(events, {
+                    predicate = _P.is_function,
+                    sections = { "name", "total_time", "self_time" },
+                })
             )
         end)
 
@@ -209,13 +226,10 @@ multicall                  10.00  5.00
 another_event_that_is_past 2.02   2.02
 first_child                2.00   2.00
 ]],
-                timing.get_profile_report_as_text(
-                    events,
-                    {
-                        predicate = _P.is_function,
-                        sections = {"name", "median_time", "mean_time"},
-                    }
-                )
+                timing.get_profile_report_as_text(events, {
+                    predicate = _P.is_function,
+                    sections = { "name", "median_time", "mean_time" },
+                })
             )
         end)
     end)
@@ -228,7 +242,16 @@ describe("self-time", function()
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 8 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 14 },
-        }, { { count = 1, mean_time = '10.00', median_time = '10.00', name = "outer_most", self_time = '10.00', total_time = '10.00' } })
+        }, {
+            {
+                count = 1,
+                mean_time = "10.00",
+                median_time = "10.00",
+                name = "outer_most",
+                self_time = "10.00",
+                total_time = "10.00",
+            },
+        })
     end)
 
     it("works with different threads and unsorted event data #threads", function()
@@ -238,7 +261,16 @@ describe("self-time", function()
             { cat = "function", dur = 2, name = "first_child", tid = 1, ts = 4 },
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 7 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { { count = 1, mean_time = "10.00", median_time = "10.00", name = "outer_most", self_time = '6.00', total_time = '10.00' } })
+        }, {
+            {
+                count = 1,
+                mean_time = "10.00",
+                median_time = "10.00",
+                name = "outer_most",
+                self_time = "6.00",
+                total_time = "10.00",
+            },
+        })
     end)
 
     it("works with no results #empty", function()
@@ -248,14 +280,16 @@ describe("self-time", function()
     it("works with single event #single", function()
         _P.run_simple_test({
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
-        }, { {
-            count = 1,
-            mean_time = "10.00",
-            median_time = "10.00",
-            name = "outer_most",
-            self_time = '10.00',
-            total_time = '10.00',
-        } })
+        }, {
+            {
+                count = 1,
+                mean_time = "10.00",
+                median_time = "10.00",
+                name = "outer_most",
+                self_time = "10.00",
+                total_time = "10.00",
+            },
+        })
     end)
 
     it("works with only multiple direct children + multiple inner child per child #nested", function()
@@ -268,7 +302,16 @@ describe("self-time", function()
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 8 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { { count = 1, mean_time = '10.00', median_time = '10.00', name = "outer_most", self_time = '2.00', total_time = '10.00' } })
+        }, {
+            {
+                count = 1,
+                mean_time = "10.00",
+                median_time = "10.00",
+                name = "outer_most",
+                self_time = "2.00",
+                total_time = "10.00",
+            },
+        })
     end)
 
     it("works with only one direct child #direct - 001", function()
@@ -276,7 +319,16 @@ describe("self-time", function()
             { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { { count = 1, mean_time = "10.00", median_time = "10.00", name = "outer_most", self_time = '4.00', total_time = '10.00' } })
+        }, {
+            {
+                count = 1,
+                mean_time = "10.00",
+                median_time = "10.00",
+                name = "outer_most",
+                self_time = "4.00",
+                total_time = "10.00",
+            },
+        })
     end)
 
     -- TODO: Finish this
@@ -293,13 +345,15 @@ describe("self-time", function()
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
             { cat = "function", dur = 2, name = "inner_child", tid = 1, ts = 8 },
             { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, { {
-            count = 1,
-            mean_time = "10.00",
-            median_time = "10.00",
-            name = "outer_most",
-            self_time = '2.00',
-            total_time = '10.00',
-        } })
+        }, {
+            {
+                count = 1,
+                mean_time = "10.00",
+                median_time = "10.00",
+                name = "outer_most",
+                self_time = "2.00",
+                total_time = "10.00",
+            },
+        })
     end)
 end)
