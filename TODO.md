@@ -37,8 +37,26 @@ eog /tmp/directory/benchmarks/all/median.png
 - missing information on how to set up release-please
 - Tell people to remove the CHANGELOG.md
 
+- Right now nothing in the CI is checking that functions exist or that their
+  parameters are correct / types are correct. For neovim calls or otherwise. We
+  need to fix this
+  Basically I want mypy / pylint in Neovim, but for lua. How?
+
+Add better linting. selene?
+
+https://raw.githubusercontent.com/folke/lazydev.nvim/refs/heads/main/stylua.toml
+
+https://github.com/neovim/nvim-lspconfig/blob/master/selene.toml
+https://github.com/Kampfkarren/selene/issues/284
+
+https://kampfkarren.github.io/selene/
+Lua's simple syntax and efficient use of memory make it an ideal choice for scripting. What are the best Lua static analysis tools and linters? The most popular Lua tools ranked by user votes are: Mega-Linter, Sigrid, callGraph, luacheck, Luanalysis.
+
+
 - Replace the old vim class type names
 - Windows busted support
+ - https://www.reddit.com/r/lua/comments/hainmo/am_i_retarded_or_luarocks_on_windows_is_this/
+
 - Consider adding LuaCov coverage reports. It could be a PR review tool?
 
 ```
