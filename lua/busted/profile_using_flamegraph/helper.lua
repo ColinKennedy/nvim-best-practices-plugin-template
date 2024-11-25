@@ -503,7 +503,7 @@ end
 ---@param destination string A directory to copy into. e.g. `"/fizz"`.
 ---
 function _P.copy_file_to_directory(source, destination)
-    _LOGGER.fmt_info('Copying "%s" source to "%s" destination.', source, destination)
+    _LOGGER:fmt_info('Copying "%s" source to "%s" destination.', source, destination)
 
     local source_file = io.open(source, "r")
 
