@@ -503,6 +503,8 @@ end
 ---@param destination string A directory to copy into. e.g. `"/fizz"`.
 ---
 function _P.copy_file_to_directory(source, destination)
+    _LOGGER.fmt_info('Copying "%s" source to "%s" destination.', source, destination)
+
     local source_file = io.open(source, "r")
 
     if not source_file then
@@ -699,6 +701,8 @@ function _P.write_graph_images(artifacts, root)
     local std_data_path
     local std_image_path = vim.fs.joinpath(root, "standard_deviation.png")
     local std_script_path
+
+    -- TODO: Make sure these images are in the README.md file
 
     if keep then
         mean_data_path = vim.fs.joinpath(root, "_mean.dat")
