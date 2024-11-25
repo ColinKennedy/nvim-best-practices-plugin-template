@@ -24,7 +24,7 @@
 local _P = {}
 local M = {}
 
-local _LEVELS = { trace = 10, debug = 20, info = 30, warn = 40, error = 50, fatal = 60}
+local _LEVELS = { trace = 10, debug = 20, info = 30, warn = 40, error = 50, fatal = 60 }
 
 --- Suggest a default level for all loggers.
 ---
@@ -39,7 +39,6 @@ function _P.get_initial_default_level(default)
 
     if not level_text then
         return default
-
     end
 
     local level = tonumber(level_text)
@@ -82,7 +81,6 @@ M.Logger = {
     end,
 }
 M.Logger.__index = M.Logger
-
 
 -- TODO: Replace the timing function that rounds precision with this rounder, instead.
 --- Approximate (round) `value` according to `increment`.
@@ -217,7 +215,9 @@ end
 ---@param ... any Any arguments.
 ---
 function M.Logger:debug(...)
-    self:_log_at_level(_LEVELS.debug, _MODES.debug, function(...) return self:_make_string(...) end, ...)
+    self:_log_at_level(_LEVELS.debug, _MODES.debug, function(...)
+        return self:_make_string(...)
+    end, ...)
 end
 
 --- Send a "we could not recover from some issue" message to the logger.
@@ -225,7 +225,9 @@ end
 ---@param ... any Any arguments.
 ---
 function M.Logger:error(...)
-    self:_log_at_level(_LEVELS.error, _MODES.error, function(...) return self:_make_string(...) end, ...)
+    self:_log_at_level(_LEVELS.error, _MODES.error, function(...)
+        return self:_make_string(...)
+    end, ...)
 end
 
 --- Send a "this issue affects multiple systems. It's a really bad error" message to the logger.
@@ -233,7 +235,9 @@ end
 ---@param ... any Any arguments.
 ---
 function M.Logger:fatal(...)
-    self:_log_at_level(_LEVELS.fatal, _MODES.fatal, function(...) return self:_make_string(...) end, ...)
+    self:_log_at_level(_LEVELS.fatal, _MODES.fatal, function(...)
+        return self:_make_string(...)
+    end, ...)
 end
 
 --- Send a message that is intended for developers to the logger.
@@ -281,7 +285,9 @@ end
 ---@param ... any Any arguments.
 ---
 function M.Logger:info(...)
-    self:_log_at_level(_LEVELS.info, _MODES.info, function(...) return self:_make_string(...) end, ...)
+    self:_log_at_level(_LEVELS.info, _MODES.info, function(...)
+        return self:_make_string(...)
+    end, ...)
 end
 
 --- Send a "this might be an issue or we recovered from an error" message to the logger.
@@ -289,7 +295,9 @@ end
 ---@param ... any Any arguments.
 ---
 function M.Logger:warning(...)
-    self:_log_at_level(_LEVELS.warning, _MODES.warning, function(...) return self:_make_string(...) end, ...)
+    self:_log_at_level(_LEVELS.warning, _MODES.warning, function(...)
+        return self:_make_string(...)
+    end, ...)
 end
 
 --- Create a new logger according to `options`.
@@ -300,7 +308,7 @@ end
 function M.Logger.new(options)
     if type(options) == "string" then
         ---@diagnostic disable-next-line: missing-fields
-        options = {name=options}
+        options = { name = options }
     end
     options = vim.tbl_deep_extend("force", M._DEFAULTS, options or {})
 
