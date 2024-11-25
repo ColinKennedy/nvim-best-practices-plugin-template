@@ -71,6 +71,8 @@ local function wrap_function(name, fn)
       local delta = clock() - start
       M.add_event({
         name = name,
+        pid = util.get_process_id(),
+        tid = util.get_thread_id(),
         args = arg_string,
         cat = "function",
         ph = "X",
@@ -143,9 +145,6 @@ M.hook_require = function(module_name)
 end
 
 M.clear_events = function()
-  -- TODO: Tell the stevearc or whoever that these are important
-  wrapped_modules = {}
-  wrapped_functions = {}
   events = {}
 end
 
