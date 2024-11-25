@@ -10,6 +10,45 @@
 - Replace my profiler fork with the other one
 - Allow the timing output to be a GitHub-style table
 
+-- TODO: Tell the stevearc or whoever that these are important
+wrapped_modules = {}
+wrapped_functions = {}
+
+- Add multi-threaded support to profile.nvim
+ - using uv. pid
+ - using thread code
+```lua
+local ffi = require("ffi")
+
+local M = {}
+
+if vim.fn.has("win32") or vim.fn.has("win64") then
+    function M.test()
+        ffi.cdef([[
+          typedef unsigned long DWORD;
+          DWORD GetCurrentThreadId();
+       ]])
+
+        -- Get and return the current thread ID
+        return ffi.C.GetCurrentThreadId()
+    end
+else
+    function M.test()
+        -- Declare the necessary C function (syscall for thread ID)
+        ffi.cdef([[
+       typedef int pid_t;
+       pid_t gettid();
+       ]])
+
+        -- Get and print the current thread ID
+        return ffi.C.gettid()
+    end
+end
+
+return M
+```
+
+
 --- TODO: IMPORTANT: @colin-k merge this back to profile.nvim
  - add pid info to the events
 
