@@ -382,12 +382,8 @@ end
 ---@return string # The generated report, in human-readable format.
 ---
 function M.get_profile_report_as_text(events, options)
-    if not options then
-        options = options or {}
-    else
-        options = vim.deepcopy(options)
-        options.precision = options.precision or _DEFAULT_PRECISION
-    end
+    options = vim.tbl_deep_extend("force", {precision=2}, options or {})
+
     local sections = options.sections or _DEFAULT_SECTIONS
     local lines = M.get_profile_report_lines(events, options)
 
