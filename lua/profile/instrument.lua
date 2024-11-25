@@ -143,6 +143,9 @@ M.hook_require = function(module_name)
 end
 
 M.clear_events = function()
+  -- TODO: Tell the stevearc or whoever that these are important
+  wrapped_modules = {}
+  wrapped_functions = {}
   events = {}
 end
 
