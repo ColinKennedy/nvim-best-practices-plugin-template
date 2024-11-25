@@ -3,6 +3,28 @@
 ---@module 'plugin_template._vendors.aggro.logging'
 ---
 
+---@class aggro.logging.SparseLoggerOptions
+---    All of the customizations a person can make to a logger instance.
+---@field float_precision number?
+---    A positive value (max of 1) to indicate the rounding precision. e.g.
+---    0.01 rounds to every hundredths.
+---@field level ("trace" | "debug" | "info" | "warn" | "error" | "fatal")?
+---    The minimum severity needed for this logger instance to output a log.
+---@field name string?
+---    An identifier for this logger.
+---@field output_path string?
+---    A path on-disk where logs are written to, if any.
+---@field use_console boolean?
+---    If `true`, logs are printed to the terminal / console.
+---@field use_file boolean?
+---    If `true`, logs are written to `output_path`.
+---@field use_highlights boolean?
+---    If `true`, logs are colorful. If `false`, they're mono-colored text.
+---@field use_neovim_commands boolean?
+---    If `true`, allow logs to submit as Neovim commands. If `false`, only
+---    built-in Lua commands will be used. This is useful if you want to log
+---    within a libuv thread and don't want to call `vim.schedule()`.
+
 ---@class aggro.logging.LoggerOptions
 ---    All of the customizations a person can make to a logger instance.
 ---@field float_precision number
@@ -357,7 +379,7 @@ end
 
 --- Find an existing logger with `name` or create one if it does not exist already.
 ---
----@param options aggro.logging.LoggerOptions | string The logger to create.
+---@param options aggro.logging.LoggerOptions | aggro.logging.SparseLoggerOptions | string The logger to create.
 ---@return aggro.logging.Logger # The created instance.
 ---
 function M.get_logger(options)
@@ -367,6 +389,8 @@ function M.get_logger(options)
     end
 
     options = vim.tbl_deep_extend("force", M._DEFAULTS, options or {})
+    ---@cast options aggro.logging.LoggerOptions
+
     local name = options.name
 
     if not name then
