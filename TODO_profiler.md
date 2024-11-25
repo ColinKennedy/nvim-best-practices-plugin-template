@@ -2,7 +2,6 @@
 - Do TODO notes
 
 - Make a minimum repro explaining why profiler.nvim is not working as expected
-- Add logging everywhere
 
 - Document how to get a flame graph from that output easily
 
