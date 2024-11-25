@@ -16,10 +16,10 @@ local M = {}
 ---
 function M.run(count)
     configuration.initialize_data_if_needed()
-    _LOGGER.debug("Running goodnight-moon count-sheep")
+    _LOGGER:debug("Running goodnight-moon count-sheep")
 
     if count < 1 then
-        _LOGGER.fmt_warn('Count "%s" cannot be less than 1. Using 1 instead.', count)
+        _LOGGER:fmt_warning('Count "%s" cannot be less than 1. Using 1 instead.', count)
 
         count = 1
     end

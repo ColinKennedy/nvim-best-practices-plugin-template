@@ -375,7 +375,7 @@ function M.parse_arguments(text)
         _add_to_output()
     end
 
-    _LOGGER.fmt_debug('Got "%s" arguments.', { arguments = output, text = text, remainder = remainder })
+    _LOGGER:fmt_debug('Got "%s" arguments.', { arguments = output, text = text, remainder = remainder })
 
     return { arguments = output, text = text, remainder = remainder }
 end

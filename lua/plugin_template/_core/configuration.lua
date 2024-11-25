@@ -82,7 +82,7 @@ function M.initialize_data_if_needed()
 
     vim.g.loaded_plugin_template = true
 
-    _LOGGER.debug("Initialized plugin-template's configuration.")
+    _LOGGER:debug("Initialized plugin-template's configuration.")
 end
 
 --- Merge `data` with the user's current configuration.

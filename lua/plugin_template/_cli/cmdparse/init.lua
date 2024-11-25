@@ -629,7 +629,7 @@ local function _validate_last_argument(argument, parser, contexts)
         return false
     end
 
-    _LOGGER.fmt_error('Unknown argument type "%s" found and we don\'t know how to check it.', argument)
+    _LOGGER:fmt_error('Unknown argument type "%s" found and we don\'t know how to check it.', argument)
 
     return false
 end
@@ -1129,7 +1129,7 @@ function M.ParameterParser:_get_completion(data, column, options)
     local finished = index == #stripped.arguments
 
     if not finished then
-        _LOGGER.fmt_error('Could not fully parse "%s".', stripped)
+        _LOGGER:fmt_error('Could not fully parse "%s".', stripped)
 
         return {}
     end
@@ -1458,7 +1458,7 @@ function M.ParameterParser:_handle_exact_flag_parameters(flags, arguments, names
             -- NOTE: This code shouldn't be possible because conditions above
             -- should have covered all cases.
             --
-            _LOGGER.error("Unexpected code path found. This is probably a bug. Fix!")
+            _LOGGER:error("Unexpected code path found. This is probably a bug. Fix!")
 
             local arguments_ = tabler.get_slice(arguments, 1, nargs + 1)
 
@@ -1901,7 +1901,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
             end
 
             if not found then
-                _LOGGER.fmt_error(
+                _LOGGER:fmt_error(
                     'Argument "%s" could not be parsed. Please check your spelling and try again.',
                     argument_name
                 )
@@ -1923,7 +1923,7 @@ function M.ParameterParser:_compute_matching_parsers(data, contexts)
             found_item, used_arguments = _seek_next_argument_from_flag(flag_parameters, arguments)
 
             if not found_item then
-                _LOGGER.fmt_error(
+                _LOGGER:fmt_error(
                     'Argument "%s" could not be parsed. Please check your spelling and try again.',
                     argument_name
                 )
