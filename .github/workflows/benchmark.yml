@@ -81,6 +81,7 @@ jobs:
         BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH: ${{ github.workspace }}
         BUSTED_PROFILER_FLAMEGRAPH_VERSION: ${{ github.event.release.tag_name }}
         LUA_PATH: "lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH"
+        TIMING_THRESHOLD: 30  # This is an arbitrary number. Change it at will
       run: |
         echo "BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=$BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH"
         echo "BUSTED_PROFILER_FLAMEGRAPH_VERSION=$BUSTED_PROFILER_FLAMEGRAPH_VERSION"
