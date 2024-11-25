@@ -7,11 +7,10 @@ local helper = require("busted.profile_using_flamegraph.helper")
 local self_timing = require("busted.profile_using_flamegraph.self_timing")
 local tabler = require("plugin_template._core.tabler")
 
--- TODO: Docstring
----@class _GroupedEvents
----@field duration number
----@field events _ProfileEvent[]
----@field name string
+---@class _GroupedEvents Some profile events that have a common `name`.
+---@field duration number The combined total of all of the events.
+---@field events _ProfileEvent[] Each individual time that `name` was found.
+---@field name string The recorded profiler event.
 
 ---@class _ProfilerLine The data for a row of the user's final profiler report.
 ---@field count number The number of times that the function was called.
