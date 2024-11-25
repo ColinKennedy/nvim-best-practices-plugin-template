@@ -8,9 +8,9 @@
 local helper = require("busted.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
 local profile = require("profile")
-local vlog = require("plugin_template._vendors.vlog")
+local logging = require("plugin_template._vendors.aggro.logging")
 
-local _LOGGER = vlog.get_logger("busted.profiler_runner")
+local _LOGGER = logging.get_logger("busted.profiler_runner")
 local _P = {}
 
 --- Delete all Lua terminal-provided arguments (so we can replace them later).
