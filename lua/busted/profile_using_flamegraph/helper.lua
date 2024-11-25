@@ -67,7 +67,9 @@ local M = {}
 --
 local _DEFAULT_MAXIMUM_ARTIFACTS = 35
 
+local _FLAMEGRAPH_FILE_NAME = "flamegraph.json"
 local _PROFILE_FILE_NAME = "profile.json"
+local _TIMING_FILE_NAME = "timing.txt"
 
 local _MEAN_SCRIPT_TEMPLATE = [[
 set xlabel "Release"
@@ -683,13 +685,16 @@ function _P.write_graph_artifact(release, profiler, root, events)
     local directory = vim.fs.joinpath(root, string.format("%s-%s", release, os.date("%Y_%m_%d-%H_%M_%S")))
     vim.fn.mkdir(directory, "p")
 
-    local flamegraph_path = vim.fs.joinpath(directory, "flamegraph.json")
+    local flamegraph_path = vim.fs.joinpath(directory, _FLAMEGRAPH_FILE_NAME)
     _P.write_flamegraph(profiler, flamegraph_path)
 
     local profile_path = vim.fs.joinpath(directory, _PROFILE_FILE_NAME)
     _P.write_profile_summary(release, profile_path, events)
 
-    return flamegraph_path, profile_path
+    local timing_path = vim.fs.joinpath(directory, _TIMING_FILE_NAME)
+    local timing_text = _P.write_timing(events, timing_path)
+
+    return flamegraph_path, profile_path, timing_path, timing_text
 end
 
 --- Create the gnuplot line-graphs.
@@ -905,10 +910,9 @@ end
 
 --- TODO: Docstring
 ---@param events _ProfileEvent[]
----@param root string
+---@param path string
 ---@return string
-function _P.write_timing(events, root)
-    local path = vim.fs.joinpath(root, "timing.txt")
+function _P.write_timing(events, path)
     _LOGGER:fmt_info('Writing "%s" timing file.', path)
     local file = io.open(path, "w")
 
@@ -947,6 +951,28 @@ function M.get_environment_variable_data()
     _P.validate_release(release)
 
     return root, release
+end
+
+--- Add any missing information to `events`.
+---
+--- We mostly need this because profile.nvim doesn't add `pid` or `tid` to
+--- events until the events are exported. And we need `tid` at least.
+---
+--- In the future hopefully this information is included by default and this
+--- function can just be removed.
+---
+--- Warning:
+---     `events` may be directly edited.
+---
+---@param events _ProfileEvent[]
+---    All of the profiler event data to mutate.
+---
+function _P.extend_events(events)
+    for _, event in ipairs(events) do
+        -- TODO: Edit profile.nvim to export the default TID / PID
+        event.pid = event.pid or 1
+        event.tid = event.tid or 1
+    end
 end
 
 --- Make sure `gnuplot` is installed and is accessible.
@@ -1009,7 +1035,13 @@ function M.write_all_summary_directory(release, profiler, root, events, maximum)
 
     local artifacts_root = vim.fs.joinpath(root, "artifacts")
     events = events or instrument.get_events()
-    local flamegraph_path, profile_path = _P.write_graph_artifact(release, profiler, artifacts_root, events)
+    _P.extend_events(events)
+    local flamegraph_path, profile_path, timing_path, timing_text = _P.write_graph_artifact(
+        release,
+        profiler,
+        artifacts_root,
+        events
+    )
     local readme_path = vim.fs.joinpath(root, "README.md")
 
     local artifacts = _P.get_graph_artifacts(artifacts_root, maximum)
@@ -1018,6 +1050,7 @@ function M.write_all_summary_directory(release, profiler, root, events, maximum)
         _LOGGER:fmt_info('Copying "%s" release to "%s" path.', release, root)
         _P.copy_file_to_directory(flamegraph_path, root)
         _P.copy_file_to_directory(profile_path, root)
+        _P.copy_file_to_directory(timing_path, root)
     else
         _LOGGER:fmt_warning(
             'Release "%s" is not the latest, stable version. We skipped copying to the "%s" root directory.',
@@ -1027,7 +1060,6 @@ function M.write_all_summary_directory(release, profiler, root, events, maximum)
     end
 
     local graphs = _P.write_graph_images(artifacts, root)
-    local timing_text = _P.write_timing(events, root)
     _P.write_summary_readme(artifacts, graphs, readme_path, timing_text)
 end
 

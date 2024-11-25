@@ -135,10 +135,11 @@ end
 ---
 ---@param lines _ProfilerLine[] The computed data (that will later become the report).
 ---@param sections _ProfileReportSection[] The columns to show in the template.
+---@param precision number The number of decimals to keep. e.g. `123.06789`. 0 means "don't crop".
 ---@return string # The blob of header text.
 ---@return _ProfilerReportPaddings # All of the column padding data.
 ---
-function _P.get_header_text(lines, sections)
+function _P.get_header_text(lines, sections, precision)
     local output = ""
 
     local paddings, total_time = _P.get_header_padding_data(lines)
@@ -381,11 +382,16 @@ end
 ---@return string # The generated report, in human-readable format.
 ---
 function M.get_profile_report_as_text(events, options)
-    options = options or {}
+    if not options then
+        options = options or {}
+    else
+        options = vim.deepcopy(options)
+        options.precision = options.precision or _DEFAULT_PRECISION
+    end
     local sections = options.sections or _DEFAULT_SECTIONS
     local lines = M.get_profile_report_lines(events, options)
 
-    local header, paddings = _P.get_header_text(lines, sections)
+    local header, paddings = _P.get_header_text(lines, sections, options.precision)
     local line_template = _P.get_line_template(paddings, sections) .. "\n"
 
     local output = header
