@@ -615,6 +615,12 @@ thing]],
 end)
 
 describe("bugs", function()
+    before_each(function()
+        mock_test.save_loggers()
+        mock_test.silence_loggers()
+    end)
+    after_each(mock_test.reset_loggers)
+
     describe("auto-complete", function()
         it("works with arbitrary-thing's flags", function()
             local parser = cmdparse.ParameterParser.new({ "arbitrary-thing", help = "Prepare to sleep or sleep." })

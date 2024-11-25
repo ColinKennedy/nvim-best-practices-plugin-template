@@ -180,8 +180,6 @@
 --
 -- return log
 
--- TODO: Docstrings
-
 ---@class vlog.LoggerOptions
 ---    All of the customizations a person can make to a logger instance.
 ---@field float_precision number
@@ -199,6 +197,8 @@
 ---    If `true`, logs are written to `output_path`.
 ---@field use_highlights boolean
 ---    If `true`, logs are colorful. If `false`, they're mono-colored text.
+
+-- TODO: Make sure colors work as expected
 
 ---@class vlog._LevelMode Data related to `level` to consider.
 ---@field highlight string The Neovim highlight group name used to colorize the logs.
