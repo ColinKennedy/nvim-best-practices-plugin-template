@@ -68,6 +68,8 @@ local _DEFAULT_MAXIMUM_ARTIFACTS = 35
 local _PROFILE_FILE_NAME = "profile.json"
 
 local _MEAN_SCRIPT_TEMPLATE = [[
+set xlabel "Release"
+set ylabel "Nanoseconds (lower is better)"
 set xtics rotate
 set term png
 set output '%s'
@@ -75,6 +77,8 @@ plot "%s" using 2:xtic(1) title 'Mean' with lines linetype 1 linewidth 3
 ]]
 
 local _MEDIAN_SCRIPT_TEMPLATE = [[
+set xlabel "Release"
+set ylabel "Nanoseconds (lower is better)"
 set xtics rotate
 set term png
 set output '%s'
@@ -82,6 +86,8 @@ plot "%s" using 2:xtic(1) title 'Median' with lines linetype 1 linewidth 3
 ]]
 
 local _STD_SCRIPT_TEMPLATE = [[
+set xlabel "Release"
+set ylabel "(lower is better)"
 set terminal pngcairo enhanced font 'Arial,12' linewidth 2
 set xtics rotate
 set term png
