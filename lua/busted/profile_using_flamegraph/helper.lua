@@ -489,7 +489,7 @@ function _P.compare_number_arrays(left, right)
         return 1 -- left is greater because it has more elements
     end
 
-    return 1
+    return 0
 end
 
 --- Copy `source` file on-disk to the `destination` directory.
