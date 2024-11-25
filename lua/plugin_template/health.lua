@@ -501,13 +501,15 @@ function M.check(data)
 
     if vim.version.lt(version, minimum) then
         vim.health.error(
-            string.format('Neovim version "%s" is too low. The minimum version is "%s".', version, minimum)
+            string.format(
+                'Neovim version "%s" is too low. The minimum version is "%s".',
+                version,
+                minimum
+            )
         )
 
         return
     end
-
-    _get_developer_environment_warnings()
 
     local issues = M.get_issues(data)
 
