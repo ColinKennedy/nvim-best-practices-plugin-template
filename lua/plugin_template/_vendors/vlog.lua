@@ -102,117 +102,34 @@ function _P.round(value, increment)
     return (value > 0 and math.floor(value + 0.5) or math.ceil(value - 0.5)) * increment
 end
 
-
---- Serialize log arguments into strings and merge them into a single log message.
+--- Format a template string and log it according to `level` and `mode`.
 ---
----@param ... any The arguments to consider.
----@return string # The genreated message.
+---@param level number
+---    The level for the log (debug, info, etc).
+---@param mode vlog._LevelMode
+---    Data related to `level` to consider.
+---@param ... any
+---    Arguments to pass to `message_maker`. It's expected that the first
+---    argument is a template like `"some thing to %s replace %d here"`, and
+---    then the next arguments might be `"asdf"` and `8`, to fill in the template.
 ---
-function M.Logger:_make_string(...)
-    local characters = {}
+function M.Logger:_format_and_log_at_level(level, mode, ...)
+    local passed = { ... }
 
-    for index = 1, select("#", ...) do
-        local text = select(index, ...)
+    return self:_log_at_level(level, mode, function()
+        local template = table.remove(passed, 1)
+        local inspected = {}
 
-        if type(text) == "number" and self._float_precision then
-            text = tostring(_P.round(text, self._float_precision))
-        elseif type(text) == "table" then
-            text = vim.inspect(text)
-        else
-            text = tostring(text)
+        for _, value in ipairs(passed) do
+            if type(value) == "string" then
+                table.insert(inspected, value)
+            else
+                table.insert(inspected, vim.inspect(value))
+            end
         end
 
-        characters[#characters + 1] = text
-    end
-
-    return table.concat(characters, " ")
-end
-
---- Send a message that is intended for developers to the logger.
----
----@param ... any Any arguments.
----
-function M.Logger:debug(...)
-    self:_log_at_level(_LEVELS.debug, _MODES.debug, function(...) return self:_make_string(...) end, ...)
-end
-
---- Send a "we could not recover from some issue" message to the logger.
----
----@param ... any Any arguments.
----
-function M.Logger:error(...)
-    self:_log_at_level(_LEVELS.error, _MODES.error, function(...) return self:_make_string(...) end, ...)
-end
-
---- Send a "this issue affects multiple systems. It's a really bad error" message to the logger.
----
----@param ... any Any arguments.
----
-function M.Logger:fatal(...)
-    self:_log_at_level(_LEVELS.fatal, _MODES.fatal, function(...) return self:_make_string(...) end, ...)
-end
-
-function M.Logger:fmt_debug(...)
-    self:_format_and_log_at_level(_LEVELS.debug, _MODES.debug, ...)
-end
-
-function M.Logger:fmt_error(...)
-    self:_format_and_log_at_level(_LEVELS.error, _MODES.error, ...)
-end
-
-function M.Logger:fmt_fatal(...)
-    self:_format_and_log_at_level(_LEVELS.fatal, _MODES.fatal, ...)
-end
-
-function M.Logger:fmt_info(...)
-    self:_format_and_log_at_level(_LEVELS.info, _MODES.info, ...)
-end
-
-function M.Logger:fmt_warning(...)
-    self:_format_and_log_at_level(_LEVELS.warning, _MODES.warning, ...)
-end
-
---- Send a user-facing message to the logger.
----
----@param ... any Any arguments.
----
-function M.Logger:info(...)
-    self:_log_at_level(_LEVELS.info, _MODES.info, function(...) return self:_make_string(...) end, ...)
-end
-
---- Send a "this might be an issue or we recovered from an error" message to the logger.
----
----@param ... any Any arguments.
----
-function M.Logger:warning(...)
-    self:_log_at_level(_LEVELS.warning, _MODES.warning, function(...) return self:_make_string(...) end, ...)
-end
-
---- Create a new logger according to `options`.
----
----@param options vlog.LoggerOptions | string The logger to create.
----@return vlog.Logger # The created instance.
----
-function M.Logger.new(options)
-    if type(options) == "string" then
-        ---@diagnostic disable-next-line: missing-fields
-        options = {name=options}
-    end
-    options = vim.tbl_deep_extend("force", M._DEFAULTS, options or {})
-
-    ---@class vlog.Logger
-    local self = setmetatable({}, M.Logger)
-
-    self._float_precision = options.float_precision
-    self._use_console = options.use_console
-    self._use_file = options.use_file
-    self._use_highlights = options.use_highlights
-    self._output_path = options.output_path
-        or vim.fs.joinpath(vim.api.nvim_call_function("stdpath", { "data" }), "default.log")
-    self.level = options.level
-    self.name = options.name
-
-    return self
+        return string.format(template, unpack(inspected))
+    end)
 end
 
 --- Decide whether or not to log and how.
@@ -268,6 +185,138 @@ function M.Logger:_log_at_level(level, mode, message_maker, ...)
             handler:close()
         end
     end
+end
+
+--- Serialize log arguments into strings and merge them into a single log message.
+---
+---@param ... any The arguments to consider.
+---@return string # The genreated message.
+---
+function M.Logger:_make_string(...)
+    local characters = {}
+
+    for index = 1, select("#", ...) do
+        local text = select(index, ...)
+
+        if type(text) == "number" and self._float_precision then
+            text = tostring(_P.round(text, self._float_precision))
+        elseif type(text) == "table" then
+            text = vim.inspect(text)
+        else
+            text = tostring(text)
+        end
+
+        characters[#characters + 1] = text
+    end
+
+    return table.concat(characters, " ")
+end
+
+--- Send a message that is intended for developers to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:debug(...)
+    self:_log_at_level(_LEVELS.debug, _MODES.debug, function(...) return self:_make_string(...) end, ...)
+end
+
+--- Send a "we could not recover from some issue" message to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:error(...)
+    self:_log_at_level(_LEVELS.error, _MODES.error, function(...) return self:_make_string(...) end, ...)
+end
+
+--- Send a "this issue affects multiple systems. It's a really bad error" message to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:fatal(...)
+    self:_log_at_level(_LEVELS.fatal, _MODES.fatal, function(...) return self:_make_string(...) end, ...)
+end
+
+--- Send a message that is intended for developers to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:fmt_debug(...)
+    self:_format_and_log_at_level(_LEVELS.debug, _MODES.debug, ...)
+end
+
+--- Send a "we could not recover from some issue" message to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:fmt_error(...)
+    self:_format_and_log_at_level(_LEVELS.error, _MODES.error, ...)
+end
+
+--- Send a "this issue affects multiple systems. It's a really bad error" message to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:fmt_fatal(...)
+    self:_format_and_log_at_level(_LEVELS.fatal, _MODES.fatal, ...)
+end
+
+--- Send a user-facing message to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:fmt_info(...)
+    self:_format_and_log_at_level(_LEVELS.info, _MODES.info, ...)
+end
+
+--- Send a "this might be an issue or we recovered from an error" message to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:fmt_warning(...)
+    self:_format_and_log_at_level(_LEVELS.warning, _MODES.warning, ...)
+end
+
+--- Send a user-facing message to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:info(...)
+    self:_log_at_level(_LEVELS.info, _MODES.info, function(...) return self:_make_string(...) end, ...)
+end
+
+--- Send a "this might be an issue or we recovered from an error" message to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:warning(...)
+    self:_log_at_level(_LEVELS.warning, _MODES.warning, function(...) return self:_make_string(...) end, ...)
+end
+
+--- Create a new logger according to `options`.
+---
+---@param options vlog.LoggerOptions | string The logger to create.
+---@return vlog.Logger # The created instance.
+---
+function M.Logger.new(options)
+    if type(options) == "string" then
+        ---@diagnostic disable-next-line: missing-fields
+        options = {name=options}
+    end
+    options = vim.tbl_deep_extend("force", M._DEFAULTS, options or {})
+
+    ---@class vlog.Logger
+    local self = setmetatable({}, M.Logger)
+
+    self._float_precision = options.float_precision
+    self._use_console = options.use_console
+    self._use_file = options.use_file
+    self._use_highlights = options.use_highlights
+    self._output_path = options.output_path
+        or vim.fs.joinpath(vim.api.nvim_call_function("stdpath", { "data" }), "default.log")
+    self.level = options.level
+    self.name = options.name
+
+    return self
 end
 
 ---@return string # The path on-disk where logs will be written to.
