@@ -26,7 +26,6 @@ per-describe block? Try that later
     - Can I just use the regular profile.lua module? Do I need the fork?
 - Fix the URL to luarocks link to show the other location
 - Add more health checks
- - Minimum Vim version
  - Developer health checks
   - has busted / stylua / llscheck / luacheck
 - Mention the Google "release please" workflow in the README.md

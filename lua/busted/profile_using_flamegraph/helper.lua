@@ -4,6 +4,8 @@
 ---
 
 local instrument = require("profile.instrument")
+local numeric = require("busted.profile_using_flamegraph.numeric")
+local timing = require("busted.profile_using_flamegraph.timing")
 local vlog = require("plugin_template._vendors.vlog")
 
 ---@class _GraphArtifact Summary data about a whole suite of profiler data.
@@ -345,7 +347,7 @@ function _P.get_profile_statistics(events)
     local last_event = _P.get_latest_timed_event(events)
 
     return {
-        median = M.get_median(durations),
+        median = numeric.get_median(durations),
         mean = sum / #durations,
         total = last_event.ts + last_event.dur,
         standard_deviation = _P.get_standard_deviation(durations),
@@ -664,13 +666,17 @@ end
 ---    The object used to record function call times.
 ---@param root string
 ---    The ".../benchmarks/all" directory to create or update.
----@param events _ProfileEvent[]?
+---@param events _ProfileEvent[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
 ---@return string
 ---    An absolute path to the created flamegraph.json file.
 ---@return string
----    An absolute path to the created profile.json.
+---    An absolute path to the created profile.json file.
+---@return string
+---    An absolute path to the created timing.txt file.
+---@return string
+---    The contents of the timing.txt file.
 ---
 function _P.write_graph_artifact(release, profiler, root, events)
     _LOGGER:info("Writing date-time profiler directory data.")
@@ -786,7 +792,7 @@ end
 ---    The current release to make. e.g. `"v1.2.3"`.
 ---@param path string
 ---    An absolute path to the ".../benchmarks/all/profile.json" to create.
----@param events _ProfileEvent[]?
+---@param events _ProfileEvent[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
 ---
@@ -810,7 +816,7 @@ function _P.write_profile_summary(release, path, events)
             release = release,
             uv = vim.uv.version(),
         },
-        statistics = _P.get_profile_statistics(events or instrument.get_events()),
+        statistics = _P.get_profile_statistics(events),
         hardware = { cpu = cpu, platform = vim.loop.os_uname().sysname },
     }
 
@@ -830,8 +836,9 @@ end
 ---@param artifacts _GraphArtifact[] All found profile record events so far, if any.
 ---@param graphs _GnuplotData[] All of the graphs that were written to-disk.
 ---@param path string The path on-disk to write the README.md to.
+---@param timing_text string The contents of the timing.txt file.
 ---
-function _P.write_summary_readme(artifacts, graphs, path)
+function _P.write_summary_readme(artifacts, graphs, path, timing_text)
     _P.make_parent_directory(path)
 
     local file = io.open(path, "w")
@@ -868,7 +875,12 @@ In the graph and data below, lower numbers are better
         file:write(string.format('<p align="center"><img src="%s"/></p>\n', vim.fs.basename(graph.image_path)))
     end
 
+
+    file:write(string.format("## Most Recent Timing\n\n```\n%s\n```\n\n", timing_text))
+
     file:write([[
+
+## Past Runs
 
 | Release | Platform | CPU | Neovim | Total | Median | Mean | StdDev |
 |---------|----------|-----|--------|-------|--------|------|--------|
@@ -889,6 +901,26 @@ In the graph and data below, lower numbers are better
             )
         )
     end
+end
+
+--- TODO: Docstring
+---@param events _ProfileEvent[]
+---@param root string
+---@return string
+function _P.write_timing(events, root)
+    local path = vim.fs.joinpath(root, "timing.txt")
+    _LOGGER:fmt_info('Writing "%s" timing file.', path)
+    local file = io.open(path, "w")
+
+    if not file then
+        error(string.format('Path "%s" could not be written.', path), 0)
+    end
+
+    local text = timing.get_profile_report_as_text(events)
+    file:write(text)
+    file:close()
+
+    return text
 end
 
 --- Get all input data needed for us to run + save flamegraph data to-disk.
@@ -915,28 +947,6 @@ function M.get_environment_variable_data()
     _P.validate_release(release)
 
     return root, release
-end
-
---- Find the exact middle value of all profile durations.
----
----@param values number[] All of the values to considered for the median.
----@return number # The found middle value.
----
-function M.get_median(values)
-    -- Sort the numbers in ascending order
-    values = vim.fn.sort(values, function(left, right)
-        return left > right
-    end)
-    local count = #values
-
-    if count % 2 == 1 then
-        return values[math.ceil(count / 2)]
-    end
-
-    local middle_left_index = count / 2
-    local middle_right_index = middle_left_index + 1
-
-    return (values[middle_left_index] + values[middle_right_index]) / 2
 end
 
 --- Make sure `gnuplot` is installed and is accessible.
@@ -998,6 +1008,7 @@ function M.write_all_summary_directory(release, profiler, root, events, maximum)
     end
 
     local artifacts_root = vim.fs.joinpath(root, "artifacts")
+    events = events or instrument.get_events()
     local flamegraph_path, profile_path = _P.write_graph_artifact(release, profiler, artifacts_root, events)
     local readme_path = vim.fs.joinpath(root, "README.md")
 
@@ -1016,7 +1027,8 @@ function M.write_all_summary_directory(release, profiler, root, events, maximum)
     end
 
     local graphs = _P.write_graph_images(artifacts, root)
-    _P.write_summary_readme(artifacts, graphs, readme_path)
+    local timing_text = _P.write_timing(events, root)
+    _P.write_summary_readme(artifacts, graphs, readme_path, timing_text)
 end
 
 return M

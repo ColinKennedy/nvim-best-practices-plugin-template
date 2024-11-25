@@ -10,8 +10,10 @@
 - Replace my profiler fork with the other one
 - Allow the timing output to be a GitHub-style table
 
-- Add average / median / mean computations to the timing statistics? Per function?
-- Do timing for functions and timing for (unit)tests
+--- TODO: IMPORTANT: @colin-k merge this back to profile.nvim
+ - add pid info to the events
+
+- Do timing for functions and timing. median, mean, etc for (unit)tests
 
 - Write timing data to the timing.txt file. Add an env var for threshold to control it
 
