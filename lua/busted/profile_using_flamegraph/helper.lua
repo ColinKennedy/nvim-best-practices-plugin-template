@@ -895,11 +895,11 @@ In the graph and data below, lower numbers are better
             )
         end
 
-        file:write(string.format('<p align="center"><img src="%s"/></p>\n', vim.fs.basename(graph.image_path)))
+        file:write(string.format('<p align="center"><img src="%s"/></p>\n\n', vim.fs.basename(graph.image_path)))
     end
 
 
-    file:write(string.format("## Most Recent Timing\n\n```\n%s\n```\n\n", timing_text))
+    file:write(string.format("\n\n## Most Recent Timing\n\n```\n%s\n```\n\n", timing_text))
 
     file:write([[
 

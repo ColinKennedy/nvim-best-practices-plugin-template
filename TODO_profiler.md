@@ -5,8 +5,6 @@
 
 - Document how to get a flame graph from that output easily
 
-- Change the README.md file to HTML-include the contents of other pages (e.g. put the table on another file instead of in the README.md)
-- Consider adding the timing output to the summary README.md file
 - Replace my profiler fork with the other one
 - Allow the timing output to be a GitHub-style table
 
@@ -16,8 +14,6 @@
 - Make sure thet the flamegraph is outputting correctly. It seems that
   plugin_template functions are far fewer than expectged
 - Do timing for functions and timing. median, mean, etc for (unit)tests
-
-- Write timing data to the timing.txt file. Add an env var for threshold to control it
 
 - A GitHub workflow that can keep in sync with main + add more commits
  - on a separate branch
