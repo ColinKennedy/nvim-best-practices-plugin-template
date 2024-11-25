@@ -267,6 +267,15 @@ function _P.crop_to_precision(value, precision)
     return string.format("%%.%sf", precision):format(value)
 end
 
+--- Remove trailing whitespace from some multi-line `output`.
+---
+---@param text string One or more lines of text to change.
+---@return string # The stripped text.
+---
+function _P.strip_trailing_whitespace(text)
+    return (text:gsub("[ \t]+%f[\r\n%z]", ""))
+end
+
 --- Make sure `self_times` don't have any out-of-bounds values.
 ---
 --- Note:
@@ -402,6 +411,8 @@ function M.get_profile_report_as_text(events, options)
 
         output = output .. string.format(line_template, unpack(data))
     end
+
+    output = _P.strip_trailing_whitespace(output)
 
     return output
 end

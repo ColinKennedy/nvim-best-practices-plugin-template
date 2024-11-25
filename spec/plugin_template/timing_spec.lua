@@ -102,17 +102,16 @@ describe("get_profile_report_as_text", function()
             })
 
             assert.equal(
-                vim.fn.join({
-                    "─────────────────────────────────────────────────────",
-                    "total-time                                      18.02",
-                    "─────────────────────────────────────────────────────",
-                    "count total-time self-time name                      ",
-                    "─────────────────────────────────────────────────────",
-                    "3     14.00      12.00     multicall                 ",
-                    "1     2.02       2.02      another_event_that_is_past",
-                    "1     2.00       2.00      first_child               ",
-                    "",
-                }, "\n"),
+                [[
+─────────────────────────────────────────────────────
+total-time                                      18.02
+─────────────────────────────────────────────────────
+count total-time self-time name
+─────────────────────────────────────────────────────
+3     14.00      12.00     multicall
+1     2.02       2.02      another_event_that_is_past
+1     2.00       2.00      first_child
+]],
                 timing.get_profile_report_as_text(events, { predicate = _P.is_function })
             )
         end)
@@ -144,17 +143,16 @@ describe("get_profile_report_as_text", function()
             }
 
             assert.equal(
-                vim.fn.join({
-                    "────────────────────────────────────────────────────────",
-                    "total-time                                   30131677.24",
-                    "────────────────────────────────────────────────────────",
-                    "count total-time  self-time   name                      ",
-                    "────────────────────────────────────────────────────────",
-                    "1     30123412.12 30123412.12 another_event_that_is_past",
-                    "1     8255.12     8255.12     first_child               ",
-                    "1     10.00       10.00       second_child              ",
-                    "",
-                }, "\n"),
+                [[
+────────────────────────────────────────────────────────
+total-time                                   30131677.24
+────────────────────────────────────────────────────────
+count total-time  self-time   name
+────────────────────────────────────────────────────────
+1     30123412.12 30123412.12 another_event_that_is_past
+1     8255.12     8255.12     first_child
+1     10.00       10.00       second_child
+]],
                 timing.get_profile_report_as_text(events, { predicate = _P.is_function })
             )
         end)
@@ -168,18 +166,17 @@ describe("get_profile_report_as_text", function()
             }
 
             assert.equal(
-                vim.fn.join({
-                    "─────────────────────────────────────────────────────",
-                    "total-time                                      20.31",
-                    "─────────────────────────────────────────────────────",
-                    "count total-time self-time name                      ",
-                    "─────────────────────────────────────────────────────",
-                    "1     10.00      10.00     outer_most                ",
-                    "1     6.13       6.13      first_child               ",
-                    "1     2.16       2.16      second_child              ",
-                    "1     2.02       2.02      another_event_that_is_past",
-                    "",
-                }, "\n"),
+                [[
+─────────────────────────────────────────────────────
+total-time                                      20.31
+─────────────────────────────────────────────────────
+count total-time self-time name
+─────────────────────────────────────────────────────
+1     10.00      10.00     outer_most
+1     6.13       6.13      first_child
+1     2.16       2.16      second_child
+1     2.02       2.02      another_event_that_is_past
+]],
                 timing.get_profile_report_as_text(events, { predicate = _P.is_function })
             )
         end)
@@ -193,18 +190,17 @@ describe("get_profile_report_as_text", function()
             }
 
             assert.equal(
-                vim.fn.join({
-                    "─────────────────────────────────────────────────────",
-                    "total-time                                      17.02",
-                    "─────────────────────────────────────────────────────",
-                    "count total-time self-time name                      ",
-                    "─────────────────────────────────────────────────────",
-                    "1     10.00      5.00      outer_most                ",
-                    "1     3.00       3.00      first_child               ",
-                    "1     2.02       2.02      another_event_that_is_past",
-                    "1     2.00       2.00      second_child              ",
-                    "",
-                }, "\n"),
+                [[
+─────────────────────────────────────────────────────
+total-time                                      17.02
+─────────────────────────────────────────────────────
+count total-time self-time name
+─────────────────────────────────────────────────────
+1     10.00      5.00      outer_most
+1     3.00       3.00      first_child
+1     2.02       2.02      another_event_that_is_past
+1     2.00       2.00      second_child
+]],
                 timing.get_profile_report_as_text(events, { predicate = _P.is_function })
             )
         end)
@@ -220,18 +216,17 @@ describe("get_profile_report_as_text", function()
             }
 
             assert.equal(
-                vim.fn.join({
-                    "───────────────────────────────────────────────",
-                    "total-time                                17.02",
-                    "───────────────────────────────────────────────",
-                    "name                       total-time self-time",
-                    "───────────────────────────────────────────────",
-                    "outer_most                 10.00      5.00     ",
-                    "first_child                3.00       3.00     ",
-                    "another_event_that_is_past 2.02       2.02     ",
-                    "second_child               2.00       2.00     ",
-                    "",
-                }, "\n"),
+                [[
+───────────────────────────────────────────────
+total-time                                17.02
+───────────────────────────────────────────────
+name                       total-time self-time
+───────────────────────────────────────────────
+outer_most                 10.00      5.00
+first_child                3.00       3.00
+another_event_that_is_past 2.02       2.02
+second_child               2.00       2.00
+]],
                 timing.get_profile_report_as_text(events, {
                     predicate = _P.is_function,
                     sections = { "name", "total_time", "self_time" },
