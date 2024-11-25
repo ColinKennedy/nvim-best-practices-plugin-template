@@ -25,8 +25,11 @@ local M = {}
 function M.get_slice(table_, first, last, step)
     local sliced = {}
 
-    for i = first or 1, last or #table_, step or 1 do
-        sliced[#sliced + 1] = table_[i]
+    local physical_index = 0
+
+    for logical_index = first or 1, last or #table_, step or 1 do
+        sliced[physical_index + 1] = table_[logical_index]
+        physical_index = physical_index + 1
     end
 
     return sliced
