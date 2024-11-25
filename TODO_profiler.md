@@ -2,6 +2,8 @@
 - Do TODO notes
 
 - Make a minimum repro explaining why profiler.nvim is not working as expected
+    - Make sure thet the flamegraph is outputting correctly. It seems that
+      plugin_template functions are far fewer than expectged
 
 - Document how to get a flame graph from that output easily
 
@@ -11,8 +13,6 @@
 --- TODO: IMPORTANT: @colin-k merge this back to profile.nvim
  - add pid info to the events
 
-- Make sure thet the flamegraph is outputting correctly. It seems that
-  plugin_template functions are far fewer than expectged
 - Do timing for functions and timing. median, mean, etc for (unit)tests
 
 - A GitHub workflow that can keep in sync with main + add more commits
