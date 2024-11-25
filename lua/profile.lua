@@ -7,8 +7,8 @@ local util = require("profile.util")
 local M = {}
 
 local event_defaults = {
-  pid = 1,
-  tid = 1,
+  pid = util.DEFAULT_PROCESS_ID,
+  tid = util.DEFAULT_THREAD_ID,
 }
 
 ---Call this at the top of your init.vim to get durations for autocmds. If you
