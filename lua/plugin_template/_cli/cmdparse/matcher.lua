@@ -10,6 +10,8 @@ local text_parse = require("plugin_template._cli.cmdparse.text_parse")
 local texter = require("plugin_template._core.texter")
 local vlog = require("plugin_template._vendors.vlog")
 
+local _LOGGER = vlog.get_logger("plugin_template._cli.cmdparse.matcher")
+
 local M = {}
 
 --- Remove whitespace from `text` but only if `text` is 100% whitespace.
@@ -210,7 +212,7 @@ function M.get_matching_partial_flag_text(prefix, flags, value, contexts, option
         if not parameter:is_exhausted() then
             for _, name in ipairs(parameter.names) do
                 if vim.tbl_contains(excluded_names, name) then
-                    vlog.fmt_debug('Skipped adding "%s" because it was found in "%s".', parameter, excluded_names)
+                    _LOGGER.fmt_debug('Skipped adding "%s" because it was found in "%s".', parameter, excluded_names)
 
                     break
                 elseif name == prefix then

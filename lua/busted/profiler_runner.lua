@@ -10,6 +10,7 @@ local instrument = require("profile.instrument")
 local profile = require("profile")
 local vlog = require("plugin_template._vendors.vlog")
 
+local _LOGGER = vlog.get_logger("busted.profiler_runner")
 local _P = {}
 
 --- Delete all Lua terminal-provided arguments (so we can replace them later).
@@ -122,7 +123,7 @@ local function run_tests(profiler, release, root, maximum_tries)
         local duration = _P.profile_and_run(profiler, runner, { release = release, root = root })
 
         if duration < fastest_time then
-            vlog.fmt_debug('Faster time found. New: "%s". Old: "%s".', duration, fastest_time)
+            _LOGGER.fmt_debug('Faster time found. New: "%s". Old: "%s".', duration, fastest_time)
 
             counter = maximum_tries
             fastest_time = duration
@@ -133,7 +134,7 @@ local function run_tests(profiler, release, root, maximum_tries)
         end
 
         if counter == 0 then
-            vlog.debug('Reached end of the profiler tests.')
+            _LOGGER.debug('Reached end of the profiler tests.')
 
             break
         end
@@ -143,7 +144,6 @@ local function run_tests(profiler, release, root, maximum_tries)
         error("Something went wrong. We didn't find any profiler events to record.", 0)
     end
 
-    vlog.info("Now writing profiler results.")
     helper.write_all_summary_directory(release, profile, vim.fs.joinpath(root, "benchmarks", "all"), fastest_events)
 end
 
@@ -152,7 +152,7 @@ local function main()
     local root, release = helper.get_environment_variable_data()
 
     helper.validate_gnuplot()
-    vlog.new({}, true)
+    vlog.new({level="debug"}, true)
 
     -- NOTE: Don't profile the unittest framework
     local profiler = profile

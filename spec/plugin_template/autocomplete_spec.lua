@@ -4,6 +4,7 @@
 ---
 
 local cmdparse = require("plugin_template._cli.cmdparse")
+local mock_test = require("test_utilities.mock_test")
 
 ---@return cmdparse.ParameterParser # Create a tree of commands for unittests.
 
@@ -128,6 +129,12 @@ local function _make_style_parser(prefix)
 end
 
 describe("default", function()
+    before_each(function()
+        mock_test.save_loggers()
+        mock_test.silence_loggers()
+    end)
+    after_each(mock_test.reset_loggers)
+
     it("works even if #simple", function()
         local parser = _make_simple_parser()
 
@@ -136,6 +143,12 @@ describe("default", function()
 end)
 
 describe("plugin", function()
+    before_each(function()
+        mock_test.save_loggers()
+        mock_test.silence_loggers()
+    end)
+    after_each(mock_test.reset_loggers)
+
     it("works with a telescope-like plugin CLI", function()
         ---@class TeleskopePluginData
         ---    Data that would come from other Lua plugins.
@@ -200,6 +213,12 @@ describe("plugin", function()
 end)
 
 describe("simple", function()
+    before_each(function()
+        mock_test.save_loggers()
+        mock_test.silence_loggers()
+    end)
+    after_each(mock_test.reset_loggers)
+
     it("works with multiple position arguments", function()
         local parser = _make_simple_parser()
 
@@ -383,6 +402,12 @@ describe("simple", function()
 end)
 
 describe("named argument", function()
+    before_each(function()
+        mock_test.save_loggers()
+        mock_test.silence_loggers()
+    end)
+    after_each(mock_test.reset_loggers)
+
     describe("++foo=bar", function()
         it("allow named argument as key", function()
             local parser = _make_style_parser("++")
@@ -549,6 +574,12 @@ describe("named argument", function()
 end)
 
 describe("flag argument", function()
+    before_each(function()
+        mock_test.save_loggers()
+        mock_test.silence_loggers()
+    end)
+    after_each(mock_test.reset_loggers)
+
     it("auto-completes on the dash - 001", function()
         local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ "-f", help = "Force it." })
@@ -607,6 +638,12 @@ describe("flag argument", function()
 end)
 
 describe("nargs", function()
+    before_each(function()
+        mock_test.save_loggers()
+        mock_test.silence_loggers()
+    end)
+    after_each(mock_test.reset_loggers)
+
     describe("flag", function()
         it("works with nargs 1", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test." })
@@ -688,6 +725,12 @@ describe("nargs", function()
 end)
 
 describe("numbered count - named argument", function()
+    before_each(function()
+        mock_test.save_loggers()
+        mock_test.silence_loggers()
+    end)
+    after_each(mock_test.reset_loggers)
+
     it("works with count = 2", function()
         local parser = cmdparse.ParameterParser.new({ help = "Test" })
         parser:add_parameter({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2, help = "Test." })
@@ -701,6 +744,12 @@ describe("numbered count - named argument", function()
 end)
 
 describe("numbered count - named argument", function()
+    before_each(function()
+        mock_test.save_loggers()
+        mock_test.silence_loggers()
+    end)
+    after_each(mock_test.reset_loggers)
+
     it("works with count = 2", function()
         local parser = cmdparse.ParameterParser.new({ help = "Test." })
         parser:add_parameter({ name = "--foo", choices = { "bar", "fizz", "buzz" }, count = 2, help = "Test." })
@@ -714,6 +763,12 @@ describe("numbered count - named argument", function()
 end)
 
 describe("* count", function()
+    before_each(function()
+        mock_test.save_loggers()
+        mock_test.silence_loggers()
+    end)
+    after_each(mock_test.reset_loggers)
+
     describe("simple", function()
         it("works with position arguments", function()
             local parser = cmdparse.ParameterParser.new({ help = "Test" })
@@ -733,6 +788,12 @@ describe("* count", function()
 end)
 
 describe("dynamic argument", function()
+    before_each(function()
+        mock_test.save_loggers()
+        mock_test.silence_loggers()
+    end)
+    after_each(mock_test.reset_loggers)
+
     it("works even if matches use spaces", function()
         local parser = cmdparse.ParameterParser.new({ name = "top_test", help = "Test" })
         local subparsers = parser:add_subparsers({ destination = "commands", help = "All main commands." })

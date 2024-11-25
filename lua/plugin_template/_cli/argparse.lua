@@ -5,6 +5,7 @@
 
 local vlog = require("plugin_template._vendors.vlog")
 
+local _LOGGER = vlog.get_logger("plugin_template._cli.argparse")
 local M = {}
 
 M.PREFIX_CHARACTERS = { "-", "+" }
@@ -374,7 +375,7 @@ function M.parse_arguments(text)
         _add_to_output()
     end
 
-    vlog.fmt_debug('Got "%s" arguments.', { arguments = output, text = text, remainder = remainder })
+    _LOGGER.fmt_debug('Got "%s" arguments.', { arguments = output, text = text, remainder = remainder })
 
     return { arguments = output, text = text, remainder = remainder }
 end

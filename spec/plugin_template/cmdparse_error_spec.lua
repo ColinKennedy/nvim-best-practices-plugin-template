@@ -4,8 +4,15 @@
 ---
 
 local cmdparse = require("plugin_template._cli.cmdparse")
+local mock_test = require("test_utilities.mock_test")
 
 describe("bad auto-complete input", function()
+    before_each(function()
+        mock_test.save_loggers()
+        mock_test.silence_loggers()
+    end)
+    after_each(mock_test.reset_loggers)
+
     it("errors if an incorrect flag is given", function()
         local parser = cmdparse.ParameterParser.new({ "arbitrary-thing", help = "Prepare to sleep or sleep." })
 
