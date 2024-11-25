@@ -24,7 +24,7 @@ local _ORIGINAL_NOTIFY = vim.notify
 
 --- Replace the output path of `logger`, then run `caller`, then restore the output path.
 ---
----@param logger logging.Logger The logger instance to modify.
+---@param logger aggro.logging.Logger The logger instance to modify.
 ---@param caller fun(): nil Some function to call.
 ---
 local function _keep_output_path(logger, caller)
