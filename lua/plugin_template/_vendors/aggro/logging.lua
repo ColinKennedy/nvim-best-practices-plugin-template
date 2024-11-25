@@ -20,6 +20,10 @@
 ---    If `true`, logs are written to `output_path`.
 ---@field use_highlights boolean
 ---    If `true`, logs are colorful. If `false`, they're mono-colored text.
+---@field use_neovim_commands boolean
+---    If `true`, allow logs to submit as Neovim commands. If `false`, only
+---    built-in Lua commands will be used. This is useful if you want to log
+---    within a libuv thread and don't want to call `vim.schedule()`.
 
 ---@class aggro.logging._LevelMode Data related to `level` to consider.
 ---@field highlight string The Neovim highlight group name used to colorize the logs.
@@ -72,6 +76,7 @@ M._DEFAULTS = {
     use_console = true,
     use_file = true,
     use_highlights = true,
+    use_neovim_commands = true,
 }
 
 local _ROOT_NAME = "__ROOT__"
@@ -164,21 +169,34 @@ function M.Logger:_log_at_level(level, mode, message_maker, ...)
     if self._use_console then
         local console_string = string.format("[%-6s%s] %s: %s", nameupper, os.date("%H:%M:%S"), lineinfo, message)
 
-        if self._use_highlights and mode.highlight then
-            vim.cmd(string.format("echohl %s", mode.highlight))
-        end
+        if not self.use_neovim_commands then
+            local split_console = vim.split(console_string, "\n")
 
-        local split_console = vim.split(console_string, "\n")
-        for _, v in ipairs(split_console) do
-            vim.cmd(string.format([[echom "[%s] %s"]], self.name, vim.fn.escape(v, '"')))
-        end
+            for _, v in ipairs(split_console) do
+                print(string.format("[%s] %s", self.name, vim.fn.escape(v, '"')))
+            end
+        else
+            if self.use_highlights and mode.highlight then
+                vim.cmd(string.format("echohl %s", mode.highlight))
+            end
 
-        if self._use_highlights and mode.highlight then
-            vim.cmd("echohl NONE")
+            local split_console = vim.split(console_string, "\n")
+
+            for _, v in ipairs(split_console) do
+                vim.cmd(string.format([[echom "[%s] %s"]], self.name, vim.fn.escape(v, '"')))
+            end
+
+            if self.use_highlights and mode.highlight then
+                vim.cmd("echohl NONE")
+            end
         end
     end
 
-    if self._use_file then
+    if self.use_file then
+        if not self._output_path then
+            error('Cannot write Logger message to file, no output path was given.', 0)
+        end
+
         local handler = io.open(self._output_path, "a")
 
         if not handler then
@@ -307,42 +325,50 @@ end
 
 --- Create a new logger according to `options`.
 ---
----@param options aggro.logging.LoggerOptions | string The logger to create.
+---@param options aggro.logging.LoggerOptions The logger to create.
 ---@return aggro.logging.Logger # The created instance.
 ---
 function M.Logger.new(options)
-    if type(options) == "string" then
-        ---@diagnostic disable-next-line: missing-fields
-        options = { name = options }
-    end
-    options = vim.tbl_deep_extend("force", M._DEFAULTS, options or {})
-
     ---@class aggro.logging.Logger
     local self = setmetatable({}, M.Logger)
 
-    self._float_precision = options.float_precision
-    self._use_console = options.use_console
-    self._use_file = options.use_file
-    self._use_highlights = options.use_highlights
-    self._output_path = options.output_path
-        or vim.fs.joinpath(vim.api.nvim_call_function("stdpath", { "data" }), "default.log")
     self.level = options.level
     self.name = options.name
+    self.use_file = options.use_file
+    self.use_highlights = options.use_highlights
+    self.use_neovim_commands = options.use_neovim_commands
+
+    self._float_precision = options.float_precision
+    self._use_console = options.use_console
+    ---@type string?
+    self._output_path = options.output_path
+
+    if not self._output_path and self.use_neovim_commands then
+        self._output_path = vim.fs.joinpath(vim.api.nvim_call_function("stdpath", { "data" }), "default.log")
+    end
 
     return self
 end
 
----@return string # The path on-disk where logs will be written to.
+---@return string? # The path on-disk where logs will be written to.
 function M.Logger:get_log_path()
     return self._output_path
 end
 
 --- Find an existing logger with `name` or create one if it does not exist already.
 ---
----@param name string The logger name. e.g. `"foo.bar"`.
+---@param options aggro.logging.LoggerOptions | string The logger to create.
 ---@return aggro.logging.Logger # The created instance.
 ---
-function M.get_logger(name)
+function M.get_logger(options)
+    if type(options) == "string" then
+        ---@diagnostic disable-next-line: missing-fields
+        options = { name = options }
+    end
+
+    options = vim.tbl_deep_extend("force", M._DEFAULTS, options or {})
+    local name = options.name
+
     if not name then
         name = _ROOT_NAME
     end
@@ -351,7 +377,7 @@ function M.get_logger(name)
         return M._LOGGERS[name]
     end
 
-    M._LOGGERS[name] = M.Logger.new(name)
+    M._LOGGERS[name] = M.Logger.new(options)
 
     return M._LOGGERS[name]
 end
