@@ -13,6 +13,8 @@
 --- TODO: IMPORTANT: @colin-k merge this back to profile.nvim
  - add pid info to the events
 
+- Make sure thet the flamegraph is outputting correctly. It seems that
+  plugin_template functions are far fewer than expectged
 - Do timing for functions and timing. median, mean, etc for (unit)tests
 
 - Write timing data to the timing.txt file. Add an env var for threshold to control it
