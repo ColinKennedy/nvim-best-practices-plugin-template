@@ -102,20 +102,17 @@ describe("get_profile_report_as_text", function()
             })
 
             assert.equal(
-                vim.fn.join(
-                    {
-                        "─────────────────────────────────────────────────────",
-                        "total-time                                      18.02",
-                        "─────────────────────────────────────────────────────",
-                        "count total-time self-time name                      ",
-                        "─────────────────────────────────────────────────────",
-                        "3     14.00      12.00     multicall                 ",
-                        "1     2.02       2.02      another_event_that_is_past",
-                        "1     2.00       2.00      first_child               ",
-                        ""
-                    },
-                    "\n"
-                ),
+                vim.fn.join({
+                    "─────────────────────────────────────────────────────",
+                    "total-time                                      18.02",
+                    "─────────────────────────────────────────────────────",
+                    "count total-time self-time name                      ",
+                    "─────────────────────────────────────────────────────",
+                    "3     14.00      12.00     multicall                 ",
+                    "1     2.02       2.02      another_event_that_is_past",
+                    "1     2.00       2.00      first_child               ",
+                    "",
+                }, "\n"),
                 timing.get_profile_report_as_text(events, { predicate = _P.is_function })
             )
         end)
