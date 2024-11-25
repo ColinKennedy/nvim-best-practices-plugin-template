@@ -3,7 +3,7 @@
 ---@module 'busted.profile_using_flamegraph.timing'
 ---
 
-local helper = require("busted.profile_using_flamegraph.helper")
+local numeric = require("busted.profile_using_flamegraph.numeric")
 local self_timing = require("busted.profile_using_flamegraph.self_timing")
 local tabler = require("plugin_template._core.tabler")
 
@@ -161,9 +161,8 @@ function _P.get_header_text(lines, sections)
     -- across all functions
 
     local full_padding = #summary_line
-    -- TODO: Add precision here. e.g. crop at the hundreths place
-    local top_line = ("%%-%ds %%7.2f")
-        :format(full_padding - #_SectionLabel.total_time + 2)
+    local top_line = ("%%-%ds %%.%df")
+        :format(full_padding - _P.get_digits_count(total_time) - precision + 1, precision)
         :format(_SectionLabel.total_time, total_time)
     local line_break = ("─"):rep(full_padding) .. "\n"
     output = output .. line_break
@@ -365,7 +364,7 @@ function M.get_profile_report_lines(events, options)
         table.insert(output, {
             count = count,
             mean_time = _P.crop_to_precision(sum / count, precision),
-            median_time = _P.crop_to_precision(helper.get_median(values), precision),
+            median_time = _P.crop_to_precision(numeric.get_median(values), precision),
             name = name,
             self_time = _P.crop_to_precision(self_time, precision),
             total_time = _P.crop_to_precision(sum, precision),

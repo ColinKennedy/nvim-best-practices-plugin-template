@@ -136,6 +136,29 @@ describe("get_profile_report_as_text", function()
             })
         end)
 
+        it("works with big numbers", function()
+            local events = {
+                { cat = "function", dur = 8255.123151351354, name = "first_child", tid = 1, ts = 1 },
+                { cat = "function", dur = 10, name = "second_child", tid = 1, ts = 8800.13415131123 },
+                { cat = "function", dur = 30123412.12312123, name = "another_event_that_is_past", tid = 1, ts = 8900 },
+            }
+
+            assert.equal(
+                vim.fn.join({
+                    "────────────────────────────────────────────────────────",
+                    "total-time                                   30131677.24",
+                    "────────────────────────────────────────────────────────",
+                    "count total-time  self-time   name                      ",
+                    "────────────────────────────────────────────────────────",
+                    "1     30123412.12 30123412.12 another_event_that_is_past",
+                    "1     8255.12     8255.12     first_child               ",
+                    "1     10.00       10.00       second_child              ",
+                    "",
+                }, "\n"),
+                timing.get_profile_report_as_text(events, { predicate = _P.is_function })
+            )
+        end)
+
         it("works with #simple events", function()
             local events = {
                 { cat = "function", dur = 6.13, name = "first_child", tid = 1, ts = 1 },
