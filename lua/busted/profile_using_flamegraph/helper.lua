@@ -38,7 +38,8 @@ local vlog = require("plugin_template._vendors.vlog")
 ---@field cat string The category of the profiler event. e.g. `"function"`, `"test"`, etc.
 ---@field dur number The length of CPU time needed to complete the event.
 ---@field name string The function call, file path, or other ID.
----@field tid number The thread index number.
+---@field pid number? The process ID number.
+---@field tid number The thread ID number.
 ---@field ts number The start CPU time.
 
 ---@class _Statistics Summary data about a whole suite of profiler data.
