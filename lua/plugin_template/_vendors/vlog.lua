@@ -1,185 +1,3 @@
--- -- vlog.lua
--- --
--- -- Inspired by rxi/log.lua
--- -- Modified by tjdevries and can be found at github.com/tjdevries/vlog.nvim
--- --
--- -- This library is free software; you can redistribute it and/or modify it
--- -- under the terms of the MIT license. See LICENSE for details.
---
--- -- User configuration section
--- local default_config = {
---     -- Name of the plugin. Prepended to log messages
---     plugin = "plugin_template",
---
---     -- Should print the output to neovim while running
---     use_console = true,
---
---     -- Should highlighting be used in console (using echohl)
---     highlights = true,
---
---     -- Should write to a file
---     use_file = true,
---
---     -- Any messages above this level will be logged.
---     level = "info",
---
---     -- Level configuration
---     modes = {
---         { name = "trace", hl = "Comment" },
---         { name = "debug", hl = "Comment" },
---         { name = "info", hl = "None" },
---         { name = "warn", hl = "WarningMsg" },
---         { name = "error", hl = "ErrorMsg" },
---         { name = "fatal", hl = "ErrorMsg" },
---     },
---
---     -- Define this path to redirect the log file to wherever you need it to go
---     output_path = nil,
---
---     -- Can limit the number of decimals displayed for floats
---     float_precision = 0.01,
--- }
---
--- -- {{{ NO NEED TO CHANGE
--- local log = {}
---
--- ---@diagnostic disable-next-line: deprecated
--- local unpack = unpack or table.unpack
---
--- local _LEVEL_NUMBER_TO_LEVEL_NAME = {
---     [vim.log.levels.DEBUG] = "debug",
---     [vim.log.levels.ERROR] = "error",
---     [vim.log.levels.INFO] = "info",
---     [vim.log.levels.TRACE] = "trace",
---     [vim.log.levels.WARN] = "warn",
---     fatal = "fatal",
--- }
---
--- log.new = function(config, standalone)
---     config = vim.tbl_deep_extend("force", default_config, config)
---     config.level = _LEVEL_NUMBER_TO_LEVEL_NAME[config.level] or config.level
---
---     local obj
---     if standalone then
---         obj = log
---     else
---         obj = {}
---     end
---
---     obj._is_logging_to_file_enabled = config.use_file
---
---     obj._output_path = config.output_path
---         or vim.fs.joinpath(vim.api.nvim_call_function("stdpath", { "data" }), string.format("%s.log", config.plugin))
---
---     local levels = {}
---     for i, v in ipairs(config.modes) do
---         levels[v.name] = i
---     end
---
---     local round = function(x, increment)
---         increment = increment or 1
---         x = x / increment
---         return (x > 0 and math.floor(x + 0.5) or math.ceil(x - 0.5)) * increment
---     end
---
---     local make_string = function(...)
---         local t = {}
---         for i = 1, select("#", ...) do
---             local x = select(i, ...)
---
---             if type(x) == "number" and config.float_precision then
---                 x = tostring(round(x, config.float_precision))
---             elseif type(x) == "table" then
---                 x = vim.inspect(x)
---             else
---                 x = tostring(x)
---             end
---
---             t[#t + 1] = x
---         end
---         return table.concat(t, " ")
---     end
---
---     local log_at_level = function(level, level_config, message_maker, ...)
---         -- Return early if we're below the config.level
---         if level < levels[config.level] then
---             return
---         end
---         local nameupper = level_config.name:upper()
---
---         local message = message_maker(...)
---         local info = debug.getinfo(2, "Sl")
---         local lineinfo = info.short_src .. ":" .. info.currentline
---
---         -- Output to console
---         if config.use_console then
---             local console_string = string.format("[%-6s%s] %s: %s", nameupper, os.date("%H:%M:%S"), lineinfo, message)
---
---             if config.highlights and level_config.hl then
---                 vim.cmd(string.format("echohl %s", level_config.hl))
---             end
---
---             local split_console = vim.split(console_string, "\n")
---             for _, v in ipairs(split_console) do
---                 vim.cmd(string.format([[echom "[%s] %s"]], config.plugin, vim.fn.escape(v, '"')))
---             end
---
---             if config.highlights and level_config.hl then
---                 vim.cmd("echohl NONE")
---             end
---         end
---
---         -- Output to log file
---         if obj._is_logging_to_file_enabled then
---             local fp = io.open(obj._output_path, "a")
---
---             if not fp then
---                 vim.notify(string.format('Unable to log to "%s" path.', obj._output_path), vim.log.levels.ERROR)
---             else
---                 local str = string.format("[%-6s%s] %s: %s\n", nameupper, os.date(), lineinfo, message)
---                 fp:write(str)
---                 fp:close()
---             end
---         end
---     end
---
---     for i, x in ipairs(config.modes) do
---         obj[x.name] = function(...)
---             return log_at_level(i, x, make_string, ...)
---         end
---
---         obj[("fmt_%s"):format(x.name)] = function(...)
---             local passed = { ... }
---             return log_at_level(i, x, function()
---                 local fmt = table.remove(passed, 1)
---                 local inspected = {}
---                 for _, v in ipairs(passed) do
---                     if type(v) == "string" then
---                         table.insert(inspected, v)
---                     else
---                         table.insert(inspected, vim.inspect(v))
---                     end
---                 end
---                 return string.format(fmt, unpack(inspected))
---             end)
---         end
---     end
---
---     obj["is_logging_to_file"] = function()
---         return obj._is_logging_to_file_enabled
---     end
---
---     obj["get_log_path"] = function()
---         return obj._output_path
---     end
---
---     obj["toggle_file_logging"] = function()
---         obj._is_logging_to_file_enabled = not obj._is_logging_to_file_enabled
---     end
--- end
---
--- return log
-
 ---@class vlog.LoggerOptions
 ---    All of the customizations a person can make to a logger instance.
 ---@field float_precision number
@@ -198,38 +16,59 @@
 ---@field use_highlights boolean
 ---    If `true`, logs are colorful. If `false`, they're mono-colored text.
 
--- TODO: Make sure colors work as expected
-
 ---@class vlog._LevelMode Data related to `level` to consider.
 ---@field highlight string The Neovim highlight group name used to colorize the logs.
 ---@field level string The associated level for this object.
+---@field name string The name of the level, e.g. `"info"`.
 
 local _P = {}
 local M = {}
 
+local _LEVELS = { trace = 10, debug = 20, info = 30, warn = 40, error = 50, fatal = 60}
+
+--- Suggest a default level for all loggers.
+---
+--- Raises:
+---     If `$LOG_LEVEL` is set but it is empty or a non-number.
+---
+---@param default number The 1-or-more level to use for all loggers.
+---@return number # The found suggestion.
+---
+function _P.get_initial_default_level(default)
+    local level_text = os.getenv("LOG_LEVEL")
+
+    if not level_text then
+        return default
+
+    end
+
+    local level = tonumber(level_text)
+
+    if level then
+        return level
+    end
+
+    error(string.format('LOG_LEVEL "%s" must be a number.', level_text), 0)
+end
+
+local _MODES = {
+    debug = { name = "debug", highlight = "Comment" },
+    error = { name = "error", highlight = "ErrorMsg" },
+    fatal = { name = "fatal", highlight = "ErrorMsg" },
+    info = { name = "info", highlight = "None" },
+    trace = { name = "trace", highlight = "Comment" },
+    warning = { name = "warning", highlight = "WarningMsg" },
+}
+
 M._DEFAULTS = {
     float_precision = 0.01,
     highlights = true,
-    level = "info",
-    modes = {
-        { name = "trace", highlight = "Comment" },
-        { name = "debug", highlight = "Comment" },
-        { name = "info", highlight = "None" },
-        { name = "warn", highlight = "WarningMsg" },
-        { name = "error", highlight = "ErrorMsg" },
-        { name = "fatal", highlight = "ErrorMsg" },
-    },
+    level = _P.get_initial_default_level(_LEVELS.info),
     output_path = nil,
     use_console = true,
     use_file = true,
     use_highlights = true,
 }
-
-local _LEVELS = {}
-
-for index, mode in ipairs(M._DEFAULTS.modes) do
-    _LEVELS[mode.name] = index
-end
 
 local _ROOT_NAME = "__ROOT__"
 
@@ -289,6 +128,65 @@ function M.Logger:_make_string(...)
     return table.concat(characters, " ")
 end
 
+--- Send a message that is intended for developers to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:debug(...)
+    self:_log_at_level(_LEVELS.debug, _MODES.debug, function(...) return self:_make_string(...) end, ...)
+end
+
+--- Send a "we could not recover from some issue" message to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:error(...)
+    self:_log_at_level(_LEVELS.error, _MODES.error, function(...) return self:_make_string(...) end, ...)
+end
+
+--- Send a "this issue affects multiple systems. It's a really bad error" message to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:fatal(...)
+    self:_log_at_level(_LEVELS.fatal, _MODES.fatal, function(...) return self:_make_string(...) end, ...)
+end
+
+function M.Logger:fmt_debug(...)
+    self:_format_and_log_at_level(_LEVELS.debug, _MODES.debug, ...)
+end
+
+function M.Logger:fmt_error(...)
+    self:_format_and_log_at_level(_LEVELS.error, _MODES.error, ...)
+end
+
+function M.Logger:fmt_fatal(...)
+    self:_format_and_log_at_level(_LEVELS.fatal, _MODES.fatal, ...)
+end
+
+function M.Logger:fmt_info(...)
+    self:_format_and_log_at_level(_LEVELS.info, _MODES.info, ...)
+end
+
+function M.Logger:fmt_warning(...)
+    self:_format_and_log_at_level(_LEVELS.warning, _MODES.warning, ...)
+end
+
+--- Send a user-facing message to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:info(...)
+    self:_log_at_level(_LEVELS.info, _MODES.info, function(...) return self:_make_string(...) end, ...)
+end
+
+--- Send a "this might be an issue or we recovered from an error" message to the logger.
+---
+---@param ... any Any arguments.
+---
+function M.Logger:warning(...)
+    self:_log_at_level(_LEVELS.warning, _MODES.warning, function(...) return self:_make_string(...) end, ...)
+end
 
 --- Create a new logger according to `options`.
 ---
@@ -297,6 +195,7 @@ end
 ---
 function M.Logger.new(options)
     if type(options) == "string" then
+        ---@diagnostic disable-next-line: missing-fields
         options = {name=options}
     end
     options = vim.tbl_deep_extend("force", M._DEFAULTS, options or {})
@@ -313,31 +212,6 @@ function M.Logger.new(options)
     self.level = options.level
     self.name = options.name
 
-    for index, mode in ipairs(options.modes) do
-        self[mode.name] = function(...)
-            return self:_log_at_level(index, mode, function(...) return self:_make_string(...) end, ...)
-        end
-
-        self[("fmt_%s"):format(mode.name)] = function(...)
-            local passed = { ... }
-
-            return self:_log_at_level(index, mode, function()
-                local template = table.remove(passed, 1)
-                local inspected = {}
-
-                for _, value in ipairs(passed) do
-                    if type(value) == "string" then
-                        table.insert(inspected, value)
-                    else
-                        table.insert(inspected, vim.inspect(value))
-                    end
-                end
-
-                return string.format(template, unpack(inspected))
-            end)
-        end
-    end
-
     return self
 end
 
@@ -349,7 +223,15 @@ end
 ---@param ... any Arguments to pass to `message_maker`.
 ---
 function M.Logger:_log_at_level(level, mode, message_maker, ...)
-    if level < _LEVELS[self.level] then
+    ---@type number | string
+    local current_level = self.level
+
+    if type(current_level) == "string" then
+        ---@diagnostic disable-next-line: cast-local-type
+        current_level = tonumber(_LEVELS[current_level])
+    end
+
+    if level < current_level then
         return
     end
 

@@ -176,7 +176,7 @@ function M.get_self_times(events, all_events)
                 --
                 -- This should be a really rare occurrence. But could happen.
                 --
-                _LOGGER.fmt_info(
+                _LOGGER:fmt_info(
                     'We think "%s" event is the last of its kind'
                         .. " (last event in thread + calls no other functions) "
                         .. " so we are using its full duration as its self-time.",

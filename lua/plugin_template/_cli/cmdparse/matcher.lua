@@ -212,7 +212,7 @@ function M.get_matching_partial_flag_text(prefix, flags, value, contexts, option
         if not parameter:is_exhausted() then
             for _, name in ipairs(parameter.names) do
                 if vim.tbl_contains(excluded_names, name) then
-                    _LOGGER.fmt_debug('Skipped adding "%s" because it was found in "%s".', parameter, excluded_names)
+                    _LOGGER:fmt_debug('Skipped adding "%s" because it was found in "%s".', parameter, excluded_names)
 
                     break
                 elseif name == prefix then
