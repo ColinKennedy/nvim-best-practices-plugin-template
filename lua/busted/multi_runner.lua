@@ -246,9 +246,16 @@ return function(options)
 
     busted.publish({ "exit" })
 
-    if options.standalone or failures > 0 or errors > 0 then
+    if failures > 0 or errors > 0 then
         io.stderr:write("Unittests failed / errored. Cannot write a flamegraph.\n")
         io.stderr:flush()
-        os.exit(_TEST_FAILURE_OR_ERROR)
+
+        if quitOnError or options.standalone then
+            os.exit(_TEST_FAILURE_OR_ERROR)
+        end
+    end
+
+    if options.standalone then
+        os.exit(0)
     end
 end
