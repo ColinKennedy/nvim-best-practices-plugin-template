@@ -6,6 +6,8 @@
 local configuration = require("plugin_template._core.configuration")
 local vlog = require("plugin_template._vendors.vlog")
 
+local _LOGGER = vlog.get_logger("plugin_template._commands.goodnight_moon.count_sheep")
+
 local M = {}
 
 --- Count a sheep for each `count`.
@@ -14,10 +16,10 @@ local M = {}
 ---
 function M.run(count)
     configuration.initialize_data_if_needed()
-    vlog.debug("Running goodnight-moon count-sheep")
+    _LOGGER.debug("Running goodnight-moon count-sheep")
 
     if count < 1 then
-        vlog.fmt_warn('Count "%s" cannot be less than 1. Using 1 instead.', count)
+        _LOGGER.fmt_warn('Count "%s" cannot be less than 1. Using 1 instead.', count)
 
         count = 1
     end
