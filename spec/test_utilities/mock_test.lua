@@ -46,7 +46,7 @@ end
 function M.reset_loggers()
     vlog._DEFAULTS.level = _ORIGINAL_DEFAULT_LEVEL
 
-    for _, logger in ipairs(vlog._LOGGERS) do
+    for _, logger in pairs(vlog._LOGGERS) do
         logger.level = _ORIGINAL_LEVELS[logger.name]
     end
 end
@@ -55,17 +55,17 @@ end
 function M.save_loggers()
     _ORIGINAL_DEFAULT_LEVEL = vlog._DEFAULTS.level
 
-    for _, logger in ipairs(vlog._LOGGERS) do
+    for _, logger in pairs(vlog._LOGGERS) do
         _ORIGINAL_LEVELS[logger.name] = logger.level
     end
 end
 
---- Stop stdout.
+--- Stop loggers from sending to stdout / stderr.
 function M.silence_loggers()
-    local high_level = 9999999999999999999999999999999999
+    local high_level = "fatal"
     vlog._DEFAULTS.level = high_level
 
-    for _, logger in ipairs(vlog._LOGGERS) do
+    for _, logger in pairs(vlog._LOGGERS) do
         logger.level = high_level
     end
 end
