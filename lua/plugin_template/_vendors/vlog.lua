@@ -222,6 +222,7 @@ M._DEFAULTS = {
     output_path = nil,
     use_console = true,
     use_file = true,
+    use_highlights = true,
 }
 
 local _LEVELS = {}
@@ -306,7 +307,7 @@ function M.Logger.new(options)
     self._float_precision = options.float_precision
     self._use_console = options.use_console
     self._use_file = options.use_file
-    self._use_highlights = true
+    self._use_highlights = options.use_highlights
     self._output_path = options.output_path
         or vim.fs.joinpath(vim.api.nvim_call_function("stdpath", { "data" }), "default.log")
     self.level = options.level
