@@ -461,6 +461,24 @@ function M.check(data)
 
     vim.health.start("Configuration")
 
+    -- TODO: (you) - Make sure to keep this minimum version number up to date
+    -- (if you deprecate older Neovim versions later on).
+    --
+    local version = vim.version()
+    local minimum = "v0.10.0"
+
+    if vim.version.lt(version, minimum) then
+        vim.health.error(
+            string.format(
+                'Neovim version "%s" is too low. The minimum version is "%s".',
+                version,
+                minimum
+            )
+        )
+
+        return
+    end
+
     local issues = M.get_issues(data)
 
     if vim.tbl_isempty(issues) then
