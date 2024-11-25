@@ -23,18 +23,14 @@ per-describe block? Try that later
 - Do all current branch (add_profiling) TODO notes
     - Can I just use the regular profile.lua module? Do I need the fork?
 - Fix the URL to luarocks link to show the other location
-- Add more health checks
- - Developer health checks
-  - has busted / stylua / llscheck / luacheck
 - Mention the Google "release please" workflow in the README.md
     - Explain releases in the Wiki
-
-- Strip trailing whitespace from the timing.txt file
 
 - Add documentation on setting up renovate
  - Add details on how to delete renovate (remove the .json file)
 
-- release URLs should ignore the diff URL because, on release pages, that diff URL will always be broken. It's a false negative, basisically. Example:
+- release URLs should ignore the diff URL because, on release pages, that diff
+  URL will always be broken. It's a false negative, basisically. Example:
  - https://github.com/ColinKennedy/cursor-text-objects.nvim/pull/6
 
 
@@ -43,11 +39,6 @@ per-describe block? Try that later
 - The instructions need to do a better job explaining how to remove the test spec files
 - missing information on how to set up release-please
 - Tell people to remove the CHANGELOG.md
-
-- Right now nothing in the CI is checking that functions exist or that their
-  parameters are correct / types are correct. For neovim calls or otherwise. We
-  need to fix this
-  Basically I want mypy / pylint in Neovim, but for lua. How?
 
 Add better linting. selene?
 
