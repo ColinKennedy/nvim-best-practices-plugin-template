@@ -1,3 +1,8 @@
+--- A generalized logging for Lua. It's similar to Python's built-in logger.
+---
+---@module 'plugin_template._vendors.aggro.logging'
+---
+
 ---@class aggro.logging.LoggerOptions
 ---    All of the customizations a person can make to a logger instance.
 ---@field float_precision number
@@ -71,13 +76,13 @@ M._DEFAULTS = {
 
 local _ROOT_NAME = "__ROOT__"
 
----@type table<string, vlog.Logger>
+---@type table<string, aggro.logging.Logger>
 M._LOGGERS = {}
 
 ---@class aggro.logging.Logger
 M.Logger = {
     __tostring = function(logger)
-        return string.format("vlog.Logger({names=%s})", vim.inspect(logger.name))
+        return string.format("aggro.logging.Logger({names=%s})", vim.inspect(logger.name))
     end,
 }
 M.Logger.__index = M.Logger
@@ -104,7 +109,7 @@ end
 ---
 ---@param level number
 ---    The level for the log (debug, info, etc).
----@param mode vlog._LevelMode
+---@param mode aggro.logging._LevelMode
 ---    Data related to `level` to consider.
 ---@param ... any
 ---    Arguments to pass to `message_maker`. It's expected that the first
@@ -133,7 +138,7 @@ end
 --- Decide whether or not to log and how.
 ---
 ---@param level number The level for the log (debug, info, etc).
----@param mode vlog._LevelMode Data related to `level` to consider.
+---@param mode aggro.logging._LevelMode Data related to `level` to consider.
 ---@param message_maker fun(...: any): string The function that, when called, creates a log message.
 ---@param ... any Arguments to pass to `message_maker`.
 ---
@@ -302,8 +307,8 @@ end
 
 --- Create a new logger according to `options`.
 ---
----@param options vlog.LoggerOptions | string The logger to create.
----@return vlog.Logger # The created instance.
+---@param options aggro.logging.LoggerOptions | string The logger to create.
+---@return aggro.logging.Logger # The created instance.
 ---
 function M.Logger.new(options)
     if type(options) == "string" then
@@ -335,7 +340,7 @@ end
 --- Find an existing logger with `name` or create one if it does not exist already.
 ---
 ---@param name string The logger name. e.g. `"foo.bar"`.
----@return vlog.Logger # The created instance.
+---@return aggro.logging.Logger # The created instance.
 ---
 function M.get_logger(name)
     if not name then

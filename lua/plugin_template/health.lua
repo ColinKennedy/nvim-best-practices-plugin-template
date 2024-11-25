@@ -179,6 +179,51 @@ local function _get_command_issues(data)
     return output
 end
 
+--- Make sure developer tools will work as expected (warn if any are missing / broken).
+local function _get_developer_environment_warnings()
+    local function _has_executable(name)
+        return function()
+            return vim.fn.executable(name) == 1
+        end
+    end
+
+    for _, entry in ipairs(
+        {
+            {
+                check=_has_executable("busted"),
+
+                bad="`make profile_using_flamegraph` and `make test` will not work as expected.",
+                good="The busted executable was found!",
+            },
+            {
+                check=_has_executable("llscheck"),
+
+                bad="`make llscheck` will not work as expected.",
+                good="The llscheck executable was found!",
+            },
+            {
+                check=_has_executable("luacheck"),
+
+                bad="`make luacheck` will not work as expected.",
+                good="The luacheck executable was found!",
+            },
+            {
+                check=_has_executable("stylua"),
+
+                bad="`make stylua` will not work as expected.",
+                good="The stylua executable was found!",
+            },
+        }
+    )
+    do
+        if not entry.check() then
+            vim.health.warn(entry.bad)
+        else
+            vim.health.ok(entry.good)
+        end
+    end
+end
+
 --- Check the contents of the "tools.lualine" configuration for any issues.
 ---
 --- Issues include:
@@ -474,6 +519,8 @@ function M.check(data)
 
         return
     end
+
+    _get_developer_environment_warnings()
 
     local issues = M.get_issues(data)
 
