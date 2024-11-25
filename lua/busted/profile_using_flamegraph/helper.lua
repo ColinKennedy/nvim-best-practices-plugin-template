@@ -441,6 +441,24 @@ function _P.get_standard_deviation(values, mean)
     return math.sqrt(variance)
 end
 
+---@return number? # The number of (slowest function) entries to write in the output.
+function _P.get_timing_threshold()
+    -- TODO: Document this env var. Actually document all env vars
+    local text = os.getenv("TIMING_THRESHOLD")
+
+    if not text then
+        return nil
+    end
+
+    local value = tonumber(text)
+
+    if not value or math.floor(value) ~= value then
+        error(string.format('Invalid timing threshold. Got "%s" expected an integer.', text), 0)
+    end
+
+    return value
+end
+
 --- Get version major / minor / patch details from a `version` text.
 ---
 ---@param version string Any version text. e.g. `"v1.2.3"`.
@@ -920,7 +938,7 @@ function _P.write_timing(events, path)
         error(string.format('Path "%s" could not be written.', path), 0)
     end
 
-    local text = timing.get_profile_report_as_text(events)
+    local text = timing.get_profile_report_as_text(events, {thresold=_P.get_timing_threshold()})
     file:write(text)
     file:close()
 

@@ -31,6 +31,8 @@ per-describe block? Try that later
 - Mention the Google "release please" workflow in the README.md
     - Explain releases in the Wiki
 
+- Strip trailing whitespace from the timing.txt file
+
 - Add documentation on setting up renovate
  - Add details on how to delete renovate (remove the .json file)
 
