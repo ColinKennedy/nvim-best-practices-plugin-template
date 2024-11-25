@@ -62,7 +62,7 @@ end
 
 --- Stop loggers from sending to stdout / stderr.
 function M.silence_loggers()
-    local high_level = 99999999999
+    local high_level = "fatal"
     logging._DEFAULTS.level = high_level
 
     for _, logger in pairs(logging._LOGGERS) do
