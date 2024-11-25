@@ -1,4 +1,4 @@
----@class vlog.LoggerOptions
+---@class aggro.logging.LoggerOptions
 ---    All of the customizations a person can make to a logger instance.
 ---@field float_precision number
 ---    A positive value (max of 1) to indicate the rounding precision. e.g.
@@ -16,7 +16,7 @@
 ---@field use_highlights boolean
 ---    If `true`, logs are colorful. If `false`, they're mono-colored text.
 
----@class vlog._LevelMode Data related to `level` to consider.
+---@class aggro.logging._LevelMode Data related to `level` to consider.
 ---@field highlight string The Neovim highlight group name used to colorize the logs.
 ---@field level string The associated level for this object.
 ---@field name string The name of the level, e.g. `"info"`.
@@ -74,7 +74,7 @@ local _ROOT_NAME = "__ROOT__"
 ---@type table<string, vlog.Logger>
 M._LOGGERS = {}
 
----@class vlog.Logger
+---@class aggro.logging.Logger
 M.Logger = {
     __tostring = function(logger)
         return string.format("vlog.Logger({names=%s})", vim.inspect(logger.name))
@@ -312,7 +312,7 @@ function M.Logger.new(options)
     end
     options = vim.tbl_deep_extend("force", M._DEFAULTS, options or {})
 
-    ---@class vlog.Logger
+    ---@class aggro.logging.Logger
     local self = setmetatable({}, M.Logger)
 
     self._float_precision = options.float_precision

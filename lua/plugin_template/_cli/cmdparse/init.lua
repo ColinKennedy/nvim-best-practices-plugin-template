@@ -143,9 +143,9 @@ local types_input = require("plugin_template._cli.cmdparse.types_input")
 ---    list. e.g. don't show any parameter in during auto-completion if it is
 ---    in `excluded_names`.
 
-local vlog = require("plugin_template._vendors.vlog")
+local logging = require("plugin_template._vendors.aggro.logging")
 
-local _LOGGER = vlog.get_logger("plugin_template._cli.cmdparse")
+local _LOGGER = logging.get_logger("plugin_template._cli.cmdparse")
 local _Private = {}
 local M = {}
 

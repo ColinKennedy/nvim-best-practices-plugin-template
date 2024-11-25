@@ -4,9 +4,9 @@
 ---
 
 local configuration = require("plugin_template._core.configuration")
-local vlog = require("plugin_template._vendors.vlog")
+local logging = require("plugin_template._vendors.aggro.logging")
 
-local _LOGGER = vlog.get_logger("plugin_template._commands.goodnight_moon.count_sheep")
+local _LOGGER = logging.get_logger("plugin_template._commands.goodnight_moon.count_sheep")
 
 local M = {}
 
