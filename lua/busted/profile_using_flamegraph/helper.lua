@@ -34,14 +34,6 @@ local logging = require("plugin_template._vendors.aggro.logging")
 ---@field [2] number The minor version.
 ---@field [3] number The patch version.
 
----@class _ProfileEvent A single, recorded profile event.
----@field cat string The category of the profiler event. e.g. `"function"`, `"test"`, etc.
----@field dur number The length of CPU time needed to complete the event.
----@field name string The function call, file path, or other ID.
----@field pid number? The process ID number.
----@field tid number The thread ID number.
----@field ts number The start CPU time.
-
 ---@class _Statistics Summary data about a whole suite of profiler data.
 ---@field mean number (1 + 2 + 3 + ... n) / count
 ---@field median number The exact middle value of all profile durations.
@@ -237,7 +229,10 @@ function _P.get_graph_artifacts(root, maximum)
         local success, result = pcall(vim.fn.json_decode, data)
 
         if not success then
-            error(string.format('Path "%s" could not be read as JSON.', path), 0)
+            error(
+                string.format('Path "%s" could not be read as JSON. Please fix! (Remove the broken directory)', path),
+                0
+            )
         end
 
         table.insert(output, result)
@@ -301,10 +296,10 @@ end
 --- Raises:
 ---     If `events` has no CPU time data.
 ---
----@param events _ProfileEvent[]
+---@param events profile.Event[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
----@return _ProfileEvent
+---@return profile.Event
 ---    The found, latest event.
 ---
 function _P.get_latest_timed_event(events)
@@ -324,7 +319,7 @@ end
 --- Raises:
 ---     If `events` is empty.
 ---
----@param events _ProfileEvent[]
+---@param events profile.Event[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
 ---@return _Statistics
@@ -340,11 +335,21 @@ function _P.get_profile_statistics(events)
     local sum = 0
 
     for _, event in ipairs(events) do
-        if event.cat == "test" then
+        if event.cat == constant.Category.test then
             local duration = event.dur
             table.insert(durations, duration)
             sum = sum + duration
         end
+    end
+
+    if vim.tbl_isempty(durations) then
+        error(
+            string.format(
+                'Durations is empty. Event count is "%s". Cannot continue.',
+                #events
+            ),
+            0
+        )
     end
 
     local last_event = _P.get_latest_timed_event(events)
@@ -618,13 +623,14 @@ end
 --- Export `profile` to `path` as a new profiler flamegraph.
 ---
 ---@param profiler Profiler The object used to record function call times.
+---@param events profile.Event[] The events to write to-disk.
 ---@param path string An absolute path to a flamegraph.json to create.
 ---
-function _P.write_flamegraph(profiler, path)
+function _P.write_flamegraph(profiler, events, path)
     _LOGGER:fmt_info('Writing flamegraph to "%s" path.', path)
     _P.make_parent_directory(path)
 
-    profiler.export(path)
+    profiler.export(path, events)
 end
 
 --- Create the gnuplot line-graphs.
@@ -686,7 +692,7 @@ end
 ---    The object used to record function call times.
 ---@param root string
 ---    The ".../benchmarks/all" directory to create or update.
----@param events _ProfileEvent[]
+---@param events profile.Event[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
 ---@return string
@@ -704,10 +710,10 @@ function _P.write_graph_artifact(release, profiler, root, events)
     vim.fn.mkdir(directory, "p")
 
     local flamegraph_path = vim.fs.joinpath(directory, _FLAMEGRAPH_FILE_NAME)
-    _P.write_flamegraph(profiler, flamegraph_path)
+    _P.write_flamegraph(profiler, events, flamegraph_path)
 
     local profile_path = vim.fs.joinpath(directory, _PROFILE_FILE_NAME)
-    _P.write_profile_summary(release, profile_path, events)
+    _P.write_profile_summary(release, events, profile_path)
 
     local timing_path = vim.fs.joinpath(directory, _TIMING_FILE_NAME)
     local timing_text = _P.write_timing(events, timing_path)
@@ -813,13 +819,13 @@ end
 ---
 ---@param release string
 ---    The current release to make. e.g. `"v1.2.3"`.
----@param path string
----    An absolute path to the ".../benchmarks/all/profile.json" to create.
----@param events _ProfileEvent[]
+---@param events profile.Event[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
+---@param path string
+---    An absolute path to the ".../benchmarks/all/profile.json" to create.
 ---
-function _P.write_profile_summary(release, path, events)
+function _P.write_profile_summary(release, events, path)
     _LOGGER:fmt_info('Writing profile summary to "%s" path.', path)
     _P.make_parent_directory(path)
 
@@ -927,7 +933,7 @@ In the graph and data below, lower numbers are better
 end
 
 --- TODO: Docstring
----@param events _ProfileEvent[]
+---@param events profile.Event[]
 ---@param path string
 ---@return string
 function _P.write_timing(events, path)
@@ -971,28 +977,6 @@ function M.get_environment_variable_data()
     return root, release
 end
 
---- Add any missing information to `events`.
----
---- We mostly need this because profile.nvim doesn't add `pid` or `tid` to
---- events until the events are exported. And we need `tid` at least.
----
---- In the future hopefully this information is included by default and this
---- function can just be removed.
----
---- Warning:
----     `events` may be directly edited.
----
----@param events _ProfileEvent[]
----    All of the profiler event data to mutate.
----
-function _P.extend_events(events)
-    for _, event in ipairs(events) do
-        -- TODO: Edit profile.nvim to export the default TID / PID
-        event.pid = event.pid or 1
-        event.tid = event.tid or 1
-    end
-end
-
 --- Make sure `gnuplot` is installed and is accessible.
 ---
 --- We can't generate a line-graph if we don't have access to this terminal command.
@@ -1033,7 +1017,7 @@ end
 ---    The object used to record function call times.
 ---@param root string
 ---    The ".../benchmarks/all" directory to create or update.
----@param events _ProfileEvent[]?
+---@param events profile.Event[]?
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
 ---@param maximum number?
@@ -1043,7 +1027,7 @@ end
 ---    (35). Experimentation showed that the X-axis of the graph becomes
 ---    unreadable after 35.
 ---
-function M.write_all_summary_directory(release, profiler, root, events, maximum)
+function M.write_summary_directory(release, profiler, root, events, maximum)
     _LOGGER:fmt_info('Now writing profiler "%s" results to "%s" path.', release, root)
     maximum = maximum or _DEFAULT_MAXIMUM_ARTIFACTS
 
@@ -1053,7 +1037,6 @@ function M.write_all_summary_directory(release, profiler, root, events, maximum)
 
     local artifacts_root = vim.fs.joinpath(root, "artifacts")
     events = events or instrument.get_events()
-    _P.extend_events(events)
     local flamegraph_path, profile_path, timing_path, timing_text = _P.write_graph_artifact(
         release,
         profiler,
