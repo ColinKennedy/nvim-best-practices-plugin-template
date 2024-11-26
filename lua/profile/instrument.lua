@@ -23,10 +23,7 @@ local ignore_list = {
   "^lspconfig%.util%.script_path$",
   "^plenary%.async_lib.*$",
 
-  -- NOTE: Tests fail without adding these
-  "^vim%._editor.*$",
-  "^vim%.shared.*$",
-  "^vim%.validate$",
+  "^pl%..*",  -- This is a dependency of `busted`
 }
 
 local instrument_list = {}
