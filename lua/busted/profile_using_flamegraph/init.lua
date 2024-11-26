@@ -58,6 +58,27 @@ local function _get_current_test_name()
     return vim.fn.join(_NAME_STACK, " ")
 end
 
+--- Delete all tests that live within the current test path.
+---
+--- Important:
+---     This function should only be called once per context when you are sure
+---     that the tests has completed. Otherwise you might end up deleting
+---     timing data before you need it.
+---
+--- Lua's busted test framework supports nested `describe` blocks. When this
+--- function is called, all timing data for the current `describe` block + all
+--- of its children are released to keep memory consumption down.
+---
+function _P.clear_child_tests_cache()
+    local current = _P.get_current_test_path()
+
+    for name, _ in pairs(_TEST_CACHE) do
+        if vim.startswith(name, current) then
+            _TEST_CACHE[name] = nil
+        end
+    end
+end
+
 --- Close the profile results on a test that is ending.
 local function _handle_test_end()
     local name = _get_current_test_name()
@@ -73,8 +94,6 @@ local function _handle_test_end()
         tid = util.get_thread_id(),
         ts = start,
     })
-
-    _TEST_CACHE[name] = nil
 end
 
 --- Stop recording timging events for some unittest `path`
@@ -167,7 +186,8 @@ return function(options)
     handler.fileEnd = function(file)
         table.remove(_NAME_STACK)
 
-        _stop_profiling_file(file.name)
+        _P.clear_child_tests_cache()
+        _P.stop_profiling_test_file(file.name)
     end
 
     --- Output the profile logs after unittesting ends.
