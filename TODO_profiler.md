@@ -17,6 +17,7 @@ BUSTED_PROFILER_FLAMEGRAPH_VERSION
 BUSTED_PROFILER_KEEP_TEMPORARY_FILES
 BUSTED_PROFILER_TAGGED_DIRECTORIES
 BUSTED_PROFILER_TIMING_THRESHOLD
+BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES
 
 - Make a minimum repro explaining why profiler.nvim is not working as expected
     - Make sure thet the flamegraph is outputting correctly. It seems that
