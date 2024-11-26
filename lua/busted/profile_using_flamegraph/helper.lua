@@ -3,6 +3,7 @@
 ---@module 'busted.profile_using_flamegraph.helper'
 ---
 
+local constant = require("busted.profile_using_flamegraph.constant")
 local instrument = require("profile.instrument")
 local numeric = require("busted.profile_using_flamegraph.numeric")
 local timing = require("busted.profile_using_flamegraph.timing")
