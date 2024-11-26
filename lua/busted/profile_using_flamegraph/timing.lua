@@ -9,7 +9,7 @@ local tabler = require("plugin_template._core.tabler")
 
 ---@class _GroupedEvents Some profile events that have a common `name`.
 ---@field duration number The combined total of all of the events.
----@field events _ProfileEvent[] Each individual time that `name` was found.
+---@field events profile.Event[] Each individual time that `name` was found.
 ---@field name string The recorded profiler event.
 
 ---@class _ProfilerLine The data for a row of the user's final profiler report.
@@ -21,7 +21,7 @@ local tabler = require("plugin_template._core.tabler")
 ---@class _ProfileReportOptions All user settings to customize the report.
 ---@field threshold number? A 1-or-more value. The "top slowest" functions to show.
 ---@field precision number? A 0-or-more value and the number of decimal places to show. 0 means "show all decimals".
----@field predicate (fun(event: _ProfileEvent): boolean)? Returns `true` to display an event.
+---@field predicate (fun(event: profile.Event): boolean)? Returns `true` to display an event.
 ---@field sections _ProfileReportSection[]? The columns to include in the output report.
 
 ---@class _ProfilerReportPaddings The computed spacing needed for each column.
@@ -74,7 +74,7 @@ end
 
 --- Check if this plugin defined this `event` function.
 ---
----@param event _ProfileEvent
+---@param event profile.Event
 ---    The profiler event to check. It might be a function, or describe block
 ---    or anything else.
 ---@return boolean
@@ -194,7 +194,7 @@ end
 
 --- Find the events that took the slowest overall time.
 ---
----@param all_events table<string, _ProfileEvent[]>
+---@param all_events table<string, profile.Event[]>
 ---@return _GroupedEvents[] # Each events, by-name, sorted from slowest to fastest.
 ---
 function _P.get_slowest_functions(all_events)
@@ -222,10 +222,10 @@ end
 
 --- Collect `events` based on the total time across all `events`.
 ---
----@param events _ProfileEvent[] All of the profiler event data to consider.
----@param predicate (fun(event: _ProfileEvent): boolean)? Returns `true` to display an event.
----@return table<string, _ProfileEvent[]> # All of the events by-name.
----@return _ProfileEvent[] # All start/end ranges for each time the event was found.
+---@param events profile.Event[] All of the profiler event data to consider.
+---@param predicate (fun(event: profile.Event): boolean)? Returns `true` to display an event.
+---@return table<string, profile.Event[]> # All of the events by-name.
+---@return profile.Event[] # All start/end ranges for each time the event was found.
 ---@return table<string, number> # The number of times that each event was found.
 ---
 function _P.get_totals(events, predicate)
@@ -235,13 +235,13 @@ function _P.get_totals(events, predicate)
         end
     end
 
-    ---@type _ProfileEvent[]
+    ---@type profile.Event[]
     local output_events = {}
 
     ---@type table<string, number>
     local counts = {}
 
-    ---@type table<string, _ProfileEvent[]>
+    ---@type table<string, profile.Event[]>
     local events_by_name = {}
 
     for _, event in ipairs(events) do
@@ -338,7 +338,7 @@ end
 
 --- Get `events` as summary lines.
 ---
----@param events _ProfileEvent[] All of the profiler event data to consider.
+---@param events profile.Event[] All of the profiler event data to consider.
 ---@param options _ProfileReportOptions All user settings to customize the report.
 ---@return _ProfilerLine[] # The computed data (that will later become the report).
 ---
@@ -386,7 +386,7 @@ end
 
 --- Get `events` as a summary.
 ---
----@param events _ProfileEvent[] All of the profiler event data to consider.
+---@param events profile.Event[] All of the profiler event data to consider.
 ---@param options _ProfileReportOptions? All user settings to customize the report.
 ---@return string # The generated report, in human-readable format.
 ---
