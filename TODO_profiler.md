@@ -15,6 +15,7 @@
 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH
 BUSTED_PROFILER_FLAMEGRAPH_VERSION
 BUSTED_PROFILER_KEEP_TEMPORARY_FILES
+BUSTED_PROFILER_TAGGED_DIRECTORIES
 BUSTED_PROFILER_TIMING_THRESHOLD
 
 - Make a minimum repro explaining why profiler.nvim is not working as expected
@@ -26,16 +27,6 @@ BUSTED_PROFILER_TIMING_THRESHOLD
 - Replace my profiler fork with the other one
 - Allow the timing output to be a GitHub-style table
 
--- TODO: Tell the stevearc or whoever that these are important
-wrapped_modules = {}
-wrapped_functions = {}
-
-
-- Quiet logging while unittests are running via profiler_runner.lua
-
---- TODO: IMPORTANT: @colin-k merge this back to profile.nvim
- - add pid info to the events
-
 - Do timing for functions and timing. median, mean, etc for (unit)tests
 
 - A GitHub workflow that can keep in sync with main + add more commits
@@ -46,6 +37,12 @@ wrapped_functions = {}
     - e.g. Get the URL to the other branch and copy the data into the main branch. Or something
 
 https://github.com/lunarmodules/busted/blob/94d008108b028817534047b44fdb1f7f7ca0dcc3/busted/runner.lua#L215-L217
+
+- TODO: IMPORTANT: @colin-k profile.nvim changes
+ - pid
+ - tid
+ - Added `events` to profile.export
+ - Any other changes
 
 https://github.com/AcademySoftwareFoundation/rez/blob/main/.github/scripts/store_benchmark.py
 
