@@ -7,7 +7,6 @@ local constant = require("busted.profile_using_flamegraph.constant")
 local instrument = require("profile.instrument")
 local logging = require("plugin_template._vendors.aggro.logging")
 local numeric = require("busted.profile_using_flamegraph.numeric")
-local tabler = require("plugin_template._core.tabler")
 local timing = require("busted.profile_using_flamegraph.timing")
 
 ---@class _GraphArtifact Summary data about a whole suite of profiler data.
@@ -237,7 +236,7 @@ function _P.get_graph_artifacts(root, maximum)
     local count = #all_paths
 
     _LOGGER:fmt_debug('Writing "%s" artifacts.', count)
-    local paths = tabler.get_slice(all_paths, math.max(count - maximum + 1, 0), count)
+    local paths = _P.get_slice(all_paths, math.max(count - maximum + 1, 0), count)
 
     for index, path in ipairs(paths) do
         _LOGGER:fmt_debug('Reading "%s" artifact.', path)
@@ -392,6 +391,31 @@ end
 ---
 function _P.get_simple_version(version)
     return { version.major, version.minor, version.patch }
+end
+
+--- Get a sub-section copy of `table_` as a new table.
+---
+---@param table_ table<any, any>
+---    A list / array / dictionary / sequence to copy + reduce.
+---@param first? number
+---    The start index to use. This value is **inclusive** (the given index
+---    will be returned). Uses `table_`'s first index if not provided.
+---@param last? number
+---    The end index to use. This value is **inclusive** (the given index will
+---    be returned). Uses every index to the end of `table_`' if not provided.
+---@param step? number
+---    The step size between elements in the slice. Defaults to 1 if not provided.
+---@return table<any, any>
+---    The subset of `table_`.
+---
+function _P.get_slice(table_, first, last, step)
+    local sliced = {}
+
+    for i = first or 1, last or #table_, step or 1 do
+        sliced[#sliced + 1] = table_[i]
+    end
+
+    return sliced
 end
 
 --- Sort all file-paths on-disk based on their date + time data.
@@ -1046,6 +1070,10 @@ function M.write_summary_directory(release, profiler, root, events, maximum)
     local readme_path = vim.fs.joinpath(root, "README.md")
 
     local artifacts = _P.get_graph_artifacts(artifacts_root, maximum)
+
+    if vim.tbl_isempty(artifacts) then
+        error(string.format('Path "%s" has no artifacts that we can use.', root), 0)
+    end
 
     if _P.is_stable_release(release) and _P.is_latest_version(_P.get_version_numbers(release), artifacts_root) then
         _LOGGER:fmt_info('Copying "%s" release to "%s" path.', release, root)

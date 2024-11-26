@@ -11,6 +11,10 @@ BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3
 
 LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
 
+LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
+
+LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_TAGGED_DIRECTORIES="simple" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
+
 eog /tmp/directory/benchmarks/all/median.png
 
 - Check if the new logger setup has caused start-up to become slow. If so, fix it
