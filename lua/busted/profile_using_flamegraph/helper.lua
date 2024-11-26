@@ -5,9 +5,9 @@
 
 local constant = require("busted.profile_using_flamegraph.constant")
 local instrument = require("profile.instrument")
+local logging = require("plugin_template._vendors.aggro.logging")
 local numeric = require("busted.profile_using_flamegraph.numeric")
 local timing = require("busted.profile_using_flamegraph.timing")
-local logging = require("plugin_template._vendors.aggro.logging")
 
 ---@class _GraphArtifact Summary data about a whole suite of profiler data.
 ---@field hardware _Hardware All computer platform details.
