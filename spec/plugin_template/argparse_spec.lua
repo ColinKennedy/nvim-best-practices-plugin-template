@@ -548,7 +548,7 @@ describe("single-dash flags", function()
         }, argparse.parse_arguments("-f"))
     end)
 
-    it("#multiple, combined", function()
+    it("#multiple combined", function()
         assert.same({
             arguments = {
                 {
@@ -572,7 +572,7 @@ describe("single-dash flags", function()
         }, argparse.parse_arguments("-fbz"))
     end)
 
-    it("#multiple, separate", function()
+    it("#multiple separate", function()
         assert.same({
             arguments = {
                 {
