@@ -1,10 +1,21 @@
 ## TODO
 - Do TODO notes
 
-- Restructure
-/home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/busted/multi_runner.lua
-so that you can run it with any test arguments. Currently it doesn't work
+- /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/busted/multi_runner.lua
+ - document to users that they can send any busted call to this runner
 
+- Make tag-specific profile output
+ - outputs to their own folder
+ - is tracked over time, just like the all/ folder
+ - you can use BUSTED_PROFILER_TAGGED_DIRECTORIES=* to control the tags that
+ will be affected
+  - comma-separated. e.g. `foo*bar,*thing` works
+
+- Document all of the environment variables
+BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH
+BUSTED_PROFILER_FLAMEGRAPH_VERSION
+BUSTED_PROFILER_KEEP_TEMPORARY_FILES
+BUSTED_PROFILER_TIMING_THRESHOLD
 
 - Make a minimum repro explaining why profiler.nvim is not working as expected
     - Make sure thet the flamegraph is outputting correctly. It seems that

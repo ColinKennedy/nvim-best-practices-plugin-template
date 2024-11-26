@@ -13,11 +13,91 @@ local logging = require("plugin_template._vendors.aggro.logging")
 local _LOGGER = logging.get_logger("busted.profiler_runner")
 local _P = {}
 
---- Delete all Lua terminal-provided arguments (so we can replace them later).
+
+--- Add arguments that this file needs in order to time / profile the unittest suite.
+function _P.append_profiler_arg_values()
+    local index = #arg + 1
+
+    if not vim.tbl_contains(arg or {}, "--ignore-lua") then
+        arg[index] = "--ignore-lua"
+        index = index + 1
+    end
+
+    arg[index] = "--helper=spec/minimal_init.lua"
+    arg[index + 1] = "--output=busted.profile_using_flamegraph"
+end
+
+--- Replace parts of the user's arguments with our own.
+---
+--- Try to keep as much of the user's data as possible.
+---
+function _P.bootstrap_arg()
+    _P.strip_arg()
+    _P.append_profiler_arg_values()
+    _P.fix_arg()
+end
+
+--- Remove all positional arguments from the user's input.
 function _P.clear_arg()
     for key, _ in pairs(arg or {}) do
         if key ~= 0 then
             arg[key] = nil
+        end
+    end
+end
+
+--- Make sure Lua `arg` is formatted correctly.
+---
+--- A number of edits from other functions may leave `arg` in a state where
+--- some of its indices are `nil`. Busted doesn't parse that correctly so we
+--- need to do some clean-up here.
+---
+function _P.fix_arg()
+    local values = {}
+
+    for index=1,#arg do
+        if arg[index] then
+            table.insert(values, arg[index])
+        end
+    end
+
+    _P.clear_arg()
+
+    for index, value in ipairs(values) do
+        arg[index] = value
+    end
+end
+
+--- Delete any Lua terminal-provided arguments that we must change.
+---
+--- These arguments are needed by this file in order to run the unittests.
+---
+function _P.strip_arg()
+    local count = #arg or {}
+    local key = 1
+
+    while key < count do
+        local value = arg[key]
+
+        if value:match("^--helper=") then
+            arg[key] = nil
+            key = key + 1
+        elseif value == "--helper" then
+            arg[key] = nil
+            arg[key + 1] = nil
+            key = key + 2
+
+        elseif value:match("^%-o=") or value:match("^--output=") then
+            arg[key] = nil
+            key = key + 1
+        elseif value == "-o" or value == "--output" then
+            arg[key] = nil
+            arg[key + 1] = nil
+            key = key + 2
+
+        else
+            -- NOTE: No match was found. We'll just keep searching
+            key = key + 1
         end
     end
 end
@@ -67,11 +147,7 @@ end
 ---
 function _P.run_busted_suite(runner, options)
     _P.keep_arg(function()
-        _P.clear_arg()
-
-        arg[1] = "--ignore-lua"
-        arg[2] = "--helper=spec/minimal_init.lua"
-        arg[3] = "--output=busted.profile_using_flamegraph"
+        _P.bootstrap_arg()
 
         runner(vim.tbl_deep_extend("force", options or {}, { standalone = false }))
     end)
