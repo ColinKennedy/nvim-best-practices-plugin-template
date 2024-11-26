@@ -7,6 +7,7 @@ local constant = require("busted.profile_using_flamegraph.constant")
 local instrument = require("profile.instrument")
 local logging = require("plugin_template._vendors.aggro.logging")
 local numeric = require("busted.profile_using_flamegraph.numeric")
+local tabler = require("plugin_template._core.tabler")
 local timing = require("busted.profile_using_flamegraph.timing")
 
 ---@class _GraphArtifact Summary data about a whole suite of profiler data.
@@ -98,6 +99,22 @@ local _PROCESSOR = vim.uv.cpu_info()[1].model
 
 local unpack = table.unpack or unpack
 
+--- Check if `tag` matches at least one of `patterns`.
+---
+---@param tag string Any text to check.
+---@param patterns string[] All regex paterns to search for. e.g. `{"foo.*bar", "thing"}`.
+---@return boolean # If found, return `true`.
+---
+function _P.is_allowed_tag(tag, patterns)
+    for _, pattern in ipairs(patterns) do
+        if tag:match(pattern) then
+            return true
+        end
+    end
+
+    return false
+end
+
 --- Check if `release` is a greater version number than everything in `root`.
 ---
 --- Most of the time this function returns `true`. But if a user is
@@ -133,6 +150,11 @@ function _P.is_stable_release(version)
     end
 
     return true
+end
+
+---@return string[] # Get the allowes tags that may write to disk. e.g. `{"foo.*bar", "thing"}`.
+function _P.get_allowed_tags_from_environment_variable()
+    return vim.fn.split(os.getenv("BUSTED_PROFILER_TAGGED_DIRECTORIES") or ".*", _TAG_SEPARATOR)
 end
 
 --- Find all sub-directories starting at `root`.
@@ -215,7 +237,7 @@ function _P.get_graph_artifacts(root, maximum)
     local count = #all_paths
 
     _LOGGER:fmt_debug('Writing "%s" artifacts.', count)
-    local paths = _P.get_slice(all_paths, math.max(count - maximum + 1, 0), count)
+    local paths = tabler.get_slice(all_paths, math.max(count - maximum + 1, 0), count)
 
     for index, path in ipairs(paths) do
         _LOGGER:fmt_debug('Reading "%s" artifact.', path)
@@ -370,31 +392,6 @@ end
 ---
 function _P.get_simple_version(version)
     return { version.major, version.minor, version.patch }
-end
-
---- Get a sub-section copy of `table_` as a new table.
----
----@param table_ table<any, any>
----    A list / array / dictionary / sequence to copy + reduce.
----@param first? number
----    The start index to use. This value is **inclusive** (the given index
----    will be returned). Uses `table_`'s first index if not provided.
----@param last? number
----    The end index to use. This value is **inclusive** (the given index will
----    be returned). Uses every index to the end of `table_`' if not provided.
----@param step? number
----    The step size between elements in the slice. Defaults to 1 if not provided.
----@return table<any, any>
----    The subset of `table_`.
----
-function _P.get_slice(table_, first, last, step)
-    local sliced = {}
-
-    for i = first or 1, last or #table_, step or 1 do
-        sliced[#sliced + 1] = table_[i]
-    end
-
-    return sliced
 end
 
 --- Sort all file-paths on-disk based on their date + time data.
@@ -794,7 +791,7 @@ function _P.write_graph_images(artifacts, root)
         -- TODO: Add a "all combined" graph here
     }
 
-    local success, _ = pcall(_P.write_gnuplot_images, artifacts, graphs)
+    local success, message = pcall(_P.write_gnuplot_images, artifacts, graphs)
 
     if not keep then
         _LOGGER:fmt_debug('Deleting temporary files from "%s" graphs.', graphs)
@@ -807,6 +804,8 @@ function _P.write_graph_images(artifacts, root)
             _P.delete_gnuplot_paths(graphs, { "image_path" })
         end
 
+        _LOGGER:error("Error found while writing gnuplot graphs. The message is below.")
+        _LOGGER:error(message)
         error("Failed to write all gnuplot graphs. Rolling back all files.", 0)
     end
 
@@ -1191,8 +1190,10 @@ function M.write_tags_directory(release, profiler, root, events, maximum)
     ---@type string[]
     local created_directories = {}
 
+    local allowed_tags = _P.get_allowed_tags_from_environment_variable()
+
     for tag, events_ in pairs(events_by_tag) do
-        if not vim.tbl_isempty(events_) then
+        if _P.is_allowed_tag(tag, allowed_tags) and not vim.tbl_isempty(events_) then
             local directory = vim.fs.joinpath(root, tag)
             M.write_summary_directory(release, profiler, directory, events_, maximum)
             table.insert(created_directories, directory)
@@ -1202,8 +1203,14 @@ function M.write_tags_directory(release, profiler, root, events, maximum)
     if os.getenv("BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES") ~= "1" then
         for _, path in ipairs(vim.fn.glob(vim.fs.joinpath(root, "*"), false, true)) do
             if not vim.tbl_contains(created_directories, path) then
-                -- NOTE: `path` is old. Because the user deleted to removed the
-                -- tag. Rather than keep old data around that isn't used
+                -- NOTE: `path` is old. For one of these reasons
+                --
+                -- 1. The user no longer uses the tag (all tests that used it
+                --    were deleted or renamed).
+                -- 2. The unittests still exist but the user changed `allowed_tags`.
+                --    So the tag was ignored.
+                --
+                -- Rather than keep old data around that isn't used
                 -- anymore, we delete the directory instead.
                 --
                 _LOGGER:fmt_info('Deleting "%s" directory.', path)
