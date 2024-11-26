@@ -87,7 +87,7 @@ local function _handle_test_end()
     local duration = clock() - start
     instrument.add_event({
         args = {},
-        cat = helper.Category.test,
+        cat = constant.Category.test,
         dur = duration,
         name = name,
         ph = "X",
@@ -107,7 +107,7 @@ function _P.stop_profiling_test_file(path)
 
     instrument.add_event({
         args = {},
-        cat = helper.Category.file,
+        cat = constant.Category.file,
         dur = duration,
         name = path,
         ph = "X",
@@ -162,7 +162,7 @@ return function(options)
         local duration = clock() - start
         instrument.add_event({
             args = {},
-            cat = helper.Category.test,
+            cat = constant.Category.test,
             dur = duration,
             name = name,
             ph = "X",
