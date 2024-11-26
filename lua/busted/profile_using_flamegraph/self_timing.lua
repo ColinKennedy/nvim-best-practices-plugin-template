@@ -20,18 +20,18 @@ M.NOT_FOUND_INDEX = 1
 ---
 --- This does not include childs-of-childs of `event`.
 ---
----@param event _ProfileEvent The event to get children for.
+---@param event profile.Event The event to get children for.
 ---@param starting_index number The starting point to look for children. (Optimization).
 ---@param starting_indices table<number, number> All of the indices across all threads (Optimization).
----@param all_events _ProfileEvent[] All of the events to search for children.
+---@param all_events profile.Event[] All of the events to search for children.
 ---@param all_events_count number? The (precomputed) size of `all_events`.
----@return _ProfileEvent[] # The found children, if any.
+---@return profile.Event[] # The found children, if any.
 ---
 function _P.get_direct_children(event, starting_index, starting_indices, all_events, all_events_count)
     all_events_count = all_events_count or #all_events
     local event_end_time = event.ts + event.dur
 
-    ---@type _ProfileEvent[]
+    ---@type profile.Event[]
     local children = {}
 
     while starting_index < all_events_count and all_events[starting_index].ts < event_end_time do
@@ -79,9 +79,9 @@ end
 ---
 --- We use this later to find direct-children of the `event`.
 ---
----@param event _ProfileEvent The event to check for. We want the index **just after** this event.
+---@param event profile.Event The event to check for. We want the index **just after** this event.
 ---@param starting_index number The starting point to look for children. (Optimization).
----@param all_events _ProfileEvent[] All of the events to search for children.
+---@param all_events profile.Event[] All of the events to search for children.
 ---@param all_events_count number? The (precomputed) size of `all_events`.
 ---@return number -1 if not found but okay. 1-or-more if found.
 ---
@@ -121,7 +121,7 @@ end
 ---     This function expects `events` and `all_events` to be ascended-sorted!
 ---
 ---@param events _GroupedEvents[] All of the profiler event data to compute self-time for.
----@param all_events _ProfileEvent[] All reference profiler event data.
+---@param all_events profile.Event[] All reference profiler event data.
 ---@return table<string, number> # Each event name and its computed self-time.
 ---
 function M.get_self_times(events, all_events)
@@ -164,7 +164,7 @@ function M.get_self_times(events, all_events)
                 return left.ts > right.ts
             end))
         do
-            ---@cast event _ProfileEvent
+            ---@cast event profile.Event
 
             local starting_index =
                 _P.get_next_starting_index(event, (starting_indices[event.tid] or 1), all_events, all_events_count)

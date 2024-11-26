@@ -12,7 +12,7 @@ local timing = require("busted.profile_using_flamegraph.timing")
 
 --- Check if the profiler `event` is an auto-profiled function.
 ---
----@param event _ProfileEvent The event to check.
+---@param event profile.Event The event to check.
 ---@return boolean # If `event` was captured by the profiler or not.
 ---
 function _P.is_function(event)
@@ -21,7 +21,7 @@ end
 
 --- Get the timing report for `events` + `threshold`.
 ---
----@param events _ProfileEvent[] All of the flamegraph data to consider.
+---@param events profile.Event[] All of the flamegraph data to consider.
 ---@param threshold number? A 1-or-more value. The "top slowest" functions to show.
 ---@return _ProfilerLine[] # The computed data (that will later become the report).
 ---
@@ -36,7 +36,7 @@ end
 
 --- Test using some `events` and make sure we get `expected`.
 ---
----@param events _ProfileEvent[] All of the flamegraph data to consider.
+---@param events profile.Event[] All of the flamegraph data to consider.
 ---@param expected _ProfilerLine[] # The computed data (that will later become the report).
 ---
 function _P.run_simple_test(events, expected)

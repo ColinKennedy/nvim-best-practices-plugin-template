@@ -3,6 +3,14 @@ local clock = require("profile.clock")
 local instrument = require("profile.instrument")
 local util = require("profile.util")
 
+---@class profile.Event A single, recorded profile event.
+---@field cat string The category of the profiler event. e.g. `"function"`, `"test"`, etc.
+---@field dur number The length of CPU time needed to complete the event.
+---@field name string The function call, file path, or other ID.
+---@field pid number? The process ID number.
+---@field tid number The thread ID number.
+---@field ts number The start CPU time.
+
 ---@class Profiler
 local M = {}
 
@@ -123,11 +131,12 @@ end
 
 ---Write the trace to a file
 ---@param filename string
-M.export = function(filename)
+---@param events profile.Event[]?
+M.export = function(filename, events)
   local file = assert(io.open(filename, "w"))
+  events = events or instrument.get_events()
   local original = instrument.recording
   instrument.recording = false
-  local events = instrument.get_events()
   file:write("[")
   local count = #events
   for i, event in ipairs(events) do

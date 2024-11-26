@@ -220,7 +220,9 @@ local function run_tests(profiler, release, root, maximum_tries)
         error("Something went wrong. We didn't find any profiler events to record.", 0)
     end
 
-    helper.write_all_summary_directory(release, profile, vim.fs.joinpath(root, "benchmarks", "all"), fastest_events)
+    local benchmarks = vim.fs.joinpath(root, "benchmarks")
+    helper.write_summary_directory(release, profile, vim.fs.joinpath(benchmarks, "all"), fastest_events)
+    helper.write_tags_directory(release, profile, vim.fs.joinpath(benchmarks, "tags"), fastest_events)
 end
 
 --- Run these tests.
