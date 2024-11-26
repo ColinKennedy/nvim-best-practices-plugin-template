@@ -1188,10 +1188,27 @@ function M.write_tags_directory(release, profiler, root, events, maximum)
     events = events or instrument.get_events()
     local events_by_tag = _P.get_events_by_tag(events)
 
+    ---@type string[]
+    local created_directories = {}
+
     for tag, events_ in pairs(events_by_tag) do
         if not vim.tbl_isempty(events_) then
             local directory = vim.fs.joinpath(root, tag)
             M.write_summary_directory(release, profiler, directory, events_, maximum)
+            table.insert(created_directories, directory)
+        end
+    end
+
+    if os.getenv("BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES") ~= "1" then
+        for _, path in ipairs(vim.fn.glob(vim.fs.joinpath(root, "*"), false, true)) do
+            if not vim.tbl_contains(created_directories, path) then
+                -- NOTE: `path` is old. Because the user deleted to removed the
+                -- tag. Rather than keep old data around that isn't used
+                -- anymore, we delete the directory instead.
+                --
+                _LOGGER:fmt_info('Deleting "%s" directory.', path)
+                vim.fn.delete(path, "d")
+            end
         end
     end
 end
