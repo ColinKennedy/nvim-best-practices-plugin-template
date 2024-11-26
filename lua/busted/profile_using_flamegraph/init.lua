@@ -206,7 +206,10 @@ return function(options)
         if is_standalone then
             profile.stop()
             _LOGGER:info("Profiling was stopped. Now writing to disk.")
-            helper.write_all_summary_directory(release, profile, vim.fs.joinpath(root, "benchmarks", "all"))
+            local benchmarks = vim.fs.joinpath(root, "benchmarks")
+            local events = instrument.get_events()
+            helper.write_summary_directory(release, profile, vim.fs.joinpath(benchmarks, "all"), events)
+            helper.write_tags_directory(release, profile, vim.fs.joinpath(benchmarks, "tags"), events)
         end
     end
 
