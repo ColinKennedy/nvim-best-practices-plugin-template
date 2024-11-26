@@ -8,6 +8,7 @@
 ---@see https://github.com/hishamhm/busted-htest/blob/master/src/busted/outputHandlers/htest.lua
 
 local clock = require("profile.clock")
+local constant = require("busted.profile_using_flamegraph.constant")
 local helper = require("busted.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
 local logging = require("plugin_template._vendors.aggro.logging")
@@ -86,7 +87,7 @@ local function _handle_test_end()
     local duration = clock() - start
     instrument.add_event({
         args = {},
-        cat = "test",
+        cat = helper.Category.test,
         dur = duration,
         name = name,
         ph = "X",
@@ -106,7 +107,7 @@ function _P.stop_profiling_test_file(path)
 
     instrument.add_event({
         args = {},
-        cat = "file",
+        cat = helper.Category.file,
         dur = duration,
         name = path,
         ph = "X",
@@ -161,7 +162,7 @@ return function(options)
         local duration = clock() - start
         instrument.add_event({
             args = {},
-            cat = "test",
+            cat = helper.Category.test,
             dur = duration,
             name = name,
             ph = "X",
