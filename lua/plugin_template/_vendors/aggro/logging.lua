@@ -185,7 +185,7 @@ function M.Logger:_log_at_level(level, mode, message_maker, ...)
     local nameupper = mode.name:upper()
 
     local message = message_maker(...)
-    local info = debug.getinfo(2, "Sl")
+    local info = debug.getinfo(3, "Sl")
     local lineinfo = info.short_src .. ":" .. info.currentline
 
     if self._use_console then

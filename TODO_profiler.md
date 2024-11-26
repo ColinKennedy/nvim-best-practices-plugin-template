@@ -4,9 +4,6 @@
 - /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/busted/multi_runner.lua
  - document to users that they can send any busted call to this runner
 
-- Make tag-specific profile output
- - outputs to their own folder
- - is tracked over time, just like the all/ folder
  - you can use BUSTED_PROFILER_TAGGED_DIRECTORIES=* to control the tags that
  will be affected
   - comma-separated. e.g. `foo*bar,*thing` works
