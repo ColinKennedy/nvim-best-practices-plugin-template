@@ -4,10 +4,6 @@
 - /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/busted/multi_runner.lua
  - document to users that they can send any busted call to this runner
 
- - you can use BUSTED_PROFILER_TAGGED_DIRECTORIES=* to control the tags that
- will be affected
-  - comma-separated. e.g. `foo*bar,*thing` works
-
 - Document all of the environment variables
 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH
 BUSTED_PROFILER_FLAMEGRAPH_VERSION
@@ -24,8 +20,6 @@ BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES
 
 - Replace my profiler fork with the other one
 - Allow the timing output to be a GitHub-style table
-
-- Do timing for functions and timing. median, mean, etc for (unit)tests
 
 - A GitHub workflow that can keep in sync with main + add more commits
  - on a separate branch
