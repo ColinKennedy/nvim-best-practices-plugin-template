@@ -444,8 +444,7 @@ end
 
 ---@return number? # The number of (slowest function) entries to write in the output.
 function _P.get_timing_threshold()
-    -- TODO: Document this env var. Actually document all env vars
-    local text = os.getenv("TIMING_THRESHOLD")
+    local text = os.getenv("BUSTED_PROFILER_TIMING_THRESHOLD")
 
     if not text then
         return nil
