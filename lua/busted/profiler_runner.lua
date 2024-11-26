@@ -223,6 +223,7 @@ local function run_tests(profiler, release, root, maximum_tries)
     local benchmarks = vim.fs.joinpath(root, "benchmarks")
     helper.write_summary_directory(release, profile, vim.fs.joinpath(benchmarks, "all"), fastest_events)
     helper.write_tags_directory(release, profile, vim.fs.joinpath(benchmarks, "tags"), fastest_events)
+    _LOGGER:fmt_info('Finished writing all of "%s" directory.', benchmarks)
 end
 
 --- Run these tests.
