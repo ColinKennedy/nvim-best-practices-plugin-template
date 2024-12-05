@@ -47,19 +47,19 @@ jobs:
         luarocks install nlua
 
     - name: Clone dependencies - busted
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: "LuaCATS/busted"
         path: ".dependencies/busted"
 
     - name: Clone dependencies - luassert
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: "LuaCATS/luassert"
         path: ".dependencies/luassert"
 
     - name: Clone dependencies - luavit-meta
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: "Bilal2453/luvit-meta"
         path: ".dependencies/luvit-meta"
