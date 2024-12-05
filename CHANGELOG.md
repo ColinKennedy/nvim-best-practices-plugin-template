@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.3.2...v1.4.0) (2024-12-05)
+
+
+### Features
+
+* **dependencies:** removed unneeded git submodules ([58bba30](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/58bba307be8ec2a963b8d0ec256d60d9c14abe16))
+
 ## [1.3.2](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.3.1...v1.3.2) (2024-11-12)
 
 
