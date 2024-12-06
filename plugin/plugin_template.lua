@@ -11,10 +11,7 @@ local _SUBCOMMANDS = function()
     local goodnight_moon = require("plugin_template._commands.goodnight_moon.parser")
     local hello_world = require("plugin_template._commands.hello_world.parser")
 
-    local root_parser = cmdparse.ParameterParser.new({ help = "The root of all commands." })
-    local root_subparsers = root_parser:add_subparsers({ "command", help = "All root commands." })
-
-    local parser = root_subparsers:add_parser({ name = _PREFIX, help = "The starting command." })
+    local parser = cmdparse.ParameterParser.new({ name = _PREFIX, help = "The root of all commands." })
     local subparsers = parser:add_subparsers({ "commands", help = "All runnable commands." })
 
     subparsers:add_parser(arbitrary_thing.make_parser())
@@ -22,7 +19,7 @@ local _SUBCOMMANDS = function()
     subparsers:add_parser(goodnight_moon.make_parser())
     subparsers:add_parser(hello_world.make_parser())
 
-    return root_parser
+    return parser
 end
 
 cmdparse.create_user_command(_SUBCOMMANDS, _PREFIX)
