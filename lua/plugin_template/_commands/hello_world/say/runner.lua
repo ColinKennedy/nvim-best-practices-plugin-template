@@ -4,7 +4,9 @@
 ---
 
 local constant = require("plugin_template._commands.hello_world.say.constant")
-local vlog = require("plugin_template._vendors.vlog")
+local logging = require("mega.logging")
+
+local _LOGGER = logging.get_logger("plugin_template._commands.hello_world.say.runner")
 
 local M = {}
 
@@ -69,7 +71,7 @@ end
 ---    Control how the text should be shown.
 ---
 function M.run_say_phrase(phrase, repeat_, style)
-    vlog.debug("Running hello-world say word.")
+    _LOGGER:debug("Running hello-world say word.")
 
     phrase = _filter_missing_strings(phrase)
 
@@ -94,7 +96,7 @@ end
 ---    Control how the text should be shown.
 ---
 function M.run_say_word(word, repeat_, style)
-    vlog.debug("Running hello-world say word.")
+    _LOGGER:debug("Running hello-world say word.")
 
     if word == "" then
         vim.notify("No word was given", vim.log.levels.INFO)

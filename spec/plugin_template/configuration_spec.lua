@@ -86,36 +86,6 @@ end)
 
 ---@diagnostic disable: assign-type-mismatch
 ---@diagnostic disable: missing-fields
-describe("bad configuration - cmdparse", function()
-    it("happens with a bad type for #cmdparse.auto_complete.display.help_flag", function()
-        _assert_bad({
-            cmdparse = { auto_complete = { display = { help_flag = "aaa" } } },
-        }, { "cmdparse.auto_complete.display.help_flag: expected boolean, got string" })
-
-        _assert_bad({
-            cmdparse = { auto_complete = { display = 123 } },
-        }, { "cmdparse.auto_complete.display: expected table, got number" })
-
-        _assert_bad({ cmdparse = { auto_complete = "bnb" } }, { "cmdparse.auto_complete: expected table, got string" })
-
-        _assert_bad({ cmdparse = 123 }, { "cmdparse: expected table, got number" })
-    end)
-
-    it("works with an #empty configuration", function()
-        _assert_good({
-            cmdparse = { auto_complete = { display = { help_flag = true } } },
-        })
-
-        _assert_good({
-            cmdparse = { auto_complete = { display = { help_flag = false } } },
-        })
-
-        _assert_good({
-            cmdparse = { auto_complete = { display = { help_flag = nil } } },
-        })
-    end)
-end)
-
 describe("bad configuration - commands", function()
     it("happens with a bad type for #commands.goodnight_moon.phrase", function()
         _assert_bad(

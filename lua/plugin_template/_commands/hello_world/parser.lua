@@ -3,20 +3,20 @@
 ---@module 'plugin_template._commands.hello_world.parser'
 ---
 
-local cmdparse = require("plugin_template._cli.cmdparse")
+local cmdparse = require("mega.cmdparse")
 local constant = require("plugin_template._commands.hello_world.say.constant")
 
 local M = {}
 
 --- Add the `--repeat` parameter onto `parser`.
 ---
----@param parser cmdparse.ParameterParser The parent parser to add the parameter onto.
+---@param parser mega.cmdparse.ParameterParser The parent parser to add the parameter onto.
 ---
 local function _add_repeat_parameter(parser)
     parser:add_parameter({
         names = { "--repeat", "-r" },
         choices = function(data)
-            --- @cast data cmdparse.ChoiceData?
+            --- @cast data mega.cmdparse.ChoiceData?
 
             local output = {}
 
@@ -49,7 +49,7 @@ end
 
 --- Add the `--style` parameter onto `parser`.
 ---
----@param parser cmdparse.ParameterParser The parent parser to add the parameter onto.
+---@param parser mega.cmdparse.ParameterParser The parent parser to add the parameter onto.
 ---
 local function _add_style_parameter(parser)
     parser:add_parameter({
@@ -62,12 +62,12 @@ local function _add_style_parameter(parser)
     })
 end
 
----@return cmdparse.ParameterParser # The main parser for the `:PluginTemplate hello-world` command.
+---@return mega.cmdparse.ParameterParser # The main parser for the `:PluginTemplate hello-world` command.
 function M.make_parser()
     local parser = cmdparse.ParameterParser.new({ "hello-world", help = "Print hello to the user." })
     local top_subparsers =
         parser:add_subparsers({ destination = "commands", help = "All hello-world commands.", required = true })
-    --- @cast top_subparsers cmdparse.Subparsers
+    --- @cast top_subparsers mega.cmdparse.Subparsers
 
     local say = top_subparsers:add_parser({ "say", help = "Print something to the user." })
     local subparsers =
@@ -84,7 +84,7 @@ function M.make_parser()
     _add_style_parameter(word)
 
     phrase:set_execute(function(data)
-        ---@cast data plugin_template.NamespaceExecuteArguments
+        ---@cast data mega.cmdparse.NamespaceExecuteArguments
         local runner = require("plugin_template._commands.hello_world.say.runner")
 
         local phrases = data.namespace.phrases
@@ -97,7 +97,7 @@ function M.make_parser()
     end)
 
     word:set_execute(function(data)
-        ---@cast data plugin_template.NamespaceExecuteArguments
+        ---@cast data mega.cmdparse.NamespaceExecuteArguments
         local runner = require("plugin_template._commands.hello_world.say.runner")
 
         runner.run_say_word(data.namespace.word or "", data.namespace["repeat"], data.namespace.style)

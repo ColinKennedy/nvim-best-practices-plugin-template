@@ -7,10 +7,12 @@
 ---
 
 local configuration_ = require("plugin_template._core.configuration")
+local logging_ = require("mega.logging")
 local say_constant = require("plugin_template._commands.hello_world.say.constant")
 local tabler = require("plugin_template._core.tabler")
 local texter = require("plugin_template._core.texter")
-local vlog = require("plugin_template._vendors.vlog")
+
+local _LOGGER = logging_.get_logger("plugin_template.health")
 
 local M = {}
 
@@ -131,21 +133,6 @@ local function _get_boolean_issue(key, data)
     end
 
     return message
-end
-
---- Check all "cmdparse" values for issues.
----
----@param data plugin_template.Configuration All of the user's fallback settings.
----@return string[] # All found issues, if any.
----
-local function _get_cmdparse_issues(data)
-    local output = {}
-
-    _append_validated(output, "cmdparse.auto_complete.display.help_flag", function()
-        return tabler.get_value(data, { "cmdparse", "auto_complete", "display", "help_flag" })
-    end, "boolean", true)
-
-    return output
 end
 
 --- Check all "commands" values for issues.
@@ -424,7 +411,6 @@ function M.get_issues(data)
     end
 
     local output = {}
-    vim.list_extend(output, _get_cmdparse_issues(data))
     vim.list_extend(output, _get_command_issues(data))
 
     local logging = data.logging
@@ -453,7 +439,7 @@ end
 ---@param data plugin_template.Configuration? All extra customizations for this plugin.
 ---
 function M.check(data)
-    vlog.debug("Running plugin-template health check.")
+    _LOGGER:debug("Running plugin-template health check.")
 
     vim.health.start("Configuration")
 

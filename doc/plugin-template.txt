@@ -104,9 +104,6 @@ A template repository used to create Neovim plugins.
         "ColinKennedy/nvim-best-practices-plugin-template",
         config = function()
             vim.g.plugin_template_configuration = {
-                cmdparse = {
-                    auto_complete = { display = { help_flag = true } },
-                },
                 commands = {
                     goodnight_moon = { read = { phrase = "A good book" } },
                     hello_world = {
