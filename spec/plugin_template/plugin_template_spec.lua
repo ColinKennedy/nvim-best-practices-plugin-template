@@ -9,8 +9,8 @@
 
 local configuration = require("plugin_template._core.configuration")
 local copy_logs_runner = require("plugin_template._commands.copy_logs.runner")
+local logging = require("mega.logging")
 local plugin_template = require("plugin_template")
-local vlog = require("plugin_template._vendors.vlog")
 
 ---@class plugin_template.Configuration
 local _CONFIGURATION_DATA
@@ -134,9 +134,9 @@ describe("copy logs API", function()
     end)
 
     it("runs with default arguments", function()
-        local expected = vim.fn.tempname() .. "copy_logs_default_test.log"
+        local expected = vim.fn.tempname() .. "_copy_logs_default_test.log"
         configuration.DATA.logging.output_path = expected
-        vlog.new(configuration.DATA.logging or {}, true)
+        logging.set_configuration("plugin_template", configuration.DATA.logging or {})
         _make_fake_log(expected)
 
         plugin_template.run_copy_logs()
@@ -161,9 +161,9 @@ describe("copy logs command", function()
     end)
 
     it("runs with default arguments", function()
-        local expected = vim.fn.tempname() .. "copy_logs_default_test.log"
+        local expected = vim.fn.tempname() .. "_copy_logs_default_test.log"
         configuration.DATA.logging.output_path = expected
-        vlog.new(configuration.DATA.logging or {}, true)
+        logging.set_configuration("plugin_template", configuration.DATA.logging or {})
         _make_fake_log(expected)
 
         vim.cmd([[PluginTemplate copy-logs]])
@@ -295,7 +295,7 @@ describe("help API", function()
 
             assert.same({
                 [[
-Usage: {PluginTemplate} {arbitrary-thing,copy-logs,goodnight-moon,hello-world} [--help]
+Usage: PluginTemplate {arbitrary-thing,copy-logs,goodnight-moon,hello-world} [--help]
 
 Commands:
     arbitrary-thing    Prepare to sleep or sleep.

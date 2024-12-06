@@ -10,30 +10,12 @@ operation of this Lua plugin.
    The user's customizations for this plugin.
 
 Fields ~
-    {cmdparse} plugin_template.ConfigurationCmdparse?
-       All settings that control the command mode tools (parsing, auto-complete, etc).
     {commands} plugin_template.ConfigurationCommands?
        Customize the fallback behavior of all `:PluginTemplate` commands.
     {logging} plugin_template.LoggingConfiguration?
        Control how and which logs print to file / Neovim.
     {tools} plugin_template.ConfigurationTools?
        Optional third-party tool integrations.
-
-------------------------------------------------------------------------------
-*plugin_template.ConfigurationCmdparse*
-   All settings that control the command mode tools (parsing, auto-complete, etc).
-
-Fields ~
-    {auto_complete} plugin_template.ConfigurationCmdparseAutoComplete
-       The settings that control what happens during auto-completion.
-
-------------------------------------------------------------------------------
-*plugin_template.ConfigurationCmdparseAutoComplete*
-   The settings that control what happens during auto-completion.
-
-Fields ~
-    {display} {help_flag: `(boolean})`
-       help_flag = Show / Hide the --help flag during auto-completion.
 
 ------------------------------------------------------------------------------
 *plugin_template.ConfigurationCommands*
