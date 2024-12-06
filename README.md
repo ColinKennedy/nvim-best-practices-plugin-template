@@ -56,6 +56,7 @@ A template repository used to create Neovim plugins.
 ```lua
 {
     "ColinKennedy/nvim-best-practices-plugin-template",
+    dependencies = { "ColinKennedy/cmdparse.nvim" },
     -- TODO: (you) - Make sure your first release matches v1.0.0 so it auto-releases!
     version = "v1.*",
 }
@@ -73,9 +74,6 @@ A template repository used to create Neovim plugins.
     "ColinKennedy/nvim-best-practices-plugin-template",
     config = function()
         vim.g.plugin_template_configuration = {
-            cmdparse = {
-                auto_complete = { display = { help_flag = true } },
-            },
             commands = {
                 goodnight_moon = { read = { phrase = "A good book" } },
                 hello_world = {

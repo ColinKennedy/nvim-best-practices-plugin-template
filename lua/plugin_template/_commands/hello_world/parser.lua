@@ -3,7 +3,7 @@
 ---@module 'plugin_template._commands.hello_world.parser'
 ---
 
-local cmdparse = require("plugin_template._cli.cmdparse")
+local cmdparse = require("cmdparse")
 local constant = require("plugin_template._commands.hello_world.say.constant")
 
 local M = {}
@@ -84,7 +84,7 @@ function M.make_parser()
     _add_style_parameter(word)
 
     phrase:set_execute(function(data)
-        ---@cast data plugin_template.NamespaceExecuteArguments
+        ---@cast data cmdparse.NamespaceExecuteArguments
         local runner = require("plugin_template._commands.hello_world.say.runner")
 
         local phrases = data.namespace.phrases
@@ -97,7 +97,7 @@ function M.make_parser()
     end)
 
     word:set_execute(function(data)
-        ---@cast data plugin_template.NamespaceExecuteArguments
+        ---@cast data cmdparse.NamespaceExecuteArguments
         local runner = require("plugin_template._commands.hello_world.say.runner")
 
         runner.run_say_word(data.namespace.word or "", data.namespace["repeat"], data.namespace.style)

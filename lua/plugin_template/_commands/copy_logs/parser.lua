@@ -3,7 +3,7 @@
 ---@module 'plugin_template._commands.copy_logs.parser'
 ---
 
-local cmdparse = require("plugin_template._cli.cmdparse")
+local cmdparse = require("cmdparse")
 
 local M = {}
 
@@ -18,7 +18,7 @@ function M.make_parser()
     })
 
     parser:set_execute(function(data)
-        ---@cast data plugin_template.NamespaceExecuteArguments
+        ---@cast data cmdparse.NamespaceExecuteArguments
         local runner = require("plugin_template._commands.copy_logs.runner")
 
         runner.run(data.namespace.log)

@@ -1,13 +1,12 @@
 --- All `plugin_template` command definitions.
 
-local cli_subcommand = require("plugin_template._cli.cli_subcommand")
+local cmdparse = require("cmdparse")
 
 local _PREFIX = "PluginTemplate"
 
----@type plugin_template.ParserCreator
+---@type cmdparse.ParserCreator
 local _SUBCOMMANDS = function()
     local arbitrary_thing = require("plugin_template._commands.arbitrary_thing.parser")
-    local cmdparse = require("plugin_template._cli.cmdparse")
     local copy_logs = require("plugin_template._commands.copy_logs.parser")
     local goodnight_moon = require("plugin_template._commands.goodnight_moon.parser")
     local hello_world = require("plugin_template._commands.hello_world.parser")
@@ -26,11 +25,7 @@ local _SUBCOMMANDS = function()
     return root_parser
 end
 
-vim.api.nvim_create_user_command(_PREFIX, cli_subcommand.make_parser_triager(_SUBCOMMANDS), {
-    nargs = "*",
-    desc = "PluginTemplate's command API.",
-    complete = cli_subcommand.make_parser_completer(_SUBCOMMANDS),
-})
+cmdparse.create_user_command(_SUBCOMMANDS, _PREFIX)
 
 vim.keymap.set("n", "<Plug>(PluginTemplateSayHi)", function()
     local configuration = require("plugin_template._core.configuration")
