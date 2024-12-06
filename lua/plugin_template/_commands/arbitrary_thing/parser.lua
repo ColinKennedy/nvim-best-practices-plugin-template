@@ -3,7 +3,7 @@
 ---@module 'plugin_template._commands.arbitrary_thing.parser'
 ---
 
-local cmdparse = require("plugin_template._cli.cmdparse")
+local cmdparse = require("cmdparse")
 
 local M = {}
 
@@ -18,7 +18,7 @@ function M.make_parser()
     parser:add_parameter({ "-f", action = "store_true", count = "*", help = "The -f flag." })
 
     parser:set_execute(function(data)
-        ---@cast data plugin_template.NamespaceExecuteArguments
+        ---@cast data cmdparse.NamespaceExecuteArguments
         local runner = require("plugin_template._commands.arbitrary_thing.runner")
 
         local names = {}

@@ -133,21 +133,6 @@ local function _get_boolean_issue(key, data)
     return message
 end
 
---- Check all "cmdparse" values for issues.
----
----@param data plugin_template.Configuration All of the user's fallback settings.
----@return string[] # All found issues, if any.
----
-local function _get_cmdparse_issues(data)
-    local output = {}
-
-    _append_validated(output, "cmdparse.auto_complete.display.help_flag", function()
-        return tabler.get_value(data, { "cmdparse", "auto_complete", "display", "help_flag" })
-    end, "boolean", true)
-
-    return output
-end
-
 --- Check all "commands" values for issues.
 ---
 ---@param data plugin_template.Configuration All of the user's fallback settings.
@@ -424,7 +409,6 @@ function M.get_issues(data)
     end
 
     local output = {}
-    vim.list_extend(output, _get_cmdparse_issues(data))
     vim.list_extend(output, _get_command_issues(data))
 
     local logging = data.logging

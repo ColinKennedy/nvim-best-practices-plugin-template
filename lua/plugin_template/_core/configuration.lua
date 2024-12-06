@@ -22,7 +22,6 @@ M.DATA = {}
 --
 ---@type plugin_template.Configuration
 local _DEFAULTS = {
-    cmdparse = { auto_complete = { display = { help_flag = true } } },
     logging = { level = "info", use_console = false, use_file = false },
 }
 

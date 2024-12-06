@@ -3,7 +3,7 @@
 ---@module 'plugin_template._commands.goodnight_moon.parser'
 ---
 
-local cmdparse = require("plugin_template._cli.cmdparse")
+local cmdparse = require("cmdparse")
 
 local M = {}
 
@@ -28,21 +28,21 @@ function M.make_parser()
     })
 
     count_sheep:set_execute(function(data)
-        ---@cast data plugin_template.NamespaceExecuteArguments
+        ---@cast data cmdparse.NamespaceExecuteArguments
         local count_sheep_ = require("plugin_template._commands.goodnight_moon.count_sheep")
 
         count_sheep_.run(data.namespace.count)
     end)
 
     read:set_execute(function(data)
-        ---@cast data plugin_template.NamespaceExecuteArguments
+        ---@cast data cmdparse.NamespaceExecuteArguments
         local read_ = require("plugin_template._commands.goodnight_moon.read")
 
         read_.run(data.namespace.book)
     end)
 
     sleep:set_execute(function(data)
-        ---@cast data plugin_template.NamespaceExecuteArguments
+        ---@cast data cmdparse.NamespaceExecuteArguments
         local sleep_ = require("plugin_template._commands.goodnight_moon.sleep")
 
         sleep_.run(data.namespace.count)

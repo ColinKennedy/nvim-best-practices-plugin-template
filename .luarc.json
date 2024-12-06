@@ -7,6 +7,7 @@
     ],
     "workspace.library": [
         "$PWD/.dependencies/busted/library",
+        "$PWD/.dependencies/cmdparse.nvim/lua",
         "$PWD/.dependencies/luassert/library",
         "$PWD/.dependencies/luvit-meta/library",
         "$VIMRUNTIME/lua"

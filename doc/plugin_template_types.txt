@@ -10,8 +10,6 @@ operation of this Lua plugin.
    The user's customizations for this plugin.
 
 Fields ~
-    {cmdparse} plugin_template.ConfigurationCmdparse?
-       All settings that control the command mode tools (parsing, auto-complete, etc).
     {commands} plugin_template.ConfigurationCommands?
        Customize the fallback behavior of all `:PluginTemplate` commands.
     {logging} plugin_template.LoggingConfiguration?
