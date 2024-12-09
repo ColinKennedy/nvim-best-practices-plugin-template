@@ -64,6 +64,10 @@ jobs:
         repository: "Bilal2453/luvit-meta"
         path: ".dependencies/luvit-meta"
 
-    - name: test
+    - name: Print Version
+      run: |
+        lua-language-server --version
+
+    - name: Test
       run: |
         VIMRUNTIME=`nlua -e 'io.write(os.getenv("VIMRUNTIME"))'` llscheck --configpath .github/workflows/.luarc.json .
