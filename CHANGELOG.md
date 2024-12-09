@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.4.0...v1.4.1) (2024-12-09)
+
+
+### Bug Fixes
+
+* **missing:** added missing .gitignore ([6def002](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/6def002a458edbf6dcaf786120b3e3f3fbcd869b))
+
 ## [1.4.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.3.2...v1.4.0) (2024-12-05)
 
 
