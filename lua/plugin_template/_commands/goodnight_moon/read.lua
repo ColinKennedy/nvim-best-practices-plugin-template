@@ -3,7 +3,9 @@
 ---@module 'plugin_template._commands.goodnight_moon.read.runner'
 ---
 
-local vlog = require("plugin_template._vendors.vlog")
+local logging = require("mega.logging")
+
+local _LOGGER = logging.get_logger("plugin_template._commands.goodnight_moon.read")
 
 local M = {}
 
@@ -12,7 +14,7 @@ local M = {}
 ---@param book string The name of the book.
 ---
 function M.run(book)
-    vlog.debug("Running goodnight-moon count-sheep")
+    _LOGGER:debug("Running goodnight-moon count-sheep")
 
     vim.notify(string.format("%s: it is a book", book), vim.log.levels.INFO)
 end

@@ -56,7 +56,7 @@ A template repository used to create Neovim plugins.
 ```lua
 {
     "ColinKennedy/nvim-best-practices-plugin-template",
-    dependencies = { "ColinKennedy/cmdparse.nvim", "ColinKennedy/aggro.logging" },
+    dependencies = { "ColinKennedy/mega.cmdparse", "ColinKennedy/mega.logging" },
     -- TODO: (you) - Make sure your first release matches v1.0.0 so it auto-releases!
     version = "v1.*",
 }

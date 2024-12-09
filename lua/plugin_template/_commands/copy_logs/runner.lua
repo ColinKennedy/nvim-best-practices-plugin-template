@@ -3,7 +3,9 @@
 ---@module 'plugin_template._commands.copy_logs.runner'
 ---
 
-local vlog = require("plugin_template._vendors.vlog")
+local logging = require("mega.logging")
+
+local _LOGGER = logging.get_logger("plugin_template._commands.copy_logs.runner")
 
 local M = {}
 
@@ -72,7 +74,7 @@ end
 ---    location is used instead.
 ---
 function M.run(path)
-    path = path or vlog:get_log_path()
+    path = path or _LOGGER:get_log_path()
 
     if not path or vim.fn.filereadable(path) ~= 1 then
         vim.notify(string.format('No "%s" path. Cannot copy the logs.', path), vim.log.levels.ERROR)
