@@ -3,11 +3,11 @@
 ---@module 'plugin_template._commands.arbitrary_thing.parser'
 ---
 
-local cmdparse = require("cmdparse")
+local cmdparse = require("mega.cmdparse")
 
 local M = {}
 
----@return cmdparse.ParameterParser # The main parser for the `:PluginTemplate arbitrary-thing` command.
+---@return mega.cmdparse.ParameterParser # The main parser for the `:PluginTemplate arbitrary-thing` command.
 function M.make_parser()
     local parser = cmdparse.ParameterParser.new({ "arbitrary-thing", help = "Prepare to sleep or sleep." })
 
@@ -18,7 +18,7 @@ function M.make_parser()
     parser:add_parameter({ "-f", action = "store_true", count = "*", help = "The -f flag." })
 
     parser:set_execute(function(data)
-        ---@cast data cmdparse.NamespaceExecuteArguments
+        ---@cast data mega.cmdparse.NamespaceExecuteArguments
         local runner = require("plugin_template._commands.arbitrary_thing.runner")
 
         local names = {}

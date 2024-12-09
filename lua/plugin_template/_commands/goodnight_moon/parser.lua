@@ -3,11 +3,11 @@
 ---@module 'plugin_template._commands.goodnight_moon.parser'
 ---
 
-local cmdparse = require("cmdparse")
+local cmdparse = require("mega.cmdparse")
 
 local M = {}
 
----@return cmdparse.ParameterParser # The main parser for the `:PluginTemplate goodnight-moon` command.
+---@return mega.cmdparse.ParameterParser # The main parser for the `:PluginTemplate goodnight-moon` command.
 function M.make_parser()
     local parser = cmdparse.ParameterParser.new({ "goodnight-moon", help = "Prepare to sleep or sleep." })
     local subparsers =
@@ -28,21 +28,21 @@ function M.make_parser()
     })
 
     count_sheep:set_execute(function(data)
-        ---@cast data cmdparse.NamespaceExecuteArguments
+        ---@cast data mega.cmdparse.NamespaceExecuteArguments
         local count_sheep_ = require("plugin_template._commands.goodnight_moon.count_sheep")
 
         count_sheep_.run(data.namespace.count)
     end)
 
     read:set_execute(function(data)
-        ---@cast data cmdparse.NamespaceExecuteArguments
+        ---@cast data mega.cmdparse.NamespaceExecuteArguments
         local read_ = require("plugin_template._commands.goodnight_moon.read")
 
         read_.run(data.namespace.book)
     end)
 
     sleep:set_execute(function(data)
-        ---@cast data cmdparse.NamespaceExecuteArguments
+        ---@cast data mega.cmdparse.NamespaceExecuteArguments
         local sleep_ = require("plugin_template._commands.goodnight_moon.sleep")
 
         sleep_.run(data.namespace.count)

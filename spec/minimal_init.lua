@@ -4,7 +4,7 @@ local _PLUGINS = {
     ["https://github.com/nvim-lualine/lualine.nvim"] = os.getenv("LUALINE_DIR") or "/tmp/lualine.nvim",
     ["https://github.com/nvim-telescope/telescope.nvim"] = os.getenv("TELESCOPE_DIR") or "/tmp/telescope.nvim",
     ["https://github.com/nvim-lua/plenary.nvim"] = os.getenv("PLENARY_DIR") or "/tmp/plenary.nvim",
-    ["https://github.com/ColinKennedy/cmdparse.nvim"] = os.getenv("CMDPARSE_DIR") or "/tmp/cmdparse.nvim",
+    ["https://github.com/ColinKennedy/mega.cmdparse"] = os.getenv("MEGA_CMDPARSE_DIR") or "/tmp/mega.cmdparse",
 }
 
 local cloned = false

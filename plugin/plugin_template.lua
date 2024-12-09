@@ -1,10 +1,10 @@
 --- All `plugin_template` command definitions.
 
-local cmdparse = require("cmdparse")
+local cmdparse = require("mega.cmdparse")
 
 local _PREFIX = "PluginTemplate"
 
----@type cmdparse.ParserCreator
+---@type mega.cmdparse.ParserCreator
 local _SUBCOMMANDS = function()
     local arbitrary_thing = require("plugin_template._commands.arbitrary_thing.parser")
     local copy_logs = require("plugin_template._commands.copy_logs.parser")
