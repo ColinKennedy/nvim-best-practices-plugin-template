@@ -7,10 +7,12 @@
 ---
 
 local configuration_ = require("plugin_template._core.configuration")
+local logging_ = require("mega.logging")
 local say_constant = require("plugin_template._commands.hello_world.say.constant")
 local tabler = require("plugin_template._core.tabler")
 local texter = require("plugin_template._core.texter")
-local vlog = require("plugin_template._vendors.vlog")
+
+local _LOGGER = logging_.get_logger("plugin_template.health")
 
 local M = {}
 
@@ -437,7 +439,7 @@ end
 ---@param data plugin_template.Configuration? All extra customizations for this plugin.
 ---
 function M.check(data)
-    vlog.debug("Running plugin-template health check.")
+    _LOGGER:debug("Running plugin-template health check.")
 
     vim.health.start("Configuration")
 
