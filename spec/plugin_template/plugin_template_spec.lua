@@ -295,7 +295,7 @@ describe("help API", function()
 
             assert.same({
                 [[
-Usage: {PluginTemplate} {arbitrary-thing,copy-logs,goodnight-moon,hello-world} [--help]
+Usage: PluginTemplate {arbitrary-thing,copy-logs,goodnight-moon,hello-world} [--help]
 
 Commands:
     arbitrary-thing    Prepare to sleep or sleep.
