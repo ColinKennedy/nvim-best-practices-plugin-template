@@ -17,6 +17,30 @@ LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_TAGGED_
 
 eog /tmp/directory/benchmarks/all/median.png
 
+- Change the .yml files to print the versions of stuff before it runs
+
+- The wiki documentation for setting up release, documentation generation, and release-please are messed up (release-please is straight up missing)
+ - https://github.com/googleapis/release-please-action?tab=readme-ov-file
+ - https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+
+
+- The github action that does stylua - maybe it should instead just call `make
+stylua` and pass color-related options as an argument
+ -
+
+- A generator script should remove / clear the CHANGELOG.md and the doc/news.txt file
+
+- Nice icons in the README - https://github.com/shortcuts/no-neck-pain.nvim
+
+
+## Splitting up
+- cmdparse goes into its own plugin and all of its unittests
+- the logger too
+- startup is slow again, fix
+- the profiler code too. Own plugin and unittests
+
+- Figure out how to create coverage reports. Document it
+
 - Check if the new logger setup has caused start-up to become slow. If so, fix it
 
 - Do the TODO_profiler.md work
