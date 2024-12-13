@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.4.0...v1.5.0) (2024-12-13)
+
+
+### Features
+
+* **dependencies:** moved cmdparse + logging out ([83458f2](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/83458f230192cb1a77778de051bcde757e73d756))
+
+
+### Bug Fixes
+
+* **missing:** added missing .gitignore ([6def002](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/6def002a458edbf6dcaf786120b3e3f3fbcd869b))
+
 ## [1.4.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.3.2...v1.4.0) (2024-12-05)
 
 
