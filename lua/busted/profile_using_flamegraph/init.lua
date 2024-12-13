@@ -106,8 +106,7 @@ return function(options)
 
     if not root or not release then
         vlog.info(
-            'Either root or release was not found. '
-            .. 'Getting root / release from environment variables instead.'
+            "Either root or release was not found. " .. "Getting root / release from environment variables instead."
         )
         root, release = helper.get_environment_variable_data()
     end
@@ -115,7 +114,7 @@ return function(options)
     local is_standalone = not profile.is_recording()
 
     if is_standalone then
-        vlog.info('Now capturing all profile logs.')
+        vlog.info("Now capturing all profile logs.")
 
         profile.start("*")
     end
