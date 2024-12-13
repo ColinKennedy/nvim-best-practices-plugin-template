@@ -60,6 +60,7 @@ local M = {}
 -- before it can get to that point
 --
 local _DEFAULT_MAXIMUM_ARTIFACTS = 35
+local _TAG_SEPARATOR = ","
 
 local _FLAMEGRAPH_FILE_NAME = "flamegraph.json"
 local _PROFILE_FILE_NAME = "profile.json"
@@ -1143,7 +1144,7 @@ function M.write_tags_directory(release, profiler, root, events, maximum)
 
     ---@param events profile.Event[]
     ---@return table<string, profile.Event[]>
-    function _P.get_events_by_tag(events)
+    function _P.get_events_by_tag(events_)
         ---@type table<string, profile.Event[]>
         local output = {}
 
@@ -1157,7 +1158,7 @@ function M.write_tags_directory(release, profiler, root, events, maximum)
         ---@type profile.Event[]
         local events_buffer = {}
 
-        for _, event in ipairs(vim.fn.sort(events, function(left, right) return left.ts < right.ts end)) do
+        for _, event in ipairs(vim.fn.sort(events_, function(left, right) return left.ts < right.ts end)) do
             if _P.is_test_start(event) then
                 table.insert(test_stack, event.name)
                 local tags = _P.get_tags(event.name)
