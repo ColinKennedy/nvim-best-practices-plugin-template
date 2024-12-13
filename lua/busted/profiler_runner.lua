@@ -71,7 +71,7 @@ function _P.run_busted_suite(runner, options)
         arg[2] = "--helper=spec/minimal_init.lua"
         arg[3] = "--output=busted.profile_using_flamegraph"
 
-        runner(vim.tbl_deep_extend("force", options or {}, { standalone=false }))
+        runner(vim.tbl_deep_extend("force", options or {}, { standalone = false }))
     end)
 end
 
@@ -109,7 +109,7 @@ local function run_tests(profiler, release, root, maximum_tries)
     end
 
     local counter = maximum_tries
-    local fastest_time = 2^1023
+    local fastest_time = 2 ^ 1023
     local fastest_events = nil
 
     while true do
@@ -118,7 +118,7 @@ local function run_tests(profiler, release, root, maximum_tries)
         ---@diagnostic disable-next-line: cast-type-mismatch
         ---@cast runner busted.MultiRunner
 
-        local duration = _P.profile_and_run(profiler, runner, {release=release, root=root})
+        local duration = _P.profile_and_run(profiler, runner, { release = release, root = root })
 
         if duration < fastest_time then
             counter = maximum_tries

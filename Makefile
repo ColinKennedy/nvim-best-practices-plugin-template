@@ -21,8 +21,8 @@ api_documentation:
 flamegraph:
 	nvim -l lua/busted/profiler_runner.lua
 
-llscheck:
-	VIMRUNTIME=`nvim -l scripts/print_vimruntime_environment_variable.lua` llscheck --configpath .luarc.json .
+llscheck: clone_git_dependencies
+	VIMRUNTIME=`nlua -e 'io.write(os.getenv("VIMRUNTIME"))'` llscheck --configpath .luarc.json .
 
 luacheck:
 	luacheck lua plugin scripts spec

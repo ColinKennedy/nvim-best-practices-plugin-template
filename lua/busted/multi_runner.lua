@@ -20,6 +20,8 @@ local utils = require("busted.utils")
 local exit = require("busted.compatibility").exit
 local loadstring = require("busted.compatibility").loadstring
 
+local _TEST_FAILURE_OR_ERROR = 1
+
 --- Execute the test suite.
 ---
 ---@param options busted.MultiRunnerOptions The settings to apply to the runner.
@@ -67,7 +69,7 @@ return function(options)
     end
 
     -- Load current working directory
-    err = path.chdir(path.normpath(cliArgs.directory))[2]
+    _, err = path.chdir(path.normpath(cliArgs.directory))
 
     if err then
         io.stderr:write(appName .. ": error: " .. err .. "\n")
@@ -245,6 +247,8 @@ return function(options)
     busted.publish({ "exit" })
 
     if options.standalone or failures > 0 or errors > 0 then
-        exit(failures + errors, forceExit)
+        io.stderr:write("Unittests failed / errored. Cannot write a flamegraph.\n")
+        io.stderr:flush()
+        os.exit(_TEST_FAILURE_OR_ERROR)
     end
 end

@@ -229,10 +229,7 @@ function _P.get_graph_artifacts(root, maximum)
         table.insert(output, result)
 
         if index >= maximum then
-            vlog.fmt_info(
-                'We have reached the "%s" maximum value. All other artifacts will be ignored.',
-                maximum
-            )
+            vlog.fmt_info('We have reached the "%s" maximum value. All other artifacts will be ignored.', maximum)
 
             return output
         end
@@ -581,10 +578,7 @@ function _P.validate_release(version)
     local pattern = "^v%d+%.%d+%.%d+$"
 
     if not string.match(version, pattern) then
-        error(
-            string.format('Version "%s" is invalid. Expected Semantic Versioning. See semver.org.', version),
-            0
-        )
+        error(string.format('Version "%s" is invalid. Expected Semantic Versioning. See semver.org.', version), 0)
     end
 end
 
