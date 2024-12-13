@@ -1,4 +1,4 @@
-*plugin-template.txt*     For Neovim >= 0.8.0    Last change: 2024 December 09
+*plugin-template.txt*     For Neovim >= 0.8.0    Last change: 2024 December 13
 
 ==============================================================================
 Table of Contents                          *plugin-template-table-of-contents*
@@ -20,6 +20,8 @@ Table of Contents                          *plugin-template-table-of-contents*
 ==============================================================================
 1. A Neovim Plugin Template         *plugin-template-a-neovim-plugin-template*
 
+A template repository used to create Neovim plugins.
+
   --------------------------------------------------------------------------------
             
   --------- ----------------------------------------------------------------------
@@ -30,8 +32,6 @@ Table of Contents                          *plugin-template-table-of-contents*
 
   Social    [RSS]
   --------------------------------------------------------------------------------
-A template repository used to create Neovim plugins.
-
 
 ==============================================================================
 2. Features                                         *plugin-template-features*
@@ -86,6 +86,7 @@ A template repository used to create Neovim plugins.
 >lua
     {
         "ColinKennedy/nvim-best-practices-plugin-template",
+        dependencies = { "ColinKennedy/mega.cmdparse", "ColinKennedy/mega.logging" },
         -- TODO: (you) - Make sure your first release matches v1.0.0 so it auto-releases!
         version = "v1.*",
     }
