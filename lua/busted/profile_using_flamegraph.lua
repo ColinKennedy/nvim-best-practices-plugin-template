@@ -221,6 +221,31 @@ function _P.make_parent_directory(path)
     vim.fn.mkdir(vim.fn.fnamemodify(path, ":p:h"), "p")
 end
 
+--- Get all input data needed for us to run + save flamegraph data to-disk.
+---
+---@return string # The absolute directory on-disk where flamegraph info will be written.
+---@return string # The version to write to-disk. e.g. `"v1.2.3"`.
+---
+function _P.parse_input_arguments()
+    local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
+
+    if not root then
+        error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.", 0)
+    end
+
+    -- TODO: Provide this env-var to the GitHub workflow using GitHub's ${{
+    -- github.event.release.tag_name }} support
+    local release = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_VERSION")
+
+    if not release then
+        error('Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_VERSION is not defined.', 0)
+    end
+
+    _P.validate_release(release)
+
+    return root, release
+end
+
 --- Stop recording timging events for some unittest `path`
 ---
 ---@param path string A relative or absolute path on-disk to some _spec.lua file.
@@ -239,6 +264,21 @@ function _P.stop_profiling_test_file(path)
     })
 
     _FILE_CACHE[path] = nil
+end
+
+--- Make sure `version` is an expected semantic version convention.
+---
+--- Raises:
+---     If `version` isn't a valid convention.
+---
+---@param version string A release / version tag. e.g. `"v1.2.3"`.
+---
+function _P.validate_release(version)
+    local pattern = "^v%d+%.%d+%.%d+$"
+
+    if string.match(version, pattern) ~= nil then
+        error(string.format('Version "%s" is invalid. Expected Semantic Versioning. See semver.org for details.', version), 0)
+    end
 end
 
 -- TODO: Make sure this file structure works
@@ -260,8 +300,9 @@ end
 ---     - timing.png - A line-graph of tests over-time.
 ---
 ---@param root string The ".../benchmarks/all" directory to create or update.
+---@param release string The current release to make. e.g. `"v1.2.3"`.
 ---
-function _P.write_all_summary_directory(root)
+function _P.write_all_summary_directory(root, release)
     -- TODO: Change this code to generate the {YYYY_MM_DD-VERSION_TAG}/
     -- directory first and then just copy its flamegraph.json and profile.json
     -- to the all/ root directory.
@@ -269,7 +310,6 @@ function _P.write_all_summary_directory(root)
     local profile_data = _P.write_profile_summary(vim.fs.joinpath(root, "profile.json"))
     _P.append_to_summary_readme(profile_data, vim.fs.joinpath(root, "README.md"))
     -- TODO: Find a way to pass in the release, maybe
-    local release = "TODO"
     _P.write_graph_artifact(release, root)
     _P.make_graph(_P.get_graph_artifacts(root, _MAXIMUM_ARTIFACTS), vim.fs.joinpath(root, "timing.png"))
 end
@@ -291,7 +331,7 @@ end
 
 --- Create the `"benchmarks/all/artifacts/{YYYY_MM_DD-VERSION_TAG}"` directory.
 ---
----@param release string The current release to make.
+---@param release string The current release to make. e.g. `"v1.2.3"`.
 ---@param root string The ".../benchmarks/all" directory to create or update.
 ---
 function _P.write_graph_artifact(release, root)
@@ -347,17 +387,8 @@ return function(options)
     local busted = require("busted")
     local handler = require("busted.outputHandlers.base")()
 
+    local root, release = _P.parse_input_arguments()
     local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
-
-    if not root then
-        error("Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.", 0)
-    end
-
-    local export_path = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
-
-    if not export_path then
-        error('Cannot write profile results. $BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH is not defined.')
-    end
 
     profile.start("*")
 
