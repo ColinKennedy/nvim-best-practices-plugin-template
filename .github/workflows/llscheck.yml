@@ -64,6 +64,22 @@ jobs:
         repository: "Bilal2453/luvit-meta"
         path: ".dependencies/luvit-meta"
 
-    - name: test
+    - name: Clone dependencies - mega.cmdparse
+      uses: actions/checkout@v4
+      with:
+        repository: "ColinKennedy/mega.cmdparse"
+        path: ".dependencies/mega.cmdparse"
+
+    - name: Clone dependencies - mega.logging
+      uses: actions/checkout@v4
+      with:
+        repository: "ColinKennedy/mega.logging"
+        path: ".dependencies/mega.logging"
+
+    - name: Print Version
+      run: |
+        lua-language-server --version
+
+    - name: Test
       run: |
         VIMRUNTIME=`nlua -e 'io.write(os.getenv("VIMRUNTIME"))'` llscheck --configpath .github/workflows/.luarc.json .
