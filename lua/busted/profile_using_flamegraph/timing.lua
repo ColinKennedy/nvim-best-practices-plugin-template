@@ -40,7 +40,7 @@ local _Section = {
 
 -- This is meant to be a number that we shouldn't be able to actually hit
 local _DEFAULT_PRECISION = 99999999999999
-local _DEFAULT_SECTIONS = {_Section.count, _Section.total_time, _Section.self_time, _Section.name}
+local _DEFAULT_SECTIONS = { _Section.count, _Section.total_time, _Section.self_time, _Section.name }
 local _PLUGIN_PREFIX = "plugin_template"
 
 --- Find the amount of characters needed to display `number`.
@@ -138,7 +138,7 @@ function _P.get_header_text(lines, precision)
     local name_label = "name"
     local self_time_label = "self-time"
     local total_time_label = "total-time"
-    count_padding = get_max(count_padding, #(count_label))
+    count_padding = get_max(count_padding, #count_label)
     name_padding = get_max(name_padding, #name_label)
     self_time_padding = get_max(self_time_padding, #self_time_label)
     total_time_padding = get_max(total_time_padding, #total_time_label)
@@ -157,13 +157,14 @@ function _P.get_header_text(lines, precision)
     output = output .. summary_line .. "\n"
     output = output .. line_break
 
-    return output, {
-        count=count_padding,
-        full=full_padding,
-        name=name_padding,
-        self_time=self_time_padding,
-        total_time=total_time_padding,
-    }
+    return output,
+        {
+            count = count_padding,
+            full = full_padding,
+            name = name_padding,
+            self_time = self_time_padding,
+            total_time = total_time_padding,
+        }
 end
 
 --- Combine all `paddings` that are found in `sections` into a formattable template.
@@ -298,15 +299,12 @@ function M.get_profile_report_lines(events, options)
         local count = counts[name]
         local self_time = self_times[name]
 
-        table.insert(
-            output,
-            {
-                [_Section.count] = count,
-                [_Section.total_time] = entry.dur,
-                [_Section.self_time] = self_time,
-                [_Section.name] = name,
-            }
-        )
+        table.insert(output, {
+            [_Section.count] = count,
+            [_Section.total_time] = entry.dur,
+            [_Section.self_time] = self_time,
+            [_Section.name] = name,
+        })
     end
 
     return output
