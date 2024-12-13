@@ -16,11 +16,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@master
-      with:
-        submodules: true  # Ensure submodules are checked out
-
-    - name: Update Submodules
-      run: git submodule update --init --recursive
 
     - uses: rhysd/action-setup-vim@v1
       # NOTE: We need Neovim installed in order to expose the $VIMRUNTIME
@@ -49,7 +44,26 @@ jobs:
     - name: Install llscheck
       run: |
         luarocks install llscheck
+        luarocks install nlua
+
+    - name: Clone dependencies - busted
+      uses: actions/checkout@v4
+      with:
+        repository: "LuaCATS/busted"
+        path: ".dependencies/busted"
+
+    - name: Clone dependencies - luassert
+      uses: actions/checkout@v4
+      with:
+        repository: "LuaCATS/luassert"
+        path: ".dependencies/luassert"
+
+    - name: Clone dependencies - luavit-meta
+      uses: actions/checkout@v4
+      with:
+        repository: "Bilal2453/luvit-meta"
+        path: ".dependencies/luvit-meta"
 
     - name: test
       run: |
-        VIMRUNTIME=`nvim -l scripts/print_vimruntime_environment_variable.lua` llscheck --configpath .github/workflows/.luarc.json .
+        VIMRUNTIME=`nlua -e 'io.write(os.getenv("VIMRUNTIME"))'` llscheck --configpath .github/workflows/.luarc.json .

@@ -1,9 +1,0 @@
-[submodule ".dependencies/busted"]
-	path = .dependencies/busted
-	url = git@github.com:LuaCATS/busted.git
-[submodule ".dependencies/luassert"]
-	path = .dependencies/luassert
-	url = git@github.com:LuaCATS/luassert.git
-[submodule ".dependencies/luvit-meta"]
-	path = .dependencies/luvit-meta
-	url = git@github.com:Bilal2453/luvit-meta.git
