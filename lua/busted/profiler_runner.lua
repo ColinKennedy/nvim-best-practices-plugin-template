@@ -13,7 +13,6 @@ local logging = require("plugin_template._vendors.aggro.logging")
 local _LOGGER = logging.get_logger("busted.profiler_runner")
 local _P = {}
 
-
 --- Add arguments that this file needs in order to time / profile the unittest suite.
 function _P.append_profiler_arg_values()
     local index = #arg + 1
@@ -55,7 +54,7 @@ end
 function _P.fix_arg()
     local values = {}
 
-    for index=1,#arg do
+    for index = 1, #arg do
         if arg[index] then
             table.insert(values, arg[index])
         end
@@ -86,7 +85,6 @@ function _P.strip_arg()
             arg[key] = nil
             arg[key + 1] = nil
             key = key + 2
-
         elseif value:match("^%-o=") or value:match("^--output=") then
             arg[key] = nil
             key = key + 1
@@ -94,7 +92,6 @@ function _P.strip_arg()
             arg[key] = nil
             arg[key + 1] = nil
             key = key + 2
-
         else
             -- NOTE: No match was found. We'll just keep searching
             key = key + 1

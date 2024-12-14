@@ -12,7 +12,6 @@ before_each(function()
 end)
 after_each(mock_test.reset_loggers)
 
-
 describe("bad auto-complete input", function()
     it("errors if an incorrect flag is given", function()
         local parser = cmdparse.ParameterParser.new({ "arbitrary-thing", help = "Prepare to sleep or sleep." })

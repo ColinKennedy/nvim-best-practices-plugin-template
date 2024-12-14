@@ -216,7 +216,7 @@ function M.Logger:_log_at_level(level, mode, message_maker, ...)
 
     if self.use_file then
         if not self._output_path then
-            error('Cannot write Logger message to file, no output path was given.', 0)
+            error("Cannot write Logger message to file, no output path was given.", 0)
         end
 
         local handler = io.open(self._output_path, "a")

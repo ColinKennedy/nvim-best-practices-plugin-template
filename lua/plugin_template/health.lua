@@ -187,35 +187,32 @@ local function _get_developer_environment_warnings()
         end
     end
 
-    for _, entry in ipairs(
+    for _, entry in ipairs({
         {
-            {
-                check=_has_executable("busted"),
+            check = _has_executable("busted"),
 
-                bad="`make profile_using_flamegraph` and `make test` will not work as expected.",
-                good="The busted executable was found!",
-            },
-            {
-                check=_has_executable("llscheck"),
+            bad = "`make profile_using_flamegraph` and `make test` will not work as expected.",
+            good = "The busted executable was found!",
+        },
+        {
+            check = _has_executable("llscheck"),
 
-                bad="`make llscheck` will not work as expected.",
-                good="The llscheck executable was found!",
-            },
-            {
-                check=_has_executable("luacheck"),
+            bad = "`make llscheck` will not work as expected.",
+            good = "The llscheck executable was found!",
+        },
+        {
+            check = _has_executable("luacheck"),
 
-                bad="`make luacheck` will not work as expected.",
-                good="The luacheck executable was found!",
-            },
-            {
-                check=_has_executable("stylua"),
+            bad = "`make luacheck` will not work as expected.",
+            good = "The luacheck executable was found!",
+        },
+        {
+            check = _has_executable("stylua"),
 
-                bad="`make stylua` will not work as expected.",
-                good="The stylua executable was found!",
-            },
-        }
-    )
-    do
+            bad = "`make stylua` will not work as expected.",
+            good = "The stylua executable was found!",
+        },
+    }) do
         if not entry.check() then
             vim.health.warn(entry.bad)
         else

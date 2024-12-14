@@ -108,7 +108,7 @@ end
 ---@return string # The created string.
 ---
 function _P.make_categories(...)
-    return vim.fn.join({...}, _CATEGORY_SEPARATOR)
+    return vim.fn.join({ ... }, _CATEGORY_SEPARATOR)
 end
 
 --- Stop recording timging events for some unittest `path`
