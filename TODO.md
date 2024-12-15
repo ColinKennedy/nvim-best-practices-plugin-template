@@ -17,6 +17,8 @@ LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_TAGGED_
 
 eog /tmp/directory/benchmarks/all/median.png
 
+- `make flamegraph` does not work. FIX
+
 - Check if the new logger setup has caused start-up to become slow. If so, fix it
 
 - Do the TODO_profiler.md work
