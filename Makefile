@@ -17,7 +17,7 @@ clone_git_dependencies:
 api_documentation:
 	nvim -u scripts/make_api_documentation/minimal_init.lua -l scripts/make_api_documentation/main.lua
 
-flamegraph:
+flamegraph: clone_git_dependencies
 	nvim -l lua/busted/profiler_runner.lua
 
 llscheck: clone_git_dependencies
