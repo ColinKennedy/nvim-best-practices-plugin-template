@@ -1,4 +1,4 @@
-.PHONY: api_documentation llscheck luacheck stylua test
+.PHONY: api_documentation check_with_stylua fix_with_stylua llscheck luacheck test
 
 # Git will error if the repository already exists. We ignore the error.
 # NOTE: We still print out that we did the clone to the user so that they know.
@@ -18,13 +18,16 @@ clone_git_dependencies:
 api_documentation:
 	nvim -u scripts/make_api_documentation/minimal_init.lua -l scripts/make_api_documentation/main.lua
 
+check_with_stylua:
+	stylua --color always --check lua plugin spec
+
 llscheck: clone_git_dependencies
 	VIMRUNTIME=`nlua -e 'io.write(os.getenv("VIMRUNTIME"))'` llscheck --configpath .luarc.json .
 
 luacheck:
 	luacheck lua plugin scripts spec
 
-stylua:
+fix_with_stylua:
 	stylua lua plugin scripts spec
 
 test: clone_git_dependencies

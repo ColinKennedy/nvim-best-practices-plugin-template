@@ -13,9 +13,9 @@ jobs:
     name: StyLua
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: JohnnyMorganz/stylua-action@v4
-        with:
-          version: latest
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --color always --check lua plugin spec
+    - uses: actions/checkout@v4
+    - uses: JohnnyMorganz/stylua-action@v4
+
+    - name: test
+      run: |
+        make check_with_stylua
