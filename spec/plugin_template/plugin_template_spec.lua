@@ -21,6 +21,17 @@ local _DATA = {}
 local _ORIGINAL_COPY_LOGS_READ_FILE = copy_logs_runner._read_file
 local _ORIGINAL_NOTIFY = vim.notify
 
+--- Replace the output path of `logger`, then run `caller`, then restore the output path.
+---
+---@param logger vlog.Logger The logger instance to modify.
+---@param caller fun(): nil Some function to call.
+---
+local function _keep_output_path(logger, caller)
+    local original = logger._output_path
+    pcall(caller)
+    logger._output_path = original
+end
+
 --- Keep track of text that would have been printed. Save it to a variable instead.
 ---
 ---@param data string Some text to print to stdout.
@@ -124,7 +135,7 @@ describe("copy logs API", function()
     after_each(_reset_copy_log)
 
     it("runs with an explicit file path", function()
-        local path = vim.fn.tempname() .. "copy_logs_test.log"
+        local path = vim.fn.tempname() .. "_copy_logs_test.log"
         _make_fake_log(path)
 
         plugin_template.run_copy_logs(path)
@@ -135,12 +146,15 @@ describe("copy logs API", function()
 
     it("runs with default arguments", function()
         local expected = vim.fn.tempname() .. "_copy_logs_default_test.log"
-        configuration.DATA.logging.output_path = expected
-        logging.set_configuration("plugin_template", configuration.DATA.logging or {})
         _make_fake_log(expected)
 
-        plugin_template.run_copy_logs()
-        _wait_for_result()
+        local logger = vlog.get_logger("plugin_template._commands.copy_logs.runner")
+
+        _keep_output_path(logger, function()
+            logger._output_path = expected
+            plugin_template.run_copy_logs()
+            _wait_for_result()
+        end)
 
         assert.same({ expected }, _DATA)
     end)
@@ -151,7 +165,7 @@ describe("copy logs command", function()
     after_each(_reset_copy_log)
 
     it("runs with an explicit file path", function()
-        local path = vim.fn.tempname() .. "copy_logs_test.log"
+        local path = vim.fn.tempname() .. "_copy_logs_test.log"
         _make_fake_log(path)
 
         vim.cmd(string.format('PluginTemplate copy-logs "%s"', path))
@@ -162,13 +176,15 @@ describe("copy logs command", function()
 
     it("runs with default arguments", function()
         local expected = vim.fn.tempname() .. "_copy_logs_default_test.log"
-        configuration.DATA.logging.output_path = expected
-        logging.set_configuration("plugin_template", configuration.DATA.logging or {})
         _make_fake_log(expected)
 
-        vim.cmd([[PluginTemplate copy-logs]])
+        local logger = vlog.get_logger("plugin_template._commands.copy_logs.runner")
 
-        _wait_for_result()
+        _keep_output_path(logger, function()
+            logger._output_path = expected
+            vim.cmd([[PluginTemplate copy-logs]])
+            _wait_for_result()
+        end)
 
         assert.same({ expected }, _DATA)
     end)
