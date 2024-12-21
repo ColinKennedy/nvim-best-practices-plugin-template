@@ -443,7 +443,7 @@ end
 ---@param data plugin_template.Configuration? All extra customizations for this plugin.
 ---
 function M.check(data)
-    _LOGGER.debug("Running plugin-template health check.")
+    _LOGGER:debug("Running plugin-template health check.")
 
     vim.health.start("Configuration")
 
