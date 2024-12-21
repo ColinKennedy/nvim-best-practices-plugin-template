@@ -24,7 +24,7 @@ local _ORIGINAL_NOTIFY = vim.notify
 
 --- Replace the output path of `logger`, then run `caller`, then restore the output path.
 ---
----@param logger aggro.logging.Logger The logger instance to modify.
+---@param logger vlog.Logger The logger instance to modify.
 ---@param caller fun(): nil Some function to call.
 ---
 local function _keep_output_path(logger, caller)
@@ -149,7 +149,7 @@ describe("copy logs API", function()
         local expected = vim.fn.tempname() .. "_copy_logs_default_test.log"
         _make_fake_log(expected)
 
-        local logger = logging.get_logger("plugin_template._commands.copy_logs.runner")
+        local logger = vlog.get_logger("plugin_template._commands.copy_logs.runner")
 
         _keep_output_path(logger, function()
             logger._output_path = expected
@@ -179,7 +179,7 @@ describe("copy logs command", function()
         local expected = vim.fn.tempname() .. "_copy_logs_default_test.log"
         _make_fake_log(expected)
 
-        local logger = logging.get_logger("plugin_template._commands.copy_logs.runner")
+        local logger = vlog.get_logger("plugin_template._commands.copy_logs.runner")
 
         _keep_output_path(logger, function()
             logger._output_path = expected
