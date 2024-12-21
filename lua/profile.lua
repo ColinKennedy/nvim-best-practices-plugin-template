@@ -73,6 +73,8 @@ M.log_start = function(name, ...)
     args = util.format_args(...),
     cat = "function,manual",
     ph = "B",
+    pid = util.get_process_id(),
+    tid = util.get_thread_id(),
     ts = clock(),
   })
 end
@@ -88,6 +90,8 @@ M.log_end = function(name, ...)
     name = name,
     args = util.format_args(...),
     cat = "function,manual",
+    pid = util.get_process_id(),
+    tid = util.get_thread_id(),
     ph = "E",
     ts = clock(),
   })
@@ -105,6 +109,8 @@ M.log_instant = function(name, ...)
     args = util.format_args(...),
     cat = "",
     ph = "i",
+    pid = util.get_process_id(),
+    tid = util.get_thread_id(),
     ts = clock(),
     s = "g",
   })
