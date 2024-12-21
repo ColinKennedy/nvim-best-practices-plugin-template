@@ -28,6 +28,8 @@ local vlog = require("plugin_template._vendors.vlog")
 
 ---@class busted.Handler
 
+local _LOGGER = vlog.get_logger("busted.profile_using_flamegraph")
+
 ---@type table<string, number>
 local _DESCRIBE_CACHE = {}
 
@@ -74,31 +76,6 @@ local function _handle_test_end()
     _TEST_CACHE[name] = nil
 end
 
---- Setup the logger for the first time, if needed.
----
---- If we cannot setup the logger then we're running the profiler blind, which
---- we don't want to do. In that case, exit the Lua program instead.
----
-function _P.initialize_logging()
-    local success, _ = pcall(function()
-        vlog.debug("Starting flamegraph generator.")
-    end)
-
-    if not success then
-        vlog.new({}, true)
-    end
-
-    success, _ = pcall(function()
-        vlog.debug("Starting flamegraph generator.")
-    end)
-
-    if not success then
-        io.stderr:write("Unable to initialize the logger. Stopping profiling.\n")
-        io.stderr:flush()
-        os.exit(_LOGGER_FAIL)
-    end
-end
-
 --- Stop recording timging events for some unittest `path`
 ---
 ---@param path string A relative or absolute path on-disk to some _spec.lua file.
@@ -133,10 +110,8 @@ return function(options)
     local root = options.root
     local release = options.release
 
-    _P.initialize_logging()
-
     if not root or not release then
-        vlog.info(
+        _LOGGER.info(
             "Either root or release was not found. " .. "Getting root / release from environment variables instead."
         )
         root, release = helper.get_environment_variable_data()
@@ -145,7 +120,7 @@ return function(options)
     local is_standalone = not profile.is_recording()
 
     if is_standalone then
-        vlog.info("Now capturing all profile logs.")
+        _LOGGER.info("Now capturing all profile logs.")
 
         profile.start("*")
     end
@@ -206,7 +181,7 @@ return function(options)
 
         if is_standalone then
             profile.stop()
-            vlog.info("Profiling was stopped. Now writing to disk.")
+            _LOGGER.info("Profiling was stopped. Now writing to disk.")
             helper.write_all_summary_directory(release, profile, vim.fs.joinpath(root, "benchmarks", "all"))
         end
     end

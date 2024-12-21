@@ -14,6 +14,8 @@ local texter = require("plugin_template._core.texter")
 
 local _LOGGER = logging_.get_logger("plugin_template.health")
 
+local _LOGGER = vlog.get_logger("plugin_template.health")
+
 local M = {}
 
 -- NOTE: This file is defer-loaded so it's okay to run this in the global scope
@@ -441,7 +443,7 @@ end
 ---@param data plugin_template.Configuration? All extra customizations for this plugin.
 ---
 function M.check(data)
-    _LOGGER:debug("Running plugin-template health check.")
+    _LOGGER.debug("Running plugin-template health check.")
 
     vim.health.start("Configuration")
 
