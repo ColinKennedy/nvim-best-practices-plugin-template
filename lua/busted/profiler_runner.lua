@@ -120,7 +120,7 @@ local function run_tests(profiler, release, root, maximum_tries)
         ---@diagnostic disable-next-line: cast-type-mismatch
         ---@cast runner busted.MultiRunner
 
-        local duration = _P.profile_and_run(profiler, runner, { release = release, root = root })
+        local duration = _P.profile_and_run(profiler, runner, { release = release, output_handler_root = root })
 
         if duration < fastest_time then
             _LOGGER:fmt_debug('Faster time found. New: "%s". Old: "%s".', duration, fastest_time)
