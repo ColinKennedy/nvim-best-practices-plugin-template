@@ -45,8 +45,6 @@ local _TEST_CACHE = {}
 ---@type string[]
 local _NAME_STACK = {}
 
-local _LOGGER_FAIL = 3
-
 local _P = {}
 
 ---@return string # The found test name (of all `describe` blocks).
@@ -111,7 +109,7 @@ return function(options)
     local release = options.release
 
     if not root or not release then
-        _LOGGER.info(
+        _LOGGER:info(
             "Either root or release was not found. " .. "Getting root / release from environment variables instead."
         )
         root, release = helper.get_environment_variable_data()
@@ -120,7 +118,7 @@ return function(options)
     local is_standalone = not profile.is_recording()
 
     if is_standalone then
-        _LOGGER.info("Now capturing all profile logs.")
+        _LOGGER:info("Now capturing all profile logs.")
 
         profile.start("*")
     end
@@ -181,7 +179,7 @@ return function(options)
 
         if is_standalone then
             profile.stop()
-            _LOGGER.info("Profiling was stopped. Now writing to disk.")
+            _LOGGER:info("Profiling was stopped. Now writing to disk.")
             helper.write_all_summary_directory(release, profile, vim.fs.joinpath(root, "benchmarks", "all"))
         end
     end
