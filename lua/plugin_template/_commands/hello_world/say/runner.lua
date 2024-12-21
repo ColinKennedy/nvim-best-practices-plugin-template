@@ -4,11 +4,9 @@
 ---
 
 local constant = require("plugin_template._commands.hello_world.say.constant")
-local logging = require("mega.logging")
+local logging = require("plugin_template._vendors.aggro.logging")
 
 local _LOGGER = logging.get_logger("plugin_template._commands.hello_world.say.runner")
-
-local _LOGGER = vlog.get_logger("plugin_template._commands.hello_world.say.runner")
 
 local M = {}
 

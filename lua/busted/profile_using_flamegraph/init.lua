@@ -11,7 +11,7 @@ local clock = require("profile.clock")
 local helper = require("busted.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
 local profile = require("profile")
-local vlog = require("plugin_template._vendors.vlog")
+local logging = require("plugin_template._vendors.aggro.logging")
 
 ---@class busted.FlamegraphCallerOptions Control how an output handler runs.
 ---@field release string A version / release tag. e.g. `"v1.2.3"`.
@@ -28,7 +28,7 @@ local vlog = require("plugin_template._vendors.vlog")
 
 ---@class busted.Handler
 
-local _LOGGER = vlog.get_logger("busted.profile_using_flamegraph")
+local _LOGGER = logging.get_logger("busted.profile_using_flamegraph")
 
 ---@type table<string, number>
 local _DESCRIBE_CACHE = {}

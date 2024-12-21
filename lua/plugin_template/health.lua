@@ -11,10 +11,9 @@ local logging_ = require("mega.logging")
 local say_constant = require("plugin_template._commands.hello_world.say.constant")
 local tabler = require("plugin_template._core.tabler")
 local texter = require("plugin_template._core.texter")
+local logging = require("plugin_template._vendors.aggro.logging")
 
-local _LOGGER = logging_.get_logger("plugin_template.health")
-
-local _LOGGER = vlog.get_logger("plugin_template.health")
+local _LOGGER = logging.get_logger("plugin_template.health")
 
 local M = {}
 
