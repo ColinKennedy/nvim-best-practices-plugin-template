@@ -10,6 +10,7 @@
 
 local vlog = require("plugin_template._vendors.vlog")
 
+local _LOGGER = vlog.get_logger("busted.profile_using_flamegraph.self_timing")
 local _P = {}
 local M = {}
 
@@ -175,7 +176,7 @@ function M.get_self_times(events, all_events)
                 --
                 -- This should be a really rare occurrence. But could happen.
                 --
-                vlog.fmt_info(
+                _LOGGER.fmt_info(
                     'We think "%s" event is the last of its kind'
                         .. " (last event in thread + calls no other functions) "
                         .. " so we are using its full duration as its self-time.",

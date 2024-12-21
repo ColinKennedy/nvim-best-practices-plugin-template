@@ -56,6 +56,7 @@ local vlog = require("plugin_template._vendors.vlog")
 ---@field uv number
 ---    The libuv version that was included with Neovim.
 
+local _LOGGER = vlog.get_logger("busted.profile_using_flamegraph.helper")
 local _P = {}
 local M = {}
 
@@ -208,10 +209,12 @@ function _P.get_graph_artifacts(root, maximum)
 
     local all_paths = _P.get_sorted_datetime_paths(vim.fn.glob(template, false, true))
     local count = #all_paths
+
+    _LOGGER.fmt_debug('Writing "%s" artifacts.', count)
     local paths = _P.get_slice(all_paths, math.max(count - maximum + 1, 0), count)
 
     for index, path in ipairs(paths) do
-        vlog.fmt_debug('Reading "%s" artifact.', path)
+        _LOGGER.fmt_debug('Reading "%s" artifact.', path)
         local file = io.open(path, "r")
 
         if not file then
@@ -229,7 +232,7 @@ function _P.get_graph_artifacts(root, maximum)
         table.insert(output, result)
 
         if index >= maximum then
-            vlog.fmt_info('We have reached the "%s" maximum value. All other artifacts will be ignored.', maximum)
+            _LOGGER.fmt_info('We have reached the "%s" maximum value. All other artifacts will be ignored.', maximum)
 
             return output
         end
@@ -274,7 +277,7 @@ function _P.get_latest_neovim_version(artifacts)
         local simplified_version = _P.get_simple_version(version)
 
         if not output or _P.compare_number_arrays(simplified_version, output) == 1 then
-            vlog.fmt_info('Found later "%s" Neovim version.', simplified_version)
+            _LOGGER.fmt_info('Found later "%s" Neovim version.', simplified_version)
             output = simplified_version
         end
     end
@@ -588,7 +591,7 @@ end
 ---@param path string An absolute path to a flamegraph.json to create.
 ---
 function _P.write_flamegraph(profiler, path)
-    vlog.fmt_info('Writing flamegraph to "%s" path.', path)
+    _LOGGER.fmt_info('Writing flamegraph to "%s" path.', path)
     _P.make_parent_directory(path)
 
     profiler.export(path)
@@ -662,6 +665,7 @@ end
 ---    An absolute path to the created profile.json.
 ---
 function _P.write_graph_artifact(release, profiler, root, events)
+    _LOGGER.info("Writing date-time profiler directory data.")
     local directory = vim.fs.joinpath(root, string.format("%s-%s", release, os.date("%Y_%m_%d-%H_%M_%S")))
     vim.fn.mkdir(directory, "p")
 
@@ -747,13 +751,13 @@ function _P.write_graph_images(artifacts, root)
     local success, _ = pcall(_P.write_gnuplot_images, artifacts, graphs)
 
     if not keep then
-        vlog.fmt_debug('Deleting temporary files from "%s" graphs.', graphs)
+        _LOGGER.fmt_debug('Deleting temporary files from "%s" graphs.', graphs)
         _P.delete_gnuplot_paths(graphs, { "data_path", "script_path" })
     end
 
     if not success then
         if not keep then
-            vlog.fmt_debug('Failed to write images. Deleting "%s" graphs.', graphs)
+            _LOGGER.fmt_debug('Failed to write images. Deleting "%s" graphs.', graphs)
             _P.delete_gnuplot_paths(graphs, { "image_path" })
         end
 
@@ -777,7 +781,7 @@ end
 ---    will use the global profiler's events instead.
 ---
 function _P.write_profile_summary(release, path, events)
-    vlog.fmt_info('Writing profile summary to "%s" path.', path)
+    _LOGGER.fmt_info('Writing profile summary to "%s" path.', path)
     _P.make_parent_directory(path)
 
     local file = io.open(path, "w")
@@ -976,6 +980,7 @@ end
 ---    unreadable after 35.
 ---
 function M.write_all_summary_directory(release, profiler, root, events, maximum)
+    _LOGGER.fmt_info('Now writing profiler "%s" results to "%s" path.', release, root)
     maximum = maximum or _DEFAULT_MAXIMUM_ARTIFACTS
 
     if maximum < 1 then
@@ -989,10 +994,11 @@ function M.write_all_summary_directory(release, profiler, root, events, maximum)
     local artifacts = _P.get_graph_artifacts(artifacts_root, maximum)
 
     if _P.is_stable_release(release) and _P.is_latest_version(_P.get_version_numbers(release), artifacts_root) then
+        _LOGGER.fmt_info('Copying "%s" release to "%s" path.', release, root)
         _P.copy_file_to_directory(flamegraph_path, root)
         _P.copy_file_to_directory(profile_path, root)
     else
-        vlog.fmt_warn(
+        _LOGGER.fmt_warn(
             'Release "%s" is not the latest, stable version. We skipped copying to the "%s" root directory.',
             release,
             root

@@ -7,6 +7,8 @@ local logging = require("plugin_template._vendors.aggro.logging")
 
 local _LOGGER = logging.get_logger("plugin_template._commands.goodnight_moon.sleep")
 
+local _LOGGER = vlog.get_logger("plugin_template._commands.goodnight_moon.sleep")
+
 local M = {}
 
 --- Print Zzz each `count`.
@@ -14,14 +16,14 @@ local M = {}
 ---@param count number? Prints 1 Zzz per `count`. A value that is 1-or-greater.
 ---
 function M.run(count)
-    _LOGGER:debug("Running goodnight-moon count-sheep")
+    _LOGGER.debug("Running goodnight-moon count-sheep")
 
     if count == nil then
         count = 1
     end
 
     if count < 1 then
-        _LOGGER:fmt_warning('count-sheep "%s" is invalid. Setting the value to to 1-or-greater, instead.', count)
+        _LOGGER.fmt_warn('count-sheep "%s" is invalid. Setting the value to to 1-or-greater, instead.', count)
 
         count = 1
     end

@@ -8,6 +8,8 @@ local logging = require("plugin_template._vendors.aggro.logging")
 
 local _LOGGER = logging.get_logger("plugin_template._commands.goodnight_moon.count_sheep")
 
+local _LOGGER = vlog.get_logger("plugin_template._commands.goodnight_moon.count_sheep")
+
 local M = {}
 
 --- Count a sheep for each `count`.
@@ -16,10 +18,10 @@ local M = {}
 ---
 function M.run(count)
     configuration.initialize_data_if_needed()
-    _LOGGER:debug("Running goodnight-moon count-sheep")
+    _LOGGER.debug("Running goodnight-moon count-sheep")
 
     if count < 1 then
-        _LOGGER:fmt_warning('Count "%s" cannot be less than 1. Using 1 instead.', count)
+        _LOGGER.fmt_warn('Count "%s" cannot be less than 1. Using 1 instead.', count)
 
         count = 1
     end
