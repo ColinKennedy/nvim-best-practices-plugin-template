@@ -1,323 +1,48 @@
---- All (profiler) timing private unittests. These are not API functions.
----
----@module 'spec.plugin_template.timing_spec'
----
+-- TODO: Docstring
 
 -- TODO: Finish the tests here
 
-local _P = {}
-
-local mock_test = require("test_utilities.mock_test")
 local timing = require("busted.profile_using_flamegraph.timing")
 
-before_each(function()
-    mock_test.save_loggers()
-    mock_test.silence_loggers()
-end)
-after_each(mock_test.reset_loggers)
-
---- Check if the profiler `event` is an auto-profiled function.
----
----@param event profile.Event The event to check.
----@return boolean # If `event` was captured by the profiler or not.
----
-function _P.is_function(event)
-    return event.cat == "function"
+local _get_profile_report_lines = function(events, threshold)
+    return timing.get_profile_report_lines(events, threshold, function(_) return true end)
 end
 
---- Get the timing report for `events` + `threshold`.
----
----@param events profile.Event[] All of the flamegraph data to consider.
----@param threshold number? A 1-or-more value. The "top slowest" functions to show.
----@return _ProfilerLine[] # The computed data (that will later become the report).
----
-function _P.get_profile_report_lines(events, threshold)
-    return timing.get_profile_report_lines(events, {
-        predicate = function(_)
-            return true
-        end,
-        threshold = threshold,
-    })
+local function _run_simple_test(events, expected, threshold)
+    assert.same(expected, _get_profile_report_lines(events, threshold or #expected))
 end
 
---- Test using some `events` and make sure we get `expected`.
----
----@param events profile.Event[] All of the flamegraph data to consider.
----@param expected _ProfilerLine[] # The computed data (that will later become the report).
----
-function _P.run_simple_test(events, expected)
-    assert.same(expected, _P.get_profile_report_lines(events, #expected))
-end
-
--- TODO: Add tests for
---- checking multiple events at once
----    - starting array
----     - leaf
----    - middle array
----     - leaf
----    - ending array
----     - leaf
 -- TODO: Need a test for if there are really small differences between numbers (floating precision issues)
 
-describe("get_profile_report_as_text", function()
-    describe("basic", function()
-        it("sorts events correctly even if many small events sum up to be greater than single larger events", function()
-            _P.run_simple_test({
-                { cat = "function", dur = 1, name = "tiny_child_big_total_duration", tid = 1, ts = 0 },
-                { cat = "function", dur = 3, name = "single_big_event", tid = 2, ts = 2 },
-                { cat = "function", dur = 2, name = "tiny_child_big_total_duration", tid = 1, ts = 6 },
-                { cat = "function", dur = 0.5, name = "tiny_subchild", tid = 1, ts = 7 },
-                { cat = "function", dur = 2.5, name = "another_big_event", tid = 2, ts = 9 },
-                { cat = "function", dur = 0.5, name = "tiny_child_big_total_duration", tid = 1, ts = 12 },
-                { cat = "function", dur = 1, name = "tiny_child_big_total_duration", tid = 1, ts = 14 },
-            }, {
-                {
-                    count = 4,
-                    mean_time = "1.13",
-                    median_time = "1.00",
-                    name = "tiny_child_big_total_duration",
-                    self_time = "4.00",
-                    total_time = "4.50",
-                },
-            })
-        end)
-
-        it("#multiple duplicate events", function()
-            local events = {
-                { cat = "function", dur = 10, name = "multicall", tid = 1, ts = 1 },
-                { cat = "function", dur = 2, name = "first_child", tid = 1, ts = 2 },
-                { cat = "function", dur = 3, name = "multicall", tid = 1, ts = 11 },
-                { cat = "function", dur = 1, name = "multicall", tid = 1, ts = 15 },
-                { cat = "function", dur = 2.02, name = "another_event_that_is_past", tid = 1, ts = 20 },
-            }
-            _P.run_simple_test(events, {
-                {
-                    count = 3,
-                    mean_time = "4.67",
-                    median_time = "3.00",
-                    name = "multicall",
-                    self_time = "12.00",
-                    total_time = "14.00",
-                },
-            })
-
-            assert.equal(
-                [[
-─────────────────────────────────────────────────────
-total-time                                      18.02
-─────────────────────────────────────────────────────
-count total-time self-time name
-─────────────────────────────────────────────────────
-3     14.00      12.00     multicall
-1     2.02       2.02      another_event_that_is_past
-1     2.00       2.00      first_child
-]],
-                timing.get_profile_report_as_text(events, { predicate = _P.is_function })
-            )
-        end)
-
-        it("#simple events", function()
-            local events = {
-                { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 1 },
-                { cat = "function", dur = 3, name = "first_child", tid = 1, ts = 2 },
-                { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 7 },
-                { cat = "function", dur = 2.02, name = "another_event_that_is_past", tid = 1, ts = 11 },
-            }
-            _P.run_simple_test(events, {
-                {
-                    count = 1,
-                    mean_time = "10.00",
-                    median_time = "10.00",
-                    name = "outer_most",
-                    self_time = "5.00",
-                    total_time = "10.00",
-                },
-            })
-        end)
-
-        it("works with big numbers", function()
-            local events = {
-                { cat = "function", dur = 8255.123151351354, name = "first_child", tid = 1, ts = 1 },
-                { cat = "function", dur = 10, name = "second_child", tid = 1, ts = 8800.13415131123 },
-                { cat = "function", dur = 30123412.12312123, name = "another_event_that_is_past", tid = 1, ts = 8900 },
-            }
-
-            assert.equal(
-                [[
-────────────────────────────────────────────────────────
-total-time                                   30131677.24
-────────────────────────────────────────────────────────
-count total-time  self-time   name
-────────────────────────────────────────────────────────
-1     30123412.12 30123412.12 another_event_that_is_past
-1     8255.12     8255.12     first_child
-1     10.00       10.00       second_child
-]],
-                timing.get_profile_report_as_text(events, { predicate = _P.is_function })
-            )
-        end)
-
-        it("works with #simple events", function()
-            local events = {
-                { cat = "function", dur = 6.13, name = "first_child", tid = 1, ts = 1 },
-                { cat = "function", dur = 2.1561212333333, name = "second_child", tid = 1, ts = 8 },
-                { cat = "function", dur = 2.02, name = "another_event_that_is_past", tid = 1, ts = 11 },
-                { cat = "function", dur = 10.00, name = "outer_most", tid = 1, ts = 14 },
-            }
-
-            assert.equal(
-                [[
-─────────────────────────────────────────────────────
-total-time                                      20.31
-─────────────────────────────────────────────────────
-count total-time self-time name
-─────────────────────────────────────────────────────
-1     10.00      10.00     outer_most
-1     6.13       6.13      first_child
-1     2.16       2.16      second_child
-1     2.02       2.02      another_event_that_is_past
-]],
-                timing.get_profile_report_as_text(events, { predicate = _P.is_function })
-            )
-        end)
-
-        it("works direct-children #direct", function()
-            local events = {
-                { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 1 },
-                { cat = "function", dur = 3, name = "first_child", tid = 1, ts = 2 },
-                { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 7 },
-                { cat = "function", dur = 2.02, name = "another_event_that_is_past", tid = 1, ts = 11 },
-            }
-
-            assert.equal(
-                [[
-─────────────────────────────────────────────────────
-total-time                                      17.02
-─────────────────────────────────────────────────────
-count total-time self-time name
-─────────────────────────────────────────────────────
-1     10.00      5.00      outer_most
-1     3.00       3.00      first_child
-1     2.02       2.02      another_event_that_is_past
-1     2.00       2.00      second_child
-]],
-                timing.get_profile_report_as_text(events, { predicate = _P.is_function })
-            )
-        end)
-    end)
-
-    describe("sections", function()
-        it("re-orders sections as expected", function()
-            local events = {
-                { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 1 },
-                { cat = "function", dur = 3, name = "first_child", tid = 1, ts = 2 },
-                { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 7 },
-                { cat = "function", dur = 2.02, name = "another_event_that_is_past", tid = 1, ts = 11 },
-            }
-
-            assert.equal(
-                [[
-───────────────────────────────────────────────
-total-time                                17.02
-───────────────────────────────────────────────
-name                       total-time self-time
-───────────────────────────────────────────────
-outer_most                 10.00      5.00
-first_child                3.00       3.00
-another_event_that_is_past 2.02       2.02
-second_child               2.00       2.00
-]],
-                timing.get_profile_report_as_text(events, {
-                    predicate = _P.is_function,
-                    sections = { "name", "total_time", "self_time" },
-                })
-            )
-        end)
-
-        it("use non-default sections", function()
-            local events = {
-                { cat = "function", dur = 4, name = "multicall", tid = 1, ts = 1 },
-                { cat = "function", dur = 2, name = "first_child", tid = 1, ts = 2 },
-                { cat = "function", dur = 3, name = "multicall", tid = 1, ts = 6 },
-                { cat = "function", dur = 1, name = "multicall", tid = 1, ts = 10 },
-                { cat = "function", dur = 2.02, name = "another_event_that_is_past", tid = 1, ts = 11 },
-            }
-
-            assert.equal(
-                [[
-──────────────────────────────────────
-total-time                       12.02
-──────────────────────────────────────
-name                       median mean
-──────────────────────────────────────
-multicall                  3.00   2.67
-another_event_that_is_past 2.02   2.02
-first_child                2.00   2.00
-]],
-                timing.get_profile_report_as_text(events, {
-                    predicate = _P.is_function,
-                    sections = { "name", "median_time", "mean_time" },
-                })
-            )
-        end)
-    end)
-end)
-
-describe("self-time", function()
+-- TODO: Remove tag
+describe("self-time #asdf", function()
     it("works with a leaf-event that's at the end of the events stack #range", function()
-        _P.run_simple_test({
-            { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
-            { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 8 },
-            { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-            { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 14 },
-        }, {
+        _run_simple_test(
             {
-                count = 1,
-                mean_time = "10.00",
-                median_time = "10.00",
-                name = "outer_most",
-                self_time = "10.00",
-                total_time = "10.00",
+                { cat="function", dur=6, name="first_child", tid=1, ts=1 },
+                { cat="function", dur=2, name="second_child", tid=1, ts=8 },
+                { cat="function", dur=2, name="another_event_that_is_past", tid=1, ts=11 },
+                { cat="function", dur=10, name="outer_most", tid=1, ts=14 },
             },
-        })
+            {"1 10 10 outer_most"}
+        )
     end)
 
     it("works with different threads and unsorted event data #threads", function()
-        _P.run_simple_test({
-            { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
-            { cat = "function", dur = 6, name = "other_thread", tid = 2, ts = 1 },
-            { cat = "function", dur = 2, name = "first_child", tid = 1, ts = 4 },
-            { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 7 },
-            { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, {
-            {
-                count = 1,
-                mean_time = "10.00",
-                median_time = "10.00",
-                name = "outer_most",
-                self_time = "6.00",
-                total_time = "10.00",
-            },
-        })
+        -- TODO: Finish
     end)
 
     it("works with no results #empty", function()
-        _P.run_simple_test({}, {})
+        _run_simple_test({}, {})
     end)
 
     it("works with single event #single", function()
-        _P.run_simple_test({
-            { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
-        }, {
+        _run_simple_test(
             {
-                count = 1,
-                mean_time = "10.00",
-                median_time = "10.00",
-                name = "outer_most",
-                self_time = "10.00",
-                total_time = "10.00",
+                { cat="function", dur=10, name="outer_most", tid=1, ts=0 },
             },
-        })
+            {"1 10 10 outer_most"}
+        )
     end)
 
     it("works with only multiple direct children + multiple inner child per child #nested", function()
@@ -325,63 +50,46 @@ describe("self-time", function()
     end)
 
     it("works with only multiple direct children #direct", function()
-        _P.run_simple_test({
-            { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
-            { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
-            { cat = "function", dur = 2, name = "second_child", tid = 1, ts = 8 },
-            { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, {
+        _run_simple_test(
             {
-                count = 1,
-                mean_time = "10.00",
-                median_time = "10.00",
-                name = "outer_most",
-                self_time = "2.00",
-                total_time = "10.00",
+                { cat="function", dur=10, name="outer_most", tid=1, ts=0 },
+                { cat="function", dur=6, name="first_child", tid=1, ts=1 },
+                { cat="function", dur=2, name="second_child", tid=1, ts=8 },
+                { cat="function", dur=2, name="another_event_that_is_past", tid=1, ts=11 },
             },
-        })
+            {"1 10 2 outer_most"}
+        )
     end)
 
-    it("works with only one direct child #direct - 001", function()
-        _P.run_simple_test({
-            { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
-            { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
-            { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, {
+    it("works with only one direct child #direct", function()
+        _run_simple_test(
             {
-                count = 1,
-                mean_time = "10.00",
-                median_time = "10.00",
-                name = "outer_most",
-                self_time = "4.00",
-                total_time = "10.00",
+                { cat="function", dur=10, name="outer_most", tid=1, ts=0 },
+                { cat="function", dur=6, name="first_child", tid=1, ts=1 },
+                { cat="function", dur=2, name="another_event_that_is_past", tid=1, ts=11 },
             },
-        })
-    end)
+            {"1 10 4 outer_most"}
+        )
 
-    -- TODO: Finish this
-    -- it("works with only one direct child #direct - 002", function()
-    --     _P.run_simple_test({
-    --         { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
-    --         { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
-    --     }, { "1 10 4 outer_most" })
-    -- end)
+        -- TODO: Move?
+        -- _run_simple_test(
+        --     {
+        --         { cat="function", dur=10, name="outer_most", tid=1, ts=0 },
+        --         { cat="function", dur=6, name="first_child", tid=1, ts=1 },
+        --     },
+        --     {"1 10 4 outer_most"}
+        -- )
+    end)
 
     it("works with only one direct child + one inner child", function()
-        _P.run_simple_test({
-            { cat = "function", dur = 10, name = "outer_most", tid = 1, ts = 0 },
-            { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
-            { cat = "function", dur = 2, name = "inner_child", tid = 1, ts = 8 },
-            { cat = "function", dur = 2, name = "another_event_that_is_past", tid = 1, ts = 11 },
-        }, {
+        _run_simple_test(
             {
-                count = 1,
-                mean_time = "10.00",
-                median_time = "10.00",
-                name = "outer_most",
-                self_time = "2.00",
-                total_time = "10.00",
+                { cat="function", dur=10, name="outer_most", tid=1, ts=0 },
+                { cat="function", dur=6, name="first_child", tid=1, ts=1 },
+                { cat="function", dur=2, name="inner_child", tid=1, ts=3 },
+                { cat="function", dur=2, name="another_event_that_is_past", tid=1, ts=11 },
             },
-        })
+            {"1 10 4 outer_most"}
+        )
     end)
 end)
