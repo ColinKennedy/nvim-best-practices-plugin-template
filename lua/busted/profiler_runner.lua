@@ -123,7 +123,7 @@ local function run_tests(profiler, release, root, maximum_tries)
         local duration = _P.profile_and_run(profiler, runner, { release = release, root = root })
 
         if duration < fastest_time then
-            _LOGGER.fmt_debug('Faster time found. New: "%s". Old: "%s".', duration, fastest_time)
+            _LOGGER:fmt_debug('Faster time found. New: "%s". Old: "%s".', duration, fastest_time)
 
             counter = maximum_tries
             fastest_time = duration
@@ -134,7 +134,7 @@ local function run_tests(profiler, release, root, maximum_tries)
         end
 
         if counter == 0 then
-            _LOGGER.debug('Reached end of the profiler tests.')
+            _LOGGER:debug('Reached end of the profiler tests.')
 
             break
         end
@@ -152,7 +152,6 @@ local function main()
     local root, release = helper.get_environment_variable_data()
 
     helper.validate_gnuplot()
-    vlog.new({level="debug"}, true)
 
     -- NOTE: Don't profile the unittest framework
     local profiler = profile
