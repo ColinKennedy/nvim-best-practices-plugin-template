@@ -33,5 +33,5 @@ vim.cmd("runtime plugin/plenary.vim")
 
 require("lualine").setup()
 
-vim.g.plugin_template_configuration = {logging={use_console=true}}
+vim.g.plugin_template_configuration = { logging = { use_console = true } }
 require("plugin_template._core.configuration").initialize_data_if_needed()

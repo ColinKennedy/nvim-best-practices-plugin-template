@@ -301,7 +301,7 @@ function _P.validate_self_times(self_times, events)
         if self_time < 0 then
             less_than_zero[name] = self_time
         elseif self_time > events_by_time[name] then
-            greater_than_total_time[name] = { self_time=self_time, total_time=events_by_time[name] }
+            greater_than_total_time[name] = { self_time = self_time, total_time = events_by_time[name] }
         end
     end
 
