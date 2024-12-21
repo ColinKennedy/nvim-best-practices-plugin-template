@@ -7,9 +7,24 @@
 ---@module 'busted.multi_runner'
 ---
 
---- @class busted.MultiRunner A unittest suite runner.
+-- TODO: Docstrings
 
---- @class busted.MultiRunnerOptions The settings used to control how the runner executes the tests.
+---@class busted.MultiRunner A unittest suite runner.
+
+---@class busted.RunnerOptions
+---    The base settings used
+---@field output string
+---    The handler that controls how tests run / display to the user. We later
+---    override this with our own `busted.profile_using_flamegraph` handler, later.
+---@field standalone boolean
+---    If busted is running from the terminal or through some other context.
+
+---@class busted.MultiRunnerOptions : busted.RunnerOptions
+---    The settings used to control how the runner executes the tests.
+---@field output_handler_root string
+---    The directory on-disk where profile / timing results will be written to.
+---@field release string
+---    The version / release tag to add to profile / timing results. e.g. `"v1.2.3"`.
 
 -- TODO: Simplify the code here, later
 
@@ -163,7 +178,7 @@ return function(options)
         enableSound = cliArgs["enable-sound"],
         language = cliArgs.lang,
         release = options.release,
-        root = options.root,
+        root = options.output_handler_root,
         suppressPending = cliArgs["suppress-pending"],
         verbose = cliArgs.verbose,
     })
