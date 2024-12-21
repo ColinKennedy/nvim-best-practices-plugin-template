@@ -42,7 +42,7 @@ function M._read_file(path, callback)
                 use_neovim_commands=false,
             }
         )
-        logger:fmt_info('Opening "%s" path.', path)
+        logger:fmt_debug('Opening "%s" path.', path)
 
         if error_open then
             error(error_open)
