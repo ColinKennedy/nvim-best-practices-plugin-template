@@ -6,7 +6,7 @@
 local instrument = require("profile.instrument")
 local numeric = require("busted.profile_using_flamegraph.numeric")
 local timing = require("busted.profile_using_flamegraph.timing")
-local vlog = require("plugin_template._vendors.vlog")
+local logging = require("plugin_template._vendors.aggro.logging")
 
 ---@class _GraphArtifact Summary data about a whole suite of profiler data.
 ---@field hardware _Hardware All computer platform details.
@@ -59,7 +59,7 @@ local vlog = require("plugin_template._vendors.vlog")
 ---@field uv number
 ---    The libuv version that was included with Neovim.
 
-local _LOGGER = vlog.get_logger("busted.profile_using_flamegraph.helper")
+local _LOGGER = logging.get_logger("busted.profile_using_flamegraph.helper")
 local _P = {}
 local M = {}
 
