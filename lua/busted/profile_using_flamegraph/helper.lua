@@ -1065,4 +1065,135 @@ function M.write_summary_directory(release, profiler, root, events, maximum)
     _P.write_summary_readme(artifacts, graphs, readme_path, timing_text)
 end
 
+--- Write all files for the "benchmarks/tags" directory.
+---
+--- The basic directory structure looks like this:
+---
+--- - tags/
+---     - {tag_name_here}/
+---         - artifacts/
+---             - {VERSION_TAG-YYYY_MM_DD-HH_MM_SS}/
+---                 - flamegraph.json
+---                 - profile.json
+---         - README.md
+---             - Show the graph of the output, across versions
+---             - A table summary of the timing
+---         - flamegraph.json
+---         - profile.json - The latest release's total time, self time, etc
+---         - *.png - Profiler-related line-graphs
+---
+--- Raises:
+---    If an invalid `maximum` is given.
+---
+---@param release string
+---    The current release to make. e.g. `"v1.2.3"`.
+---@param profiler Profiler
+---    The object used to record function call times.
+---@param root string
+---    The ".../benchmarks/all" directory to create or update.
+---@param events profile.Event[]?
+---    All of the profiler event data to consider. If no events are given, we
+---    will use the global profiler's events instead.
+---@param maximum number?
+---    A 1-or-more value. The number of samples to collect for graphing. If
+---    there are more samples than `maximum` allows, the later smples are
+---    preferred. Note: It is unwise to set this number higher than the default
+---    (35). Experimentation showed that the X-axis of the graph becomes
+---    unreadable after 35.
+---
+function M.write_tags_directory(release, profiler, root, events, maximum)
+    ---@param event profile.Event
+    ---@return boolean
+    function _P.is_test_end(event)
+        return event.cat == constant.Category.test
+    end
+
+    ---@param event profile.Event
+    ---@return boolean
+    function _P.is_test_start(event)
+        return event.cat == constant.Category.start
+    end
+
+    ---@param events profile.Event[]
+    ---@return table<string, profile.Event[]>
+    function _P.get_events_by_tag(events)
+        ---@type table<string, profile.Event[]>
+        local output = {}
+
+        --- NOTE: Though extremely rare, it's possible to test a test within a test.
+        ---@type string[]
+        local test_stack = {}
+
+        ---@type string[]
+        local tag_stack = {}
+
+        ---@type profile.Event[]
+        local events_buffer = {}
+
+        for _, event in ipairs(vim.fn.sort(events, function(left, right) return left.ts < right.ts end)) do
+            if _P.is_test_start(event) then
+                table.insert(test_stack, event.name)
+                local tags = _P.get_tags(event.name)
+                table.insert(tag_stack, tags)
+            elseif _P.is_test_end(event) then
+                local test_name = test_stack[#test_stack]
+
+                if event.name ~= test_name then
+                    error(
+                        string.format(
+                            'Something went wrong. Expected "%s" test but got "%s".',
+                            test_name,
+                            event.name
+                        ),
+                        0
+                    )
+                end
+
+                table.remove(test_stack)
+                ---@type string[]
+                local current_tags = table.remove(tag_stack)
+
+                for _, tag in ipairs(current_tags) do
+                    output[tag] = output[tag] or {}
+                    vim.list_extend(output[tag], events_buffer)
+                    table.insert(output[tag], event)
+                end
+
+                events_buffer = {}
+            else
+                table.insert(events_buffer, event)
+            end
+        end
+
+        return output
+    end
+
+    ---@param text string
+    ---@return string[]
+    function _P.get_tags(text)
+        ---@type string[]
+        local output = {}
+
+        for tag in string.gmatch(text, "#([^#%s]+)") do
+            table.insert(output, tag)
+        end
+
+        return output
+    end
+
+    -- TODO: Add logic to delete artifacts that are out of date / no longer apply
+    -- e.g. a user deletes a unittest - that tag's work should be deleted
+
+    _LOGGER:fmt_info('Now writing profiler "%s" tag results to "%s" path.', release, root)
+    events = events or instrument.get_events()
+    local events_by_tag = _P.get_events_by_tag(events)
+
+    for tag, events_ in pairs(events_by_tag) do
+        if not vim.tbl_isempty(events_) then
+            local directory = vim.fs.joinpath(root, tag)
+            M.write_summary_directory(release, profiler, directory, events_, maximum)
+        end
+    end
+end
+
 return M
