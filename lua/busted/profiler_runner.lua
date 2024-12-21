@@ -134,7 +134,7 @@ local function run_tests(profiler, release, root, maximum_tries)
         end
 
         if counter == 0 then
-            _LOGGER:debug('Reached end of the profiler tests.')
+            _LOGGER:debug("Reached end of the profiler tests.")
 
             break
         end
