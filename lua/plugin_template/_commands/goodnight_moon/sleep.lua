@@ -7,8 +7,6 @@ local logging = require("plugin_template._vendors.aggro.logging")
 
 local _LOGGER = logging.get_logger("plugin_template._commands.goodnight_moon.sleep")
 
-local _LOGGER = vlog.get_logger("plugin_template._commands.goodnight_moon.sleep")
-
 local M = {}
 
 --- Print Zzz each `count`.
