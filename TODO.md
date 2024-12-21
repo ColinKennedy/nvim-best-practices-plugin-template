@@ -19,10 +19,6 @@ eog /tmp/directory/benchmarks/all/median.png
 
 - Check if the new logger setup has caused start-up to become slow. If so, fix it
 
-- Is it possible to move all of the before_each / after_each logger
-functions to the top of files so that I don't need to define it
-per-describe block? Try that later
-
 - Do the TODO_profiler.md work
 - Do all current branch (add_profiling) TODO notes
     - Can I just use the regular profile.lua module? Do I need the fork?
