@@ -1,6 +1,11 @@
 ## TODO
 - Do TODO notes
 
+- Restructure
+/home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/busted/multi_runner.lua
+so that you can run it with any test arguments. Currently it doesn't work
+
+
 - Make a minimum repro explaining why profiler.nvim is not working as expected
     - Make sure thet the flamegraph is outputting correctly. It seems that
       plugin_template functions are far fewer than expectged
