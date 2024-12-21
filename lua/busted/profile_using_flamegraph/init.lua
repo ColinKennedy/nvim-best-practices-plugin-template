@@ -47,6 +47,8 @@ local _TEST_CACHE = {}
 ---@type string[]
 local _NAME_STACK = {}
 
+local _CATEGORY_SEPARATOR = ","
+
 local _P = {}
 
 ---@return string # The found test name (of all `describe` blocks).
@@ -81,13 +83,16 @@ function _P.clear_child_tests_cache()
 end
 
 --- Close the profile results on a test that is ending.
-local function _handle_test_end()
-    local name = _get_current_test_name()
+---
+---@param categories string The qualifiers to add to this profiler event.
+---
+function _P.handle_test_end(categories)
+    local name = _P.get_current_test_path()
     local start = _TEST_CACHE[name]
     local duration = clock() - start
     instrument.add_event({
         args = {},
-        cat = constant.Category.test,
+        cat = categories,
         dur = duration,
         name = name,
         ph = "X",
@@ -95,6 +100,15 @@ local function _handle_test_end()
         tid = util.get_thread_id(),
         ts = start,
     })
+end
+
+--- Concatenate all arguments into a comma-separated string.
+---
+---@param ... string All arguments to join
+---@return string # The created string.
+---
+function _P.make_categories(...)
+    return vim.fn.join({...}, _CATEGORY_SEPARATOR)
 end
 
 --- Stop recording timging events for some unittest `path`
@@ -162,7 +176,7 @@ return function(options)
         local duration = clock() - start
         instrument.add_event({
             args = {},
-            cat = constant.Category.test,
+            cat = constant.Category.describe,
             dur = duration,
             name = name,
             ph = "X",
@@ -217,27 +231,39 @@ return function(options)
     handler.testStart = function(element)
         table.insert(_NAME_STACK, element.name)
 
-        _TEST_CACHE[_get_current_test_name()] = clock()
+        local path = _P.get_current_test_path()
+        _TEST_CACHE[path] = clock()
+
+        instrument.add_event({
+            args = {},
+            cat = constant.Category.start,
+            dur = -1,
+            name = path,
+            ph = "X",
+            pid = util.get_process_id(),
+            tid = util.get_thread_id(),
+            ts = clock(),
+        })
     end
 
     handler.testEnd = function()
-        _P.handle_test_end()
+        _P.handle_test_end(constant.Category.test)
 
         table.remove(_NAME_STACK)
     end
 
     handler.testFailure = function()
-        _P.handle_test_end()
+        _P.handle_test_end(_P.make_categories(constant.Category.test, constant.Category.failure))
     end
 
     handler.testError = function()
-        _P.handle_test_end()
+        _P.handle_test_end(_P.make_categories(constant.Category.test, constant.Category.error))
     end
 
     ---@param element busted.Element The `describe` / `it` / etc that just completed.
     handler.error = function(element)
         if element.descriptor == "test" then
-            _handle_test_end()
+            _P.handle_test_end(_P.make_categories(constant.Category.test, constant.Category.error))
 
             return
         end
