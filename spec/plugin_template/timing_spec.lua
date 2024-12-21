@@ -10,6 +10,12 @@ local _P = {}
 local mock_test = require("test_utilities.mock_test")
 local timing = require("busted.profile_using_flamegraph.timing")
 
+before_each(function()
+    mock_test.save_loggers()
+    mock_test.silence_loggers()
+end)
+after_each(mock_test.reset_loggers)
+
 --- Check if the profiler `event` is an auto-profiled function.
 ---
 ---@param event profile.Event The event to check.
@@ -54,12 +60,6 @@ end
 -- TODO: Need a test for if there are really small differences between numbers (floating precision issues)
 
 describe("get_profile_report_as_text", function()
-    before_each(function()
-        mock_test.save_loggers()
-        mock_test.silence_loggers()
-    end)
-    after_each(mock_test.reset_loggers)
-
     describe("basic", function()
         it("sorts events correctly even if many small events sum up to be greater than single larger events", function()
             _P.run_simple_test({
@@ -264,12 +264,6 @@ first_child                2.00   2.00
 end)
 
 describe("self-time", function()
-    before_each(function()
-        mock_test.save_loggers()
-        mock_test.silence_loggers()
-    end)
-    after_each(mock_test.reset_loggers)
-
     it("works with a leaf-event that's at the end of the events stack #range", function()
         _P.run_simple_test({
             { cat = "function", dur = 6, name = "first_child", tid = 1, ts = 1 },
