@@ -10,8 +10,9 @@
 local clock = require("profile.clock")
 local helper = require("busted.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
-local profile = require("profile")
 local logging = require("plugin_template._vendors.aggro.logging")
+local profile = require("profile")
+local util = require("profile.util")
 
 ---@class busted.FlamegraphCallerOptions Control how an output handler runs.
 ---@field release string A version / release tag. e.g. `"v1.2.3"`.
@@ -63,12 +64,14 @@ local function _handle_test_end()
     local start = _TEST_CACHE[name]
     local duration = clock() - start
     instrument.add_event({
-        name = name,
         args = {},
         cat = "test",
-        ph = "X",
-        ts = start,
         dur = duration,
+        name = name,
+        ph = "X",
+        pid = util.get_process_id(),
+        tid = util.get_thread_id(),
+        ts = start,
     })
 
     _TEST_CACHE[name] = nil
@@ -82,16 +85,16 @@ function _P.stop_profiling_test_file(path)
     local start = _FILE_CACHE[path]
     local duration = clock() - start
 
-    instrument.add_event(
-        {
-            name=path,
-            args = {},
-            cat = "file",
-            ph = "X",
-            ts = start,
-            dur = duration,
-        }
-    )
+    instrument.add_event({
+        args = {},
+        cat = "file",
+        dur = duration,
+        name = path,
+        ph = "X",
+        pid = util.get_process_id(),
+        tid = util.get_thread_id(),
+        ts = start,
+    })
 
     _FILE_CACHE[path] = nil
 end
@@ -138,12 +141,14 @@ return function(options)
         local start = _DESCRIBE_CACHE[name]
         local duration = clock() - start
         instrument.add_event({
-            name = name,
             args = {},
             cat = "test",
-            ph = "X",
-            ts = start,
             dur = duration,
+            name = name,
+            ph = "X",
+            pid = util.get_process_id(),
+            tid = util.get_thread_id(),
+            ts = start,
         })
 
         _DESCRIBE_CACHE[name] = nil
