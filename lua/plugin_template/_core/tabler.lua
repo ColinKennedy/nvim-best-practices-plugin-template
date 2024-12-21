@@ -7,7 +7,9 @@ local M = {}
 
 --- Get a sub-section copy of `table_` as a new table.
 ---
----@param table_ table<any, any>
+---@generic Key
+---@generic Value
+---@param table_ table<Key, Value>
 ---    A list / array / dictionary / sequence to copy + reduce.
 ---@param first? number
 ---    The start index to use. This value is **inclusive** (the given index
@@ -17,7 +19,7 @@ local M = {}
 ---    be returned). Uses every index to the end of `table_`' if not provided.
 ---@param step? number
 ---    The step size between elements in the slice. Defaults to 1 if not provided.
----@return table<any, any>
+---@return table<Key, Value>
 ---    The subset of `table_`.
 ---
 function M.get_slice(table_, first, last, step)
