@@ -119,7 +119,7 @@ end
 --- Important:
 ---     This function expects `events` and `all_events` to be ascended-sorted!
 ---
----@param events _ProfileEvent[] All of the profiler event data to compute self-time for.
+---@param events _GroupedEvents[] All of the profiler event data to compute self-time for.
 ---@param all_events _ProfileEvent[] All reference profiler event data.
 ---@return table<string, number> # Each event name and its computed self-time.
 ---
@@ -156,42 +156,43 @@ function M.get_self_times(events, all_events)
     local starting_indices = {}
     local all_events_count = #all_events
 
-    for _, event in
-        ipairs(vim.fn.sort(events, function(left, right)
+    for _, entry in ipairs(events) do
+        for _, event in ipairs(vim.fn.sort(entry.events, function(left, right)
             return left.ts > right.ts
         end))
-    do
-        ---@cast event _ProfileEvent
-
-        local starting_index =
-            _P.get_next_starting_index(event, (starting_indices[event.tid] or 1), all_events, all_events_count)
-
-        if starting_index == M.NOT_FOUND_INDEX then
-            -- NOTE: If we're on the very last event and there are no other events then it means
-            -- 1. We're on the very last call that was profiled.
-            -- 2. That last function is also a leaf function (it doesn't call anything else).
-            --
-            -- This should be a really rare occurrence. But could happen.
-            --
-            vlog.fmt_info(
-                'We think "%s" event is the last of its kind'
-                    .. " (last event in thread + calls no other functions) "
-                    .. " so we are using its full duration as its self-time.",
-                event
-            )
-
-            output[event.name] = event.dur
-        end
-
-        local other_time = 0
-
-        for _, child in
-            ipairs(_P.get_direct_children(event, starting_index, starting_indices, all_events, all_events_count))
         do
-            other_time = other_time + child.dur
-        end
+            ---@cast event _ProfileEvent
 
-        output[event.name] = event.dur - other_time
+            local starting_index =
+                _P.get_next_starting_index(event, (starting_indices[event.tid] or 1), all_events, all_events_count)
+
+            if starting_index == M.NOT_FOUND_INDEX then
+                -- NOTE: If we're on the very last event and there are no other events then it means
+                -- 1. We're on the very last call that was profiled.
+                -- 2. That last function is also a leaf function (it doesn't call anything else).
+                --
+                -- This should be a really rare occurrence. But could happen.
+                --
+                vlog.fmt_info(
+                    'We think "%s" event is the last of its kind'
+                        .. " (last event in thread + calls no other functions) "
+                        .. " so we are using its full duration as its self-time.",
+                    event
+                )
+
+                output[event.name] = event.dur
+            end
+
+            local other_time = 0
+
+            for _, child in
+                ipairs(_P.get_direct_children(event, starting_index, starting_indices, all_events, all_events_count))
+            do
+                other_time = other_time + child.dur
+            end
+
+            output[event.name] = event.dur - other_time
+        end
     end
 
     return output
