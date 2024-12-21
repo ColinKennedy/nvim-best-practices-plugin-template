@@ -24,9 +24,7 @@ configuration.initialize_data_if_needed()
 ---
 ---@param names string[]? Some text to print out. e.g. `{"a", "b", "c"}`.
 ---
-function M.run_arbitrary_thing(names)
-    arbitrary_thing_runner.run(names)
-end
+function M.run_arbitrary_thing(names) arbitrary_thing_runner.run(names) end
 
 --- Copy the log data from the given `path` to the user's clipboard.
 ---
