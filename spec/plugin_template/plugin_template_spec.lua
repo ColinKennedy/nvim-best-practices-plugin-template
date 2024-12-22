@@ -11,7 +11,6 @@ local configuration = require("plugin_template._core.configuration")
 local copy_logs_runner = require("plugin_template._commands.copy_logs.runner")
 local logging = require("mega.logging")
 local plugin_template = require("plugin_template")
-local logging = require("plugin_template._vendors.aggro.logging")
 
 ---@class plugin_template.Configuration
 local _CONFIGURATION_DATA
@@ -24,7 +23,7 @@ local _ORIGINAL_NOTIFY = vim.notify
 
 --- Replace the output path of `logger`, then run `caller`, then restore the output path.
 ---
----@param logger aggro.logging.Logger The logger instance to modify.
+---@param logger mega.logging.Logger The logger instance to modify.
 ---@param caller fun(): nil Some function to call.
 ---
 local function _keep_output_path(logger, caller)

@@ -4,7 +4,7 @@
 ---
 
 local say_constant = require("plugin_template._commands.hello_world.say.constant")
-local logging = require("plugin_template._vendors.aggro.logging")
+local logging = require("mega.logging")
 
 local _LOGGER = logging.get_logger("plugin_template._core.configuration")
 
@@ -16,7 +16,7 @@ vim.g.loaded_plugin_template = false
 ---@type plugin_template.Configuration
 M.DATA = {}
 
--- TODO: (you) If you use the aggro/logging.lua for built-in logging, keep the `logging`
+-- TODO: (you) If you use the mega.logging for built-in logging, keep the `logging`
 -- section. Otherwise delete it.
 --
 -- It's recommended to keep the `display` section in any case.

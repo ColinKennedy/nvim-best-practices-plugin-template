@@ -8,7 +8,7 @@
 local helper = require("busted.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
 local profile = require("profile")
-local logging = require("plugin_template._vendors.aggro.logging")
+local logging = require("mega.logging")
 
 local _LOGGER = logging.get_logger("busted.profiler_runner")
 local _P = {}

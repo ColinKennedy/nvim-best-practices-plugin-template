@@ -11,7 +11,7 @@ local clock = require("profile.clock")
 local constant = require("busted.profile_using_flamegraph.constant")
 local helper = require("busted.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
-local logging = require("plugin_template._vendors.aggro.logging")
+local logging = require("mega.logging")
 local profile = require("profile")
 local util = require("profile.util")
 

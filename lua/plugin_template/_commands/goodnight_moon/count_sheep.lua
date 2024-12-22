@@ -4,7 +4,7 @@
 ---
 
 local configuration = require("plugin_template._core.configuration")
-local logging = require("plugin_template._vendors.aggro.logging")
+local logging = require("mega.logging")
 
 local _LOGGER = logging.get_logger("plugin_template._commands.goodnight_moon.count_sheep")
 
