@@ -5,6 +5,10 @@
 ---@module 'busted.profiler_runner'
 ---
 
+local _CURRENT_DIRECTORY = vim.fs.dirname(vim.fs.joinpath(vim.fn.getcwd(), debug.getinfo(1, "S").source:match("@(.*)$")))
+local _ROOT = vim.fs.dirname(_CURRENT_DIRECTORY)
+package.path = string.format("%s;%s", package.path, vim.fs.joinpath(_ROOT, "?.lua"))
+
 local helper = require("busted.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
 local profile = require("profile")
