@@ -3,7 +3,7 @@
 ---@module 'test_utilities.mock_test'
 ---
 
-local logging = require("plugin_template._vendors.aggro.logging")
+local logging = require("mega.logging")
 
 local M = {}
 

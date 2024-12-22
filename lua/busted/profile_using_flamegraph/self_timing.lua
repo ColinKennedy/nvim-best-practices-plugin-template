@@ -8,7 +8,7 @@
 ---@module 'busted.profile_using_flamegraph.self_timing'
 ---
 
-local logging = require("plugin_template._vendors.aggro.logging")
+local logging = require("mega.logging")
 
 local _LOGGER = logging.get_logger("busted.profile_using_flamegraph.self_timing")
 local _P = {}
