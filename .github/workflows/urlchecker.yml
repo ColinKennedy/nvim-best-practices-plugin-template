@@ -48,8 +48,23 @@ jobs:
         subfolder: spec
         file_types: .json,.lua,.md,.txt,.vim,.yml
 
-    - name: urlcheck - CHANGELOG.md + README.md
+    - name: urlcheck - CHANGELOG.md
+      uses: urlstechie/urlchecker-action@master
+      with:
+        exclude_patterns: https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v
+        subfolder: .
+        include_files: CHANGELOG.md
+      if: ${{ github.event.pull_request.head.ref == 'release-please--branches--main' }}
+
+    - name: urlcheck - CHANGELOG.md
       uses: urlstechie/urlchecker-action@master
       with:
         subfolder: .
-        include_files: CHANGELOG.md,README.md
+        include_files: CHANGELOG.md
+      if: ${{ github.event.pull_request.head.ref != 'release-please--branches--main' }}
+
+    - name: urlcheck - README.md
+      uses: urlstechie/urlchecker-action@master
+      with:
+        subfolder: .
+        include_files: README.md
