@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.5.0...v1.5.1) (2024-12-23)
+
+
+### Bug Fixes
+
+* **ci:** urlchecker ignored during release ([f4faf3b](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/f4faf3b557c3fff211195bdc05003b701e895196))
+
 ## [1.5.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.4.0...v1.5.0) (2024-12-13)
 
 
