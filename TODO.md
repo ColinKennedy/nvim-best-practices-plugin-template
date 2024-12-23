@@ -23,17 +23,8 @@ eog /tmp/directory/benchmarks/all/median.png
 - Do all current branch (add_profiling) TODO notes
     - Can I just use the regular profile.lua module? Do I need the fork?
 
-- release URLs should ignore the diff URL because, on release pages, that diff
-  URL will always be broken. It's a false negative, basisically. Example:
- - https://github.com/ColinKennedy/cursor-text-objects.nvim/pull/6
-
 
 ## Miscellaneous
-- Update instrucdtions to include cli_subcommand.lua
-- The instructions need to do a better job explaining how to remove the test spec files
-- missing information on how to set up release-please
-- Tell people to remove the CHANGELOG.md
-
 Add better linting. selene?
 
 https://raw.githubusercontent.com/folke/lazydev.nvim/refs/heads/main/stylua.toml
@@ -43,7 +34,6 @@ https://github.com/Kampfkarren/selene/issues/284
 
 https://kampfkarren.github.io/selene/
 Lua's simple syntax and efficient use of memory make it an ideal choice for scripting. What are the best Lua static analysis tools and linters? The most popular Lua tools ranked by user votes are: Mega-Linter, Sigrid, callGraph, luacheck, Luanalysis.
-
 
 - Replace the old vim class type names
 - Windows busted support
