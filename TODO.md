@@ -15,21 +15,13 @@ LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_FLAMEGR
 
 LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_TAGGED_DIRECTORIES="simple" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
 
+LUA_PATH="lua/?.lua;$LUA_PATH" BUSTED_PROFILER_TAGGED_DIRECTORIES="simple" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make flamegraph
+
 eog /tmp/directory/benchmarks/all/median.png
-
-- `make flamegraph` does not work. FIX
-
-- Check if the new logger setup has caused start-up to become slow. If so, fix it
 
 - Do the TODO_profiler.md work
 - Do all current branch (add_profiling) TODO notes
     - Can I just use the regular profile.lua module? Do I need the fork?
-- Fix the URL to luarocks link to show the other location
-- Mention the Google "release please" workflow in the README.md
-    - Explain releases in the Wiki
-
-- Add documentation on setting up renovate
- - Add details on how to delete renovate (remove the .json file)
 
 - release URLs should ignore the diff URL because, on release pages, that diff
   URL will always be broken. It's a false negative, basisically. Example:

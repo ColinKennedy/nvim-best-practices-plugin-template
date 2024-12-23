@@ -12,7 +12,7 @@ A template repository used to create Neovim plugins.
 # Features
 - Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices)
 - Fast start-up (~1 ms)
-- Auto-release to [luarocks](https://luarocks.org) & [GitHub](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases)
+- Auto-release to [luarocks](https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#publishing-to-luarocks) & [GitHub](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases)
 - Automated user documentation (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
 - Automated API documentation (using [mini.doc](https://github.com/echasnovski/mini.doc))
 - Vimtags generation
