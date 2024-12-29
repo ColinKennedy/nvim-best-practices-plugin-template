@@ -228,7 +228,7 @@ make test
 
 Run test based on tags
 ```sh
-busted --helper spec/minimal_init.lua . --tags=simple
+busted . --tags=simple
 ```
 
 
