@@ -27,11 +27,11 @@ luacheck:
 stylua:
 	stylua lua plugin scripts spec
 
-test: clone_git_dependencies
-	busted .
-
 profile_using_flamegraph:
 	busted --output=busted.profile_using_flamegraph .
 
 profile_using_vim:
 	busted --output=busted.profile_using_vim .
+
+test: clone_git_dependencies
+	busted .
