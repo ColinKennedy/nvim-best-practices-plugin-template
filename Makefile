@@ -27,14 +27,11 @@ llscheck:
 luacheck:
 	luacheck lua plugin scripts spec
 
-stylua:
-	stylua lua plugin scripts spec
-
 profile_using_flamegraph:
 	nvim -l lua/busted/profiler_runner.lua
 
-profile_using_vim:
-	busted --output=busted.profile_using_vim .
+stylua:
+	stylua lua plugin scripts spec
 
 test: clone_git_dependencies
 	busted .
