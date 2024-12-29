@@ -1,5 +1,7 @@
 ## TODO
 - Do TODO notes
+- Replace the vendored profiler with the built-in one
+- make a github action that encapsulates everything
 
 - /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/busted/multi_runner.lua
  - document to users that they can send any busted call to this runner
