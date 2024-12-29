@@ -1,6 +1,5 @@
 ## TODO
 - Do TODO notes
-- Replace the vendored profiler with the built-in one
 - make a github action that encapsulates everything
 
 - /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/busted/multi_runner.lua
@@ -13,10 +12,6 @@ BUSTED_PROFILER_KEEP_TEMPORARY_FILES
 BUSTED_PROFILER_TAGGED_DIRECTORIES
 BUSTED_PROFILER_TIMING_THRESHOLD
 BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES
-
-- Make a minimum repro explaining why profiler.nvim is not working as expected
-    - Make sure thet the flamegraph is outputting correctly. It seems that
-      plugin_template functions are far fewer than expectged
 
 - Document how to get a flame graph from that output easily
 
