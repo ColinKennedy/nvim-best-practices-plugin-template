@@ -218,9 +218,10 @@ eval $(luarocks path --lua-version 5.1 --bin)
 ## Running
 Run all tests
 ```sh
+# Using the package manager
 luarocks test --test-type busted
 # Or manually
-busted --helper spec/minimal_init.lua .
+busted .
 # Or with Make
 make test
 ```
