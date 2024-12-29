@@ -505,6 +505,8 @@ function M.check(data)
         return
     end
 
+    _get_developer_environment_warnings()
+
     local issues = M.get_issues(data)
 
     if vim.tbl_isempty(issues) then
