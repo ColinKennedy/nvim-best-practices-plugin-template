@@ -1,4 +1,4 @@
-*plugin-template.txt*     For Neovim >= 0.8.0    Last change: 2024 December 23
+*plugin-template.txt*     For Neovim >= 0.8.0    Last change: 2024 December 29
 
 ==============================================================================
 Table of Contents                          *plugin-template-table-of-contents*
@@ -255,9 +255,10 @@ RUNNING                                        *plugin-template-tests-running*
 Run all tests
 
 >sh
+    # Using the package manager
     luarocks test --test-type busted
     # Or manually
-    busted --helper spec/minimal_init.lua .
+    busted .
     # Or with Make
     make test
 <
