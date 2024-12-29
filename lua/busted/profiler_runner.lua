@@ -29,8 +29,7 @@ function _P.append_profiler_arg_values()
         index = index + 1
     end
 
-    arg[index] = "--helper=spec/minimal_init.lua"
-    arg[index + 1] = "--output=busted.profile_using_flamegraph"
+    arg[index] = "--output=busted.profile_using_flamegraph"
 end
 
 --- Replace parts of the user's arguments with our own.
