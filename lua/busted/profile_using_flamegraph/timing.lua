@@ -7,6 +7,12 @@ local helper = require("busted.profile_using_flamegraph.helper")
 local self_timing = require("busted.profile_using_flamegraph.self_timing")
 local tabler = require("plugin_template._core.tabler")
 
+-- TODO: Docstring
+---@class _GroupedEvents
+---@field duration number
+---@field events _ProfileEvent[]
+---@field name string
+
 ---@class _ProfilerLine The data for a row of the user's final profiler report.
 ---@field count number The number of times that the function was called.
 ---@field name string The full name of the function.
@@ -20,7 +26,6 @@ local tabler = require("plugin_template._core.tabler")
 ---@field sections _ProfileReportSection[]? The columns to include in the output report.
 
 ---@class _ProfilerReportPaddings The computed spacing needed for each column.
----@field average_time number The padding needed to show the "average" column.
 ---@field count number The padding needed to show the "count" column.
 ---@field mean_time number The padding needed to show the "mean" column.
 ---@field median_time number The padding needed to show the "median" column.
@@ -37,7 +42,6 @@ local M = {}
 
 ---@enum _ProfileReportSection
 local _Section = {
-    average_time = "average_time",
     count = "count",
     mean_time = "mean_time",
     median_time = "median_time",
@@ -47,7 +51,6 @@ local _Section = {
 }
 
 local _SectionLabel = {
-    average_time = "average",
     count = "count",
     mean_time = "mean",
     median_time = "median",
@@ -187,6 +190,34 @@ function _P.get_line_template(paddings, sections)
     return vim.fn.join(output, " ")
 end
 
+--- Find the events that took the slowest overall time.
+---
+---@param all_events table<string, _ProfileEvent[]>
+---@return _GroupedEvents[] # Each events, by-name, sorted from slowest to fastest.
+---
+function _P.get_slowest_functions(all_events)
+    ---@type _GroupedEvents[]
+    local durations = {}
+
+    for name, events in pairs(all_events) do
+        -- NOTE: There shouldn't be a case where a duplicate value for
+        -- `name` is found. But just in case somehow, we aggregate it by using
+        -- `durations[name] or {}`
+        --
+        local duration = 0
+
+        for _, event in ipairs(events) do
+            duration = duration + event.dur
+        end
+
+        table.insert(durations, { name=name, events=events, duration=duration })
+    end
+
+    return vim.fn.sort(durations, function(left, right)
+        return left.duration < right.duration
+    end)
+end
+
 --- Collect `events` based on the total time across all `events`.
 ---
 ---@param events _ProfileEvent[] All of the profiler event data to consider.
@@ -244,14 +275,18 @@ end
 ---     If at least one bad self-time was found.
 ---
 ---@param self_times table<string, number> Each event name and its computed self-time.
----@param events _ProfileEvent[] All of the events to consider.
+---@param events _GroupedEvents[] All of the events to consider.
 ---
 function _P.validate_self_times(self_times, events)
     ---@type table<string, number>
     local events_by_time = {}
 
-    for _, event in ipairs(events) do
-        events_by_time[event.name] = event.dur
+    for _, entry in ipairs(events) do
+        events_by_time[entry.name] = 0
+
+        for _, event in ipairs(entry.events) do
+            events_by_time[entry.name] = events_by_time[entry.name] + event.dur
+        end
     end
 
     ---@type table<string, number>
@@ -301,13 +336,9 @@ function M.get_profile_report_lines(events, options)
     local threshold = options.threshold or 20
     local functions_by_name, functions, counts = _P.get_totals(events, predicate)
 
-    local slowest_functions = vim.fn.sort(functions, function(left, right)
-        return left.dur < right.dur
-    end)
-
-    ---@cast slowest_functions _ProfileEvent[]
-
+    local slowest_functions = _P.get_slowest_functions(functions_by_name)
     local top_slowest = tabler.get_slice(slowest_functions, 1, threshold)
+    ---@cast top_slowest _GroupedEvents[]
     local self_times = self_timing.get_self_times(top_slowest, functions)
     _P.validate_self_times(self_times, top_slowest)
 
@@ -331,8 +362,8 @@ function M.get_profile_report_lines(events, options)
 
         table.insert(output, {
             count = count,
-            mean = _P.crop_to_precision(sum / count, precision),
-            median = _P.crop_to_precision(helper.get_median(values), precision),
+            mean_time = _P.crop_to_precision(sum / count, precision),
+            median_time = _P.crop_to_precision(helper.get_median(values), precision),
             name = name,
             self_time = _P.crop_to_precision(self_time, precision),
             total_time = _P.crop_to_precision(sum, precision),

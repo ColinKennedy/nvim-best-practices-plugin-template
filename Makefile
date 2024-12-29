@@ -31,7 +31,7 @@ stylua:
 	stylua lua plugin scripts spec
 
 profile_using_flamegraph:
-	busted --output=busted.profile_using_flamegraph .
+	nvim -l lua/busted/profiler_runner.lua
 
 profile_using_vim:
 	busted --output=busted.profile_using_vim .
