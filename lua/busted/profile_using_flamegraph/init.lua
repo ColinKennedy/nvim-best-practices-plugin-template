@@ -228,13 +228,21 @@ return function(options)
                 profile,
                 events,
                 nil,
-                vim.tbl_deep_extend("force", environment_options, { release = release, root = vim.fs.joinpath(benchmarks, "all") })
+                vim.tbl_deep_extend(
+                    "force",
+                    environment_options,
+                    { release = release, root = vim.fs.joinpath(benchmarks, "all") }
+                )
             )
             helper.write_tags_directory(
                 profile,
                 events,
                 nil,
-                vim.tbl_deep_extend("force", environment_options, { release = release, root = vim.fs.joinpath(benchmarks, "tags") })
+                vim.tbl_deep_extend(
+                    "force",
+                    environment_options,
+                    { release = release, root = vim.fs.joinpath(benchmarks, "tags") }
+                )
             )
         end
     end

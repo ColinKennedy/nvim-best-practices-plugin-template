@@ -759,7 +759,10 @@ end
 ---
 function _P.write_graph_artifact(profiler, events, options)
     _LOGGER:info("Writing date-time profiler directory data.")
-    local directory = vim.fs.joinpath(options.root, string.format("%s-%s", options.release, os.date("%Y_%m_%d-%H_%M_%S")))
+    local directory = vim.fs.joinpath(
+        options.root,
+        string.format("%s-%s", options.release, os.date("%Y_%m_%d-%H_%M_%S"))
+    )
     vim.fn.mkdir(directory, "p")
 
     local flamegraph_path = vim.fs.joinpath(directory, _FLAMEGRAPH_FILE_NAME)
