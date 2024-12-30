@@ -52,7 +52,14 @@ local _Section = {
     total_time = "total_time",
 }
 
-local _SectionLabel = { count = "Count", mean_time = "Mean", median_time = "Median", name = "Name", self_time = "Self-Time", total_time = "Total-Time" }
+local _SectionLabel = {
+    count = "Count",
+    mean_time = "Mean",
+    median_time = "Median",
+    name = "Name",
+    self_time = "Self-Time",
+    total_time = "Total-Time",
+}
 
 -- This is meant to be a number that we shouldn't be able to actually hit
 local _DEFAULT_PRECISION = 2
