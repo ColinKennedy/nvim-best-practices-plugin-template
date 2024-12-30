@@ -9,6 +9,10 @@ local logging = require("mega.logging")
 local numeric = require("busted.profile_using_flamegraph.numeric")
 local timing = require("busted.profile_using_flamegraph.timing")
 
+---@class _ArtifactComparison Details on the current / previous run.
+---@field latest _GraphArtifact The most-recent version's best profiler run.
+---@field second_latest _GraphArtifact The second-most-recent version's best profiler run.
+
 ---@class _GraphArtifact Summary data about a whole suite of profiler data.
 ---@field hardware _Hardware All computer platform details.
 ---@field versions _Versions All software / hardware metadata that generated `statistics`.
@@ -157,6 +161,54 @@ function _P.get_allowed_tags_from_environment_variable()
     return vim.fn.split(os.getenv("BUSTED_PROFILER_TAGGED_DIRECTORIES") or ".*", _TAG_SEPARATOR)
 end
 
+--- Compare `base` artifact to `other`.
+---
+---@param base _GraphArtifact Some past profiler run, which we hope is slower than `other`.
+---@param other _GraphArtifact Some newer profiler run which we hope is faster than `base`.
+---@return string # The human-readable description comparing `other` to `base`.
+---
+function _P.get_concise_speed_comparison(base, other)
+    ---@param artifact _GraphArtifact
+    ---@param name string
+    local function _stats(artifact, name)
+        return artifact.statistics[name]
+    end
+
+    ---@param base_ _GraphArtifact
+    ---@param other_ _GraphArtifact
+    ---@param name string
+    ---@param label string?
+    local function _percent(base_, other_, name, label)
+        label = label or name
+        local base_value = _stats(base_, name)
+        local other_value = _stats(other_, name)
+
+        local difference = (other_value - base_value)
+        local percent = (difference / base_value) * 100
+
+        local direction
+
+        if difference < 0 then
+            direction = "slower"
+            percent = -1 * percent
+        else
+            direction = "faster"
+        end
+
+        return string.format("- %s time is %.2f%% %s", label, percent, direction)
+    end
+
+    ---@type string[]
+    local lines = {
+        _percent(base, other, "total"),
+        _percent(base, other, "median"),
+        _percent(base, other, "mean"),
+        _percent(base, other, "standard_deviation", "standard deviation"),
+    }
+
+    return vim.fn.join(lines, "\n")
+end
+
 --- Find all sub-directories starting at `root`.
 ---
 --- Raises:
@@ -257,6 +309,8 @@ function _P.get_graph_artifacts(root, maximum)
                 0
             )
         end
+
+        ---@cast result _GraphArtifact
 
         table.insert(output, result)
 
@@ -909,8 +963,9 @@ end
 ---@param graphs _GnuplotData[] All of the graphs that were written to-disk.
 ---@param path string The path on-disk to write the README.md to.
 ---@param timing_text string The contents of the timing.txt file.
+---@param latests _ArtifactComparison? Details on the current / previous run.
 ---
-function _P.write_summary_readme(artifacts, graphs, path, timing_text)
+function _P.write_summary_readme(artifacts, graphs, path, timing_text, latests)
     _P.make_parent_directory(path)
 
     local file = io.open(path, "w")
@@ -930,6 +985,30 @@ In the graph and data below, lower numbers are better
 
 ]])
 
+    if latests then
+        local latest = latests.latest.versions.release
+        local second_latest = latests.second_latest.versions.release
+
+        file:write(
+            string.format(
+                [[
+## General Summary
+
+The most recent run was %s. The previous run was %s. Compared to %s, %s ...
+
+]],
+                latest,
+                second_latest,
+                latest,
+                second_latest
+            )
+        )
+
+        file:write(_P.get_concise_speed_comparison(latests.second_latest, latests.latest))
+        file:write("\n\n")
+        file:write("See the graphs and tables below for details\n\n")
+    end
+
     local directory = vim.fs.normalize(vim.fs.dirname(path))
 
     for _, graph in ipairs(graphs) do
@@ -944,13 +1023,12 @@ In the graph and data below, lower numbers are better
             )
         end
 
-        file:write(string.format('<p align="center"><img src="%s"/></p>\n\n', vim.fs.basename(graph.image_path)))
+        file:write(string.format('<p align="center"><img src="%s"/></p>\n\n\n', vim.fs.basename(graph.image_path)))
     end
 
-    file:write(string.format("\n\n## Most Recent Timing\n\n```\n%s\n```\n\n", timing_text))
+    file:write(string.format("## Most Recent Timing\n\n%s\n\n\n", timing_text))
 
     file:write([[
-
 ## Past Runs
 
 | Release | Platform | CPU | Neovim | Total | Median | Mean | StdDev |
@@ -1104,7 +1182,15 @@ function M.write_summary_directory(profiler, events, maximum, options)
         error(string.format('Path "%s" has no artifacts that we can use.', root), 0)
     end
 
-    if _P.is_stable_release(release) and _P.is_latest_version(_P.get_version_numbers(release), artifacts_root) then
+    -- IMPORTANT: We assume that `artifacts` is already sorted here
+    -- TODO: make sure that sorted input here is definitely correct. The test
+    -- data I've been using does not actually check this.
+    --
+    local latest, second_latest = unpack(_P.get_slice(artifacts, 1, 2))
+    ---@cast latest _GraphArtifact?
+    ---@cast second_latest _GraphArtifact?
+
+    if _P.is_stable_release(release) and (not latest or (release == latest.versions.release)) then
         _LOGGER:fmt_info('Copying "%s" release to "%s" path.', release, root)
         _P.copy_file_to_directory(flamegraph_path, root)
         _P.copy_file_to_directory(profile_path, root)
@@ -1118,7 +1204,12 @@ function M.write_summary_directory(profiler, events, maximum, options)
     end
 
     local graphs = _P.write_graph_images(artifacts, root, options.keep_temporary_files)
-    _P.write_summary_readme(artifacts, graphs, readme_path, timing_text)
+
+    if latest and second_latest then
+        latests = {latest=latest, second_latest=second_latest}
+    end
+
+    _P.write_summary_readme(artifacts, graphs, readme_path, timing_text, latests)
 end
 
 --- Write all files for the "benchmarks/tags" directory.

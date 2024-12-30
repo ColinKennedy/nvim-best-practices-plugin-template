@@ -11,10 +11,10 @@
 
 ---@class busted.RunnerOptions
 ---    The base settings used
----@field output string
+---@field output string?
 ---    The handler that controls how tests run / display to the user. We later
 ---    override this with our own `busted.profile_using_flamegraph` handler, later.
----@field standalone boolean
+---@field standalone boolean?
 ---    If busted is running from the terminal or through some other context.
 
 ---@class busted.MultiRunnerOptions : busted.RunnerOptions

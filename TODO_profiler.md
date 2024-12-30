@@ -1,20 +1,9 @@
 ## TODO
-- Allow the timing output to be a GitHub-style table
 - Do TODO notes
 - make a github action that encapsulates everything
 
 - /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/busted/multi_runner.lua
  - document to users that they can send any busted call to this runner
-
-- Document all of the environment variables
-BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH
-BUSTED_PROFILER_FLAMEGRAPH_VERSION
-BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES
-BUSTED_PROFILER_KEEP_TEMPORARY_FILES
-BUSTED_PROFILER_MAXIMUM_TRIES
-BUSTED_PROFILER_TAGGED_DIRECTORIES
-BUSTED_PROFILER_TIMING_THRESHOLD
-
 
 - Document how to get a flame graph from that output easily
 
@@ -28,24 +17,6 @@ BUSTED_PROFILER_TIMING_THRESHOLD
 https://github.com/lunarmodules/busted/blob/94d008108b028817534047b44fdb1f7f7ca0dcc3/busted/runner.lua#L215-L217
 
 https://github.com/AcademySoftwareFoundation/rez/blob/main/.github/scripts/store_benchmark.py
-
-- It should output this:
-
-
-            - by_release/
-                - {UUID}-test_name_with_invalid_characters_replaced/ (generate a UUID for each busted test)
-                    - (Use md5.lua to generate the UUID)
-                    - README.md
-                        - Explain the contents of the directory
-                        - The full test name listed here
-                        - Profile summary table (slowest stuff listed at the top)
-                    - flamegraph.json
-                    - profile.json - total time, self time, etc information here
-                - README.md
-                    - Explain the contents of the directory
-                - IMPORTANT: Needs to delete deprecated tests. e.g. compare the
-                  generated UUIDs with the folder. Any folder name that isn't
-                  found mustve been removed. So it gets deleted. like that
 
 
 ## Profiling
