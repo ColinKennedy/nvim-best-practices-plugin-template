@@ -8,8 +8,13 @@
 local _CURRENT_DIRECTORY = vim.fs.dirname(
     vim.fs.joinpath(vim.fn.getcwd(), debug.getinfo(1, "S").source:match("@(.*)$"))
 )
-local _ROOT = vim.fs.dirname(_CURRENT_DIRECTORY)
-package.path = string.format("%s;%s", package.path, vim.fs.joinpath(_ROOT, "?.lua"))
+local _ROOT = vim.fs.dirname(vim.fs.dirname(_CURRENT_DIRECTORY))
+package.path = string.format(
+    "%s;%s;%s",
+    vim.fs.joinpath(_ROOT, "lua", "?.lua"),  -- Append this plugin's lua/ folder
+    vim.fs.joinpath(_ROOT, ".dependencies", "profile.nvim", "lua", "?.lua"),  -- The profiler dependency
+    package.path  -- The original paths
+)
 
 local helper = require("busted.profile_using_flamegraph.helper")
 local instrument = require("profile.instrument")
@@ -158,40 +163,55 @@ function _P.run_busted_suite(runner, options)
     end)
 end
 
+---@class ProfilerOptions
+---    All options used to visualize profiler results as line graph data.
+---@field allowed_tags string[]
+---    Get the allowes tags that may write to disk. e.g. `{"foo.*bar", "thing"}`.
+---@field keep_old_tag_directories boolean
+---    If the user's busted unittests previously defined a tag, e.g. a tag called `asdf`
+---    and now that tag is gone and this option is `true` then all previous profile
+---    results for that tag are deleted. This is just to keep the folders as clean and
+---    up-to-date as possible.
+---@field keep_temporary_files boolean
+---    If `true`, don't delete any intermediary, generated files. Useful for
+---    debugging. 99% of the time you want this to be `false` though.
+---@field maximum_tries integer
+---    This controls the number of times that tests can run before we determine
+---    that we've found a "fastest" test run. The higher the value, the longer
+---    but more accurate this function becomes.
+---@field release string
+---    A version / release tag. e.g. `"v1.2.3"`.
+---@field root string
+---    An absolute path to the directory on-disk where files are written.
+---@field timing_threshold integer
+---    The number of (slowest function) entries to write in the output.
+
 --- Run the unittest multiple times until a "fastest time" is found.
 ---
 --- The logic works like this:
 ---
 --- - Run tests
 --- - Get the total test elapsed time
---- - Set our "number of tries" time to `maximum_tries`
+--- - Set our "number of tries" time to `options.maximum_tries`
 --- - If the elapsed time is equal to or took longer compared to the previous best
 ---     - Decrement our "number of tries" counter
 --- - If the elapsed time is less than the previous best...
 ---     - Record this elapsed time as the previous best
----     - Reset the "number of tries" counter back to `maximum_tries`.
+---     - Reset the "number of tries" counter back to `options.maximum_tries`.
 --- - If "number of tries" hits zero, then we've found the fastest time.
 ---
 --- Raises:
----     If `maximum_tries` is invalid.
+---     If `options.maximum_tries` is invalid.
 ---
 ---@param profiler Profiler
 ---    The object used to record function call times.
----@param release string
----    A version / release tag. e.g. `"v1.2.3"`.
----@param root string
----    An absolute path to the directory on-disk where files are written.
----@param maximum_tries number
----    This controls the number of times that tests can run before we determine
----    that we've found a "fastest" test run. The higher the value, the longer
----    but more accurate this function becomes.
+---@param options ProfilerOptions
+---    All options used to visualize profiler results as line graph data.
 ---
-local function run_tests(profiler, release, root, maximum_tries)
-    if maximum_tries < 1 then
-        error(string.format('Maximum tries must be 1-or-more. Got "%s".', maximum_tries), 0)
-    end
-
-    local counter = maximum_tries
+local function run_tests(profiler, options)
+    local release = options.release
+    local root = options.root
+    local counter = options.maximum_tries
     local fastest_time = 2 ^ 1023
     local fastest_events = nil
 
@@ -206,7 +226,7 @@ local function run_tests(profiler, release, root, maximum_tries)
         if duration < fastest_time then
             _LOGGER:fmt_debug('Faster time found. New: "%s". Old: "%s".', duration, fastest_time)
 
-            counter = maximum_tries
+            counter = options.maximum_tries
             fastest_time = duration
             -- TODO: CHECK if copying here is actually needed
             fastest_events = vim.deepcopy(instrument.get_events())
@@ -226,14 +246,24 @@ local function run_tests(profiler, release, root, maximum_tries)
     end
 
     local benchmarks = vim.fs.joinpath(root, "benchmarks")
-    helper.write_summary_directory(release, profile, vim.fs.joinpath(benchmarks, "all"), fastest_events)
-    helper.write_tags_directory(release, profile, vim.fs.joinpath(benchmarks, "tags"), fastest_events)
+    helper.write_summary_directory(
+        profile,
+        fastest_events,
+        nil,
+        vim.tbl_deep_extend("force", options, { root = vim.fs.joinpath(benchmarks, "all") })
+    )
+    helper.write_tags_directory(
+        profile,
+        fastest_events,
+        nil,
+        vim.tbl_deep_extend("force", options, { root = vim.fs.joinpath(benchmarks, "tags") })
+    )
     _LOGGER:fmt_info('Finished writing all of "%s" directory.', benchmarks)
 end
 
 --- Run these tests.
 local function main()
-    local root, release = helper.get_environment_variable_data()
+    local options = helper.get_environment_variable_data()
 
     helper.validate_gnuplot()
 
@@ -243,7 +273,7 @@ local function main()
 
     instrument("*")
 
-    run_tests(profiler, release, root, 10)
+    run_tests(profiler, options)
 end
 
 main()

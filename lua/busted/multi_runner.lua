@@ -7,8 +7,6 @@
 ---@module 'busted.multi_runner'
 ---
 
--- TODO: Docstrings
-
 ---@class busted.MultiRunner A unittest suite runner.
 
 ---@class busted.RunnerOptions

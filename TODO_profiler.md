@@ -8,14 +8,15 @@
 - Document all of the environment variables
 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH
 BUSTED_PROFILER_FLAMEGRAPH_VERSION
+BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES
 BUSTED_PROFILER_KEEP_TEMPORARY_FILES
+BUSTED_PROFILER_MAXIMUM_TRIES
+BUSTED_PROFILER_TABLE_STYLE
 BUSTED_PROFILER_TAGGED_DIRECTORIES
 BUSTED_PROFILER_TIMING_THRESHOLD
-BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES
 
 - Document how to get a flame graph from that output easily
 
-- Replace my profiler fork with the other one
 - Allow the timing output to be a GitHub-style table
 
 - A GitHub workflow that can keep in sync with main + add more commits

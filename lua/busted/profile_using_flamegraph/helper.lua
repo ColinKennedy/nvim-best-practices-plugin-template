@@ -470,7 +470,7 @@ function _P.get_standard_deviation(values, mean)
     return math.sqrt(variance)
 end
 
----@return number? # The number of (slowest function) entries to write in the output.
+---@return integer? # The number of (slowest function) entries to write in the output.
 function _P.get_timing_threshold()
     local text = os.getenv("BUSTED_PROFILER_TIMING_THRESHOLD")
 
@@ -608,6 +608,38 @@ function _P.make_parent_directory(path)
     vim.fn.mkdir(vim.fs.dirname(path), "p")
 end
 
+--- Check if `text` is defined or use a fallback.
+---
+--- Raises:
+---     If `text` is an invalid number or non-number input.
+---
+---@param text string? Some raw user input that is a 1-or-more integer.
+---@return integer # The contiguous number of runs that a test suite must run to be comsidered the "fastest".
+---
+function _P.validate_maximum_tries(text)
+    if not text then
+        return 10
+    end
+
+    local tries = tonumber(text)
+
+    if not tries then
+        error(
+            string.format('Maximum tries must be 1-or-more number. Got %s.', vim.inspect(text)),
+            0
+        )
+    end
+
+    if tries < 1 then
+        error(
+            string.format('Maximum tries must be 1-or-more. Got %s.', vim.inspect(text)),
+            0
+        )
+    end
+
+    return tries
+end
+
 --- Make sure `version` is an expected semantic version convention.
 ---
 --- Raises:
@@ -709,15 +741,13 @@ end
 
 --- Create the `"benchmarks/all/artifacts/{VERSION_TAG-YYYY_MM_DD-HH_MM_SS}"` directory.
 ---
----@param release string
----    The current release to make. e.g. `"v1.2.3"`.
 ---@param profiler Profiler
 ---    The object used to record function call times.
----@param root string
----    The ".../benchmarks/all" directory to create or update.
 ---@param events profile.Event[]
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
+---@param options ProfilerOptions
+---    All options used to visualize profiler results as line graph data.
 ---@return string
 ---    An absolute path to the created flamegraph.json file.
 ---@return string
@@ -727,19 +757,19 @@ end
 ---@return string
 ---    The contents of the timing.txt file.
 ---
-function _P.write_graph_artifact(release, profiler, root, events)
+function _P.write_graph_artifact(profiler, events, options)
     _LOGGER:info("Writing date-time profiler directory data.")
-    local directory = vim.fs.joinpath(root, string.format("%s-%s", release, os.date("%Y_%m_%d-%H_%M_%S")))
+    local directory = vim.fs.joinpath(options.root, string.format("%s-%s", options.release, os.date("%Y_%m_%d-%H_%M_%S")))
     vim.fn.mkdir(directory, "p")
 
     local flamegraph_path = vim.fs.joinpath(directory, _FLAMEGRAPH_FILE_NAME)
     _P.write_flamegraph(profiler, events, flamegraph_path)
 
     local profile_path = vim.fs.joinpath(directory, _PROFILE_FILE_NAME)
-    _P.write_profile_summary(release, events, profile_path)
+    _P.write_profile_summary(options.release, events, profile_path)
 
     local timing_path = vim.fs.joinpath(directory, _TIMING_FILE_NAME)
-    local timing_text = _P.write_timing(events, timing_path)
+    local timing_text = _P.write_timing(events, timing_path, options)
 
     return flamegraph_path, profile_path, timing_path, timing_text
 end
@@ -751,11 +781,10 @@ end
 ---
 ---@param artifacts _GraphArtifact[] All past profiling / timing records to make a graph.
 ---@param root string The ".../benchmarks/all" directory to create or update.
+---@param keep_temporary_files boolean If `true`, don't delete any intermediary, generated files.
 ---@return _GnuplotData[] # The gnuplot data that was written to-disk.
 ---
-function _P.write_graph_images(artifacts, root)
-    local keep = os.getenv("BUSTED_PROFILER_KEEP_TEMPORARY_FILES") == "1"
-
+function _P.write_graph_images(artifacts, root, keep_temporary_files)
     local mean_data_path
     local mean_image_path = vim.fs.joinpath(root, "mean.png")
     local mean_script_path
@@ -768,7 +797,7 @@ function _P.write_graph_images(artifacts, root)
 
     -- TODO: Make sure these images are in the README.md file
 
-    if keep then
+    if keep_temporary_files then
         mean_data_path = vim.fs.joinpath(root, "_mean.dat")
         mean_script_path = vim.fs.joinpath(root, "_mean.gnuplot")
         median_data_path = vim.fs.joinpath(root, "_median.dat")
@@ -818,13 +847,13 @@ function _P.write_graph_images(artifacts, root)
 
     local success, message = pcall(_P.write_gnuplot_images, artifacts, graphs)
 
-    if not keep then
+    if not keep_temporary_files then
         _LOGGER:fmt_debug('Deleting temporary files from "%s" graphs.', graphs)
         _P.delete_gnuplot_paths(graphs, { "data_path", "script_path" })
     end
 
     if not success then
-        if not keep then
+        if not keep_temporary_files then
             _LOGGER:fmt_debug('Failed to write images. Deleting "%s" graphs.', graphs)
             _P.delete_gnuplot_paths(graphs, { "image_path" })
         end
@@ -960,8 +989,9 @@ end
 --- TODO: Docstring
 ---@param events profile.Event[]
 ---@param path string
+---@param options ProfilerOptions
 ---@return string
-function _P.write_timing(events, path)
+function _P.write_timing(events, path, options)
     _LOGGER:fmt_info('Writing "%s" timing file.', path)
     local file = io.open(path, "w")
 
@@ -969,7 +999,7 @@ function _P.write_timing(events, path)
         error(string.format('Path "%s" could not be written.', path), 0)
     end
 
-    local text = timing.get_profile_report_as_text(events, {thresold=_P.get_timing_threshold()})
+    local text = timing.get_profile_report_as_text(events, {thresold=options.timing_threshold})
     file:write(text)
     file:close()
 
@@ -981,8 +1011,8 @@ end
 --- Raises:
 ---     If a required environment variable was not defined correctly.
 ---
----@return string # The absolute directory on-disk where flamegraph info will be written.
----@return string # The version to write to-disk. e.g. `"v1.2.3"`.
+---@return ProfilerOptions
+---    All options used to visualize profiler results as line graph data.
 ---
 function M.get_environment_variable_data()
     local root = os.getenv("BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH")
@@ -999,7 +1029,17 @@ function M.get_environment_variable_data()
 
     _P.validate_release(release)
 
-    return root, release
+    local maximum_tries = _P.validate_maximum_tries(os.getenv("BUSTED_PROFILER_MAXIMUM_TRIES"))
+
+    return {
+        allowed_tags = _P.get_allowed_tags_from_environment_variable(),
+        keep_old_tag_directories = os.getenv("BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES") ~= "1",
+        keep_temporary_files = os.getenv("BUSTED_PROFILER_KEEP_TEMPORARY_FILES") == "1",
+        maximum_tries = maximum_tries,
+        release = release,
+        root = root,
+        timing_threshold = _P.get_timing_threshold(),
+    }
 end
 
 --- Make sure `gnuplot` is installed and is accessible.
@@ -1036,12 +1076,8 @@ end
 --- Raises:
 ---    If an invalid `maximum` is given.
 ---
----@param release string
----    The current release to make. e.g. `"v1.2.3"`.
 ---@param profiler Profiler
 ---    The object used to record function call times.
----@param root string
----    The ".../benchmarks/all" directory to create or update.
 ---@param events profile.Event[]?
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
@@ -1051,8 +1087,12 @@ end
 ---    preferred. Note: It is unwise to set this number higher than the default
 ---    (35). Experimentation showed that the X-axis of the graph becomes
 ---    unreadable after 35.
+---@param options ProfilerOptions
+---    All options used to visualize profiler results as line graph data.
 ---
-function M.write_summary_directory(release, profiler, root, events, maximum)
+function M.write_summary_directory(profiler, events, maximum, options)
+    local release = options.release
+    local root = options.root
     _LOGGER:fmt_info('Now writing profiler "%s" results to "%s" path.', release, root)
     maximum = maximum or _DEFAULT_MAXIMUM_ARTIFACTS
 
@@ -1063,10 +1103,9 @@ function M.write_summary_directory(release, profiler, root, events, maximum)
     local artifacts_root = vim.fs.joinpath(root, "artifacts")
     events = events or instrument.get_events()
     local flamegraph_path, profile_path, timing_path, timing_text = _P.write_graph_artifact(
-        release,
         profiler,
-        artifacts_root,
-        events
+        events,
+        vim.tbl_deep_extend("force", options, { root = artifacts_root })
     )
     local readme_path = vim.fs.joinpath(root, "README.md")
 
@@ -1089,7 +1128,7 @@ function M.write_summary_directory(release, profiler, root, events, maximum)
         )
     end
 
-    local graphs = _P.write_graph_images(artifacts, root)
+    local graphs = _P.write_graph_images(artifacts, root, options.keep_temporary_files)
     _P.write_summary_readme(artifacts, graphs, readme_path, timing_text)
 end
 
@@ -1113,12 +1152,8 @@ end
 --- Raises:
 ---    If an invalid `maximum` is given.
 ---
----@param release string
----    The current release to make. e.g. `"v1.2.3"`.
 ---@param profiler Profiler
 ---    The object used to record function call times.
----@param root string
----    The ".../benchmarks/all" directory to create or update.
 ---@param events profile.Event[]?
 ---    All of the profiler event data to consider. If no events are given, we
 ---    will use the global profiler's events instead.
@@ -1128,8 +1163,10 @@ end
 ---    preferred. Note: It is unwise to set this number higher than the default
 ---    (35). Experimentation showed that the X-axis of the graph becomes
 ---    unreadable after 35.
+---@param options ProfilerOptions
+---    All options used to visualize profiler results as line graph data.
 ---
-function M.write_tags_directory(release, profiler, root, events, maximum)
+function M.write_tags_directory(profiler, events, maximum, options)
     ---@param event profile.Event
     ---@return boolean
     function _P.is_test_end(event)
@@ -1142,7 +1179,7 @@ function M.write_tags_directory(release, profiler, root, events, maximum)
         return event.cat == constant.Category.start
     end
 
-    ---@param events profile.Event[]
+    ---@param events_ profile.Event[]
     ---@return table<string, profile.Event[]>
     function _P.get_events_by_tag(events_)
         ---@type table<string, profile.Event[]>
@@ -1209,6 +1246,10 @@ function M.write_tags_directory(release, profiler, root, events, maximum)
         return output
     end
 
+    local release = options.release
+    --- NOTE: `root` - The ".../benchmarks/all" directory to create or update.
+    local root = options.root
+
     -- TODO: Add logic to delete artifacts that are out of date / no longer apply
     -- e.g. a user deletes a unittest - that tag's work should be deleted
 
@@ -1216,20 +1257,25 @@ function M.write_tags_directory(release, profiler, root, events, maximum)
     events = events or instrument.get_events()
     local events_by_tag = _P.get_events_by_tag(events)
 
+    local allowed_tags = options.allowed_tags
+
     ---@type string[]
     local created_directories = {}
-
-    local allowed_tags = _P.get_allowed_tags_from_environment_variable()
 
     for tag, events_ in pairs(events_by_tag) do
         if _P.is_allowed_tag(tag, allowed_tags) and not vim.tbl_isempty(events_) then
             local directory = vim.fs.joinpath(root, tag)
-            M.write_summary_directory(release, profiler, directory, events_, maximum)
+            M.write_summary_directory(
+                profiler,
+                events_,
+                maximum,
+                vim.tbl_deep_extend("force", options, { root = directory })
+            )
             table.insert(created_directories, directory)
         end
     end
 
-    if os.getenv("BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES") ~= "1" then
+    if options.keep_old_tag_directories then
         for _, path in ipairs(vim.fn.glob(vim.fs.joinpath(root, "*"), false, true)) do
             if not vim.tbl_contains(created_directories, path) then
                 -- NOTE: `path` is old. For one of these reasons

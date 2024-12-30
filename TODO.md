@@ -17,6 +17,8 @@ LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_TAGGED_
 
 LUA_PATH="lua/?.lua;$LUA_PATH" BUSTED_PROFILER_TAGGED_DIRECTORIES="simple" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make flamegraph
 
+BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make flamegraph
+
 eog /tmp/directory/benchmarks/all/median.png
 
 - Do the TODO_profiler.md work

@@ -142,6 +142,7 @@ return function(options)
     local busted = require("busted")
     local handler = require("busted.outputHandlers.base")()
 
+    local environment_options = helper.get_environment_variable_data()
     local root = options.root
     local release = options.release
 
@@ -149,7 +150,8 @@ return function(options)
         _LOGGER:info(
             "Either root or release was not found. " .. "Getting root / release from environment variables instead."
         )
-        root, release = helper.get_environment_variable_data()
+        root = environment_options.root
+        release = environment_options.release
     end
 
     local is_standalone = not profile.is_recording()
@@ -222,8 +224,18 @@ return function(options)
             _LOGGER:info("Profiling was stopped. Now writing to disk.")
             local benchmarks = vim.fs.joinpath(root, "benchmarks")
             local events = instrument.get_events()
-            helper.write_summary_directory(release, profile, vim.fs.joinpath(benchmarks, "all"), events)
-            helper.write_tags_directory(release, profile, vim.fs.joinpath(benchmarks, "tags"), events)
+            helper.write_summary_directory(
+                profile,
+                events,
+                nil,
+                vim.tbl_deep_extend("force", environment_options, { release = release, root = vim.fs.joinpath(benchmarks, "all") })
+            )
+            helper.write_tags_directory(
+                profile,
+                events,
+                nil,
+                vim.tbl_deep_extend("force", environment_options, { release = release, root = vim.fs.joinpath(benchmarks, "tags") })
+            )
         end
     end
 
