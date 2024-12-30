@@ -182,6 +182,9 @@ function _P.get_concise_speed_comparison(base, other)
         label = label or name
         local base_value = _stats(base_, name)
         local other_value = _stats(other_, name)
+        _LOGGER:fmt_error('Getting "%s" percent.', name)
+        _LOGGER:fmt_debug('Got "%s" base value.', base_value)
+        _LOGGER:fmt_debug('Got "%s" other value.', other_value)
 
         local difference = (other_value - base_value)
         local percent = (difference / base_value) * 100
