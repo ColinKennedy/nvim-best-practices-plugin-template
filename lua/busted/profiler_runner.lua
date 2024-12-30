@@ -5,15 +5,14 @@
 ---@module 'busted.profiler_runner'
 ---
 
-local _CURRENT_DIRECTORY = vim.fs.dirname(
-    vim.fs.joinpath(vim.fn.getcwd(), debug.getinfo(1, "S").source:match("@(.*)$"))
-)
+local _CURRENT_DIRECTORY =
+    vim.fs.dirname(vim.fs.joinpath(vim.fn.getcwd(), debug.getinfo(1, "S").source:match("@(.*)$")))
 local _ROOT = vim.fs.dirname(vim.fs.dirname(_CURRENT_DIRECTORY))
 package.path = string.format(
     "%s;%s;%s",
-    vim.fs.joinpath(_ROOT, "lua", "?.lua"),  -- Append this plugin's lua/ folder
-    vim.fs.joinpath(_ROOT, ".dependencies", "profile.nvim", "lua", "?.lua"),  -- The profiler dependency
-    package.path  -- The original paths
+    vim.fs.joinpath(_ROOT, "lua", "?.lua"), -- Append this plugin's lua/ folder
+    vim.fs.joinpath(_ROOT, ".dependencies", "profile.nvim", "lua", "?.lua"), -- The profiler dependency
+    package.path -- The original paths
 )
 
 local helper = require("busted.profile_using_flamegraph.helper")
@@ -23,7 +22,6 @@ local logging = require("mega.logging")
 
 local _LOGGER = logging.get_logger("busted.profiler_runner")
 local _P = {}
-
 
 --- Add arguments that this file needs in order to time / profile the unittest suite.
 function _P.append_profiler_arg_values()
@@ -65,7 +63,7 @@ end
 function _P.fix_arg()
     local values = {}
 
-    for index=1,#arg do
+    for index = 1, #arg do
         if arg[index] then
             table.insert(values, arg[index])
         end
@@ -96,7 +94,6 @@ function _P.strip_arg()
             arg[key] = nil
             arg[key + 1] = nil
             key = key + 2
-
         elseif value:match("^%-o=") or value:match("^--output=") then
             arg[key] = nil
             key = key + 1
@@ -104,7 +101,6 @@ function _P.strip_arg()
             arg[key] = nil
             arg[key + 1] = nil
             key = key + 2
-
         else
             -- NOTE: No match was found. We'll just keep searching
             key = key + 1

@@ -288,9 +288,11 @@ end
 ---
 function _P.make_github_summary(texts)
     local headers = _P.make_github_line(texts)
-    local header_bottom = (headers:gsub(string.format("[^%%%s]", _GITHUB_TABLE_POST), "-"):gsub(_GITHUB_TABLE_POST, "+"))
+    local header_bottom = (
+        headers:gsub(string.format("[^%%%s]", _GITHUB_TABLE_POST), "-"):gsub(_GITHUB_TABLE_POST, "+")
+    )
 
-    return {headers, header_bottom}
+    return { headers, header_bottom }
 end
 
 --- Create a simple GitHub header / body line from `texts`.
@@ -438,7 +440,7 @@ end
 ---@return string # The generated report, in human-readable format.
 ---
 function M.get_profile_report_as_text(events, options)
-    options = vim.tbl_deep_extend("force", {precision=2}, options or {})
+    options = vim.tbl_deep_extend("force", { precision = 2 }, options or {})
 
     local sections = options.sections or _DEFAULT_SECTIONS
     local lines = M.get_profile_report_lines(events, options)

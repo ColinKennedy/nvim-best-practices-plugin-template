@@ -366,13 +366,7 @@ function _P.get_profile_statistics(events)
     end
 
     if vim.tbl_isempty(durations) then
-        error(
-            string.format(
-                'Durations is empty. Event count is "%s". Cannot continue.',
-                #events
-            ),
-            0
-        )
+        error(string.format('Durations is empty. Event count is "%s". Cannot continue.', #events), 0)
     end
 
     local last_event = _P.get_latest_timed_event(events)
@@ -624,17 +618,11 @@ function _P.validate_maximum_tries(text)
     local tries = tonumber(text)
 
     if not tries then
-        error(
-            string.format('Maximum tries must be 1-or-more number. Got %s.', vim.inspect(text)),
-            0
-        )
+        error(string.format("Maximum tries must be 1-or-more number. Got %s.", vim.inspect(text)), 0)
     end
 
     if tries < 1 then
-        error(
-            string.format('Maximum tries must be 1-or-more. Got %s.', vim.inspect(text)),
-            0
-        )
+        error(string.format("Maximum tries must be 1-or-more. Got %s.", vim.inspect(text)), 0)
     end
 
     return tries
@@ -759,10 +747,8 @@ end
 ---
 function _P.write_graph_artifact(profiler, events, options)
     _LOGGER:info("Writing date-time profiler directory data.")
-    local directory = vim.fs.joinpath(
-        options.root,
-        string.format("%s-%s", options.release, os.date("%Y_%m_%d-%H_%M_%S"))
-    )
+    local directory =
+        vim.fs.joinpath(options.root, string.format("%s-%s", options.release, os.date("%Y_%m_%d-%H_%M_%S")))
     vim.fn.mkdir(directory, "p")
 
     local flamegraph_path = vim.fs.joinpath(directory, _FLAMEGRAPH_FILE_NAME)
@@ -961,7 +947,6 @@ In the graph and data below, lower numbers are better
         file:write(string.format('<p align="center"><img src="%s"/></p>\n\n', vim.fs.basename(graph.image_path)))
     end
 
-
     file:write(string.format("\n\n## Most Recent Timing\n\n```\n%s\n```\n\n", timing_text))
 
     file:write([[
@@ -1002,13 +987,10 @@ function _P.write_timing(events, path, options)
         error(string.format('Path "%s" could not be written.', path), 0)
     end
 
-    local text = timing.get_profile_report_as_text(
-        events,
-        {
-            table_style=timing.TableStyle.github,
-            thresold=options.timing_threshold,
-        }
-    )
+    local text = timing.get_profile_report_as_text(events, {
+        table_style = timing.TableStyle.github,
+        thresold = options.timing_threshold,
+    })
     file:write(text)
     file:close()
 
@@ -1112,11 +1094,8 @@ function M.write_summary_directory(profiler, events, maximum, options)
 
     local artifacts_root = vim.fs.joinpath(root, "artifacts")
     events = events or instrument.get_events()
-    local flamegraph_path, profile_path, timing_path, timing_text = _P.write_graph_artifact(
-        profiler,
-        events,
-        vim.tbl_deep_extend("force", options, { root = artifacts_root })
-    )
+    local flamegraph_path, profile_path, timing_path, timing_text =
+        _P.write_graph_artifact(profiler, events, vim.tbl_deep_extend("force", options, { root = artifacts_root }))
     local readme_path = vim.fs.joinpath(root, "README.md")
 
     local artifacts = _P.get_graph_artifacts(artifacts_root, maximum)
@@ -1205,7 +1184,11 @@ function M.write_tags_directory(profiler, events, maximum, options)
         ---@type profile.Event[]
         local events_buffer = {}
 
-        for _, event in ipairs(vim.fn.sort(events_, function(left, right) return left.ts < right.ts end)) do
+        for _, event in
+            ipairs(vim.fn.sort(events_, function(left, right)
+                return left.ts < right.ts
+            end))
+        do
             if _P.is_test_start(event) then
                 table.insert(test_stack, event.name)
                 local tags = _P.get_tags(event.name)
@@ -1215,11 +1198,7 @@ function M.write_tags_directory(profiler, events, maximum, options)
 
                 if event.name ~= test_name then
                     error(
-                        string.format(
-                            'Something went wrong. Expected "%s" test but got "%s".',
-                            test_name,
-                            event.name
-                        ),
+                        string.format('Something went wrong. Expected "%s" test but got "%s".', test_name, event.name),
                         0
                     )
                 end
