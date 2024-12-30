@@ -1,4 +1,5 @@
 ## TODO
+- Allow the timing output to be a GitHub-style table
 - Do TODO notes
 - make a github action that encapsulates everything
 
@@ -11,13 +12,11 @@ BUSTED_PROFILER_FLAMEGRAPH_VERSION
 BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES
 BUSTED_PROFILER_KEEP_TEMPORARY_FILES
 BUSTED_PROFILER_MAXIMUM_TRIES
-BUSTED_PROFILER_TABLE_STYLE
 BUSTED_PROFILER_TAGGED_DIRECTORIES
 BUSTED_PROFILER_TIMING_THRESHOLD
 
-- Document how to get a flame graph from that output easily
 
-- Allow the timing output to be a GitHub-style table
+- Document how to get a flame graph from that output easily
 
 - A GitHub workflow that can keep in sync with main + add more commits
  - on a separate branch
@@ -27,12 +26,6 @@ BUSTED_PROFILER_TIMING_THRESHOLD
     - e.g. Get the URL to the other branch and copy the data into the main branch. Or something
 
 https://github.com/lunarmodules/busted/blob/94d008108b028817534047b44fdb1f7f7ca0dcc3/busted/runner.lua#L215-L217
-
-- TODO: IMPORTANT: @colin-k profile.nvim changes
- - pid
- - tid
- - Added `events` to profile.export
- - Any other changes
 
 https://github.com/AcademySoftwareFoundation/rez/blob/main/.github/scripts/store_benchmark.py
 
