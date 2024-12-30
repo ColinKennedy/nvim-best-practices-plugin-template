@@ -183,6 +183,8 @@ end
 ---    A version / release tag. e.g. `"v1.2.3"`.
 ---@field root string
 ---    An absolute path to the directory on-disk where files are written.
+---@field table_style _TableStyle
+---    Profiler summary data will be displayed as a table in this style.
 ---@field timing_threshold integer
 ---    The number of (slowest function) entries to write in the output.
 

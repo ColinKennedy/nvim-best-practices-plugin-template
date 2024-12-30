@@ -1002,7 +1002,13 @@ function _P.write_timing(events, path, options)
         error(string.format('Path "%s" could not be written.', path), 0)
     end
 
-    local text = timing.get_profile_report_as_text(events, {thresold=options.timing_threshold})
+    local text = timing.get_profile_report_as_text(
+        events,
+        {
+            table_style=timing.TableStyle.github,
+            thresold=options.timing_threshold,
+        }
+    )
     file:write(text)
     file:close()
 
@@ -1041,6 +1047,7 @@ function M.get_environment_variable_data()
         maximum_tries = maximum_tries,
         release = release,
         root = root,
+        table_style = timing.TableStyle.github,
         timing_threshold = _P.get_timing_threshold(),
     }
 end

@@ -19,10 +19,11 @@ local tabler = require("plugin_template._core.tabler")
 ---@field total_time string The time that a function took to run, with its child function calls.
 
 ---@class _ProfileReportOptions All user settings to customize the report.
----@field threshold number? A 1-or-more value. The "top slowest" functions to show.
 ---@field precision number? A 0-or-more value and the number of decimal places to show. 0 means "show all decimals".
 ---@field predicate (fun(event: profile.Event): boolean)? Returns `true` to display an event.
 ---@field sections _ProfileReportSection[]? The columns to include in the output report.
+---@field table_style _TableStyle Profiler summary data will be displayed as a table in this style.
+---@field threshold number? A 1-or-more value. The "top slowest" functions to show.
 
 ---@class _ProfilerReportPaddings The computed spacing needed for each column.
 ---@field count number The padding needed to show the "count" column.
@@ -38,6 +39,8 @@ local tabler = require("plugin_template._core.tabler")
 
 local _P = {}
 local M = {}
+
+local _GITHUB_TABLE_POST = "|"
 
 ---@enum _ProfileReportSection
 local _Section = {
@@ -62,6 +65,12 @@ local _SectionLabel = {
 local _DEFAULT_PRECISION = 2
 local _DEFAULT_SECTIONS = { _Section.count, _Section.total_time, _Section.self_time, _Section.name }
 local _PLUGIN_PREFIX = "plugin_template"
+
+---@enum _TableStyle
+M.TableStyle = {
+    lines = "lines",
+    github = "github",
+}
 
 --- Find the amount of characters needed to display `number`.
 ---
@@ -139,7 +148,7 @@ end
 ---@return string # The blob of header text.
 ---@return _ProfilerReportPaddings # All of the column padding data.
 ---
-function _P.get_header_text(lines, sections, precision)
+function _P.get_header_text_as_padded_table(lines, sections, precision)
     local output = ""
 
     local paddings, total_time = _P.get_header_padding_data(lines)
@@ -267,6 +276,44 @@ function _P.crop_to_precision(value, precision)
     return string.format("%%.%sf", precision):format(value)
 end
 
+--- Create a simlpe GitHub table top-line summary.
+---
+--- e.g.
+---
+--- | name | count | description |
+--- +------+-------+-------------+
+---
+---@param texts string[] All labels to include in the output header.
+---@return string[] # The created header.
+---
+function _P.make_github_summary(texts)
+    local headers = _P.make_github_line(texts)
+    local header_bottom = (headers:gsub(string.format("[^%%%s]", _GITHUB_TABLE_POST), "-"):gsub(_GITHUB_TABLE_POST, "+"))
+
+    return {headers, header_bottom}
+end
+
+--- Create a simple GitHub header / body line from `texts`.
+---
+---@param texts string[] All of the text.
+---@return string # The created body line.
+---
+function _P.make_github_line(texts)
+    ---@type string[]
+    local output = {}
+
+    for _, text in ipairs(texts) do
+        table.insert(output, (text:gsub(_GITHUB_TABLE_POST, "\\" .. _GITHUB_TABLE_POST)))
+    end
+
+    return string.format(
+        "%s %s %s",
+        _GITHUB_TABLE_POST,
+        vim.fn.join(output, string.format(" %s ", _GITHUB_TABLE_POST)),
+        _GITHUB_TABLE_POST
+    )
+end
+
 --- Remove trailing whitespace from some multi-line `output`.
 ---
 ---@param text string One or more lines of text to change.
@@ -387,7 +434,7 @@ end
 --- Get `events` as a summary.
 ---
 ---@param events profile.Event[] All of the profiler event data to consider.
----@param options _ProfileReportOptions? All user settings to customize the report.
+---@param options _ProfileReportOptions All user settings to customize the report.
 ---@return string # The generated report, in human-readable format.
 ---
 function M.get_profile_report_as_text(events, options)
@@ -395,26 +442,50 @@ function M.get_profile_report_as_text(events, options)
 
     local sections = options.sections or _DEFAULT_SECTIONS
     local lines = M.get_profile_report_lines(events, options)
+    local table_style = options.table_style
 
-    local header, paddings = _P.get_header_text(lines, sections, options.precision)
-    local line_template = _P.get_line_template(paddings, sections) .. "\n"
+    if table_style == M.TableStyle.lines then
+        local header, paddings = _P.get_header_text_as_padded_table(lines, sections, options.precision)
+        local line_template = _P.get_line_template(paddings, sections) .. "\n"
+        local output = header
 
-    local output = header
+        for _, line in ipairs(lines) do
+            ---@type string[]
+            local data = {}
 
-    for _, line in ipairs(lines) do
-        ---@type string[]
-        local data = {}
+            for _, section in ipairs(sections) do
+                table.insert(data, line[section])
+            end
 
-        for _, section in ipairs(sections) do
-            table.insert(data, line[section])
+            output = output .. string.format(line_template, unpack(data))
         end
 
-        output = output .. string.format(line_template, unpack(data))
+        output = _P.strip_trailing_whitespace(output)
+
+        return output
     end
 
-    output = _P.strip_trailing_whitespace(output)
+    if table_style == M.TableStyle.github then
+        ---@type string[]
+        local output = {}
 
-    return output
+        vim.list_extend(output, _P.make_github_summary(sections))
+
+        for _, line in ipairs(lines) do
+            ---@type string[]
+            local data = {}
+
+            for _, section in ipairs(sections) do
+                table.insert(data, tostring(line[section]))
+            end
+
+            table.insert(output, _P.make_github_line(data))
+        end
+
+        return vim.fn.join(output, "\n")
+    end
+
+    error(string.format('Style "%s" is unknown.', table_style), 0)
 end
 
 -- local function main()

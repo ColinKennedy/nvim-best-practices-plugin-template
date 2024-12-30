@@ -36,6 +36,7 @@ function _P.get_profile_report_lines(events, threshold)
         predicate = function(_)
             return true
         end,
+        table_style = timing.TableStyle.lines,
         threshold = threshold,
     })
 end
@@ -112,7 +113,10 @@ count total-time self-time name
 1     2.02       2.02      another_event_that_is_past
 1     2.00       2.00      first_child
 ]],
-                timing.get_profile_report_as_text(events, { predicate = _P.is_function })
+                timing.get_profile_report_as_text(
+                    events,
+                    { table_style = timing.TableStyle.lines, predicate = _P.is_function }
+                )
             )
         end)
 
@@ -153,7 +157,10 @@ count total-time  self-time   name
 1     8255.12     8255.12     first_child
 1     10.00       10.00       second_child
 ]],
-                timing.get_profile_report_as_text(events, { predicate = _P.is_function })
+                timing.get_profile_report_as_text(
+                    events,
+                    { table_style = timing.TableStyle.lines, predicate = _P.is_function }
+                )
             )
         end)
 
@@ -177,7 +184,10 @@ count total-time self-time name
 1     2.16       2.16      second_child
 1     2.02       2.02      another_event_that_is_past
 ]],
-                timing.get_profile_report_as_text(events, { predicate = _P.is_function })
+                timing.get_profile_report_as_text(
+                    events,
+                    { table_style = timing.TableStyle.lines, predicate = _P.is_function }
+                )
             )
         end)
 
@@ -201,7 +211,10 @@ count total-time self-time name
 1     2.02       2.02      another_event_that_is_past
 1     2.00       2.00      second_child
 ]],
-                timing.get_profile_report_as_text(events, { predicate = _P.is_function })
+                timing.get_profile_report_as_text(
+                    events,
+                    { table_style = timing.TableStyle.lines, predicate = _P.is_function }
+                )
             )
         end)
     end)
@@ -230,6 +243,7 @@ second_child               2.00       2.00
                 timing.get_profile_report_as_text(events, {
                     predicate = _P.is_function,
                     sections = { "name", "total_time", "self_time" },
+                    table_style = timing.TableStyle.lines,
                 })
             )
         end)
@@ -257,6 +271,7 @@ first_child                2.00   2.00
                 timing.get_profile_report_as_text(events, {
                     predicate = _P.is_function,
                     sections = { "name", "median_time", "mean_time" },
+                    table_style = timing.TableStyle.lines,
                 })
             )
         end)
