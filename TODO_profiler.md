@@ -1,6 +1,8 @@
 ## TODO
 - Do TODO notes
 - make a github action that encapsulates everything
+- In GitHub workflows, make sure to print out the top 20 slowest, as part of the steps
+
 
 - /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/busted/multi_runner.lua
  - document to users that they can send any busted call to this runner
@@ -24,21 +26,14 @@ https://github.com/AcademySoftwareFoundation/rez/blob/main/.github/scripts/store
   - write results to a separate branch on each PR/release
    - https://github.com/orgs/community/discussions/24567
     - On PR, warn over a certain threshold
-    - On release, write the branch
-    - https://github.com/AcademySoftwareFoundation/rez/blob/main/metrics/benchmarking/RESULTS.md
-  - Add "self-time" support
 
 
 ### TODO Later
 Find a way to not need to inline md5.lua (get it from luarocks, instead)
 
-- Create a make command that creates the flame graph to a file path (have a default path if not provided)
-
 - Document how the user should create profiles / view flamegraph results to view it
 
 - On PR, make a GitHub workflow that errors if a threshold is met (10%)
-
-- In GitHub workflows, make sure to print out the top 20 slowest, as part of the steps
 
 - Add a thing that times the unittests and notifies if the code is much slower
  - maybe make it ignore feat() commits?
