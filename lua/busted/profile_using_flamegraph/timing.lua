@@ -53,12 +53,12 @@ local _Section = {
 }
 
 local _SectionLabel = {
-    count = "count",
-    mean_time = "mean",
-    median_time = "median",
-    name = "name",
-    self_time = "self-time",
-    total_time = "total-time",
+    count = "Count",
+    mean_time = "Mean",
+    median_time = "Median",
+    name = "Name",
+    self_time = "Self-Time",
+    total_time = "Total-Time",
 }
 
 -- This is meant to be a number that we shouldn't be able to actually hit
@@ -287,9 +287,16 @@ end
 ---@return string[] # The created header.
 ---
 function _P.make_github_summary(texts)
-    local headers = _P.make_github_line(texts)
+    ---@type string[]
+    local labels = {}
+
+    for _, text in ipairs(texts) do
+        table.insert(labels, _SectionLabel[text] or text)
+    end
+
+    local headers = _P.make_github_line(labels)
     local header_bottom = (
-        headers:gsub(string.format("[^%%%s]", _GITHUB_TABLE_POST), "-"):gsub(_GITHUB_TABLE_POST, "+")
+        headers:gsub(string.format("[^%%%s]", _GITHUB_TABLE_POST), "-"):gsub(_GITHUB_TABLE_POST, _GITHUB_TABLE_POST)
     )
 
     return { headers, header_bottom }
