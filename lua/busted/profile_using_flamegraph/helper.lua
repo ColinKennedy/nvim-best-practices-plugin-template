@@ -182,21 +182,22 @@ function _P.get_concise_speed_comparison(base, other)
         label = label or name
         local base_value = _stats(base_, name)
         local other_value = _stats(other_, name)
-        _LOGGER:fmt_error('Getting "%s" percent.', name)
+        _LOGGER:fmt_debug('Getting "%s" percent.', name)
         _LOGGER:fmt_debug('Got "%s" base value.', base_value)
         _LOGGER:fmt_debug('Got "%s" other value.', other_value)
 
-        local difference = (other_value - base_value)
-        local percent = (difference / base_value) * 100
-
         local direction
 
-        if difference < 0 then
+        if other_value > base_value then
+            other_value, base_value = base_value, other_value
             direction = "slower"
-            percent = -1 * percent
         else
             direction = "faster"
         end
+
+        local difference = (base_value - other_value)
+        local average = (other_value + base_value) / 2
+        local percent = (difference / average) * 100
 
         return string.format("- %s time is %.2f%% %s", label, percent, direction)
     end
