@@ -1,5 +1,6 @@
 ## TODO
 - Do TODO notes
+- Make it so you can run the tool retroactively on older tags (and it still works)
 - make a github action that encapsulates everything
 - In GitHub workflows, make sure to print out the top 20 slowest, as part of the steps
 
