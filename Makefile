@@ -19,13 +19,14 @@ clone_git_dependencies:
 api_documentation:
 	nvim -u scripts/make_api_documentation/minimal_init.lua -l scripts/make_api_documentation/main.lua
 
+# TODO: Replace with GitHub CI, maybe?
 # TODO: Replace with stevearc later once this PR is merged
 #
 # Reference: https://github.com/stevearc/profile.nvim/pull/8
 #
 flamegraph: clone_git_dependencies
-	git clone git@github.com:ColinKennedy/profile.nvim.git .dependencies/profile.nvim $(IGNORE_EXISTING)
-	nvim -l lua/busted/profiler_runner.lua
+	git clone git@github.com:ColinKennedy/mega.busted.git .dependencies/mega.busted $(IGNORE_EXISTING)
+	nvim -l .dependencies/mega.busted/lua/mega/busted/make_profile.lua
 
 llscheck: clone_git_dependencies
 	VIMRUNTIME=`nlua -e 'io.write(os.getenv("VIMRUNTIME"))'` llscheck --configpath .luarc.json .
