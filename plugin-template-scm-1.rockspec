@@ -18,10 +18,7 @@ test_dependencies = {
 }
 
 -- Reference: https://github.com/luarocks/luarocks/wiki/test#test-types
-test = {
-    type = "busted",
-    flags = { "--helper", "spec/minimal_init.lua" },
-}
+test = { type = "busted" }
 
 source = {
     url = "git://github.com/" .. user .. "/" .. package,
