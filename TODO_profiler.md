@@ -1,4 +1,6 @@
 ## TODO
+- Make mega.busted real so that I can upload it to luarocks and use it elsewhere
+
 - Do TODO notes
 - Make it so you can run the tool retroactively on older tags (and it still works)
 - make a github action that encapsulates everything
@@ -22,19 +24,9 @@ https://github.com/lunarmodules/busted/blob/94d008108b028817534047b44fdb1f7f7ca0
 https://github.com/AcademySoftwareFoundation/rez/blob/main/.github/scripts/store_benchmark.py
 
 
-## Profiling
-- Profiling
-  - write results to a separate branch on each PR/release
-   - https://github.com/orgs/community/discussions/24567
-    - On PR, warn over a certain threshold
-
 
 ### TODO Later
-Find a way to not need to inline md5.lua (get it from luarocks, instead)
-
 - Document how the user should create profiles / view flamegraph results to view it
-
-- On PR, make a GitHub workflow that errors if a threshold is met (10%)
 
 - Add a thing that times the unittests and notifies if the code is much slower
  - maybe make it ignore feat() commits?
