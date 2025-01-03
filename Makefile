@@ -24,9 +24,8 @@ api_documentation:
 #
 # Reference: https://github.com/stevearc/profile.nvim/pull/8
 #
-flamegraph: clone_git_dependencies
-	git clone git@github.com:ColinKennedy/mega.busted.git .dependencies/mega.busted $(IGNORE_EXISTING)
-	nvim -l .dependencies/mega.busted/lua/mega/busted/make_profile.lua
+flamegraph:
+	nvim -l scripts/make_flamegraph/init.lua
 
 llscheck: clone_git_dependencies
 	VIMRUNTIME=`nlua -e 'io.write(os.getenv("VIMRUNTIME"))'` llscheck --configpath .luarc.json .
@@ -37,5 +36,5 @@ luacheck:
 stylua:
 	stylua lua plugin scripts spec
 
-test: clone_git_dependencies
+test:
 	busted .
