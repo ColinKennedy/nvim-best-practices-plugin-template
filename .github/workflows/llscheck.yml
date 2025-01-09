@@ -82,4 +82,4 @@ jobs:
 
     - name: Test
       run: |
-        VIMRUNTIME=`nlua -e 'io.write(os.getenv("VIMRUNTIME"))'` llscheck --configpath .github/workflows/.luarc.json .
+        make llscheck CONFIGURATION=.github/workflows/.luarc.json
