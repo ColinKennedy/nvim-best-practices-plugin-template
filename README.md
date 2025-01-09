@@ -250,27 +250,6 @@ BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make profile_using_flamegr
 BUSTED_PROFILER_TIMING_OUTPUT_PATH=/tmp/directory make profile_using_vim
 ```
 
-#### Configuration Options - User
-All settings that a user is likely to want to change.
-
-| Name                                   | Default                              | Description                                                                                                    |
-|----------------------------------------|--------------------------------------|----------------------------------------------------------------------------------------------------------------|
-| BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH | ${{ github.workspace }}              | The directory on-disk where profile results are written to                                                     |
-| BUSTED_PROFILER_FLAMEGRAPH_VERSION     | ${{ github.event.release.tag_name }} | The label used for graphing your profiler results. e.g. v1.2.3                                                 |
-| BUSTED_PROFILER_TIMING_THRESHOLD       | 30                                   | The "top slowest" functions to display                                                                         |
-| BUSTED_PROFILER_TAGGED_DIRECTORIES     | .*                                   | A comma-separated list of busted unittest tags to separately profile. See [About Tags](about-tags) for details |
-
-
-#### Configuration Options - Developer
-All settings that a user would rarely change but a developer might change to
-debug an issue.
-
-| Name                                     | Default | Description                                                                                                                  |
-|------------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------|
-| BUSTED_PROFILER_KEEP_OLD_TAG_DIRECTORIES | 0       | If 0, tagged unittests that are no longer in-use will be auto-deleted. If 1, they are left untouched                         |
-| BUSTED_PROFILER_KEEP_TEMPORARY_FILES     | 0       | If 0, any intermediary files during profiling are deleted. Otherwise don't delete them. This is useful for debugging issues. |
-| BUSTED_PROFILER_MAXIMUM_TRIES            | 10      | The number of consecutive wins that a test suite must get before it that run is considered "fastest"                         |
-
 
 # Tracking Updates
 See [doc/news.txt](doc/news.txt) for updates.

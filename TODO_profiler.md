@@ -1,6 +1,7 @@
 ## TODO
 - Make it so you can run the tool retroactively on older tags (and it still works)
 - Make mega.busted real so that I can upload it to luarocks and use it elsewhere
+- Allow profliing Neovim startup time (in my personal Neovim configuration)
 
 - github action
  - git checkout another branch (make it if it doesn't exist)

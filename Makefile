@@ -19,11 +19,6 @@ clone_git_dependencies:
 api_documentation:
 	nvim -u scripts/make_api_documentation/minimal_init.lua -l scripts/make_api_documentation/main.lua
 
-# TODO: Replace with GitHub CI, maybe?
-# TODO: Replace with stevearc later once this PR is merged
-#
-# Reference: https://github.com/stevearc/profile.nvim/pull/8
-#
 flamegraph:
 	nvim -l scripts/make_flamegraph/init.lua
 
