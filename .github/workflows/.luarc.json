@@ -8,6 +8,7 @@
         "$PWD/.dependencies/luassert/library",
         "$PWD/.dependencies/luvit-meta/library",
         "$PWD/.dependencies/mega.cmdparse/lua",
+        "$PWD/.dependencies/mega.logging/lua",
         "$VIMRUNTIME/lua"
     ]
 }
