@@ -1,4 +1,4 @@
-# TODO: (you) Make sure to update your file_types below to whatever makes sense for you.
+# TODO: (you) Make sure to update your file types below to whatever makes sense for you.
 
 name: URLChecker
 
@@ -18,53 +18,98 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: urlcheck - doc directory
-      uses: urlstechie/urlchecker-action@master
-      with:
-        subfolder: doc
-        file_types: .json,.lua,.md,.txt,.vim,.yml
+    - name: Install urlchecker
+      run: |
+        python -m pip install urlchecker
 
-    - name: urlcheck - lua directory
-      uses: urlstechie/urlchecker-action@master
-      with:
-        subfolder: lua
-        file_types: .json,.lua,.md,.txt,.vim,.yml
+    - name: "Directory: doc"
+      run: |
+        urlchecker check \
+          --branch main \
+          --subfolder doc \
+          --no-print \
+          --file-types .json,.lua,.md,.txt,.vim,.yml \
+          --retry-count 1 \
+          --timeout 5 \
+          .
 
-    - name: urlcheck - plugin directory
-      uses: urlstechie/urlchecker-action@master
-      with:
-        subfolder: plugin
-        file_types: .json,.lua,.md,.txt,.vim,.yml
+    - name: "Directory: lua"
+      run: |
+        urlchecker check \
+          --branch main \
+          --subfolder lua \
+          --no-print \
+          --file-types .json,.lua,.md,.txt,.vim,.yml \
+          --retry-count 1 \
+          --timeout 5 \
+          .
 
-    - name: urlcheck - scripts directory
-      uses: urlstechie/urlchecker-action@master
-      with:
-        subfolder: scripts
-        file_types: .json,.lua,.md,.txt,.vim,.yml
+    - name: "Directory: plugin"
+      run: |
+        urlchecker check \
+          --branch main \
+          --subfolder plugin \
+          --no-print \
+          --file-types .json,.lua,.md,.txt,.vim,.yml \
+          --retry-count 1 \
+          --timeout 5 \
+          .
 
-    - name: urlcheck - spec directory
-      uses: urlstechie/urlchecker-action@master
-      with:
-        subfolder: spec
-        file_types: .json,.lua,.md,.txt,.vim,.yml
+    - name: "Directory: scripts"
+      run: |
+        urlchecker check \
+          --branch main \
+          --subfolder scripts \
+          --no-print \
+          --file-types .json,.lua,.md,.txt,.vim,.yml \
+          --retry-count 1 \
+          --timeout 5 \
+          .
 
-    - name: urlcheck - CHANGELOG.md
-      uses: urlstechie/urlchecker-action@master
-      with:
-        exclude_patterns: https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v
-        subfolder: .
-        include_files: CHANGELOG.md
+    - name: "Directory: spec"
+      run: |
+        urlchecker check \
+          --branch main \
+          --subfolder scripts \
+          --no-print \
+          --file-types .json,.lua,.md,.txt,.vim,.yml \
+          --retry-count 1 \
+          --timeout 5 \
+          .
+
+    - name: "File: CHANGELOG.md"
       if: ${{ github.event.pull_request.head.ref == 'release-please--branches--main' }}
+      run: |
+        urlchecker check \
+          --branch main \
+          --subfolder . \
+          --exclude-patterns https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v
+          --files CHANGELOG.md \
+          --no-print \
+          --file-types .json,.lua,.md,.txt,.vim,.yml \
+          --retry-count 1 \
+          --timeout 5 \
+          .
 
-    - name: urlcheck - CHANGELOG.md
-      uses: urlstechie/urlchecker-action@master
-      with:
-        subfolder: .
-        include_files: CHANGELOG.md
+    - name: "File: CHANGELOG.md"
       if: ${{ github.event.pull_request.head.ref != 'release-please--branches--main' }}
+      run: |
+        urlchecker check \
+          --branch main \
+          --subfolder . \
+          --files CHANGELOG.md \
+          --no-print \
+          --retry-count 1 \
+          --timeout 5 \
+          .
 
-    - name: urlcheck - README.md
-      uses: urlstechie/urlchecker-action@master
-      with:
-        subfolder: .
-        include_files: README.md
+    - name: "File: README.md"
+      run: |
+        urlchecker check \
+          --branch main \
+          --subfolder . \
+          --files README.md \
+          --no-print \
+          --retry-count 1 \
+          --timeout 5 \
+          .

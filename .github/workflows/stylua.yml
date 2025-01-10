@@ -14,8 +14,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: JohnnyMorganz/stylua-action@v4
+
+      # TODO: Change this once an outcome for this PR is done
+      #
+      # Reference: https://github.com/JohnnyMorganz/stylua-action/pull/58
+      #
+      - uses: ColinKennedy/stylua-action@remove_exec_test
         with:
           version: latest
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --color always --check lua plugin spec
+          args: false
+
+      - name: Run stylua
+        run: |
+          make check-stylua
