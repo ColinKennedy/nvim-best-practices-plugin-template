@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.5](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.5.4...v1.5.5) (2025-01-11)
+
+
+### Bug Fixes
+
+* **rockspec:** removed lualine because it is still WIP ([121681f](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/121681f8f7ace45e114ea2161175e37c8c8e4877))
+
 ## [1.5.4](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.5.3...v1.5.4) (2025-01-11)
 
 
