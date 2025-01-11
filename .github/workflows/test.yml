@@ -51,12 +51,12 @@ jobs:
       uses: ColinKennedy/luarocks-rockspec-expander@v1.0.0
       with:
         input: template.rockspec
-        output: plugin-template-scm-1.rockspec
+        output: nvim-best-practices-plugin-template-scm-1.rockspec
         delete_input_after: true
 
     - name: Build Test Dependencies
       run: |
-        luarocks test plugin-template-scm-1.rockspec --prepare
+        luarocks test nvim-best-practices-plugin-template-scm-1.rockspec --prepare
 
     - name: Test
       run: |
