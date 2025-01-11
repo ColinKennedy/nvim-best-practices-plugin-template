@@ -21,7 +21,7 @@ function M.run(count)
     end
 
     if count < 1 then
-        _LOGGER:fmt_warn('count-sheep "%s" is invalid. Setting the value to to 1-or-greater, instead.', count)
+        _LOGGER:fmt_warning('count-sheep "%s" is invalid. Setting the value to to 1-or-greater, instead.', count)
 
         count = 1
     end

@@ -20,9 +20,11 @@ jobs:
     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
 
     steps:
-    - uses: actions/checkout@master
+    - name: Checkout
+      uses: actions/checkout@master
 
-    - uses: leafo/gh-actions-lua@v10
+    - name: Install A Lua Interpreter
+      uses: leafo/gh-actions-lua@v10
       with:
         # Neovim is compiled with LuaJIT so we might as well match. But it
         # doesn't look like we can match it exactly.
@@ -32,17 +34,30 @@ jobs:
         #
         luaVersion: "luajit-openresty"
 
-    - uses: leafo/gh-actions-luarocks@v4
+    - name: Install Luarocks
+      uses: leafo/gh-actions-luarocks@v4
 
-    - uses: rhysd/action-setup-vim@v1
+    - name: Install Neovim
+      uses: rhysd/action-setup-vim@v1
       with:
         neovim: true
         version: ${{ matrix.neovim }}
 
-    - name: build
+    # We need this hack until a better solution is available.
+    #
+    # Reference: https://github.com/nvim-neorocks/luarocks-tag-release/issues/435
+    #
+    - name: Expand The Template Rockspec
+      uses: ColinKennedy/luarocks-rockspec-expander@v1.0.0
+      with:
+        input: template.rockspec
+        output: plugin-template-scm-1.rockspec
+        delete_input_after: true
+
+    - name: Build Test Dependencies
       run: |
         luarocks test plugin-template-scm-1.rockspec --prepare
 
-    - name: test
+    - name: Test
       run: |
         luarocks test --test-type busted

@@ -13,18 +13,20 @@ jobs:
     name: StyLua
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       # TODO: Change this once an outcome for this PR is done
       #
       # Reference: https://github.com/JohnnyMorganz/stylua-action/pull/58
       #
-      - uses: ColinKennedy/stylua-action@remove_exec_test
+      - name: Install StyLua
+        uses: ColinKennedy/stylua-action@remove_exec_test
         with:
           version: latest
           token: ${{ secrets.GITHUB_TOKEN }}
           args: false
 
-      - name: Run stylua
+      - name: Run StyLua
         run: |
           make check-stylua

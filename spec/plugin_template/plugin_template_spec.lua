@@ -136,7 +136,9 @@ describe("copy logs API", function()
     it("runs with default arguments", function()
         local expected = vim.fn.tempname() .. "_copy_logs_default_test.log"
         configuration.DATA.logging.output_path = expected
-        logging.set_configuration("plugin_template", configuration.DATA.logging or {})
+        local logging_configuration = configuration.DATA.logging or {}
+        ---@cast logging_configuration mega.logging.SparseLoggerOptions
+        logging.set_configuration("plugin_template", logging_configuration)
         _make_fake_log(expected)
 
         plugin_template.run_copy_logs()
@@ -163,7 +165,9 @@ describe("copy logs command", function()
     it("runs with default arguments", function()
         local expected = vim.fn.tempname() .. "_copy_logs_default_test.log"
         configuration.DATA.logging.output_path = expected
-        logging.set_configuration("plugin_template", configuration.DATA.logging or {})
+        local logging_configuration = configuration.DATA.logging or {}
+        ---@cast logging_configuration mega.logging.SparseLoggerOptions
+        logging.set_configuration("plugin_template", logging_configuration)
         _make_fake_log(expected)
 
         vim.cmd([[PluginTemplate copy-logs]])
