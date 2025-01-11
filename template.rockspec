@@ -11,7 +11,7 @@ local specrev = "$specrev"
 local repo_url = "$repo_url"
 
 rockspec_format = "3.0"
-package = "plugin-template"
+package = "nvim-best-practices-plugin-template"
 version = modrev .. "-" .. specrev
 
 local user = "ColinKennedy"
