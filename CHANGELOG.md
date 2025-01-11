@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.3](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.5.2...v1.5.3) (2025-01-11)
+
+
+### Bug Fixes
+
+* **rockspec:** updated package name ([2445735](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/2445735817e93ccb520101539c2f41312e0635b3))
+
 ## [1.5.2](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.5.1...v1.5.2) (2025-01-11)
 
 
