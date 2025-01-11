@@ -82,7 +82,9 @@ function M.initialize_data_if_needed()
 
     vim.g.loaded_plugin_template = true
 
-    logging.set_configuration("plugin_template", M.DATA.logging or {})
+    local configuration = M.DATA.logging or {}
+    ---@cast configuration mega.logging.SparseLoggerOptions
+    logging.set_configuration("plugin_template", configuration)
 
     _LOGGER:fmt_debug("Initialized plugin-template's configuration.")
 end
