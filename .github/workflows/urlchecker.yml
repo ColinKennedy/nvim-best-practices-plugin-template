@@ -10,6 +10,7 @@ on:
   push:
     branches:
       - main
+      - urlchecker_check
 
 jobs:
   urlchecker:
@@ -79,7 +80,6 @@ jobs:
           .
 
     - name: "File: CHANGELOG.md"
-      if: ${{ github.event.pull_request.head.ref == 'release-please--branches--main' }}
       run: |
         urlchecker check \
           --branch main \
