@@ -15,16 +15,19 @@ jobs:
     name: llscheck
 
     steps:
-    - uses: actions/checkout@master
+    - name: Checkout
+      uses: actions/checkout@master
 
-    - uses: rhysd/action-setup-vim@v1
+    - name: Install Neovim
+      uses: rhysd/action-setup-vim@v1
       # NOTE: We need Neovim installed in order to expose the $VIMRUNTIME
       # environment variable
       with:
         neovim: true
         version: stable
 
-    - uses: leafo/gh-actions-lua@v10
+    - name: Install A Lua Interpreter
+      uses: leafo/gh-actions-lua@v10
       with:
         # Neovim is compiled with LuaJIT so we might as well match. But it
         # doesn't look like we can match it exactly.
@@ -40,37 +43,39 @@ jobs:
         tool_versions: |
           lua-language-server latest
 
-    - uses: leafo/gh-actions-luarocks@v4
+    - name: Install luarocks
+      uses: leafo/gh-actions-luarocks@v4
+
     - name: Install llscheck
       run: |
         luarocks install llscheck
         luarocks install nlua
 
-    - name: Clone dependencies - busted
+    - name: Clone Dependencies - busted
       uses: actions/checkout@v4
       with:
         repository: "LuaCATS/busted"
         path: ".dependencies/busted"
 
-    - name: Clone dependencies - luassert
+    - name: Clone Dependencies - luassert
       uses: actions/checkout@v4
       with:
         repository: "LuaCATS/luassert"
         path: ".dependencies/luassert"
 
-    - name: Clone dependencies - luavit-meta
+    - name: Clone Dependencies - luavit-meta
       uses: actions/checkout@v4
       with:
         repository: "Bilal2453/luvit-meta"
         path: ".dependencies/luvit-meta"
 
-    - name: Clone dependencies - mega.cmdparse
+    - name: Clone Dependencies - mega.cmdparse
       uses: actions/checkout@v4
       with:
         repository: "ColinKennedy/mega.cmdparse"
         path: ".dependencies/mega.cmdparse"
 
-    - name: Clone dependencies - mega.logging
+    - name: Clone Dependencies - mega.logging
       uses: actions/checkout@v4
       with:
         repository: "ColinKennedy/mega.logging"

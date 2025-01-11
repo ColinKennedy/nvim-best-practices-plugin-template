@@ -13,11 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false && !contains(github.event.pull_request.labels.*.name, 'ci:skip-news')
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: news.txt needs to be updated
+      - name: Check If news.txt Needs To Be Updated
         run: |
           for commit in $(git rev-list HEAD~${{ github.event.pull_request.commits }}..HEAD); do
             message=$(git log -n1 --pretty=format:%s $commit)
