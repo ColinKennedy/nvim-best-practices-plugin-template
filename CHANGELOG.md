@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.4](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.5.3...v1.5.4) (2025-01-11)
+
+
+### Bug Fixes
+
+* **rockspec:** added missing lua dependencies ([ac4aea4](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/ac4aea4f468b4912e694eb4fca0305aff026f4e1))
+
 ## [1.5.3](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.5.2...v1.5.3) (2025-01-11)
 
 
