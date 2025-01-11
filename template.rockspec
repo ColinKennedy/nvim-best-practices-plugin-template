@@ -23,6 +23,15 @@ description = {
     summary = 'A "Best Practices" Neovim plugin template',
 }
 
+dependencies = {
+    "mega.cmdparse >= 1.0.3, < 2.0",
+    "mega.logging >= 1.1.4, < 2.0",
+
+    -- TODO(you): Remove these dependencies if you don't need them
+    "lualine.nvim", -- Reference: https://luarocks.org/modules/neorocks/lualine.nvim
+    "telescope.nvim >= 0.1.8 < 1.0",
+}
+
 test_dependencies = {
     "busted >= 2.0, < 3.0",
     "lua >= 5.1, < 6.0",
