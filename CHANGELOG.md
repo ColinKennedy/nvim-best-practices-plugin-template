@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.2](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.5.1...v1.5.2) (2025-01-11)
+
+
+### Bug Fixes
+
+* **logging:** fixed fmt_warning calls + others ([0e44922](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/0e449223755ab4ea4fa170753d4b38731e4279b2))
+* **rockspec:** the .rockspec should now publish to LuaRocks correctly ([7f995ef](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/7f995ef9b4459bb47976303825adb7a81737f404))
+
 ## [1.5.1](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.5.0...v1.5.1) (2024-12-23)
 
 
