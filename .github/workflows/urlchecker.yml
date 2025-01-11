@@ -84,7 +84,7 @@ jobs:
         urlchecker check \
           --branch main \
           --subfolder . \
-          --exclude-patterns https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v
+          --exclude-patterns "https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v"
           --files CHANGELOG.md \
           --no-print \
           --file-types .json,.lua,.md,.txt,.vim,.yml \
