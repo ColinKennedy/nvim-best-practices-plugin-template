@@ -28,7 +28,7 @@ dependencies = {
     "mega.logging >= 1.1.4, < 2.0",
 
     -- TODO(you): Remove these dependencies if you don't need them
-    "lualine.nvim", -- Reference: https://luarocks.org/modules/neorocks/lualine.nvim
+    -- "lualine.nvim", -- Reference: https://luarocks.org/modules/neorocks/lualine.nvim
     "telescope.nvim >= 0.1.8 < 1.0",
 }
 
