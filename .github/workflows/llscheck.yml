@@ -51,40 +51,17 @@ jobs:
         luarocks install llscheck
         luarocks install nlua
 
-    - name: Clone Dependencies - busted
-      uses: actions/checkout@v4
-      with:
-        repository: "LuaCATS/busted"
-        path: ".dependencies/busted"
-
-    - name: Clone Dependencies - luassert
-      uses: actions/checkout@v4
-      with:
-        repository: "LuaCATS/luassert"
-        path: ".dependencies/luassert"
-
-    - name: Clone Dependencies - luavit-meta
-      uses: actions/checkout@v4
-      with:
-        repository: "Bilal2453/luvit-meta"
-        path: ".dependencies/luvit-meta"
-
-    - name: Clone Dependencies - mega.cmdparse
-      uses: actions/checkout@v4
-      with:
-        repository: "ColinKennedy/mega.cmdparse"
-        path: ".dependencies/mega.cmdparse"
-
-    - name: Clone Dependencies - mega.logging
-      uses: actions/checkout@v4
-      with:
-        repository: "ColinKennedy/mega.logging"
-        path: ".dependencies/mega.logging"
-
     - name: Print Version
       run: |
         lua-language-server --version
 
     - name: Test
       run: |
+        # We use SSH in the `Makefile` but GitHub actions don't allow that. So
+        # we force git to clone using HTTP instead.
+        #
+        export GIT_CONFIG=~/.gitconfig
+        git config url."https://github.com/".insteadOf git@github.com:
+
+        # Now do the llscheck (and any git clones, as needed)
         make llscheck CONFIGURATION=.github/workflows/.luarc.json
