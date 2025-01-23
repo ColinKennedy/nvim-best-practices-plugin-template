@@ -61,17 +61,17 @@ jobs:
     - name: Checkout
       uses: actions/checkout@master
 
-    - name: Setup MSVC
-      # the 'hishamhm/gh-actions-lua' step requires msvc to build PuC Rio Lua
-      # versions on Windows (LuaJIT will be build using MinGW/gcc).
-      if: ${{ matrix.toolchain == 'msvc' }}
-      uses: ilammy/msvc-dev-cmd@v1
-
     - name: Install Neovim
       uses: rhysd/action-setup-vim@v1
       with:
         neovim: true
         version: ${{ matrix.neovim }}
+
+    - name: Setup MSVC
+      # the 'hishamhm/gh-actions-lua' step requires msvc to build PuC Rio Lua
+      # versions on Windows (LuaJIT will be build using MinGW/gcc).
+      if: ${{ matrix.toolchain == 'msvc' }}
+      uses: ilammy/msvc-dev-cmd@v1
 
     - name: Install Lua
       uses: luarocks/gh-actions-lua@master
