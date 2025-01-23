@@ -23,9 +23,9 @@ A template repository used to create Neovim plugins.
 * [Other Plugins](#-other-plugins)
 
 # ⚡️ Features
-- [🚅 Speed](docs/speed/timing.png) (TODO FIX THIS LATER)
+- 🚅 [Speed](docs/speed/timing.png) (TODO FIX THIS LATER)
     - Fast start-up (~1 ms)
-- [⚙ Built-In](#-configuration)
+- ⚙ [Built-In](#-configuration)
     - [Includes logging to stdout / files](https://github.com/ColinKennedy/mega.logging)
     - [Built-in Vim commands](#-commands)
     - [A high quality command mode parser](https://github.com/ColinKennedy/mega.cmdparse)
@@ -35,7 +35,7 @@ A template repository used to create Neovim plugins.
         - [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
         - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
         - `:checkhealth`
-- [🙌 Hands-Free](.github/workflows)
+- 🙌 [Hands-Free](.github/workflows)
     - Auto-release to [luarocks](https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#publishing-to-luarocks) & [GitHub](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases)
     - [Automated user documentation](.github/workflows/documentation.yml) (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
     - [Automated API documentation](.github/workflows/documentation.yml) (using [mini.doc](https://github.com/echasnovski/mini.doc))
@@ -53,7 +53,7 @@ A template repository used to create Neovim plugins.
         - [panvimdoc](https://github.com/kdheepak/panvimdoc) - User documentation auto-generator
         - [urlchecker](https://github.com/urlstechie/urlchecker-action) - Checks for broken URL links
         - PR reviews - Reminds users to update `doc/news.txt`
-- [⚒ The Best Ideas](#-using-this-template)
+- ⚒  [The Best Ideas](#-using-this-template)
     - Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices) so you have the best possible starting point
     - Uses [Semantic Versioning](https://semver.org)
     - Unittests use the full power of native [busted](https://github.com/lunarmodules/busted)
