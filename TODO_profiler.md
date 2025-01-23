@@ -14,6 +14,13 @@
 - In GitHub workflows, make sure to print out the top 20 slowest, as part of the steps
 
 
+```
+- 🚅 [Speed](docs/speed/timing.png) (TODO FIX THIS LATER)
+```
+make this link real, later
+- make sure all README.md links work
+
+
 - /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/busted/multi_runner.lua
  - document to users that they can send any busted call to this runner
 
