@@ -14,35 +14,45 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        neovim: [v0.10.0, stable, nightly]
-        luaVersion: [5.1, luajit]
+        # os: [ubuntu-latest, macos-latest]
+        # neovim: [v0.10.0, stable, nightly]
+        # luaVersion: [5.1, luajit]
+        #
+        # include:
+        # - os: "windows-latest"
+        #   toolchain: "msvc"
+        #   luaVersion: "luajit"
+        #   neovim: "v0.10.0"
+        # - os: "windows-latest"
+        #   toolchain: "msvc"
+        #   luaVersion: "luajit"
+        #   neovim: "stable"
+        # - os: "windows-latest"
+        #   toolchain: "msvc"
+        #   luaVersion: "luajit"
+        #   neovim: "nightly"
+        #
+        # # Alternative luaVersion
+        # - os: "windows-latest"
+        #   toolchain: "msvc"
+        #   luaVersion: "5.1"
+        #   neovim: "stable"
+        #
+        # # Alternative toolchain
+        # - os: "windows-latest"
+        #   toolchain: "mingw"  # unused, other than for display in the UI
+        #   luaVersion: "5.1"
+        #   neovim: "stable"
 
         include:
         - os: "windows-latest"
           toolchain: "msvc"
-          luaVersion: "luajit"
+          luaVersion: "5.1"
           neovim: "v0.10.0"
         - os: "windows-latest"
-          toolchain: "msvc"
-          luaVersion: "luajit"
-          neovim: "stable"
-        - os: "windows-latest"
-          toolchain: "msvc"
-          luaVersion: "luajit"
-          neovim: "nightly"
-
-        # Alternative luaVersion
-        - os: "windows-latest"
-          toolchain: "msvc"
-          luaVersion: "5.1"
-          neovim: "stable"
-
-        # Alternative toolchain
-        - os: "windows-latest"
           toolchain: "mingw"  # unused, other than for display in the UI
-          luaVersion: "5.1"
-          neovim: "stable"
+          luaVersion: "luajit"
+          neovim: "v0.10.0"
 
     runs-on: ${{ matrix.os }}
     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
