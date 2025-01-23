@@ -16,6 +16,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         neovim: [v0.10.0, stable, nightly]
+        luaVersion: [5.1, luajit]
 
         include:
         - os: "windows-latest"
