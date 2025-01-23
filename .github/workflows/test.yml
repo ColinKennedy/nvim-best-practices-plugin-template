@@ -45,12 +45,12 @@ jobs:
         #   neovim: "stable"
 
         include:
+        # - os: "windows-latest"
+        #   toolchain: "msvc"
+        #   luaVersion: "5.1"
+        #   neovim: "v0.10.0"
         - os: "windows-latest"
-          toolchain: "msvc"
-          luaVersion: "5.1"
-          neovim: "v0.10.0"
-        - os: "windows-latest"
-          toolchain: "mingw"  # unused, other than for display in the UI
+          toolchain: "msvc"  # unused, other than for display in the UI
           luaVersion: "luajit"
           neovim: "v0.10.0"
 
