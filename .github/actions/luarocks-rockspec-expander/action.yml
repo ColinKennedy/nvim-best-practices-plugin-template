@@ -1,0 +1,86 @@
+name: 'LuaRocks rockspec expander'
+description: 'Generate a intermediary .rockspec file from some a template.rockspec'
+author: 'Colin Kennedy'
+branding:
+  color: 'green'
+  icon: 'moon'
+inputs:
+  input:
+    description: 'The template file to generate. e.g. template.rockspec'
+    required: true
+  output:
+    description: 'The name / path to write the generated .rockspec to. e.g. foo-scm-1.rockspec'
+    required: true
+  delete_input_after:
+    description: 'Remove the `input` from-disk after `output` is created.'
+    default: false
+    required: false
+runs:
+  using: 'composite'
+  steps:
+    - name: Clone luarocks-tag-release
+      uses: actions/checkout@v4
+      with:
+        repository: 'nvim-neorocks/luarocks-tag-release'
+        path: '.dependencies/luarocks-tag-release'
+
+    - name: Check for Lua or LuaJIT. Fallback to LuaJIT if needed - Linux
+      id: check-lua
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        # Check if lua is available
+        if command -v lua &> /dev/null; then
+          echo "lua found"
+          echo "executable=lua" >> $GITHUB_ENV
+        # Check if luajit is available if lua is not found
+        elif command -v luajit &> /dev/null; then
+          echo "luajit found"
+          echo "executable=luajit" >> $GITHUB_ENV
+        else
+          echo "No Lua installation found. Adding luajit."
+          echo "needs_luajit_install=true" >> $GITHUB_OUTPUT
+          echo "executable=luajit" >> $GITHUB_ENV
+        fi
+
+    - name: Check for Lua or LuaJIT. Fallback to LuaJIT if needed - Windows
+      id: check-lua
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        if (Get-Command lua -ErrorAction SilentlyContinue) {
+          echo "lua found"
+          echo "executable=lua" >> $env:GITHUB_ENV
+        }
+        elseif (Get-Command luajit -ErrorAction SilentlyContinue)
+        {
+          echo "luajit found"
+          echo "executable=luajit" >> $env:GITHUB_ENV
+        }
+        else
+        {
+          echo "No Lua installation found. Adding luajit."
+          echo "needs_luajit_install=true" >> $env:GITHUB_OUTPUT
+          echo "executable=luajit" >> $env:GITHUB_ENV
+        }
+
+    # The user hasn't installed lua yet. Let's do it for them
+    - name: Install A Lua Interpreter
+      if: ${{ steps.check-lua.outputs.needs_luajit_install == 'true' }}
+      uses: luarocks/gh-actions-lua@v10
+      with:
+        # Neovim is compiled with LuaJIT so we might as well match. But it
+        # doesn't look like we can match it exactly.
+        #
+        # Reference:
+        #    https://github.com/leafo/gh-actions-lua/issues/49#issuecomment-2295071198
+        #
+        luaVersion: "luajit-openresty"
+
+    - name: Run Lua script
+      env:
+        LUA_PATH: '.dependencies/luarocks-tag-release/lua/?.lua;;'
+        GITHUB_ACTION_PATH: ${{ github.action_path }}
+      shell: bash
+      run: |
+        ${{ env.executable }} $GITHUB_ACTION_PATH/main.lua ${{ inputs.input }} ${{ inputs.output }} ${{ inputs.delete_input_after }}
