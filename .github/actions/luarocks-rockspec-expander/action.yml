@@ -46,7 +46,7 @@ runs:
     - name: Check for Lua or LuaJIT. Fallback to LuaJIT if needed - Windows
       id: check-lua-windows
       if: runner.os == 'Windows'
-      shell: bash
+      shell: powershell
       run: |
         if (Get-Command lua -ErrorAction SilentlyContinue) {
           echo "lua found"
