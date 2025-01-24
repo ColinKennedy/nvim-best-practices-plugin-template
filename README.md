@@ -24,9 +24,9 @@ A template repository used to create Neovim plugins.
 - [RSS feed support](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom)
 - Built-in logging to stdout / files
 - Unittests use the full power of native [busted](https://github.com/lunarmodules/busted)
-- Automated testing matrix supports 6 Neovim/OS combinations
+- Automated testing matrix supports 9 Neovim/OS combinations
     - neovim: `[v0.10.0, stable, nightly]`
-    - os: `[ubuntu-latest, macos-latest]`
+    - os: `[ubuntu-latest, macos-latest, windows-latest]`
 - 100% Lua
 - Uses [Semantic Versioning](https://semver.org)
 - Integrations

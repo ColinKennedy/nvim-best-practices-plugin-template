@@ -46,6 +46,11 @@ end
 
 --- Write a log file so we can query its later later.
 local function _make_fake_log(path)
+    configuration.DATA.logging.output_path = path
+    local logging_configuration = configuration.DATA.logging or {}
+    ---@cast logging_configuration mega.logging.SparseLoggerOptions
+    logging.set_configuration("plugin_template", logging_configuration)
+
     local file = io.open(path, "w") -- Open the file in write mode
 
     if not file then
@@ -135,10 +140,6 @@ describe("copy logs API", function()
 
     it("runs with default arguments", function()
         local expected = vim.fn.tempname() .. "_copy_logs_default_test.log"
-        configuration.DATA.logging.output_path = expected
-        local logging_configuration = configuration.DATA.logging or {}
-        ---@cast logging_configuration mega.logging.SparseLoggerOptions
-        logging.set_configuration("plugin_template", logging_configuration)
         _make_fake_log(expected)
 
         plugin_template.run_copy_logs()
@@ -153,21 +154,17 @@ describe("copy logs command", function()
     after_each(_reset_copy_log)
 
     it("runs with an explicit file path", function()
-        local path = vim.fn.tempname() .. "copy_logs_test.log"
-        _make_fake_log(path)
+        local expected = vim.fn.tempname() .. "_copy_logs_explicit_file_path_test.log"
+        _make_fake_log(expected)
 
-        vim.cmd(string.format('PluginTemplate copy-logs "%s"', path))
+        vim.cmd(string.format('PluginTemplate copy-logs "%s"', expected))
         _wait_for_result()
 
-        assert.same({ path }, _DATA)
+        assert.same({ expected }, _DATA)
     end)
 
     it("runs with default arguments", function()
-        local expected = vim.fn.tempname() .. "_copy_logs_default_test.log"
-        configuration.DATA.logging.output_path = expected
-        local logging_configuration = configuration.DATA.logging or {}
-        ---@cast logging_configuration mega.logging.SparseLoggerOptions
-        logging.set_configuration("plugin_template", logging_configuration)
+        local expected = vim.fn.tempname() .. "_copy_logs_default_arguments_test.log"
         _make_fake_log(expected)
 
         vim.cmd([[PluginTemplate copy-logs]])
