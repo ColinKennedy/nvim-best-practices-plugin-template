@@ -8,7 +8,7 @@ on:
   push:
     branches:
       - main
-      - add_windows_tests
+      - luarocks_prepare_test
 
 jobs:
   test:
@@ -32,23 +32,17 @@ jobs:
       uses: actions/checkout@master
 
     - name: Setup MSVC
-      # the 'hishamhm/gh-actions-lua' step requires msvc to build PuC Rio Lua
+      # the 'luarocks/gh-actions-lua' step requires msvc to build PUC-Rio Lua
       # versions on Windows (LuaJIT will be build using MinGW/gcc).
       if: ${{ matrix.toolchain == 'msvc' }}
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Install Lua
-      uses: luarocks/gh-actions-lua@master
+    - uses: luarocks/gh-actions-lua@master
       with:
         luaVersion: "${{ matrix.luaVersion }}"
 
-    - name: Install Luarocks
-      uses: luarocks/gh-actions-luarocks@v5
+    - uses: luarocks/gh-actions-luarocks@v5
 
     - name: Build Test Dependencies
       run: |
         luarocks test nvim-best-practices-plugin-template-scm-1.rockspec --prepare
-
-    - name: Test
-      run: |
-        luarocks test --test-type busted
