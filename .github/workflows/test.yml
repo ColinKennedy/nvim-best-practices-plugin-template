@@ -14,8 +14,11 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        neovim: [v0.10.0, stable, nightly]
+        include:
+        - os: "windows-latest"
+          toolchain: "msvc"
+          luaVersion: "5.1"
+          neovim: "v0.10.0"
 
     runs-on: ${{ matrix.os }}
     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
