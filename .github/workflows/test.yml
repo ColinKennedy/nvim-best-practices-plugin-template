@@ -45,12 +45,8 @@ jobs:
         #   neovim: "stable"
 
         include:
-        # - os: "windows-latest"
-        #   toolchain: "msvc"
-        #   luaVersion: "5.1"
-        #   neovim: "v0.10.0"
         - os: "windows-latest"
-          toolchain: "msvc"  # unused, other than for display in the UI
+          toolchain: "msvc"
           luaVersion: "luajit"
           neovim: "v0.10.0"
 
@@ -91,20 +87,6 @@ jobs:
     #     input: template.rockspec
     #     output: nvim-best-practices-plugin-template-scm-1.rockspec
     #     delete_input_after: true
-
-    - name: Clone luarocks-tag-release
-      uses: actions/checkout@v4
-      with:
-        repository: 'nvim-neorocks/luarocks-tag-release'
-        path: '.dependencies/luarocks-tag-release'
-
-    - name: Run Lua script
-      env:
-        LUA_PATH: '.dependencies/luarocks-tag-release/lua/?.lua;;'
-        GITHUB_ACTION_PATH: ${{ github.action_path }}
-      shell: bash
-      run: |
-        luajit main.lua template.rockspec nvim-best-practices-plugin-template-scm-1.rockspec true
 
     - name: Build Test Dependencies
       run: |
