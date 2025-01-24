@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - main
+      - add_windows_support
 
 jobs:
   test:
@@ -23,25 +24,25 @@ jobs:
     - name: Checkout
       uses: actions/checkout@master
 
-    - name: Install A Lua Interpreter
-      uses: leafo/gh-actions-lua@v10
-      with:
-        # Neovim is compiled with LuaJIT so we might as well match. But it
-        # doesn't look like we can match it exactly.
-        #
-        # Reference:
-        #    https://github.com/leafo/gh-actions-lua/issues/49#issuecomment-2295071198
-        #
-        luaVersion: "luajit-openresty"
-
-    - name: Install Luarocks
-      uses: leafo/gh-actions-luarocks@v4
-
     - name: Install Neovim
       uses: rhysd/action-setup-vim@v1
       with:
         neovim: true
         version: ${{ matrix.neovim }}
+
+    - name: Setup MSVC
+      # the 'luarocks/gh-actions-lua' step requires msvc to build PUC-Rio Lua
+      # versions on Windows (LuaJIT will be build using MinGW/gcc).
+      if: ${{ matrix.toolchain == 'msvc' }}
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install Lua
+      uses: luarocks/gh-actions-lua@master
+      with:
+        luaVersion: "${{ matrix.luaVersion }}"
+
+    - name: Install LuaRocks
+      uses: luarocks/gh-actions-luarocks@v5
 
     # We need this hack until a better solution is available.
     #
