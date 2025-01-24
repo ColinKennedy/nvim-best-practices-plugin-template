@@ -44,16 +44,16 @@ jobs:
     - name: Install LuaRocks
       uses: luarocks/gh-actions-luarocks@v5
 
-    # We need this hack until a better solution is available.
-    #
-    # Reference: https://github.com/nvim-neorocks/luarocks-tag-release/issues/435
-    #
-    - name: Expand The Template Rockspec
-      uses: ColinKennedy/luarocks-rockspec-expander@v1.0.0
-      with:
-        input: template.rockspec
-        output: nvim-best-practices-plugin-template-scm-1.rockspec
-        delete_input_after: true
+    # # We need this hack until a better solution is available.
+    # #
+    # # Reference: https://github.com/nvim-neorocks/luarocks-tag-release/issues/435
+    # #
+    # - name: Expand The Template Rockspec
+    #   uses: ColinKennedy/luarocks-rockspec-expander@v1.0.0
+    #   with:
+    #     input: template.rockspec
+    #     output: nvim-best-practices-plugin-template-scm-1.rockspec
+    #     delete_input_after: true
 
     - name: Build Test Dependencies
       run: |
