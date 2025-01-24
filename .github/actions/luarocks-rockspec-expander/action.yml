@@ -48,7 +48,8 @@ runs:
       if: runner.os == 'Windows'
       shell: powershell
       run: |
-        if (Get-Command lua -ErrorAction SilentlyContinue) {
+        if (Get-Command lua -ErrorAction SilentlyContinue)
+        {
           echo "lua found"
           echo "executable=lua" >> $env:GITHUB_ENV
         }
