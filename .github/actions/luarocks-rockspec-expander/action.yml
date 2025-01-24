@@ -25,7 +25,7 @@ runs:
         path: '.dependencies/luarocks-tag-release'
 
     - name: Check for Lua or LuaJIT. Fallback to LuaJIT if needed - Linux
-      id: check-lua
+      id: check-lua-linux
       if: runner.os == 'Linux'
       shell: bash
       run: |
@@ -44,7 +44,7 @@ runs:
         fi
 
     - name: Check for Lua or LuaJIT. Fallback to LuaJIT if needed - Windows
-      id: check-lua
+      id: check-lua-windows
       if: runner.os == 'Windows'
       shell: bash
       run: |
@@ -66,7 +66,7 @@ runs:
 
     # The user hasn't installed lua yet. Let's do it for them
     - name: Install A Lua Interpreter
-      if: ${{ steps.check-lua.outputs.needs_luajit_install == 'true' }}
+      if: ${{ steps.check-lua-linux.outputs.needs_luajit_install == 'true' || steps.check-lua-linux.outputs.needs_luajit_install == 'true'}}
       uses: luarocks/gh-actions-lua@v10
       with:
         # Neovim is compiled with LuaJIT so we might as well match. But it
