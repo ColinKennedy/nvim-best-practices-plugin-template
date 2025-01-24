@@ -90,7 +90,7 @@ jobs:
 
     - name: Build Test Dependencies
       run: |
-        luarocks test nvim-best-practices-plugin-template-1.5.4-1.rockspec --prepare
+        luarocks test nvim-best-practices-plugin-template-scm-1.rockspec --prepare
 
     - name: Test
       run: |
