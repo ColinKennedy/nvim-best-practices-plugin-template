@@ -4,11 +4,11 @@
 --     Example template https://github.com/nvim-neorocks/luarocks-tag-release/blob/master/resources/rockspec.template
 --
 
-local git_ref = ""
-local modrev = "scm"
-local specrev = "1"
+local git_ref = "$git_ref"
+local modrev = "$modrev"
+local specrev = "$specrev"
 
-local repo_url = "/"
+local repo_url = "$repo_url"
 
 rockspec_format = "3.0"
 package = "nvim-best-practices-plugin-template"
@@ -43,7 +43,7 @@ test = { type = "busted" }
 
 source = {
     url = repo_url .. "/archive/" .. git_ref .. ".zip",
-    dir = "fake_repository-" .. "",
+    dir = "$repo_name-" .. "$archive_dir_suffix",
 }
 
 if modrev == "scm" or modrev == "dev" then
@@ -54,7 +54,5 @@ end
 
 build = {
     type = "builtin",
-    copy_directories = { },
+    copy_directories = $copy_directories,
 }
-
-
