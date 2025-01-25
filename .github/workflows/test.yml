@@ -15,27 +15,27 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         neovim: [v0.10.0, stable, nightly]
+        luaVersion: ["luajit-openresty"]
+        include:
+        - os: "windows-latest"
+          toolchain: "msvc"
+          luaVersion: "5.1"
+          neovim: "v0.10.0"
+        - os: "windows-latest"
+          toolchain: "msvc"
+          luaVersion: "5.1"
+          neovim: "stable"
+        - os: "windows-latest"
+          toolchain: "msvc"
+          luaVersion: "5.1"
+          neovim: "nightly"
 
     runs-on: ${{ matrix.os }}
-    name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
+    name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }} - Lua: ${{ matrix.luaVersion }}"
 
     steps:
     - name: Checkout
       uses: actions/checkout@master
-
-    - name: Install A Lua Interpreter
-      uses: leafo/gh-actions-lua@v10
-      with:
-        # Neovim is compiled with LuaJIT so we might as well match. But it
-        # doesn't look like we can match it exactly.
-        #
-        # Reference:
-        #    https://github.com/leafo/gh-actions-lua/issues/49#issuecomment-2295071198
-        #
-        luaVersion: "luajit-openresty"
-
-    - name: Install Luarocks
-      uses: leafo/gh-actions-luarocks@v4
 
     - name: Install Neovim
       uses: rhysd/action-setup-vim@v1
@@ -43,12 +43,26 @@ jobs:
         neovim: true
         version: ${{ matrix.neovim }}
 
+    - name: Setup MSVC
+      # the 'luarocks/gh-actions-lua' step requires msvc to build PUC-Rio Lua
+      # versions on Windows (LuaJIT will be build using MinGW/gcc).
+      if: ${{ matrix.toolchain == 'msvc' }}
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install Lua
+      uses: luarocks/gh-actions-lua@master
+      with:
+        luaVersion: "${{ matrix.luaVersion }}"
+
+    - name: Install LuaRocks
+      uses: luarocks/gh-actions-luarocks@v5
+
     # We need this hack until a better solution is available.
     #
     # Reference: https://github.com/nvim-neorocks/luarocks-tag-release/issues/435
     #
     - name: Expand The Template Rockspec
-      uses: ColinKennedy/luarocks-rockspec-expander@v1.0.0
+      uses: ColinKennedy/luarocks-rockspec-expander@v1.0.1
       with:
         input: template.rockspec
         output: nvim-best-practices-plugin-template-scm-1.rockspec
