@@ -48,7 +48,7 @@ jobs:
     # Reference: https://github.com/nvim-neorocks/luarocks-tag-release/issues/435
     #
     - name: Expand The Template Rockspec
-      uses: ColinKennedy/luarocks-rockspec-expander@v1.0.0
+      uses: ColinKennedy/luarocks-rockspec-expander@v1.0.1
       with:
         input: template.rockspec
         output: nvim-best-practices-plugin-template-scm-1.rockspec
