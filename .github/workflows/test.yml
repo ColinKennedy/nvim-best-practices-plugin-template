@@ -14,21 +14,21 @@ jobs:
   test:
     strategy:
       matrix:
-        # os: [ubuntu-latest, macos-latest]
-        # neovim: [v0.10.0, stable, nightly]
+        os: [ubuntu-latest, macos-latest]
+        neovim: [v0.10.0, stable, nightly]
         include:
-        - os: "windows-latest"
-          toolchain: "msvc"
-          luaVersion: "luajit"
-          neovim: "v0.10.0"
+        # - os: "windows-latest"
+        #   toolchain: "msvc"
+        #   luaVersion: "luajit"
+        #   neovim: "v0.10.0"
         - os: "windows-latest"
           toolchain: "msvc"
           luaVersion: "luajit"
           neovim: "stable"
-        - os: "windows-latest"
-          toolchain: "msvc"
-          luaVersion: "luajit"
-          neovim: "nightly"
+        # - os: "windows-latest"
+        #   toolchain: "msvc"
+        #   luaVersion: "luajit"
+        #   neovim: "nightly"
 
         # Alternative luaVersion
         - os: "windows-latest"
