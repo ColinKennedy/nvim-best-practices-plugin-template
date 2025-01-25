@@ -16,6 +16,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         neovim: [v0.10.0, stable, nightly]
+        luaVersion: ["luajit-openresty"]
         include:
         # - os: "windows-latest"
         #   toolchain: "msvc"
@@ -23,7 +24,7 @@ jobs:
         #   neovim: "v0.10.0"
         - os: "windows-latest"
           toolchain: "msvc"
-          luaVersion: "luajit"
+          luaVersion: "luajit-openresty"
           neovim: "stable"
         # - os: "windows-latest"
         #   toolchain: "msvc"
