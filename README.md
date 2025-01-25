@@ -40,9 +40,9 @@ A template repository used to create Neovim plugins.
     - [Automated user documentation](.github/workflows/documentation.yml) (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
     - [Automated API documentation](.github/workflows/documentation.yml) (using [mini.doc](https://github.com/echasnovski/mini.doc))
     - [Automated Vimtags generation](.github/workflows/documentation.yml)
-    - [Automated testing matrix supports 6 Neovim/OS combinations](.github/workflows/test.yml)
+    - [Automated testing matrix supports 9 Neovim/OS combinations](.github/workflows/test.yml)
         - neovim: `[v0.10.0, stable, nightly]`
-        - os: `[ubuntu-latest, macos-latest]`
+        - os: `[ubuntu-latest, macos-latest, windows-latest]`
     - Github actions for:
         - [StyLua](https://github.com/JohnnyMorganz/StyLua) - Auto-formats Lua code
         - [llscheck](https://github.com/jeffzi/llscheck) - Checks for Lua type mismatches
