@@ -26,7 +26,7 @@ runs:
 
     - name: Check for Lua or LuaJIT. Fallback to LuaJIT if needed - Linux
       id: check-lua-linux
-      if: runner.os == 'Linux'
+      if: runner.os == 'Linux' || runner.os == 'MacOS'
       shell: bash
       run: |
         # Check if lua is available
@@ -64,6 +64,13 @@ runs:
           echo "needs_luajit_install=true" >> $env:GITHUB_OUTPUT
           echo "executable=luajit" >> $env:GITHUB_ENV
         }
+
+    - name: Unknown OS
+      id: check-not-linux-windows-mac
+      if: runner.os != 'Linux' && runner.os != 'Windows' && runner.os != 'MacOS'
+      run: |
+        echo "Unknown: This runner is not Linux, Windows, or macOS."
+        exit 1
 
     # The user hasn't installed lua yet. Let's do it for them
     - name: Install A Lua Interpreter
