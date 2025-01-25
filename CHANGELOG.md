@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.5.5...v1.6.0) (2025-01-25)
+
+
+### Features
+
+* **os:** added windows support ([7a3c6c7](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/7a3c6c794712883399626d3177b6ce93cf0252a4))
+
 ## [1.5.5](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.5.4...v1.5.5) (2025-01-11)
 
 
