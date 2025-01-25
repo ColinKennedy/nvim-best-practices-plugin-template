@@ -24,58 +24,48 @@ runs:
         repository: 'nvim-neorocks/luarocks-tag-release'
         path: '.dependencies/luarocks-tag-release'
 
-    - name: Check for Lua or LuaJIT. Fallback to LuaJIT if needed - Linux
-      id: check-lua-linux
-      if: runner.os == 'Linux' || runner.os == 'MacOS'
-      shell: bash
-      run: |
-        # Check if lua is available
-        if command -v lua &> /dev/null; then
-          echo "lua found"
-          echo "executable=lua" >> $GITHUB_ENV
-        # Check if luajit is available if lua is not found
-        elif command -v luajit &> /dev/null; then
-          echo "luajit found"
-          echo "executable=luajit" >> $GITHUB_ENV
-        else
-          echo "No Lua installation found. Adding luajit."
-          echo "needs_luajit_install=true" >> $GITHUB_OUTPUT
-          echo "executable=luajit" >> $GITHUB_ENV
-        fi
-
     - name: Check for Lua or LuaJIT. Fallback to LuaJIT if needed - Windows
-      id: check-lua-windows
-      if: runner.os == 'Windows'
-      shell: powershell
-      run: |
-        if (Get-Command lua -ErrorAction SilentlyContinue)
-        {
-          echo "lua found"
-          echo "executable=lua" >> $env:GITHUB_ENV
-        }
-        elseif (Get-Command luajit -ErrorAction SilentlyContinue)
-        {
-          echo "luajit found"
-          echo "executable=luajit" >> $env:GITHUB_ENV
-        }
-        else
-        {
-          echo "No Lua installation found. Adding luajit."
-          echo "needs_luajit_install=true" >> $env:GITHUB_OUTPUT
-          echo "executable=luajit" >> $env:GITHUB_ENV
-        }
-
-    - name: Unknown OS
-      id: check-not-linux-windows-mac
-      if: runner.os != 'Linux' && runner.os != 'Windows' && runner.os != 'MacOS'
-      shell: bash
-      run: |
-        echo "Unknown: This runner is not Linux, Windows, or macOS."
-        exit 1
+      uses: knicknic/os-specific-run@v1.0.4
+      id: check-lua
+      env:
+        CHECK_FOR_LUA_WITH_WITH_BASH: |
+          # Check if lua is available
+          if command -v lua &> /dev/null; then
+            echo "lua found"
+            echo "executable=lua" >> $GITHUB_ENV
+          # Check if luajit is available if lua is not found
+          elif command -v luajit &> /dev/null; then
+            echo "luajit found"
+            echo "executable=luajit" >> $GITHUB_ENV
+          else
+            echo "No Lua installation found. Adding luajit."
+            echo "needs_luajit_install=true" >> $GITHUB_OUTPUT
+            echo "executable=luajit" >> $GITHUB_ENV
+          fi
+      with:
+        macos: ${{ CHECK_FOR_LUA_WITH_WITH_BASH }}
+        linux: ${{ CHECK_FOR_LUA_WITH_WITH_BASH }}
+        windows: |
+          if (Get-Command lua -ErrorAction SilentlyContinue)
+          {
+            echo "lua found"
+            echo "executable=lua" >> $env:GITHUB_ENV
+          }
+          elseif (Get-Command luajit -ErrorAction SilentlyContinue)
+          {
+            echo "luajit found"
+            echo "executable=luajit" >> $env:GITHUB_ENV
+          }
+          else
+          {
+            echo "No Lua installation found. Adding luajit."
+            echo "needs_luajit_install=true" >> $env:GITHUB_OUTPUT
+            echo "executable=luajit" >> $env:GITHUB_ENV
+          }
 
     # The user hasn't installed lua yet. Let's do it for them
     - name: Install A Lua Interpreter
-      if: ${{ steps.check-lua-linux.outputs.needs_luajit_install == 'true' || steps.check-lua-linux.outputs.needs_luajit_install == 'true'}}
+      if: ${{ steps.check-lua.outputs.needs_luajit_install == 'true' }}
       uses: luarocks/gh-actions-lua@v10
       with:
         # Neovim is compiled with LuaJIT so we might as well match. But it
