@@ -43,8 +43,8 @@ runs:
             echo "executable=luajit" >> $GITHUB_ENV
           fi
       with:
-        macos: ${{ CHECK_FOR_LUA_WITH_WITH_BASH }}
-        linux: ${{ CHECK_FOR_LUA_WITH_WITH_BASH }}
+        macos: ${{ env.CHECK_FOR_LUA_WITH_WITH_BASH }}
+        linux: ${{ env.CHECK_FOR_LUA_WITH_WITH_BASH }}
         windows: |
           if (Get-Command lua -ErrorAction SilentlyContinue)
           {
