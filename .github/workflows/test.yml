@@ -20,26 +20,20 @@ jobs:
         include:
         - os: "windows-latest"
           toolchain: "msvc"
-          luaVersion: "luajit-openresty"
+          luaVersion: "5.1"
           neovim: "v0.10.0"
-        - os: "windows-latest"
-          toolchain: "msvc"
-          luaVersion: "luajit-openresty"
-          neovim: "stable"
-        - os: "windows-latest"
-          toolchain: "msvc"
-          luaVersion: "luajit-openresty"
-          neovim: "nightly"
-
-        # Alternative luaVersion
         - os: "windows-latest"
           toolchain: "msvc"
           luaVersion: "5.1"
           neovim: "stable"
+        - os: "windows-latest"
+          toolchain: "msvc"
+          luaVersion: "5.1"
+          neovim: "nightly"
 
         # Alternative toolchain
         - os: "windows-latest"
-          toolchain: "mingw"  # unused, other than for display in the UI
+          toolchain: "mingw"
           luaVersion: "5.1"
           neovim: "stable"
 
