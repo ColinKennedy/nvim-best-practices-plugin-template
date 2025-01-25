@@ -68,6 +68,7 @@ runs:
     - name: Unknown OS
       id: check-not-linux-windows-mac
       if: runner.os != 'Linux' && runner.os != 'Windows' && runner.os != 'MacOS'
+      shell: bash
       run: |
         echo "Unknown: This runner is not Linux, Windows, or macOS."
         exit 1
