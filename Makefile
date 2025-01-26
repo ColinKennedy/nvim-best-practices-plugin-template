@@ -1,4 +1,4 @@
-.PHONY: api_documentation llscheck luacheck stylua test
+.PHONY: api_documentation flamegraph llscheck luacheck stylua test
 
 # Git will error if the repository already exists. We ignore the error.
 # NOTE: We still print out that we did the clone to the user so that they know.
@@ -20,6 +20,9 @@ clone_git_dependencies:
 
 api_documentation:
 	nvim -u scripts/make_api_documentation/minimal_init.lua -l scripts/make_api_documentation/main.lua
+
+flamegraph:
+	nvim -l scripts/make_flamegraph/init.lua
 
 llscheck: clone_git_dependencies
 	VIMRUNTIME="`nvim --clean --headless --cmd 'lua io.write(os.getenv("VIMRUNTIME"))' --cmd 'quit'`" llscheck --configpath $(CONFIGURATION) .
