@@ -1,7 +1,4 @@
 ## TODO
-- Change the logic so that .png generation is skipped unless there are at least 2 artifacts
- - Add a config variable + add it to the action so this is controllable
-
 - Make it so you can run the tool retroactively on older tags (and it still works)
 - Make mega.busted real so that I can upload it to luarocks and use it elsewhere
 - Allow profliing Neovim startup time (in my personal Neovim configuration)
