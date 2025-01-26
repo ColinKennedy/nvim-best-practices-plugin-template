@@ -11,4 +11,4 @@ package.path = root .. "/?.lua;" .. root .. "/?/init.lua;" .. package.path
 
 -- TODO: check for dependencies first
 
-require("mega.busted.make_profile").main()
+require("mega.busted.make_busted_profile").main()
