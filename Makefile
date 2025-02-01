@@ -22,7 +22,7 @@ api_documentation:
 	nvim -u scripts/make_api_documentation/minimal_init.lua -l scripts/make_api_documentation/main.lua
 
 llscheck: clone_git_dependencies
-	VIMRUNTIME=`nlua -e 'io.write(os.getenv("VIMRUNTIME"))'` llscheck --configpath $(CONFIGURATION) .
+	VIMRUNTIME="`nvim --clean --headless --cmd 'lua io.write(os.getenv("VIMRUNTIME"))' --cmd 'quit'`" llscheck --configpath $(CONFIGURATION) .
 
 luacheck:
 	luacheck lua plugin scripts spec
