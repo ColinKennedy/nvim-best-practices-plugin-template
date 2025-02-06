@@ -15,6 +15,7 @@ A template repository used to create Neovim plugins.
 - Auto-release to [luarocks](https://luarocks.org) & [GitHub](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases)
 - Automated user documentation (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
 - Automated API documentation (using [mini.doc](https://github.com/echasnovski/mini.doc))
+- Automated HTML documentation using [emmylua_doc_cli](https://github.com/CppCXY/emmylua-analyzer-rust/tree/main/crates/emmylua_doc_cli) & [mkdocs-material](https://github.com/squidfunk/mkdocs-material)
 - Vimtags generation
 - Built-in Vim commands
 - A high quality command mode parser
@@ -41,6 +42,7 @@ A template repository used to create Neovim plugins.
     - [GitHub](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases) auto-release ([PERSONAL_ACCESS_TOKEN secret](https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#installing-release-please-recommended) configuration required)
     - [mini.doc](https://github.com/echasnovski/mini.doc) - API documentation auto-generator
     - [panvimdoc](https://github.com/kdheepak/panvimdoc) - User documentation auto-generator
+    - [emmylua_doc_cli](https://github.com/CppCXY/emmylua-analyzer-rust/tree/main/crates/emmylua_doc_cli) & [mkdocs-material](https://github.com/squidfunk/mkdocs-material) - Generate HTML from Lua files automatically
     - [urlchecker](https://github.com/urlstechie/urlchecker-action) - Checks for broken URL links
     - PR reviews - Reminds users to update `doc/news.txt`
 

@@ -6,8 +6,75 @@ on:
       - main
 
 jobs:
-  documentation:
-    name: Documentation
+  check_documentation_branch:
+    name: Check For A Documentation Branch
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.check_branch.outputs.exists }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check If A Valid Documentation Branch Exists
+        id: check_branch
+        run: |
+          if git ls-remote --exit-code origin refs/heads/gh-pages; then
+            echo "The branch exists"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "The branch does not exist"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+  html_documentation:
+    needs: check_documentation_branch
+    if: needs.check_documentation_branch.outputs.exists == 'true'
+    name: HTML Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install emmylua_doc_cli From crates.io
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: emmylua_doc_cli
+          version: '^0.4.4'
+
+      - name: Save File index.md
+        if: hashFiles('markdown/docs/index.md') != ''
+        run: |
+          temp_file=`mktemp`
+          echo "index_temporary_path=$temp_file" >> $GITHUB_ENV
+          cp markdown/docs/index.md $temp_file
+
+      - name: Save File mkdocs.yml
+        if: hashFiles('markdown/mkdocs.yml') != ''
+        run: |
+          temp_file=`mktemp`
+          echo "mkdocs_temporary_path=$temp_file" >> $GITHUB_ENV
+          cp markdown/mkdocs.yml $temp_file
+
+      - name: Generate Mkdocs Files With emmylua_doc_cli
+        run: emmylua_doc_cli --input lua/ --output markdown/
+
+      - name: Restore index.md
+        if: env.index_temporary_path != ''
+        run: cp $index_temporary_path markdown/docs/index.md
+
+      - name: Restore mkdocs.yml
+        if: env.mkdocs_temporary_path != ''
+        run: cp $mkdocs_temporary_path markdown/mkdocs.yml
+
+      - name: Deploy To GitHub Pages
+        uses: mhausenblas/mkdocs-deploy-gh-pages@1.26
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CONFIG_FILE: markdown/mkdocs.yml
+
+
+  vim_documentation:
+    name: Vim Documentation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

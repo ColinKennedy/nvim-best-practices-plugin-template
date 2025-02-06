@@ -30,6 +30,7 @@ end
 ---
 ---@param path string An absolute path to a file on-disk.
 ---@param callback fun(result: plugin_template.ReadFileResult): nil Call this once `path` is read.
+---@private
 ---
 function M._read_file(path, callback)
     -- NOTE: mode 428 == rw-rw-rw-
