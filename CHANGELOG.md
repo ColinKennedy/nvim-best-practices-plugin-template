@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.6.0...v1.7.0) (2025-02-06)
+
+
+### Features
+
+* **docs:** added automated uploads to gh-pages ([af8b2e5](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/af8b2e5ae9cb0681ca27973787487502156fe2c2))
+
 ## [1.6.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.5.5...v1.6.0) (2025-01-25)
 
 
