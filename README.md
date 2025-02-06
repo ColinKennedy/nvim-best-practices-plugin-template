@@ -40,6 +40,7 @@ A template repository used to create Neovim plugins.
     - [Automated user documentation](.github/workflows/documentation.yml) (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
     - [Automated API documentation](.github/workflows/documentation.yml) (using [mini.doc](https://github.com/echasnovski/mini.doc))
     - [Automated Vimtags generation](.github/workflows/documentation.yml)
+    - [Automated HTML documentation](.github/workflows/documentation.yml) using [emmylua_doc_cli](https://github.com/CppCXY/emmylua-analyzer-rust/tree/main/crates/emmylua_doc_cli) & [mkdocs-material](https://github.com/squidfunk/mkdocs-material)
     - [Automated testing matrix supports 9 Neovim/OS combinations](.github/workflows/test.yml)
         - neovim: `[v0.10.0, stable, nightly]`
         - os: `[ubuntu-latest, macos-latest, windows-latest]`
