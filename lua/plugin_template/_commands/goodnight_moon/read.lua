@@ -1,7 +1,4 @@
 --- The main file that implements `goodnight-moon read` outside of COMMAND mode.
----
----@module 'plugin_template._commands.goodnight_moon.read.runner'
----
 
 local logging = require("mega.logging")
 

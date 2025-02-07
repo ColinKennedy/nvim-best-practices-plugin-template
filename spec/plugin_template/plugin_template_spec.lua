@@ -3,9 +3,6 @@
 --- This module is pretty specific to this plugin template so you'll most
 --- likely want to delete or heavily modify this file. But it does give a quick
 --- look how to mock a test and some things you can do with Neovim/busted.
----
----@module 'plugin_template.plugin_template_spec'
----
 
 local configuration = require("plugin_template._core.configuration")
 local copy_logs_runner = require("plugin_template._commands.copy_logs.runner")

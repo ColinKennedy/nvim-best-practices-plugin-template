@@ -1,7 +1,4 @@
 --- Make dealing with Lua tables a bit easier.
----
----@module 'plugin_template._core.tabler'
----
 
 local M = {}
 

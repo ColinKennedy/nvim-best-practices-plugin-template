@@ -3,8 +3,6 @@
 --- These types are either required by the Lua API or required for the normal
 --- operation of this Lua plugin.
 ---
----@module 'plugin_template.types'
----
 
 ---@class plugin_template.Configuration
 ---    The user's customizations for this plugin.

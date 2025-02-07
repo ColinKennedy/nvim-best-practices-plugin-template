@@ -1,7 +1,4 @@
 --- The main parser for the `:PluginTemplate arbitrary-thing` command.
----
----@module 'plugin_template._commands.arbitrary_thing.parser'
----
 
 local cmdparse = require("mega.cmdparse")
 

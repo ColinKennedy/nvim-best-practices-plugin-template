@@ -1,7 +1,4 @@
 --- The main parser for the `:PluginTemplate copy-logs` command.
----
----@module 'plugin_template._commands.copy_logs.parser'
----
 
 local cmdparse = require("mega.cmdparse")
 

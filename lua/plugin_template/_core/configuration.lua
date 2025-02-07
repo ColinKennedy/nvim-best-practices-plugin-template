@@ -1,7 +1,4 @@
 --- All functions and data to help customize `plugin_template` for this user.
----
----@module 'plugin_template._core.configuration'
----
 
 local say_constant = require("plugin_template._commands.hello_world.say.constant")
 

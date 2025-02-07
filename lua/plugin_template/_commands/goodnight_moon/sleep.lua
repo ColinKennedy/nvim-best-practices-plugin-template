@@ -1,7 +1,4 @@
 --- The main file that implements `goodnight-moon sleep` outside of COMMAND mode.
----
----@module 'plugin_template._commands.goodnight_moon.sleep.runner'
----
 
 local logging = require("mega.logging")
 

@@ -1,7 +1,4 @@
 --- The main parser for the `:PluginTemplate hello-world` command.
----
----@module 'plugin_template._commands.hello_world.parser'
----
 
 local cmdparse = require("mega.cmdparse")
 local constant = require("plugin_template._commands.hello_world.say.constant")

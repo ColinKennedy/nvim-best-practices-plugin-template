@@ -3,8 +3,6 @@
 --- At minimum, we validate that the user's configuration is correct. But other
 --- checks can happen here if needed.
 ---
----@module 'plugin_template.health'
----
 
 local configuration_ = require("plugin_template._core.configuration")
 local logging_ = require("mega.logging")

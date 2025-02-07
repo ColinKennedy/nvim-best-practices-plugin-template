@@ -1,7 +1,4 @@
 --- The main parser for the `:PluginTemplate goodnight-moon` command.
----
----@module 'plugin_template._commands.goodnight_moon.parser'
----
 
 local cmdparse = require("mega.cmdparse")
 

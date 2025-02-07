@@ -1,7 +1,4 @@
 --- Temporarily track when certain built-in Vim commands are called.
----
----@module 'test_utilities.mock_vim'
----
 
 local M = {}
 

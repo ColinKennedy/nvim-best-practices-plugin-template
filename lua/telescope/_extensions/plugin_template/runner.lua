@@ -2,8 +2,6 @@
 ---
 ---@source https://github.com/nvim-telescope/telescope.nvim
 ---
----@module 'telescope._extensions.plugin_template_'
----
 
 local M = {}
 
