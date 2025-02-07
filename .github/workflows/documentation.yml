@@ -41,30 +41,19 @@ jobs:
           crate: emmylua_doc_cli
           version: '^0.4.4'
 
-      - name: Save File index.md
-        if: hashFiles('markdown/docs/index.md') != ''
-        run: |
-          temp_file=`mktemp`
-          echo "index_temporary_path=$temp_file" >> $GITHUB_ENV
-          cp markdown/docs/index.md $temp_file
-
-      - name: Save File mkdocs.yml
-        if: hashFiles('markdown/mkdocs.yml') != ''
-        run: |
-          temp_file=`mktemp`
-          echo "mkdocs_temporary_path=$temp_file" >> $GITHUB_ENV
-          cp markdown/mkdocs.yml $temp_file
-
+      # TODO: (you) - If you intend to add overrides, keep this block and
+      # remove the other block.
+      #
       - name: Generate Mkdocs Files With emmylua_doc_cli
-        run: emmylua_doc_cli --input lua/ --output markdown/
+        if: hashFiles('markdown/overrides/**') != ''
+        run: emmylua_doc_cli --input lua/ --output markdown/generated --mixin markdown/overrrides
 
-      - name: Restore index.md
-        if: env.index_temporary_path != ''
-        run: cp $index_temporary_path markdown/docs/index.md
-
-      - name: Restore mkdocs.yml
-        if: env.mkdocs_temporary_path != ''
-        run: cp $mkdocs_temporary_path markdown/mkdocs.yml
+      # TODO: (you) - If you intend to fully automate your documentation, keep
+      # this block and remove the other block.
+      #
+      - name: Generate Mkdocs Files With emmylua_doc_cli
+        if: hashFiles('markdown/overrides/**') == ''
+        run: emmylua_doc_cli --input lua/ --output markdown/generated
 
       - name: Deploy To GitHub Pages
         uses: mhausenblas/mkdocs-deploy-gh-pages@1.26
