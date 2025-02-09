@@ -1,7 +1,4 @@
 --- Make that the Lualine component works as expected.
----
----@module 'plugin_template.lualine_spec'
----
 
 local highlight = require("lualine.highlight")
 local loader = require("lualine.utils.loader")

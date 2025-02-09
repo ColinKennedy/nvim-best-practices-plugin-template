@@ -1,7 +1,4 @@
 --- The main file that implements `goodnight-moon count-sheep` outside of COMMAND mode.
----
----@module 'plugin_template._commands.goodnight_moon.count_sheep.runner'
----
 
 local configuration = require("plugin_template._core.configuration")
 local logging = require("mega.logging")

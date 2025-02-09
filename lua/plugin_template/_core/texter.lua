@@ -1,7 +1,4 @@
 --- Make manipulating Lua text easier.
----
----@module 'plugin_template._core.texter'
----
 
 local M = {}
 

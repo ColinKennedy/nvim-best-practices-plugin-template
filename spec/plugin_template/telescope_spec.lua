@@ -1,7 +1,4 @@
 --- Make sure the Telescope integration works as expected.
----
----@module 'plugin_template.telescope_spec'
----
 
 local mock_test = require("test_utilities.mock_test")
 local plugin_template = require("telescope._extensions.plugin_template")

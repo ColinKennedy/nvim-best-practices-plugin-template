@@ -2,8 +2,6 @@
 ---
 ---@source https://github.com/nvim-lualine/lualine.nvim
 ---
----@module 'lualine.components.plugin_template'
----
 
 local arbitrary_thing_runner = require("plugin_template._commands.arbitrary_thing.runner")
 local configuration = require("plugin_template._core.configuration")

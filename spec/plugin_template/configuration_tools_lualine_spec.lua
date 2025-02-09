@@ -1,7 +1,4 @@
 --- Make sure configuration health checks for lua succeed or fail where they should.
----
----@module 'plugin_template.configuration_tools_lualine_spec'
----
 
 local configuration_ = require("plugin_template._core.configuration")
 local health = require("plugin_template.health")

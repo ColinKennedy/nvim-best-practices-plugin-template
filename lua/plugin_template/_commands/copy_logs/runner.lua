@@ -1,7 +1,4 @@
 --- The main file that implements `copy-logs` outside of COMMAND mode.
----
----@module 'plugin_template._commands.copy_logs.runner'
----
 
 local logging = require("mega.logging")
 
