@@ -10,11 +10,11 @@ operation of this Lua plugin.
    The user's customizations for this plugin.
 
 Fields ~
-    {commands} plugin_template.ConfigurationCommands?
+    {commands} |plugin_template.ConfigurationCommands|?
        Customize the fallback behavior of all `:PluginTemplate` commands.
-    {logging} plugin_template.LoggingConfiguration?
+    {logging} |plugin_template.LoggingConfiguration|?
        Control how and which logs print to file / Neovim.
-    {tools} plugin_template.ConfigurationTools?
+    {tools} |plugin_template.ConfigurationTools|?
        Optional third-party tool integrations.
 
 ------------------------------------------------------------------------------
@@ -22,9 +22,9 @@ Fields ~
    Customize the fallback behavior of all `:PluginTemplate` commands.
 
 Fields ~
-    {goodnight_moon} plugin_template.ConfigurationGoodnightMoon?
+    {goodnight_moon} |plugin_template.ConfigurationGoodnightMoon|?
        The default values when a user calls `:PluginTemplate goodnight-moon`.
-    {hello_world} plugin_template.ConfigurationHelloWorld?
+    {hello_world} |plugin_template.ConfigurationHelloWorld|?
        The default values when a user calls `:PluginTemplate hello-world`.
 
 ------------------------------------------------------------------------------
@@ -32,7 +32,7 @@ Fields ~
    The default values when a user calls `:PluginTemplate goodnight-moon`.
 
 Fields ~
-    {read} plugin_template.ConfigurationGoodnightMoonRead?
+    {read} |plugin_template.ConfigurationGoodnightMoonRead|?
        The default values when a user calls `:PluginTemplate goodnight-moon read`.
 
 ------------------------------------------------------------------------------
@@ -52,12 +52,12 @@ Fields ~
        | vim.log.levels.TRACE
        | vim.log.levels.WARN)?
        Any messages above this level will be logged.
-    {use_console} `(boolean?)`
+    {use_console} `(boolean)`?
        Should print the output to neovim while running. Warning: This is very
        spammy. You probably don't want to enable this unless you have to.
-    {use_file} `(boolean?)`
+    {use_file} `(boolean)`?
        Should write to a file.
-    {output_path} `(string?)`
+    {output_path} `(string)`?
        The default path on-disk where log files will be written to.
        Defaults to "/home/selecaoone/.local/share/nvim/plugin_name.log".
 
@@ -74,7 +74,7 @@ Fields ~
    The default values when a user calls `:PluginTemplate hello-world`.
 
 Fields ~
-    {say} plugin_template.ConfigurationHelloWorldSay?
+    {say} |plugin_template.ConfigurationHelloWorldSay|?
        The default values when a user calls `:PluginTemplate hello-world say`.
 
 ------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ Fields ~
    Optional third-party tool integrations.
 
 Fields ~
-    {lualine} plugin_template.ConfigurationToolsLualine?
+    {lualine} |plugin_template.ConfigurationToolsLualine|?
        A Vim statusline replacement that will show the command that the user just ran.
 
 ------------------------------------------------------------------------------
@@ -102,9 +102,9 @@ Fields ~
    command runs.
 
 Fields ~
-    {color} vim.api.keyset.highlight?
+    {color} |vim.api.keyset.highlight|?
        The foreground/background color to use for the Lualine status.
-    {prefix} `(string?)`
+    {prefix} `(string)`?
        The text to display in lualine.
 
 

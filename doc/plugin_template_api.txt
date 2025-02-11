@@ -13,7 +13,7 @@ package must get a new **major** version.
 Print the `names`.
 
 Parameters ~
-    {names} `(string[]?)` Some text to print out. e.g. `{"a", "b", "c"}`.
+    {names} `(string)`[]? Some text to print out. e.g. `{"a", "b", "c"}`.
 
 ------------------------------------------------------------------------------
                                                *plugin_template.run_copy_logs()*
@@ -23,7 +23,7 @@ Parameters ~
 Copy the log data from the given `path` to the user's clipboard.
 
 Parameters ~
-    {path} `(string?)`
+    {path} `(string)`?
        A path on-disk to look for logs. If none is given, the default fallback
        location is used instead.
 
@@ -35,11 +35,11 @@ Parameters ~
 Print `phrase` according to the other options.
 
 Parameters ~
-    {phrase} `(string[])`
+    {phrase} `(string)`[]
        The text to say.
-    {repeat_} `(number?)`
+    {repeat_} `(number)`?
        A 1-or-more value. The number of times to print `word`.
-    {style} `(string?)`
+    {style} `(string)`?
        Control how the text should be shown.
 
 ------------------------------------------------------------------------------
@@ -52,9 +52,9 @@ Print `phrase` according to the other options.
 Parameters ~
     {word} `(string)`
        The text to say.
-    {repeat_} `(number?)`
+    {repeat_} `(number)`?
        A 1-or-more value. The number of times to print `word`.
-    {style} `(string?)`
+    {style} `(string)`?
        Control how the text should be shown.
 
 ------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ Parameters ~
 Print Zzz each `count`.
 
 Parameters ~
-    {count} `(number?)` Prints 1 Zzz per `count`. A value that is 1-or-greater.
+    {count} `(number)`? Prints 1 Zzz per `count`. A value that is 1-or-greater.
 
 
 WARNING: This file is auto-generated. Do not edit it!
