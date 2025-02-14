@@ -15,7 +15,8 @@ A template repository used to create Neovim plugins.
 - Auto-release to [luarocks](https://luarocks.org) & [GitHub](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases)
 - Automated user documentation (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
 - Automated API documentation (using [mini.doc](https://github.com/echasnovski/mini.doc))
-- Automated HTML documentation using [emmylua_doc_cli](https://github.com/CppCXY/emmylua-analyzer-rust/tree/main/crates/emmylua_doc_cli) & [mkdocs-material](https://github.com/squidfunk/mkdocs-material)
+- Automated HTML documentation + self-publishing using [emmylua_doc_cli](https://github.com/CppCXY/emmylua-analyzer-rust/tree/main/crates/emmylua_doc_cli) & [mkdocs-material](https://github.com/squidfunk/mkdocs-material)
+    - Yes, this repository has a website! Check it out at [nvim-best-practices-plugin-template](https://colinkennedy.github.io/nvim-best-practices-plugin-template)!
 - Vimtags generation
 - Built-in Vim commands
 - A high quality command mode parser
