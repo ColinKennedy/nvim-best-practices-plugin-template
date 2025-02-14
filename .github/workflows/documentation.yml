@@ -39,7 +39,6 @@ jobs:
         uses: baptiste0928/cargo-install@v3
         with:
           crate: emmylua_doc_cli
-          version: '^0.4.7'
 
       - name: Generate Mkdocs Files With emmylua_doc_cli
         run: emmylua_doc_cli --input lua/ --output markdown/generated --mixin markdown/manual
