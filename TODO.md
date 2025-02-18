@@ -1,7 +1,3 @@
-- Make standalone runner work again
- - Have it generate images / trends based on date-time
-
-
 - Run busted-profiler:
  - BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l scripts/make_flamegraph/init.lua
 
