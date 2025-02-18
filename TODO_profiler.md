@@ -17,6 +17,11 @@
   - Make a double-line graph. Show Neovim without the plugin / extension(s) and another line with it
 
 
+
+- Running GitHub workflow manually, on older tags
+ - gh workflow run deploy.yml --ref main --field environment=production --field version=1.0.0
+ - https://stackoverflow.com/a/62736541
+
 - Do TODO notes
 - make a github action that encapsulates everything
 - In GitHub workflows, make sure to print out the top 20 slowest, as part of the steps
@@ -25,8 +30,8 @@
 ```
 - 🚅 [Speed](docs/speed/timing.png) (TODO FIX THIS LATER)
 ```
-make this link real, later
-- make sure all README.md links work
+ - make this documentation link real, later
+ - make sure all README.md links work
 
 
 - /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/lua/busted/multi_runner.lua
@@ -56,3 +61,40 @@ https://github.com/AcademySoftwareFoundation/rez/blob/main/.github/scripts/store
 
 
 - https://github.com/pianohacker/bucket/blob/ef0d5f59ca568feab9fc52da029922b17322593e/profiler.lua#L49
+
+
+
+
+
+
+## Old Runner Commands
+```
+
+LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;.dependencies/mega.busted/lua/?.lua;$LUA_PATH" BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l .dependencies/mega.busted/lua/mega/busted/make_standalone_profiler.lua 'require("test_script").main()'
+
+LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;.dependencies/mega.busted/lua/?.lua;$LUA_PATH" BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/scripts/make_flamegraph/standalone_test.lua 'require("test_script").main()'
+
+
+
+
+BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make profile_using_flamegraph
+BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l busted_testout.lua
+
+BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l busted_testout.lua
+
+BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make profile_using_flamegraph
+
+BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l busted_testout2.lua
+
+BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l busted_testout2.lua
+
+LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
+
+LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
+
+LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_TAGGED_DIRECTORIES="simple" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
+
+LUA_PATH="lua/?.lua;$LUA_PATH" BUSTED_PROFILER_TAGGED_DIRECTORIES="simple" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make flamegraph
+
+BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make flamegraph
+```

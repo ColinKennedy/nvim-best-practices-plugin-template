@@ -1,25 +1,22 @@
-BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make profile_using_flamegraph
-BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l busted_testout.lua
+- Make standalone runner work again
+ - Have it generate images / trends based on date-time
 
-BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l busted_testout.lua
 
-BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make profile_using_flamegraph
+- Run busted-profiler:
+ - BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l scripts/make_flamegraph/init.lua
 
-BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l busted_testout2.lua
+- Run standalone-profiler:
+ - BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l /home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/scripts/make_flamegraph/standalone_test.lua 'require("test_script").main()'
 
-BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l busted_testout2.lua
 
-LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_KEEP_TEMPORARY_FILES=1 BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
-
-LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
-
-LUA_PATH="lua/?.lua;lua/?/init.lua;spec/?.lua;$LUA_PATH" BUSTED_PROFILER_TAGGED_DIRECTORIES="simple" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory nvim -l lua/busted/profiler_runner.lua
-
-LUA_PATH="lua/?.lua;$LUA_PATH" BUSTED_PROFILER_TAGGED_DIRECTORIES="simple" BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make flamegraph
-
-BUSTED_PROFILER_FLAMEGRAPH_VERSION=v1.2.3 BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make flamegraph
-
+- View output graphs
+```sh
+eog /tmp/directory/benchmarks/all/mean.png
 eog /tmp/directory/benchmarks/all/median.png
+eog /tmp/directory/benchmarks/all/standard_deviation.png
+```
+
+
 
 - Do the TODO_profiler.md work
 - Do all current branch (add_profiling) TODO notes
