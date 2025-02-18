@@ -32,9 +32,18 @@ end
 function M._read_file(path, callback)
     -- NOTE: mode 428 == rw-rw-rw-
     vim.uv.fs_open(path, "r", 438, function(error_open, handler)
+        local logger = logging.get_logger({
+            name = "plugin_template._commands.copy_logs.runner_read_file",
+            use_file = false,
+            use_highlights = false,
+            use_neovim_commands = false,
+        })
+        logger:fmt_debug('Opening "%s" path.', path)
+
         if error_open then
             error(error_open)
         end
+
         if not handler then
             error(string.format('Path "%s" could not be opened.', path))
         end
@@ -43,6 +52,7 @@ function M._read_file(path, callback)
             if error_stat then
                 error(error_stat)
             end
+
             if not stat then
                 error(string.format('Path "%s" could not be stat-ed.', path))
             end
@@ -51,6 +61,7 @@ function M._read_file(path, callback)
                 if error_read then
                     error(error_read)
                 end
+
                 if not data then
                     error(string.format('Path "%s" could no be read for data.', path))
                 end

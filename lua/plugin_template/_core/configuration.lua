@@ -1,7 +1,6 @@
 --- All functions and data to help customize `plugin_template` for this user.
 
 local say_constant = require("plugin_template._commands.hello_world.say.constant")
-
 local logging = require("mega.logging")
 
 local _LOGGER = logging.get_logger("plugin_template._core.configuration")
@@ -14,8 +13,8 @@ vim.g.loaded_plugin_template = false
 ---@type plugin_template.Configuration
 M.DATA = {}
 
--- TODO: (you) If you use the mega.logging module for built-in logging, keep
--- the `logging` section. Otherwise delete it.
+-- TODO: (you) If you use the mega.logging for built-in logging, keep the `logging`
+-- section. Otherwise delete it.
 --
 -- It's recommended to keep the `display` section in any case.
 --
@@ -83,7 +82,7 @@ function M.initialize_data_if_needed()
     ---@cast configuration mega.logging.SparseLoggerOptions
     logging.set_configuration("plugin_template", configuration)
 
-    _LOGGER:fmt_debug("Initialized plugin-template's configuration.")
+    _LOGGER:debug("Initialized plugin-template's configuration.")
 end
 
 --- Merge `data` with the user's current configuration.

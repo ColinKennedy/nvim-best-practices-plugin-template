@@ -8,54 +8,75 @@ A template repository used to create Neovim plugins.
 | License      | [![License-MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/blob/main/LICENSE)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Social       | [![RSS](https://img.shields.io/badge/rss-F88900?style=for-the-badge&logo=rss&logoColor=white)](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
+# Table of Contents
 
-# Features
-- Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices)
-- Fast start-up (~1 ms)
-- Auto-release to [luarocks](https://luarocks.org) & [GitHub](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases)
-- Automated user documentation (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
-- Automated API documentation (using [mini.doc](https://github.com/echasnovski/mini.doc))
-- Automated HTML documentation + self-publishing using [emmylua_doc_cli](https://github.com/CppCXY/emmylua-analyzer-rust/tree/main/crates/emmylua_doc_cli) & [mkdocs-material](https://github.com/squidfunk/mkdocs-material)
-    - Yes, this repository has a website! Check it out at [nvim-best-practices-plugin-template](https://colinkennedy.github.io/nvim-best-practices-plugin-template)!
-- Vimtags generation
-- Built-in Vim commands
-- A high quality command mode parser
-- Auto-completes your commands at any cursor position
-- No external dependencies[*](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/External-Dependencies-Disclaimer)
-- [LuaCATS](https://luals.github.io/wiki/annotations/) annotations and type-hints, everywhere
-- [RSS feed support](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom)
-- Built-in logging to stdout / files
-- Unittests use the full power of native [busted](https://github.com/lunarmodules/busted)
-- Automated testing matrix supports 9 Neovim/OS combinations
-    - neovim: `[v0.10.0, stable, nightly]`
-    - os: `[ubuntu-latest, macos-latest, windows-latest]`
-- 100% Lua
-- Uses [Semantic Versioning](https://semver.org)
-- Integrations
-    - [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
-    - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
-    - `:checkhealth`
-- Github actions for:
-    - [StyLua](https://github.com/JohnnyMorganz/StyLua) - Auto-formats Lua code
-    - [llscheck](https://github.com/jeffzi/llscheck) - Checks for Lua type mismatches
-    - [luacheck](https://github.com/mpeterv/luacheck) - Checks for Lua code issues
-    - [luarocks](https://luarocks.org) auto-release ([LUAROCKS_API_KEY secret](https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#publishing-to-luarocks) configuration required)
-    - [GitHub](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases) auto-release ([PERSONAL_ACCESS_TOKEN secret](https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#installing-release-please-recommended) configuration required)
-    - [mini.doc](https://github.com/echasnovski/mini.doc) - API documentation auto-generator
-    - [panvimdoc](https://github.com/kdheepak/panvimdoc) - User documentation auto-generator
-    - [emmylua_doc_cli](https://github.com/CppCXY/emmylua-analyzer-rust/tree/main/crates/emmylua_doc_cli) & [mkdocs-material](https://github.com/squidfunk/mkdocs-material) - Generate HTML from Lua files automatically
-    - [urlchecker](https://github.com/urlstechie/urlchecker-action) - Checks for broken URL links
-    - PR reviews - Reminds users to update `doc/news.txt`
+* [Features](#--features)
+* [Using This Template](#-using-this-template)
+* [Installation](#-installation)
+* [Configuration](#-configuration)
+    * [Lualine](#-lualine)
+    * [Telescope](#-telescope)
+* [Commands](#-commands)
+* [Tests](#-tests)
+* [Profiling](#-profiling)
+* [Tracking Updates](#-tracking-updates)
+* [Other Plugins](#-other-plugins)
 
+# ⚡️ Features
+- 🚅 [Speed](docs/speed/timing.png) (TODO FIX THIS LATER)
+    - Fast start-up (~1 ms)
+- ⚙ [Built-In](#-configuration)
+    - [Includes logging to stdout / files](https://github.com/ColinKennedy/mega.logging)
+    - [Built-in Vim commands](#-commands)
+    - [A high quality command mode parser](https://github.com/ColinKennedy/mega.cmdparse)
+    - [RSS feed support](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom)
+    - 100% Lua
+    - Integrations
+        - [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
+        - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
+        - `:checkhealth`
+- 🙌 [Hands-Free](.github/workflows)
+    - Auto-release to [luarocks](https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#publishing-to-luarocks) & [GitHub](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases)
+    - [Automated user documentation](.github/workflows/documentation.yml) (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
+    - [Automated API documentation](.github/workflows/documentation.yml) (using [mini.doc](https://github.com/echasnovski/mini.doc))
+    - [Automated Vimtags generation](.github/workflows/documentation.yml)
+    - Automated HTML documentation + self-publishing using [emmylua_doc_cli](https://github.com/CppCXY/emmylua-analyzer-rust/tree/main/crates/emmylua_doc_cli) & [mkdocs-material](https://github.com/squidfunk/mkdocs-material)
+        - Yes, this repository has a website! Check it out at [nvim-best-practices-plugin-template](https://colinkennedy.github.io/nvim-best-practices-plugin-template)!
+    - [Automated testing matrix supports 9 Neovim/OS combinations](.github/workflows/test.yml)
+        - neovim: `[v0.10.0, stable, nightly]`
+        - os: `[ubuntu-latest, macos-latest, windows-latest]`
+    - Github actions for:
+        - [StyLua](https://github.com/JohnnyMorganz/StyLua) - Auto-formats Lua code
+        - [llscheck](https://github.com/jeffzi/llscheck) - Checks for Lua type mismatches
+        - [luacheck](https://github.com/mpeterv/luacheck) - Checks for Lua code issues
+        - [luarocks](https://luarocks.org) auto-release ([LUAROCKS_API_KEY secret](https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#publishing-to-luarocks) configuration required)
+        - [GitHub](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases) auto-release ([PERSONAL_ACCESS_TOKEN secret](https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#installing-release-please-recommended) configuration required)
+        - [mini.doc](https://github.com/echasnovski/mini.doc) - API documentation auto-generator
+        - [panvimdoc](https://github.com/kdheepak/panvimdoc) - User documentation auto-generator
+        - [urlchecker](https://github.com/urlstechie/urlchecker-action) - Checks for broken URL links
+        - PR reviews - Reminds users to update `doc/news.txt`
+- ⚒  [The Best Ideas](#-using-this-template)
+    - Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices) so you have the best possible starting point
+    - Uses [Semantic Versioning](https://semver.org)
+    - Unittests use the full power of native [busted](https://github.com/lunarmodules/busted)
+    - [LuaCATS](https://luals.github.io/wiki/annotations) annotations and type-hints, everywhere
+    - No external dependencies[*](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/External-Dependencies-Disclaimer)
 
-# Using This Template
+# ⚒ Using This Template
 1. Follow the [Wiki instructions](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/Using-This-Template)
 2. Once you're done, remove this section (the rest of this README.md file should be kept / customized to your needs)
 
 
-# Installation
+# 📋 Installation
+## Requirements
+- Neovim 0.10+
+
+## Installing
+
 <!-- TODO: (you) - Adjust and add your dependencies as needed here -->
+
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
+
 ```lua
 {
     "ColinKennedy/nvim-best-practices-plugin-template",
@@ -66,12 +87,13 @@ A template repository used to create Neovim plugins.
 ```
 
 
-# Configuration
+# ⚙ Configuration
 (These are default values)
 
 <!-- TODO: (you) - Remove / Add / Adjust your configuration here -->
 
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
+
 ```lua
 {
     "ColinKennedy/nvim-best-practices-plugin-template",
@@ -123,7 +145,7 @@ A template repository used to create Neovim plugins.
 ```
 
 
-## Lualine
+## 📰 Lualine
 
 <!-- TODO: (you) - Remove this is you do not want lualine -->
 
@@ -150,7 +172,7 @@ require("lualine").setup {
 ```
 
 
-## Telescope
+## 🔭 Telescope
 
 <!-- TODO: (you) - Remove this is you do not want telescope -->
 
@@ -175,7 +197,7 @@ require("lualine").setup {
 ```
 
 
-### Colors
+### 🌈 Colors
 This plugin provides two default highlights
 
 - `PluginTemplateTelescopeEntry`
@@ -188,7 +210,7 @@ vim.api.nvim_set_hl(0, "PluginTemplateTelescopeSecondary", {link="Question"})
 ```
 
 
-# Commands
+# 🧰 Commands
 Here are some example commands:
 
 <!-- TODO: (you) - You'll probably want to change all this or remove it. See -->
@@ -209,7 +231,7 @@ Here are some example commands:
 ```
 
 
-# Tests
+# ✅ Tests
 ## Initialization
 Run this line once before calling any `busted` command
 
@@ -234,8 +256,27 @@ Run test based on tags
 busted . --tags=simple
 ```
 
+# ⌛ Profiling
+## Initialization
+Run this line once before calling any `busted` command
 
-# Tracking Updates
+```sh
+eval $(luarocks path --lua-version 5.1 --bin)
+```
+
+## Flamegraph
+TODO: Make sure this works
+```sh
+BUSTED_PROFILER_FLAMEGRAPH_OUTPUT_PATH=/tmp/directory make profile_using_flamegraph
+```
+
+### Timing
+```sh
+BUSTED_PROFILER_TIMING_OUTPUT_PATH=/tmp/directory make profile_using_vim
+```
+
+
+# 👂 Tracking Updates
 See [doc/news.txt](doc/news.txt) for updates.
 
 You can watch this plugin for changes by adding this URL to your RSS feed:
@@ -244,7 +285,7 @@ https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main
 ```
 
 
-# Other Plugins
+# 🎭 Other Plugins
 This template is full of various features. But if your plugin is only meant to
 be a simple plugin and you don't want the bells and whistles that this template
 provides, consider instead using
