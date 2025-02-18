@@ -1,5 +1,6 @@
 -- TODO: Replace with relative paths once it's confirmed working
-local logging = "/home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/.dependencies/mega.logging/lua"
+local logging =
+    "/home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/.dependencies/mega.logging/lua"
 
 local root =
     "/home/selecaoone/repositories/personal/.config/nvim/bundle/nvim-best-practices-plugin-template/.dependencies/mega.busted/lua"
