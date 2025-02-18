@@ -11,6 +11,10 @@
 
 - View output graphs
 ```sh
+eog /tmp/directory/benchmarks/standalone/mean.png
+eog /tmp/directory/benchmarks/standalone/median.png
+eog /tmp/directory/benchmarks/standalone/standard_deviation.png
+
 eog /tmp/directory/benchmarks/all/mean.png
 eog /tmp/directory/benchmarks/all/median.png
 eog /tmp/directory/benchmarks/all/standard_deviation.png
