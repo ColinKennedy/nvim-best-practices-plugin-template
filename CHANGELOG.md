@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.7.0...v1.7.1) (2025-02-27)
+
+
+### Bug Fixes
+
+* **ci:** baptiste0928/cargo-install version key removed ([e9bb024](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/e9bb024fe7f9a067f70a84c6d67ebb567f9a5d83))
+
 ## [1.7.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.6.0...v1.7.0) (2025-02-06)
 
 
