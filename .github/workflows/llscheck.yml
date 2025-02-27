@@ -44,7 +44,7 @@ jobs:
           lua-language-server latest
 
     - name: Install luarocks
-      uses: leafo/gh-actions-luarocks@v4
+      uses: leafo/gh-actions-luarocks@v5
 
     - name: Install llscheck
       run: |
