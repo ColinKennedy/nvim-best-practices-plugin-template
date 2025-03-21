@@ -29,7 +29,7 @@ jobs:
           version: ${{ matrix.neovim }}
 
       - name: Run :checkhealth
-        uses: ColinKennedy/nvim-checkhealth-gh-action@v1.1.0
+        uses: ColinKennedy/nvim-checkhealth-gh-action@v1.1.1
         with:
           executable: 'nvim -u "spec/minimal_init.lua"'
           checks: "plugin_template vim.*"
