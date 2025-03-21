@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.7.1...v1.8.0) (2025-03-21)
+
+
+### Features
+
+* **checkhealth:** added automated :checkhealth CI command ([b0f0ccf](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/b0f0ccfc177cf42cd17faf435b40ca5b39f478f1))
+
 ## [1.7.1](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.7.0...v1.7.1) (2025-02-27)
 
 
