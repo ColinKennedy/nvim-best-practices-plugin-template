@@ -26,6 +26,7 @@ A template repository used to create Neovim plugins.
 - [RSS feed support](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom)
 - Built-in logging to stdout / files
 - Unittests use the full power of native [busted](https://github.com/lunarmodules/busted)
+    - Supports [LuaCov](https://luarocks.org/modules/mpeterv/luacov) for coverage reports!
 - Automated testing matrix supports 12 Neovim/OS combinations
     - neovim: `[v0.10.0, v0.11.0, stable, nightly]`
     - os: `[ubuntu-latest, macos-latest, windows-latest]`
@@ -233,6 +234,38 @@ Run test based on tags
 ```sh
 busted . --tags=simple
 ```
+
+
+# Coverage
+Making sure that your plugin is well tested is important.
+`nvim-best-practices-plugin-template` can generate a per-line breakdown of exactly where
+your code is lacking tests using [LuaCov](https://luarocks.org/modules/mpeterv/luacov).
+
+
+## Running
+```sh
+make coverage-html
+```
+
+This will generate a `luacov.stats.out` & `luacov-html/` directory.
+
+
+## Viewing
+```sh
+(cd luacov-html && python -m http.server)
+```
+
+If it worked you should see a message like "Serving HTTP on 0.0.0.0 port 8000
+(http://0.0.0.0:8000/) ...". Open `http://0.0.0.0:8000/` in a browser like
+[Firefox](https://www.mozilla.org/en-US/firefox) and you should see a view like this:
+
+![Image](https://github.com/user-attachments/assets/e5b30df8-036a-4886-81b9-affbf5c9e32a)
+
+Just navigate down a few folders until you get to a .lua file and you'll see a breakdown
+of your line coverage like this:
+
+![Image](https://github.com/user-attachments/assets/c5420b16-4be7-4177-92c7-01af0b418816)
+
 
 
 # Tracking Updates
