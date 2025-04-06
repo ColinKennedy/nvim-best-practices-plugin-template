@@ -35,3 +35,8 @@ stylua:
 
 test: clone_git_dependencies
 	busted .
+
+coverage-html: clone_git_dependencies
+	luarocks install luacov --local > /dev/null
+	nvim -u NONE -U NONE -N -i NONE --headless -c "luafile scripts/luacov.lua" -c "quit"
+	luacov --reporter html

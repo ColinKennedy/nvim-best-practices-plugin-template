@@ -1,0 +1,11 @@
+return {
+    include = {"lua"},
+    exclude = {
+        ".luarocks/",
+        "/tmp",
+        "/usr",
+        "spec/",
+        os.getenv("XDG_CONFIG_HOME"),
+    },
+    tick = true
+}
