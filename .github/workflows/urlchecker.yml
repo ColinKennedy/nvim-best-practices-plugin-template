@@ -109,6 +109,7 @@ jobs:
         urlchecker check \
           --branch main \
           --subfolder . \
+          --exclude-patterns "http://0.0.0.0:8000/" \
           --files README.md \
           --no-print \
           --retry-count 1 \

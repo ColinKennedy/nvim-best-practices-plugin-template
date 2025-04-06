@@ -4,7 +4,10 @@
 # NOTE: We still print out that we did the clone to the user so that they know.
 #
 ifeq ($(OS),Windows_NT)
-    IGNORE_EXISTING = 2> nul
+    # IMPORTANT: This is Powershell syntax
+    IGNORE_EXISTING =
+    # # IMPORTANT: This is cmd.exe syntax
+    # IGNORE_EXISTING = 2> nul
 else
     IGNORE_EXISTING = 2> /dev/null || true
 endif
@@ -35,3 +38,9 @@ stylua:
 
 test: clone_git_dependencies
 	busted .
+
+coverage-html: clone_git_dependencies
+	luarocks install busted --local > /dev/null
+	luarocks install luacov --local > /dev/null
+	nvim -u NONE -U NONE -N -i NONE --headless -c "luafile scripts/luacov.lua" -c "quit"
+	luacov --reporter html

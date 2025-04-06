@@ -1,0 +1,70 @@
+name: LuaCov
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+    - main
+  push:
+    branches:
+      - main
+      - add_luacov3
+
+jobs:
+  # NOTE: The purpose of this test is to make sure that coverage is generatable
+  # on every OS. Maybe in the future we'll enforce minimum coverage
+  # requirements. But for now this is a great start.
+  #
+  smoke_test:
+    strategy:
+      matrix:
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [windows-latest]
+        neovim: [stable]
+        luaVersion: ["luajit-openresty"]
+
+    runs-on: ${{ matrix.os }}
+    name: "Smoke-test: OS ${{ matrix.os }}"
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: Install Neovim
+      uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: ${{ matrix.neovim }}
+
+    - name: Setup MSVC
+      # the 'luarocks/gh-actions-lua' step requires msvc to build PUC-Rio Lua
+      # versions on Windows (LuaJIT will be build using MinGW/gcc).
+      if: ${{ matrix.toolchain == 'msvc' }}
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install Lua
+      uses: luarocks/gh-actions-lua@master
+      with:
+        luaVersion: "${{ matrix.luaVersion }}"
+
+    - name: Install LuaRocks
+      uses: luarocks/gh-actions-luarocks@v5
+
+    - name: Run LuaCov
+      run: |
+        set GIT_CONFIG=~/.gitconfig
+
+        # We use SSH in the `Makefile` but GitHub actions don't allow that. So
+        # we force git to clone using HTTP instead.
+        #
+        echo SETTING THE INSTEADOF
+        git config url."https://github.com/".insteadOf git@github.com:
+        echo SHOWING LOCAL LIST
+        git config --local --list
+        echo SHOWING LIST ORIGIN
+        git config --list --show-origin
+        echo CHECKING INSTEADOF
+        git config --get-all url."https://github.com/".insteadOf
+
+        # Now to the LuaCov check
+        make coverage-html
