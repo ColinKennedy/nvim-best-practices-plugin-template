@@ -1,0 +1,85 @@
+name: LuaCov
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+    - main
+  push:
+    branches:
+      - main
+
+jobs:
+  # NOTE: The purpose of this test is to make sure that coverage is generatable
+  # on every OS. Maybe in the future we'll enforce minimum coverage
+  # requirements. But for now this is a great start.
+  #
+  smoke_test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        neovim: [stable]
+        luaVersion: ["luajit-openresty"]
+
+    runs-on: ${{ matrix.os }}
+    name: "Smoke-test: OS ${{ matrix.os }}"
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: Install Neovim
+      uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: ${{ matrix.neovim }}
+
+    - name: Setup MSVC
+      # the 'luarocks/gh-actions-lua' step requires msvc to build PUC-Rio Lua
+      # versions on Windows (LuaJIT will be build using MinGW/gcc).
+      if: ${{ matrix.toolchain == 'msvc' }}
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install Lua
+      uses: luarocks/gh-actions-lua@master
+      with:
+        luaVersion: "${{ matrix.luaVersion }}"
+
+    - name: Install LuaRocks
+      uses: luarocks/gh-actions-luarocks@v5
+
+    # TODO: Consider caching this workflow step. It can take ~1 minute to run.
+    - name: Install Dependencies
+      run: |
+        luarocks install busted
+        luarocks install luacov
+        luarocks install luacov-multiple
+
+    # NOTE: `make coverage-html` includes SSH-style URLs. This command will
+    # swap them to HTTP so we don't have to setup SSH agents on this GitHub
+    # workflow manually.
+    #
+    - name: Configure Git To Use HTTPS Instead Of SSH
+      run: |
+        git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+    - name: Run LuaCov
+      run: |
+        make coverage-html
+
+    - name: Verify luacov_html/index.html Exists
+      shell: bash
+      run: |
+        if [ ! -d "luacov_html" ]; then
+          echo "Directory 'luacov_html' does not exist"
+
+          exit 1
+        fi
+
+        if [ ! -f "luacov_html/index.html" ]; then
+          echo "File 'luacov_html/index.html' does not exist"
+
+          exit 1
+        fi
+
+        echo "All checks passed."
