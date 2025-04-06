@@ -39,8 +39,7 @@ stylua:
 test: clone_git_dependencies
 	busted .
 
+# IMPORTANT: Make sure to `luarocks install busted` & `luarocks install luacov` first
 coverage-html: clone_git_dependencies
-	luarocks install busted --local > /dev/null
-	luarocks install luacov --local > /dev/null
 	nvim -u NONE -U NONE -N -i NONE --headless -c "luafile scripts/luacov.lua" -c "quit"
 	luacov --reporter html
