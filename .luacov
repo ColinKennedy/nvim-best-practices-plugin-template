@@ -1,0 +1,10 @@
+-- TODO: Remove hard-coded home directory
+
+return {
+  include = {"lua/", "plugin/"},
+  exclude = {
+    "/tmp",
+    "/home/selecaoone/%.luarocks",
+    "/usr/local/share/nvim",
+  },
+}
