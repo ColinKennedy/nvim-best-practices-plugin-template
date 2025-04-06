@@ -1,5 +1,7 @@
 --- Make sure configuration health checks succeed or fail where they should.
 
+-- print(vim.inspect(arg))
+
 local configuration_ = require("plugin_template._core.configuration")
 local health = require("plugin_template.health")
 local tabler = require("plugin_template._core.tabler")
