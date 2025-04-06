@@ -123,6 +123,11 @@ jobs:
       run: |
         git config --global url."https://github.com/".insteadOf "git@github.com:"
 
+    - name: Install Dependencies
+      run: |
+        luarocks install busted
+        luarocks install luacov
+
     - name: Run LuaCov
       run: |
         make coverage-html
