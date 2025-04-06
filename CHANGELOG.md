@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.8.0...v1.9.0) (2025-04-06)
+
+
+### Features
+
+* **neovim:** added neovim version v0.11.0 support ([a02c0b3](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/a02c0b303726b5259b3cbc0a2b6acebb98c55c15))
+
 ## [1.8.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.7.1...v1.8.0) (2025-03-21)
 
 
