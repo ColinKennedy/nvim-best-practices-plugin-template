@@ -2,9 +2,9 @@
 
 local say_constant = require("plugin_template._commands.hello_world.say.constant")
 
-local logging = require("mega.logging")
-
-local _LOGGER = logging.get_logger("plugin_template._core.configuration")
+-- local logging = require("mega.logging")
+--
+-- local _LOGGER = logging.get_logger("plugin_template._core.configuration")
 
 local M = {}
 
@@ -80,10 +80,10 @@ function M.initialize_data_if_needed()
     vim.g.loaded_plugin_template = true
 
     local configuration = M.DATA.logging or {}
-    ---@cast configuration mega.logging.SparseLoggerOptions
-    logging.set_configuration("plugin_template", configuration)
+    -- ---@cast configuration mega.logging.SparseLoggerOptions
+    -- logging.set_configuration("plugin_template", configuration)
 
-    _LOGGER:fmt_debug("Initialized plugin-template's configuration.")
+    -- _LOGGER:fmt_debug("Initialized plugin-template's configuration.")
 end
 
 --- Merge `data` with the user's current configuration.
