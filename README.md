@@ -242,6 +242,17 @@ Making sure that your plugin is well tested is important.
 your code is lacking tests using [LuaCov](https://luarocks.org/modules/mpeterv/luacov).
 
 
+## Setup
+Make sure to install all dependencies for the unittests + coverage reporter if
+you have not installed them already.
+
+```sh
+luarocks install busted --local
+luarocks install luacov --local
+luarocks install luacov-html --local
+```
+
+
 ## Running
 ```sh
 make coverage-html

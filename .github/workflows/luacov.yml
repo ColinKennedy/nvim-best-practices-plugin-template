@@ -119,14 +119,20 @@ jobs:
     - name: Install LuaRocks
       uses: luarocks/gh-actions-luarocks@v5
 
-    - name: Configure Git To Use HTTPS Instead Of SSH
-      run: |
-        git config --global url."https://github.com/".insteadOf "git@github.com:"
-
+    # TODO: Consider caching this workflow step. It can take ~1 minute to run.
     - name: Install Dependencies
       run: |
         luarocks install busted
         luarocks install luacov
+        luarocks install luacov-html
+
+    # NOTE: `make coverage-html` includes SSH-style URLs. This command will
+    # swap them to HTTP so we don't have to setup SSH agents on this GitHub
+    # workflow manually.
+    #
+    - name: Configure Git To Use HTTPS Instead Of SSH
+      run: |
+        git config --global url."https://github.com/".insteadOf "git@github.com:"
 
     - name: Run LuaCov
       run: |
