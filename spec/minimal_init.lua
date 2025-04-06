@@ -32,3 +32,13 @@ vim.cmd("runtime plugin/plugin_template.lua")
 require("lualine").setup()
 
 require("plugin_template._core.configuration").initialize_data_if_needed()
+
+-- require("luacov")
+-- require("busted.runner")({standalone=false})
+
+require("luacov")
+require("busted.runner")()
+
+-- print('DEBUGPRINT[1]: minimal_init.lua:36: _G.arg=' .. vim.inspect(_G.arg))
+-- _G.arg = {"coverage", [0]="spec/plugin_template/configuration_spec.lua"}
+-- require("busted.runner")({standalone=false})

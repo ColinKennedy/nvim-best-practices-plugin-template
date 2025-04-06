@@ -1,3 +1,14 @@
+```
+busted
+<!-- luacov --reporter html -->
+<!-- rm luacov.*.out; rf luacov-html -->
+```
+<!-- ``` -->
+<!-- nvim -l spec/../minimal_init.lua -->
+<!-- luacov --reporter html -->
+<!---->
+<!-- rm luacov.*.out; rf luacov-html -->
+<!-- ``` -->
 # A Neovim Plugin Template
 
 A template repository used to create Neovim plugins.
