@@ -124,7 +124,7 @@ jobs:
       run: |
         luarocks install busted
         luarocks install luacov
-        luarocks install luacov-html
+        luarocks install luacov-multiple
 
     # NOTE: `make coverage-html` includes SSH-style URLs. This command will
     # swap them to HTTP so we don't have to setup SSH agents on this GitHub

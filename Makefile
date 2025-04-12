@@ -42,4 +42,4 @@ test: clone_git_dependencies
 # IMPORTANT: Make sure to `luarocks install busted` & `luarocks install luacov` first
 coverage-html: clone_git_dependencies
 	nvim -u NONE -U NONE -N -i NONE --headless -c "luafile scripts/luacov.lua" -c "quit"
-	luacov --reporter html
+	luacov --reporter multiple.html
