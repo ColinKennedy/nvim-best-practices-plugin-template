@@ -19,8 +19,7 @@ jobs:
   smoke_test:
     strategy:
       matrix:
-        # os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         neovim: [stable]
         luaVersion: ["luajit-openresty"]
 
@@ -42,27 +41,6 @@ jobs:
       # versions on Windows (LuaJIT will be build using MinGW/gcc).
       if: ${{ matrix.toolchain == 'msvc' }}
       uses: ilammy/msvc-dev-cmd@v1
-
-    # # ADDED LINES to test the caching
-    #
-    # - name: Set Up Cache For LuaRocks
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: |
-    #       ~/.luarocks
-    #     key: ${{ runner.os }}-luarocks-${{ hashFiles('**/rockspec', '**/*.lua') }}
-    #     restore-keys: |
-    #       ${{ runner.os }}-luarocks-
-
-    - name: Set Up LuaRocks Cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ${{ runner.os == 'Windows' && env.APPDATA && env.APPDATA + '\\luarocks' || '~/.luarocks' }}
-          ${{ runner.os == 'Windows' && env.LOCALAPPDATA && env.LOCALAPPDATA + '\\luarocks' || '~/.cache/luarocks' }}
-        key: ${{ runner.os }}-luarocks-${{ hashFiles('**/*.lua', '**/*.rockspec') }}
-        restore-keys: |
-          ${{ runner.os }}-luarocks-
 
     - name: Install Lua
       uses: luarocks/gh-actions-lua@master
