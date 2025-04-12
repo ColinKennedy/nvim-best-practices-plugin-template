@@ -70,17 +70,17 @@ jobs:
       run: |
         make coverage-html
 
-    - name: Verify luacov_html/index.html Exists
+    - name: Verify luacov_html_does_not_exist/index.html Exists
       shell: bash
       run: |
-        if [ ! -d "luacov_html" ]; then
-          echo "Directory 'luacov_html' does not exist"
+        if [ ! -d "luacov_html_does_not_exist" ]; then
+          echo "Directory 'luacov_html_does_not_exist' does not exist"
 
           exit 1
         fi
 
-        if [ ! -f "luacov_html/index.html" ]; then
-          echo "File 'luacov_html/index.html' does not exist"
+        if [ ! -f "luacov_html_does_not_exist/index.html" ]; then
+          echo "File 'luacov_html_does_not_exist/index.html' does not exist"
 
           exit 1
         fi
