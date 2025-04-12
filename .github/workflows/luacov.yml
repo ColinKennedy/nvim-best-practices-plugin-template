@@ -43,6 +43,8 @@ jobs:
       if: ${{ matrix.toolchain == 'msvc' }}
       uses: ilammy/msvc-dev-cmd@v1
 
+    # ADDED LINES to test the caching
+
     - name: Set Up Cache For LuaRocks
       uses: actions/cache@v3
       with:
