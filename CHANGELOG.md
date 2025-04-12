@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.10.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.9.0...v1.10.0) (2025-04-12)
+
+
+### Features
+
+* **ci:** added LuaCov support ([0585a10](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/0585a10f66360b2b2f9b2642296fa732c222683f))
+* **ci:** added LuaCov support ([df5ae92](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/df5ae92ac3427d4af899e3a9cb2e561e1eac3fde))
+
 ## [1.9.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.8.0...v1.9.0) (2025-04-06)
 
 
