@@ -69,16 +69,6 @@ jobs:
   #
   #       # Now to the LuaCov check
   #       make coverage-html
-  clone:
-    runs-on: windows-latest
-    steps:
-      - name: Configure Git to use HTTPS instead of SSH
-        run: |
-          git config --global url."https://github.com/".insteadOf "git@github.com:"
-
-      - name: Clone using SSH-style URL (rewritten to HTTPS)
-        run: |
-          git clone git@github.com:Bilal2453/luvit-meta.git .dependencies/luvit-meta
 
   # NOTE: The purpose of this test is to make sure that coverage is generatable
   # on every OS. Maybe in the future we'll enforce minimum coverage

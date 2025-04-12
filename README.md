@@ -249,7 +249,7 @@ you have not installed them already.
 ```sh
 luarocks install busted --local
 luarocks install luacov --local
-luarocks install luacov-html --local
+luarocks install luacov-multiple --local
 ```
 
 
@@ -258,12 +258,12 @@ luarocks install luacov-html --local
 make coverage-html
 ```
 
-This will generate a `luacov.stats.out` & `luacov-html/` directory.
+This will generate a `luacov.stats.out` & `luacov_html/` directory.
 
 
 ## Viewing
 ```sh
-(cd luacov-html && python -m http.server)
+(cd luacov_html && python -m http.server)
 ```
 
 If it worked you should see a message like "Serving HTTP on 0.0.0.0 port 8000
