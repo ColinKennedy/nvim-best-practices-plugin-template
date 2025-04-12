@@ -43,25 +43,24 @@ jobs:
       if: ${{ matrix.toolchain == 'msvc' }}
       uses: ilammy/msvc-dev-cmd@v1
 
-    # - name: Set up cache for LuaRocks
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: |
-    #       ~/.luarocks
-    #       ~/.cache/luarocks
-    #     key: ${{ runner.os }}-luarocks-${{ hashFiles('**/rockspec', '**/*.lua') }}
-    #     restore-keys: |
-    #       ${{ runner.os }}-luarocks-
-
-    - name: Set Up LuaRocks Cache
+    - name: Set Up Cache For LuaRocks
       uses: actions/cache@v3
       with:
         path: |
-          ${{ runner.os == 'Windows' && env.APPDATA && env.APPDATA + '\\luarocks' || '~/.luarocks' }}
-          ${{ runner.os == 'Windows' && env.LOCALAPPDATA && env.LOCALAPPDATA + '\\luarocks' || '~/.cache/luarocks' }}
-        key: ${{ runner.os }}-luarocks-${{ hashFiles('**/*.lua', '**/*.rockspec') }}
+          ~/.luarocks
+        key: ${{ runner.os }}-luarocks-${{ hashFiles('**/rockspec', '**/*.lua') }}
         restore-keys: |
           ${{ runner.os }}-luarocks-
+
+    # - name: Set Up LuaRocks Cache
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: |
+    #       ${{ runner.os == 'Windows' && env.APPDATA && env.APPDATA + '\\luarocks' || '~/.luarocks' }}
+    #       ${{ runner.os == 'Windows' && env.LOCALAPPDATA && env.LOCALAPPDATA + '\\luarocks' || '~/.cache/luarocks' }}
+    #     key: ${{ runner.os }}-luarocks-${{ hashFiles('**/*.lua', '**/*.rockspec') }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-luarocks-
 
     - name: Install Lua
       uses: luarocks/gh-actions-lua@master
