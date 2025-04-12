@@ -3,8 +3,13 @@ plugin-template-commands	plugin-template.txt	/*plugin-template-commands*
 plugin-template-configuration	plugin-template.txt	/*plugin-template-configuration*
 plugin-template-configuration-lualine	plugin-template.txt	/*plugin-template-configuration-lualine*
 plugin-template-configuration-telescope	plugin-template.txt	/*plugin-template-configuration-telescope*
+plugin-template-coverage	plugin-template.txt	/*plugin-template-coverage*
+plugin-template-coverage-running	plugin-template.txt	/*plugin-template-coverage-running*
+plugin-template-coverage-setup	plugin-template.txt	/*plugin-template-coverage-setup*
+plugin-template-coverage-viewing	plugin-template.txt	/*plugin-template-coverage-viewing*
 plugin-template-features	plugin-template.txt	/*plugin-template-features*
 plugin-template-installation	plugin-template.txt	/*plugin-template-installation*
+plugin-template-links	plugin-template.txt	/*plugin-template-links*
 plugin-template-new-breaking	news.txt	/*plugin-template-new-breaking*
 plugin-template-new-features	news.txt	/*plugin-template-new-features*
 plugin-template-news.txt	news.txt	/*plugin-template-news.txt*
