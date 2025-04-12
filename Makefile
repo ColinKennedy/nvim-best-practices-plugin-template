@@ -4,7 +4,7 @@
 # NOTE: We still print out that we did the clone to the user so that they know.
 #
 ifeq ($(OS),Windows_NT)
-    IGNORE_EXISTING = 2> nul
+    IGNORE_EXISTING =
 else
     IGNORE_EXISTING = 2> /dev/null || true
 endif
@@ -35,3 +35,14 @@ stylua:
 
 test: clone_git_dependencies
 	busted .
+
+# IMPORTANT: Make sure to run this first
+# ```
+# luarocks install busted
+# luarocks install luacov
+# luarocks install luacov-multiple
+# ```
+#
+coverage-html: clone_git_dependencies
+	nvim -u NONE -U NONE -N -i NONE --headless -c "luafile scripts/luacov.lua" -c "quit"
+	luacov --reporter multiple.html
