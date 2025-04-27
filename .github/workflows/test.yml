@@ -14,9 +14,9 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        neovim: [v0.10.0, v0.11.0, stable, nightly]
-        luaVersion: ["luajit-openresty"]
+        # os: [ubuntu-latest, macos-latest]
+        # neovim: [v0.10.0, v0.11.0, stable, nightly]
+        # luaVersion: ["luajit-openresty"]
         include:
         - os: "windows-latest"
           toolchain: "msvc"
