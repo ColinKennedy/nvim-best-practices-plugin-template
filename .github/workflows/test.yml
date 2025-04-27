@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - main
+      - add_nlua
 
 jobs:
   test:
@@ -70,6 +71,7 @@ jobs:
 
     - name: Build Test Dependencies
       run: |
+        luarocks install nlua
         luarocks test nvim-best-practices-plugin-template-scm-1.rockspec --prepare
 
     - name: Test
