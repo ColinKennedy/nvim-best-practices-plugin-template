@@ -28,6 +28,7 @@ jobs:
         urlchecker check \
           --branch main \
           --subfolder doc \
+          --exclude-patterns "http://0.0.0.0:8000" \
           --no-print \
           --file-types .json,.lua,.md,.txt,.vim,.yml \
           --retry-count 1 \
@@ -109,7 +110,7 @@ jobs:
         urlchecker check \
           --branch main \
           --subfolder . \
-          --exclude-patterns "http://0.0.0.0:8000/" \
+          --exclude-patterns "http://0.0.0.0:8000" \
           --files README.md \
           --no-print \
           --retry-count 1 \

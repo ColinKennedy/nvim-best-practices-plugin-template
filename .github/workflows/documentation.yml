@@ -66,7 +66,7 @@ jobs:
       - name: Create API Documentation
         run: |
           nvim --version
-          make api_documentation
+          make api-documentation
 
       - name: Create User Documentation
         uses: kdheepak/panvimdoc@main

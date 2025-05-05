@@ -1,4 +1,4 @@
-.PHONY: api_documentation llscheck luacheck stylua test
+.PHONY: api-documentation download-dependencies llscheck luacheck stylua test
 
 # Git will error if the repository already exists. We ignore the error.
 # NOTE: We still print out that we did the clone to the user so that they know.
@@ -11,17 +11,17 @@ endif
 
 CONFIGURATION = .luarc.json
 
-clone_git_dependencies:
+download-dependencies:
 	git clone git@github.com:Bilal2453/luvit-meta.git .dependencies/luvit-meta $(IGNORE_EXISTING)
 	git clone git@github.com:ColinKennedy/mega.cmdparse.git .dependencies/mega.cmdparse $(IGNORE_EXISTING)
 	git clone git@github.com:ColinKennedy/mega.logging.git .dependencies/mega.logging $(IGNORE_EXISTING)
 	git clone git@github.com:LuaCATS/busted.git .dependencies/busted $(IGNORE_EXISTING)
 	git clone git@github.com:LuaCATS/luassert.git .dependencies/luassert $(IGNORE_EXISTING)
 
-api_documentation:
+api-documentation:
 	nvim -u scripts/make_api_documentation/minimal_init.lua -l scripts/make_api_documentation/main.lua
 
-llscheck: clone_git_dependencies
+llscheck: download-dependencies
 	VIMRUNTIME="`nvim --clean --headless --cmd 'lua io.write(os.getenv("VIMRUNTIME"))' --cmd 'quit'`" llscheck --configpath $(CONFIGURATION) .
 
 luacheck:
@@ -33,7 +33,7 @@ check-stylua:
 stylua:
 	stylua lua plugin scripts spec
 
-test: clone_git_dependencies
+test: download-dependencies
 	busted .
 
 # IMPORTANT: Make sure to run this first
@@ -43,6 +43,6 @@ test: clone_git_dependencies
 # luarocks install luacov-multiple
 # ```
 #
-coverage-html: clone_git_dependencies
+coverage-html: download-dependencies
 	nvim -u NONE -U NONE -N -i NONE --headless -c "luafile scripts/luacov.lua" -c "quit"
 	luacov --reporter multiple.html
