@@ -51,7 +51,8 @@ A template repository used to create Neovim plugins.
 
 # Using This Template
 1. Follow the [Wiki instructions](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/Using-This-Template)
-2. Once you're done, remove this section (the rest of this README.md file should be kept / customized to your needs)
+2. Run `make download-dependencies` so all the Lua LSP features work as expected.
+3. Once you're done, remove this section (the rest of this README.md file should be kept / customized to your needs)
 
 
 # Installation
@@ -267,8 +268,8 @@ This will generate a `luacov.stats.out` & `luacov_html/` directory.
 ```
 
 If it worked, you should see a message like
-"Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ..."
-Open `http://0.0.0.0:8000/` in a browser like
+"Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000) ..."
+Open `http://0.0.0.0:8000` in a browser like
 [Firefox](https://www.mozilla.org/en-US/firefox) and you should see a view like this:
 
 ![Image](https://github.com/user-attachments/assets/e5b30df8-036a-4886-81b9-affbf5c9e32a)
