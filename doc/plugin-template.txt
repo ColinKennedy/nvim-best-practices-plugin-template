@@ -1,4 +1,4 @@
-*plugin-template.txt*      For Neovim >= 0.8.0      Last change: 2025 April 12
+*plugin-template.txt*       For Neovim >= 0.8.0       Last change: 2025 May 05
 
 ==============================================================================
 Table of Contents                          *plugin-template-table-of-contents*
@@ -84,7 +84,8 @@ A template repository used to create Neovim plugins.
 3. Using This Template                   *plugin-template-using-this-template*
 
 1. Follow the Wiki instructions <https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/Using-This-Template>
-2. Once you’re done, remove this section (the rest of this README.md file should be kept / customized to your needs)
+2. Run `make download-dependencies` so all the Lua LSP features work as expected.
+3. Once you’re done, remove this section (the rest of this README.md file should be kept / customized to your needs)
 
 
 ==============================================================================
@@ -316,9 +317,8 @@ VIEWING                                     *plugin-template-coverage-viewing*
 <
 
 If it worked, you should see a message like "Serving HTTP on 0.0.0.0 port 8000
-<http://0.0.0.0:8000> …" Open `http://0.0.0.0:8000` in a browser like
-Firefox <https://www.mozilla.org/en-US/firefox> and you should see a view like
-this:
+<http://0.0.0.0:800> …" Open `http://0.0.0.0:8000` in a browser like Firefox
+<https://www.mozilla.org/en-US/firefox> and you should see a view like this:
 
 Just navigate down a few folders until you get to a .lua file and you’ll see
 a breakdown of your line coverage like this:
