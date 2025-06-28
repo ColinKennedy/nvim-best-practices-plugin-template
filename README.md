@@ -268,7 +268,7 @@ This will generate a `luacov.stats.out` & `luacov_html/` directory.
 ```
 
 If it worked, you should see a message like
-"Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000) ..."
+`"Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000) ..."`
 Open `http://0.0.0.0:8000` in a browser like
 [Firefox](https://www.mozilla.org/en-US/firefox) and you should see a view like this:
 
