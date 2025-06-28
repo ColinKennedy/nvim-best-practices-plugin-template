@@ -44,15 +44,18 @@ jobs:
           lua-language-server latest
 
     - name: Install luarocks
-      uses: leafo/gh-actions-luarocks@v5
+      # TODO: Replace with https://github.com/luarocks/gh-actions-luarocks after v6+
+      uses: ColinKennedy/gh-actions-luarocks@v1.0.0
+
+    - name: Print Versions
+      run: |
+        luarocks --version
+        lua-language-server --version
 
     - name: Install llscheck
       run: |
-        luarocks install llscheck
-
-    - name: Print Version
-      run: |
-        lua-language-server --version
+        luarocks --version
+        luarocks install llscheck --verbose
 
     - name: Test
       run: |

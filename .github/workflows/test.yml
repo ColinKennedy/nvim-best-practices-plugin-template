@@ -50,12 +50,17 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
 
     - name: Install Lua
-      uses: luarocks/gh-actions-lua@master
+      uses: luarocks/gh-actions-lua@v10
       with:
         luaVersion: "${{ matrix.luaVersion }}"
 
     - name: Install LuaRocks
-      uses: luarocks/gh-actions-luarocks@v5
+      # TODO: Replace with https://github.com/luarocks/gh-actions-luarocks after v6+
+      uses: ColinKennedy/gh-actions-luarocks@v1.0.0
+
+    - name: Print Versions
+      run: |
+        luarocks --version
 
     # We need this hack until a better solution is available.
     #
