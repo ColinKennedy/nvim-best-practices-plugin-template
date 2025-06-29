@@ -1,4 +1,4 @@
-*plugin-template.txt*        For NVIM v0.12.0        Last change: 2025 June 28
+*plugin-template.txt*       For Neovim >= 0.8.0      Last change: 2025 June 29
 
 ==============================================================================
 Table of Contents                          *plugin-template-table-of-contents*
@@ -52,8 +52,8 @@ A template repository used to create Neovim plugins.
 - Built-in Vim commands
 - A high quality command mode parser
 - Auto-completes your commands at any cursor position
-- No external dependencies* <https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/External-Dependencies-Disclaimer>
-- LuaCATS <https://luals.github.io/wiki/annotations/> annotations and type-hints, everywhere
+- No external dependencies <https://github.com/ColinKennedy/nvim-best-practices-plugin-template/wiki/External-Dependencies-Disclaimer>
+- LuaCATS <https://luals.github.io/wiki/annotations/>annotations and type-hints, everywhere
 - RSS feed support <https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commits/main/doc/news.txt.atom>
 - Built-in logging to stdout / files
 - Unittests use the full power of native busted <https://github.com/lunarmodules/busted>
