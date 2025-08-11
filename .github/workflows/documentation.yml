@@ -13,7 +13,7 @@ jobs:
       exists: ${{ steps.check_branch.outputs.exists }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check If A Valid Documentation Branch Exists
         id: check_branch
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install emmylua_doc_cli From crates.io
         uses: baptiste0928/cargo-install@v3
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Neovim
         uses: rhysd/action-setup-vim@v1
