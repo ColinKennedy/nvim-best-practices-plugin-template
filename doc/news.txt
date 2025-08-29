@@ -1,13 +1,12 @@
 *plugin-template-news.txt*
 
-Notable changes since PluginTemplate 1.0
+Notable changes since PluginTemplate 1.10
 
 
 ===============================================================================
 NEW FEATURES                                     *plugin-template-new-features*
 
-- Added llscheck.yml - A GitHub workflow that detects type annotation issues!
-- Added urlchecker.yml - A GitHub workflow that finds broken URLs!
+- Added `mdformat` support for auto-formatting Markdown files!
 
 
 ===============================================================================

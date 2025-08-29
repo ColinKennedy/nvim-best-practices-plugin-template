@@ -36,6 +36,12 @@ stylua:
 test: download-dependencies
 	busted .
 
+check-mdformat:
+	python -m mdformat --check CHANGELOG.md README.md markdown/manual/docs/index.md
+
+mdformat:
+	python -m mdformat CHANGELOG.md README.md markdown/manual/docs/index.md
+
 # IMPORTANT: Make sure to run this first
 # ```
 # luarocks install busted
