@@ -1,0 +1,27 @@
+name: mdformat
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+    - main
+  push:
+    branches:
+      - main
+
+jobs:
+  mdformat:
+    runs-on: ubuntu-latest
+    name: mdformat
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: Install mdformat
+      run: |
+        python -m pip install mdformat --user
+
+    - name: Test
+      run: |
+        make check-mdformat
