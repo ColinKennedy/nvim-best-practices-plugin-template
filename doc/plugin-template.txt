@@ -31,7 +31,7 @@ A template repository used to create Neovim plugins.
             
   --------- ----------------------------------------------------------------------
   Build     [unittests] [documentation] [luacheck] [llscheck] [checkhealth]
-  Status    [stylua] [urlchecker]
+  Status    [stylua] [urlchecker] [mdformat]
 
   License   [License-MIT]
 
@@ -73,6 +73,7 @@ A template repository used to create Neovim plugins.
     - luacheck <https://github.com/mpeterv/luacheck> - Checks for Lua code issues
     - luarocks <https://luarocks.org> auto-release (LUAROCKS_API_KEY secret <https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#publishing-to-luarocks> configuration required)
     - GitHub <https://github.com/ColinKennedy/nvim-best-practices-plugin-template/releases> auto-release (PERSONAL_ACCESS_TOKEN secret <https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#installing-release-please-recommended> configuration required)
+    - mdformat <https://github.com/hukkin/mdformat> - Auto-formats project Markdown files
     - mini.doc <https://github.com/echasnovski/mini.doc> - API documentation auto-generator
     - panvimdoc <https://github.com/kdheepak/panvimdoc> - User documentation auto-generator
     - emmylua_doc_cli <https://github.com/CppCXY/emmylua-analyzer-rust/tree/main/crates/emmylua_doc_cli> & mkdocs-material <https://github.com/squidfunk/mkdocs-material> - Generate HTML from Lua files automatically
