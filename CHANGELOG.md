@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.11.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.10.0...v1.11.0) (2025-08-29)
+
+
+### Features
+
+* **ci:** added mdformat ([b8ebeea](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/b8ebeea76d72f34d8f31118654d7e4093f9bee00))
+* **ci:** added mdformat CI support ([75093c1](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/75093c124d4533a0f9edc6b7eb9de351cc348133))
+
 ## [1.10.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.9.0...v1.10.0) (2025-04-12)
 
 ### Features
