@@ -28,7 +28,7 @@ A template repository used to create Neovim plugins.
 - Unittests use the full power of native [busted](https://github.com/lunarmodules/busted)
   - Supports [LuaCov](https://luarocks.org/modules/mpeterv/luacov) for coverage reports!
 - Automated testing matrix supports 12 Neovim/OS combinations
-  - neovim: `[v0.10.0, v0.11.0, stable, nightly]`
+  - neovim: `[v0.11.0, v0.12.0, stable, nightly]`
   - os: `[ubuntu-latest, macos-latest, windows-latest]`
 - 100% Lua
 - Uses [Semantic Versioning](https://semver.org)
