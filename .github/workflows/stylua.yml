@@ -21,7 +21,7 @@ jobs:
       # Reference: https://github.com/JohnnyMorganz/stylua-action/pull/58
       #
       - name: Install StyLua
-        uses: JohnnyMorganz/stylua-action@v4.1.0
+        uses: JohnnyMorganz/stylua-action@v5
         with:
           version: latest
           token: ${{ secrets.GITHUB_TOKEN }}
