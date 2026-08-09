@@ -1,4 +1,4 @@
-.PHONY: api-documentation download-dependencies llscheck luacheck stylua test
+.PHONY: api-documentation deadcode download-dependencies llscheck luacheck privata stylua test
 
 # Git will error if the repository already exists. We ignore the error.
 # NOTE: We still print out that we did the clone to the user so that they know.
@@ -21,6 +21,11 @@ download-dependencies:
 api-documentation:
 	nvim -u scripts/make_api_documentation/minimal_init.lua -l scripts/make_api_documentation/main.lua
 
+lint: stylua luacheck privata deadcode llscheck
+
+deadcode:
+	deadcode lua plugin spec $(ARGUMENTS)
+
 llscheck: download-dependencies
 	VIMRUNTIME="`nvim --clean --headless --cmd 'lua io.write(os.getenv("VIMRUNTIME"))' --cmd 'quit'`" llscheck --configpath $(CONFIGURATION) .
 
@@ -41,6 +46,9 @@ check-mdformat:
 
 mdformat:
 	python -m mdformat README.md markdown/manual/docs/index.md
+
+privata:
+	privata . $(ARGUMENTS)
 
 # IMPORTANT: Make sure to run this first
 # ```

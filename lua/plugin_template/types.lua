@@ -4,6 +4,11 @@
 --- operation of this Lua plugin.
 ---
 
+-- NOTE: This file is annotations-only, on purpose. It has no runtime code for
+-- deadcode to check so we tell it to skip the file entirely.
+--
+-- deadcode: ignore-file
+
 ---@class plugin_template.Configuration
 ---    The user's customizations for this plugin.
 ---@field commands plugin_template.ConfigurationCommands?

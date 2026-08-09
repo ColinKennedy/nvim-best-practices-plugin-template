@@ -38,6 +38,8 @@ A template repository used to create Neovim plugins.
   - [`:checkhealth`](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/actions/workflows/checkhealth.yml)
 - Github actions for:
   - [StyLua](https://github.com/JohnnyMorganz/StyLua) - Auto-formats Lua code
+  - [deadcode](https://github.com/ColinKennedy/lua-deadcode) - Finds unused code to remove
+  - [privata](https://github.com/ColinKennedy/lua-privata) - Advises you on how to make your APIs more lightweight
   - [llscheck](https://github.com/jeffzi/llscheck) - Checks for Lua type mismatches
   - [luacheck](https://github.com/mpeterv/luacheck) - Checks for Lua code issues
   - [luarocks](https://luarocks.org) auto-release ([LUAROCKS_API_KEY secret](https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#publishing-to-luarocks) configuration required)
