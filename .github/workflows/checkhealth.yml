@@ -15,6 +15,32 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         neovim: [v0.10.0, stable, nightly]
 
+        # NOTE: `:checkhealth` has no "run everything except X" syntax so every
+        # check has to be spelled out. `checks` is "every health check that
+        # Neovim ships, minus its own core check" (see `core_checks` below for
+        # why the core check is separate). The names differ per Neovim version
+        # because naming a check that does not exist is itself an error.
+        #
+        include:
+          # NOTE: On 0.10 the core check is called `nvim` and the providers are
+          # separate, top-level checks. `vim.*` expands to `vim.lsp` +
+          # `vim.treesitter` and nothing else.
+          #
+          - neovim: v0.10.0
+            checks: "plugin_template provider.* vim.lsp vim.treesitter"
+            core_checks: "nvim"
+
+          # NOTE: On 0.11+ the core check is `vim.health` and the providers were
+          # merged into a single `vim.provider` check. `vim.pack` needs Neovim
+          # 0.12-or-newer.
+          #
+          - neovim: stable
+            checks: "plugin_template vim.deprecated vim.lsp vim.pack vim.provider vim.treesitter"
+            core_checks: "vim.health"
+          - neovim: nightly
+            checks: "plugin_template vim.deprecated vim.lsp vim.pack vim.provider vim.treesitter"
+            core_checks: "vim.health"
+
     runs-on: ${{ matrix.os }}
     name: "OS: ${{ matrix.os }} - Neovim: ${{ matrix.neovim }}"
 
@@ -32,4 +58,25 @@ jobs:
         uses: ColinKennedy/nvim-checkhealth-gh-action@v1.1.1
         with:
           executable: 'nvim -u "spec/minimal_init.lua"'
-          checks: "plugin_template vim.*"
+          checks: ${{ matrix.checks }}
+
+      # NOTE: Neovim's own health check cannot gate this job. Since Neovim
+      # nightly its "Terminal" section calls `vim.ui.img._supported()`, which
+      # asks the terminal whether it speaks the kitty graphics protocol and
+      # reports
+      #
+      #     ERROR Graphics protocol: not supported by this terminal.
+      #
+      # A headless CI runner has no terminal to answer that query so the error
+      # is unconditional and says nothing about this plug-in. Since
+      # `:checkhealth` cannot skip a single section, the check runs as its own
+      # non-blocking step instead. That way its other sections (System Info,
+      # Configuration, Runtime, Performance, Remote Plugins, Terminal, External
+      # Tools) still show up in the CI logs.
+      #
+      - name: Run :checkhealth (Neovim core - informational only)
+        continue-on-error: true
+        uses: ColinKennedy/nvim-checkhealth-gh-action@v1.1.1
+        with:
+          executable: 'nvim -u "spec/minimal_init.lua"'
+          checks: ${{ matrix.core_checks }}
