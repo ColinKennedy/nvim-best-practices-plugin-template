@@ -9,4 +9,4 @@ jobs:
     name: Commitlint
     steps:
       - name: Run commitlint
-        uses: opensource-nepal/commitlint@v1
+        uses: opensource-nepal/commitlint@v2
