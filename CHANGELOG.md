@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.1](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.11.0...v1.11.1) (2026-08-12)
+
+
+### Bug Fixes
+
+* **ci:** added :checkhealth matrix ([#87](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/issues/87)) ([6ca99e2](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/6ca99e25ea0063f47fad7ab93a4fdd1aa9d521b6))
+
 ## [1.11.0](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.10.0...v1.11.0) (2025-08-29)
 
 
