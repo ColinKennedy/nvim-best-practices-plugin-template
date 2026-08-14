@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.2](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.11.1...v1.11.2) (2026-08-14)
+
+
+### Bug Fixes
+
+* **ci:** Update emmylua_doc_cli CLI arguments ([67234a9](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/commit/67234a9bd850bce264434cdacaf7f6eae9836300))
+
 ## [1.11.1](https://github.com/ColinKennedy/nvim-best-practices-plugin-template/compare/v1.11.0...v1.11.1) (2026-08-12)
 
 
