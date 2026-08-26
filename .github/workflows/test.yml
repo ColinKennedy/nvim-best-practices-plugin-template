@@ -54,7 +54,7 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
 
     - name: Install Lua
-      uses: luarocks/gh-actions-lua@v13
+      uses: luarocks/gh-actions-lua@v14
       with:
         luaVersion: "${{ matrix.luaVersion }}"
 
